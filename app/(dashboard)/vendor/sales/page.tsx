@@ -7,7 +7,6 @@ import {
   CircleDollarSign,
   Receipt,
   Users,
-  Package,
   Settings,
   Plus,
   Search,
@@ -15,11 +14,9 @@ import {
   Menu,
   X,
   Bell,
-  Sparkles,
   Clock,
   Filter,
   TrendingUp,
-  FileBarChart,
 } from "lucide-react";
 
 export default function SalesPage() {
@@ -27,6 +24,10 @@ export default function SalesPage() {
   const [quickAmount, setQuickAmount] = useState("");
   const [quickItem, setQuickItem] = useState("");
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
+
+  // Free plan: 500 logs/month cap
+  const usageData = { used: 127, limit: 500 };
+  const usagePct = Math.min((usageData.used / usageData.limit) * 100, 100);
 
   // Mock data for today's transactions
   const transactions = [
@@ -62,11 +63,10 @@ export default function SalesPage() {
 
   const handleQuickLog = (e: React.FormEvent) => {
     e.preventDefault();
-    // Transaction logging logic here
     console.log("Logged:", quickAmount, quickItem);
     setQuickAmount("");
     setQuickItem("");
-    setIsQuickLogModalOpen(false); // Close the modal after savingQuick Log Sale
+    setIsQuickLogModalOpen(false);
   };
 
   return (
@@ -83,7 +83,7 @@ export default function SalesPage() {
         className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <div className="px-6 py-5 flex items-center justify-between border-b border-slate-100">
-          <Link href="/dashboard" className="flex items-center gap-3">
+          <Link href="/vendor" className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#29B28D] flex items-center justify-center font-bold text-white shadow-sm">
               P
             </div>
@@ -113,18 +113,21 @@ export default function SalesPage() {
           />
           <NavItem icon={Receipt} title="Expenses" khmerTitle="ចំណាយ" />
           <NavItem icon={Users} title="Customers" khmerTitle="អតិថិជន" />
-          <NavItem icon={Package} title="Inventory" khmerTitle="ស្តុក" />
-          <NavItem icon={FileBarChart} title="Reports" khmerTitle="របាយការណ៍" />
         </nav>
 
         <div className="p-4 border-t border-slate-100">
           <NavItem icon={Settings} title="Settings" khmerTitle="ការកំណត់" />
-          <div className="mt-3 p-3.5 bg-slate-900 rounded-xl text-white">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Sparkles className="w-4 h-4 text-[#29B28D]" />
-              <span className="font-semibold text-sm">Premium Plan</span>
+          <div className="mt-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold text-sm text-slate-700">Free Plan</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ឥតគិតថ្លៃ</span>
             </div>
-            <p className="text-xs text-slate-400">AI Assistant Active</p>
+            <Link
+              href="/vendor/settings"
+              className="block w-full text-center text-[13px] font-bold text-[#29B28D] hover:text-[#239979] bg-[#29B28D]/10 hover:bg-[#29B28D]/15 py-2 rounded-lg transition-colors"
+            >
+              Upgrade to Pro ↗
+            </Link>
           </div>
         </div>
       </aside>
@@ -149,7 +152,6 @@ export default function SalesPage() {
           <div className="flex items-center gap-4">
             <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors relative">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
             <div className="w-9 h-9 rounded-full bg-[#29B28D]/10 flex items-center justify-center text-[#29B28D] font-bold border border-[#29B28D] text-sm shadow-sm">
               SM
@@ -175,16 +177,36 @@ export default function SalesPage() {
             </button>
           </div>
 
+          {/* Usage Limit Bar */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[14px] font-semibold text-slate-700">Monthly Log Usage</span>
+              <span className="text-[14px] font-bold text-slate-700">
+                {usageData.used} / {usageData.limit}
+              </span>
+            </div>
+            <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-700 ${usagePct > 80 ? "bg-orange-400" : "bg-[#29B28D]"}`}
+                style={{ width: `${usagePct}%` }}
+              ></div>
+            </div>
+            <p className="text-[12px] text-slate-400 mt-1.5 font-medium">
+              {usageData.limit - usageData.used} logs remaining ·{" "}
+              <Link href="/vendor/settings" className="text-[#29B28D] hover:underline">
+                Upgrade for unlimited
+              </Link>
+            </p>
+          </div>
+
           {/* QUICK LOGGING MODAL */}
           {isQuickLogModalOpen && (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-              {/* Modal Backdrop (Click to close) */}
               <div
                 className="absolute inset-0"
                 onClick={() => setIsQuickLogModalOpen(false)}
               ></div>
 
-              {/* Modal Content */}
               <div className="bg-white rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
                 <button
                   onClick={() => setIsQuickLogModalOpen(false)}
@@ -203,7 +225,6 @@ export default function SalesPage() {
                 </div>
 
                 <form onSubmit={handleQuickLog} className="flex flex-col gap-6">
-                  {/* Amount Input */}
                   <div className="relative group mt-2">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <CircleDollarSign className="h-6 w-6 text-slate-400 group-focus-within:text-[#29B28D] transition-colors" />
@@ -223,7 +244,6 @@ export default function SalesPage() {
                     </div>
                   </div>
 
-                  {/* Item Input */}
                   <div className="relative group">
                     <input
                       type="text"
@@ -237,7 +257,6 @@ export default function SalesPage() {
                     </div>
                   </div>
 
-                  {/* Form Actions */}
                   <div className="flex gap-3 mt-2">
                     <button
                       type="button"
@@ -267,7 +286,7 @@ export default function SalesPage() {
               </div>
               <div>
                 <p className="text-[13px] font-semibold text-slate-600">
-                  Today's Revenue
+                  Today&apos;s Revenue
                 </p>
                 <h3 className="text-[24px] font-bold text-slate-900">$40.00</h3>
               </div>
@@ -362,7 +381,6 @@ export default function SalesPage() {
                       </td>
                     </tr>
                   ))}
-                  {/* Empty State / Bottom padding row */}
                   {transactions.length === 0 && (
                     <tr>
                       <td
@@ -400,9 +418,17 @@ function NavItem({
   khmerTitle: string;
   active?: boolean;
 }) {
+  const hrefMap: Record<string, string> = {
+    Dashboard: "/vendor",
+    Sales: "/vendor/sales",
+    Expenses: "/vendor/expenses",
+    Customers: "/vendor/customer",
+    Settings: "/vendor/settings",
+  };
+
   return (
     <Link
-      href="#"
+      href={hrefMap[title] || "#"}
       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-colors min-h-[48px] ${
         active
           ? "bg-[#29B28D]/10 text-[#29B28D]"

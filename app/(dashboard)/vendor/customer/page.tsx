@@ -7,18 +7,15 @@ import {
   CircleDollarSign,
   Receipt,
   Users,
-  Package,
   Settings,
   Plus,
   TrendingUp,
   Menu,
   X,
   Bell,
-  Sparkles,
   UserPlus,
   Clock,
   Flame,
-  FileBarChart,
 } from "lucide-react";
 
 export default function CustomerPage() {
@@ -28,7 +25,6 @@ export default function CustomerPage() {
   const summaryData = {
     todayCustomers: "42",
     avgSpending: "$2.96",
-    peakHour: "5:00 PM",
     weeklyCustomers: "315",
   };
 
@@ -41,7 +37,6 @@ export default function CustomerPage() {
   ];
 
   const handleQuickAdd = (amount: number) => {
-    // Logic to instantly log the customer amount
     console.log(`Added ${amount} customers`);
   };
 
@@ -65,7 +60,7 @@ export default function CustomerPage() {
         className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
         <div className="px-6 py-5 flex items-center justify-between border-b border-slate-100">
-          <Link href="/dashboard" className="flex items-center gap-3">
+          <Link href="/vendor" className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#29B28D] flex items-center justify-center font-bold text-white shadow-sm">
               P
             </div>
@@ -90,18 +85,21 @@ export default function CustomerPage() {
           <NavItem icon={CircleDollarSign} title="Sales" khmerTitle="ការលក់" />
           <NavItem icon={Receipt} title="Expenses" khmerTitle="ចំណាយ" />
           <NavItem icon={Users} title="Customers" khmerTitle="អតិថិជន" active />
-          <NavItem icon={Package} title="Inventory" khmerTitle="ស្តុក" />
-          <NavItem icon={FileBarChart} title="Reports" khmerTitle="របាយការណ៍" />
         </nav>
 
         <div className="p-4 border-t border-slate-100">
           <NavItem icon={Settings} title="Settings" khmerTitle="ការកំណត់" />
-          <div className="mt-3 p-3.5 bg-slate-900 rounded-xl text-white">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Sparkles className="w-4 h-4 text-[#29B28D]" />
-              <span className="font-semibold text-sm">Premium Plan</span>
+          <div className="mt-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold text-sm text-slate-700">Free Plan</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ឥតគិតថ្លៃ</span>
             </div>
-            <p className="text-xs text-slate-400">AI Assistant Active</p>
+            <Link
+              href="/vendor/settings"
+              className="block w-full text-center text-[13px] font-bold text-[#29B28D] hover:text-[#239979] bg-[#29B28D]/10 hover:bg-[#29B28D]/15 py-2 rounded-lg transition-colors"
+            >
+              Upgrade to Pro ↗
+            </Link>
           </div>
         </div>
       </aside>
@@ -126,7 +124,6 @@ export default function CustomerPage() {
           <div className="flex items-center gap-4">
             <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors relative">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
             <div className="w-9 h-9 rounded-full bg-[#29B28D]/10 flex items-center justify-center text-[#29B28D] font-bold border border-[#29B28D] text-sm shadow-sm">
               SM
@@ -136,54 +133,59 @@ export default function CustomerPage() {
 
         <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7">
           {/* Action Area for Fast Logging */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-            <div className="mb-5">
-              <h3 className="font-semibold text-[17px] text-slate-900">
-                Log New Customers
-              </h3>
-              <p className="text-sm font-khmer text-slate-500 mt-0.5">
-                កត់ត្រាអតិថិជនថ្មី
-              </p>
+          <div className="bg-white rounded-[20px] shadow-sm border border-slate-200/60 p-5 md:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-[#29B28D]/5 rounded-full blur-2xl pointer-events-none" />
+
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="w-12 h-12 rounded-full bg-[#29B28D]/10 flex items-center justify-center text-[#29B28D] flex-shrink-0">
+                <UserPlus className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-[18px] font-bold text-slate-800 tracking-tight">
+                  Log New Customers
+                </h2>
+                <p className="text-sm font-khmer text-slate-500 mt-0.5">
+                  កត់ត្រាអតិថិជនថ្មី
+                </p>
+              </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-5 items-stretch">
-              {/* Quick Tap Buttons */}
-              <div className="flex flex-1 gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch gap-3 lg:gap-4 relative z-10 w-full lg:w-auto">
+              <div className="flex bg-slate-50 p-1 rounded-xl border border-slate-200/60">
                 <button
                   onClick={() => handleQuickAdd(1)}
-                  className="flex-1 flex flex-col items-center justify-center gap-1 bg-[#29B28D]/10 text-[#29B28D] border border-[#29B28D]/20 hover:bg-[#29B28D]/20 rounded-xl transition-colors min-h-[72px]"
+                  className="flex-1 sm:w-20 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg bg-white text-[#29B28D] font-bold text-[15px] shadow-sm border border-slate-200/50 hover:bg-slate-50 transition-all"
                 >
-                  <UserPlus className="w-6 h-6" />
-                  <span className="font-bold text-[17px]">+1</span>
+                  <span>+1</span>
                 </button>
                 <button
                   onClick={() => handleQuickAdd(5)}
-                  className="flex-1 flex flex-col items-center justify-center gap-1 bg-[#29B28D]/10 text-[#29B28D] border border-[#29B28D]/20 hover:bg-[#29B28D]/20 rounded-xl transition-colors min-h-[72px]"
+                  className="flex-1 sm:w-20 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg text-slate-500 font-bold text-[15px] hover:bg-white hover:text-[#29B28D] hover:shadow-sm border border-transparent transition-all"
                 >
-                  <Users className="w-6 h-6" />
-                  <span className="font-bold text-[17px]">+5</span>
+                  <span>+5</span>
                 </button>
               </div>
 
-              <div className="hidden md:flex items-center justify-center px-2 text-slate-300">
-                <span>OR</span>
-              </div>
-
-              {/* Manual Entry Form */}
-              <form onSubmit={handleManualSubmit} className="flex-1 flex gap-3">
+              <form
+                onSubmit={handleManualSubmit}
+                className="flex sm:w-56 group h-auto min-h-[46px]"
+              >
                 <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <Users className="h-4 w-4 text-slate-400 group-focus-within:text-[#29B28D] transition-colors" />
+                  </div>
                   <input
                     type="number"
                     min="1"
-                    placeholder="Custom count..."
+                    placeholder="Custom..."
                     value={customerCount}
                     onChange={(e) => setCustomerCount(e.target.value)}
-                    className="block w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-[17px] font-medium placeholder-slate-400 focus:bg-white focus:border-[#29B28D] focus:ring-1 focus:ring-[#29B28D] outline-none transition-all h-full min-h-[72px]"
+                    className="block w-full h-full pl-9 pr-3 py-2.5 bg-slate-50 border border-r-0 border-slate-200 rounded-l-xl text-slate-800 text-[15px] font-semibold placeholder-slate-400 focus:bg-white focus:border-[#29B28D] focus:ring-1 focus:ring-[#29B28D] focus:z-10 outline-none transition-all"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 rounded-xl transition-colors min-h-[72px] flex items-center justify-center"
+                  className="bg-[#29B28D] hover:bg-[#239979] text-white font-bold px-5 rounded-r-xl transition-all flex items-center justify-center border border-[#29B28D] hover:border-[#239979] focus:z-10"
                 >
                   <Plus className="w-5 h-5" />
                 </button>
@@ -191,8 +193,8 @@ export default function CustomerPage() {
             </div>
           </div>
 
-          {/* Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Metric Cards — 3 cards (no locked Peak Hour) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <SummaryCard
               title="Today's Customers"
               khmerTitle="អតិថិជនថ្ងៃនេះ"
@@ -209,13 +211,6 @@ export default function CustomerPage() {
               icon={CircleDollarSign}
               trend="+$0.40"
               isPositive={true}
-            />
-            <SummaryCard
-              title="Peak Hour"
-              khmerTitle="ម៉ោងមមាញឹក"
-              value={summaryData.peakHour}
-              icon={Flame}
-              subtext="Highest traffic today"
             />
             <SummaryCard
               title="Weekly Customers"
@@ -235,7 +230,7 @@ export default function CustomerPage() {
                   Recent Customer Logs
                 </h3>
                 <p className="text-[13px] text-slate-500 mt-0.5">
-                  Today's recorded foot traffic
+                  Today&apos;s recorded foot traffic
                 </p>
               </div>
             </div>
@@ -298,7 +293,6 @@ export default function CustomerPage() {
   );
 }
 
-// Exactly mirroring the provided sizing logic
 function NavItem({
   icon: Icon,
   title,
@@ -310,9 +304,17 @@ function NavItem({
   khmerTitle: string;
   active?: boolean;
 }) {
+  const hrefMap: Record<string, string> = {
+    Dashboard: "/vendor",
+    Sales: "/vendor/sales",
+    Expenses: "/vendor/expenses",
+    Customers: "/vendor/customer",
+    Settings: "/vendor/settings",
+  };
+
   return (
     <Link
-      href="#"
+      href={hrefMap[title] || "#"}
       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-colors min-h-[48px] ${
         active
           ? "bg-[#29B28D]/10 text-[#29B28D]"
@@ -334,7 +336,6 @@ function NavItem({
   );
 }
 
-// Exactly mirroring the provided sizing logic
 function SummaryCard({
   title,
   khmerTitle,

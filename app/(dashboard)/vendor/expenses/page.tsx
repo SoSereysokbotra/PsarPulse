@@ -28,6 +28,7 @@ export default function ExpensePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [expenseAmount, setExpenseAmount] = useState("");
   const [expenseCategory, setExpenseCategory] = useState("Ingredients");
+  const [expenseVendor, setExpenseVendor] = useState("");
   const [expenseNote, setExpenseNote] = useState("");
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
 
@@ -87,8 +88,9 @@ export default function ExpensePage() {
 
   const handleQuickLog = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`Logged Expense: ${expenseAmount} under ${expenseCategory}`);
+    console.log(`Logged Expense: ${expenseAmount} under ${expenseCategory} to vendor ${expenseVendor}`);
     setExpenseAmount("");
+    setExpenseVendor("");
     setExpenseNote("");
     setIsQuickLogModalOpen(false); // Close the modal after saving
   };
@@ -132,18 +134,21 @@ export default function ExpensePage() {
           <NavItem icon={CircleDollarSign} title="Sales" khmerTitle="ការលក់" />
           <NavItem icon={Receipt} title="Expenses" khmerTitle="ចំណាយ" active />
           <NavItem icon={Users} title="Customers" khmerTitle="អតិថិជន" />
-          <NavItem icon={Package} title="Inventory" khmerTitle="ស្តុក" />
-          <NavItem icon={FileBarChart} title="Reports" khmerTitle="របាយការណ៍" />
         </nav>
 
         <div className="p-4 border-t border-slate-100">
           <NavItem icon={Settings} title="Settings" khmerTitle="ការកំណត់" />
-          <div className="mt-3 p-3.5 bg-slate-900 rounded-xl text-white">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Sparkles className="w-4 h-4 text-[#29B28D]" />
-              <span className="font-semibold text-sm">Premium Plan</span>
+          <div className="mt-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold text-sm text-slate-700">Free Plan</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ឥតគិតថ្លៃ</span>
             </div>
-            <p className="text-xs text-slate-400">AI Assistant Active</p>
+            <Link
+              href="/vendor/pricing"
+              className="block w-full text-center text-[13px] font-bold text-[#29B28D] hover:text-[#239979] bg-[#29B28D]/10 hover:bg-[#29B28D]/15 py-2 rounded-lg transition-colors"
+            >
+              Upgrade Plan ↗
+            </Link>
           </div>
         </div>
       </aside>
@@ -270,6 +275,23 @@ export default function ExpensePage() {
                   </div>
 
                   <div className="flex flex-col gap-4 items-stretch mt-2">
+                    {/* Vendor Input */}
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Users className="h-5 w-5 text-slate-400 group-focus-within:text-red-500 transition-colors" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="Supplier or Vendor Name"
+                        value={expenseVendor}
+                        onChange={(e) => setExpenseVendor(e.target.value)}
+                        className="block w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-[15px] placeholder-slate-400 focus:bg-white focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all min-h-[60px]"
+                      />
+                      <div className="absolute top-[-10px] left-4 bg-white px-1 text-[11px] font-bold text-slate-500">
+                        Vendor (អ្នកផ្គត់ផ្គង់)
+                      </div>
+                    </div>
+
                     {/* Optional Note */}
                     <div className="relative">
                       <input
@@ -292,13 +314,6 @@ export default function ExpensePage() {
                         <span className="text-[12px]">Add Receipt</span>
                       </button>
 
-                      <button
-                        type="button"
-                        onClick={() => setIsQuickLogModalOpen(false)}
-                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[16px] py-4 rounded-xl transition-all"
-                      >
-                        Cancel
-                      </button>
                       <button
                         type="submit"
                         className="flex-[2] bg-slate-900 hover:bg-slate-800 text-white font-bold text-[16px] py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
@@ -452,9 +467,17 @@ function NavItem({
   khmerTitle: string;
   active?: boolean;
 }) {
+  const hrefMap: Record<string, string> = {
+    Dashboard: "/vendor",
+    Sales: "/vendor/sales",
+    Expenses: "/vendor/expenses",
+    Customers: "/vendor/customer",
+    Settings: "/vendor/settings",
+  };
+
   return (
     <Link
-      href="#"
+      href={hrefMap[title] || "#"}
       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-colors min-h-[48px] ${
         active
           ? "bg-[#29B28D]/10 text-[#29B28D]"

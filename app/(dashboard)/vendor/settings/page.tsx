@@ -34,7 +34,7 @@ export default function SettingsPage() {
     phone: "012 345 678",
     email: "sokha.vendor@gmail.com",
     stallLocation: "Night Market, Stall B42",
-    plan: "Premium Plan",
+    plan: "Free Plan",
     role: "Vendor",
   };
 
@@ -77,8 +77,6 @@ export default function SettingsPage() {
           <NavItem icon={CircleDollarSign} title="Sales" khmerTitle="ការលក់" />
           <NavItem icon={Receipt} title="Expenses" khmerTitle="ចំណាយ" />
           <NavItem icon={Users} title="Customers" khmerTitle="អតិថិជន" />
-          <NavItem icon={Package} title="Inventory" khmerTitle="ស្តុក" />
-          <NavItem icon={FileBarChart} title="Reports" khmerTitle="របាយការណ៍" />
         </nav>
 
         <div className="p-4 border-t border-slate-100">
@@ -88,12 +86,17 @@ export default function SettingsPage() {
             khmerTitle="ការកំណត់"
             active
           />
-          <div className="mt-3 p-3.5 bg-slate-900 rounded-xl text-white">
-            <div className="flex items-center gap-1.5 mb-1">
-              <Sparkles className="w-4 h-4 text-[#29B28D]" />
-              <span className="font-semibold text-sm">Premium Plan</span>
+          <div className="mt-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold text-sm text-slate-700">Free Plan</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ឥតគិតថ្លៃ</span>
             </div>
-            <p className="text-xs text-slate-400">AI Assistant Active</p>
+            <Link
+              href="/vendor/pricing"
+              className="block w-full text-center text-[13px] font-bold text-[#29B28D] hover:text-[#239979] bg-[#29B28D]/10 hover:bg-[#29B28D]/15 py-2 rounded-lg transition-colors"
+            >
+              Upgrade Plan ↗
+            </Link>
           </div>
         </div>
       </aside>
@@ -204,25 +207,23 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="p-6">
-                <div className="bg-gradient-to-r from-[#29B28D]/10 to-transparent border border-[#29B28D]/20 rounded-xl p-5 mb-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <Sparkles className="w-5 h-5 text-[#29B28D]" />
                       <h4 className="font-bold text-[19px] text-slate-900">
                         {userProfile.plan}
                       </h4>
                     </div>
                     <p className="text-[14px] text-slate-600">
-                      Access to AI Forecasting, Inventory, and Advanced
-                      Analytics.
+                      Basic Sales Logging, Expense Tracking, and Analytics.
                     </p>
                   </div>
                   <div className="text-left md:text-right">
                     <p className="text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                      Next Billing Date
+                      Usage Limit
                     </p>
                     <p className="text-[15px] font-bold text-slate-900">
-                      April 25, 2026
+                      500 Logs / Month
                     </p>
                   </div>
                 </div>
@@ -280,26 +281,13 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-[15px] font-medium text-slate-900">
-                        Low Stock Alerts
+                        Daily Summary Notifications
                       </p>
                       <p className="text-[12px] text-slate-500">
-                        Notify when items fall below threshold
+                        Receive end-of-day sales summaries
                       </p>
                     </div>
                     {/* Mock Toggle Switch */}
-                    <div className="w-12 h-6 bg-[#29B28D] rounded-full relative cursor-pointer">
-                      <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 shadow-sm"></div>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[15px] font-medium text-slate-900">
-                        AI Sales Insights
-                      </p>
-                      <p className="text-[12px] text-slate-500">
-                        Daily weather and demand forecasts
-                      </p>
-                    </div>
                     <div className="w-12 h-6 bg-[#29B28D] rounded-full relative cursor-pointer">
                       <div className="w-4 h-4 bg-white rounded-full absolute right-1 top-1 shadow-sm"></div>
                     </div>
@@ -357,9 +345,17 @@ function NavItem({
   khmerTitle: string;
   active?: boolean;
 }) {
+  const hrefMap: Record<string, string> = {
+    Dashboard: "/vendor",
+    Sales: "/vendor/sales",
+    Expenses: "/vendor/expenses",
+    Customers: "/vendor/customer",
+    Settings: "/vendor/settings",
+  };
+
   return (
     <Link
-      href="#"
+      href={hrefMap[title] || "#"}
       className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-colors min-h-[48px] ${
         active
           ? "bg-[#29B28D]/10 text-[#29B28D]"

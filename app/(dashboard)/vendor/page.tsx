@@ -1,17 +1,19 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   LayoutDashboard, CircleDollarSign, Receipt, Users, Settings,
   Plus, TrendingUp, Menu, X, Bell, Lock, CheckCircle2,
   Search, ChevronRight, Minus, ShoppingCart, Zap,
+  Target, ArrowUpRight, ArrowDownRight, Clock,
+  PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 
 // ─── Types ─────────────────────────────────────────────────────────
-interface NavItemProps   { icon: React.ElementType; title: string; khmerTitle: string; href: string; active?: boolean; }
+interface NavItemProps     { icon: React.ElementType; title: string; khmerTitle: string; href: string; active?: boolean; collapsed?: boolean; }
 interface SummaryCardProps { title: string; khmerTitle: string; value: string; icon: React.ElementType; trend?: string; isPositive?: boolean; subtext?: string; highlight?: boolean; }
-interface Product        { id: string; name: string; price: number; }
+interface Product          { id: string; name: string; price: number; }
 
 // ─── Constants ─────────────────────────────────────────────────────
 const PRODUCT_LIBRARY: Product[] = [
@@ -23,65 +25,83 @@ const PRODUCT_LIBRARY: Product[] = [
   { id: "6", name: "Mango Sticky Rice", price: 2.00 },
 ];
 
-const EXP_CATS = [
-  { key: "ingredients", label: "Ingredients", emoji: "🥦" },
-  { key: "rent",        label: "Rent",        emoji: "🏪" },
-  { key: "transport",   label: "Transport",   emoji: "🛺" },
-  { key: "electricity", label: "Electric",    emoji: "⚡" },
-  { key: "labor",       label: "Labor",       emoji: "👷" },
-  { key: "other",       label: "Other",       emoji: "📦" },
+const EXP_BREAKDOWN = [
+  { key: "ingredients", label: "គ្រឿងផ្សំ",  labelEn: "Ingredients", pct: 43, color: "#3ecf8e" },
+  { key: "rent",        label: "ថ្លៃដូរ",     labelEn: "Rent",        pct: 25, color: "#3b82f6" },
+  { key: "labor",       label: "ពលកម្ម",     labelEn: "Labor",       pct: 16, color: "#f59e0b" },
+  { key: "electricity", label: "អំពើពន្លឺ",  labelEn: "Electric",    pct: 9,  color: "#ef4444" },
+  { key: "transport",   label: "អគ្គិសនី",   labelEn: "Transport",   pct: 5,  color: "#8b5cf6" },
+  { key: "other",       label: "ផ្សេងៗ",     labelEn: "Other",       pct: 2,  color: "#6366f1" },
 ];
 
-// ─── Palette ────────────────────────────────────────────────────────
-const C = {
-  accent:     "#3ecf8e",
-  accentDim:  "rgba(62,207,142,0.12)",
-  accentGlow: "rgba(62,207,142,0.28)",
-  sidebar:    "#0d1117",
-  sidebarHov: "#1c2330",
-  sidebarText:"#e6edf3",
-  sidebarMut: "#7d8590",
-  borderDark: "rgba(255,255,255,0.07)",
-  bg:         "#f0f2f5",
-  surface:    "#ffffff",
-  border:     "#e8eaed",
-  text:       "#111827",
-  muted:      "#6b7280",
-  danger:     "#ef4444",
-};
+const GOAL = { label: "Daily Revenue Goal", khmer: "គោលដៅចំណូលប្រចាំថ្ងៃ", current: 124.50, target: 200 };
 
 // ═══════════════════════════════════════════════════════════════════
 export default function VendorDashboard() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDayLocked,   setIsDayLocked]   = useState(false);
+  const [isSidebarOpen,      setIsSidebarOpen]      = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [userMenuOpen,       setUserMenuOpen]       = useState(false);
+  const [isDayLocked,        setIsDayLocked]        = useState(false);
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [searchQuery,   setSearchQuery]   = useState("");
   const [cart,          setCart]          = useState<{ product: Product; qty: number }[]>([]);
   const [customers,     setCustomers]     = useState(1);
-  const [expAmount,     setExpAmount]     = useState("");
-  const [expCat,        setExpCat]        = useState("");
-  const [expNote,       setExpNote]       = useState("");
   const [expLogged,     setExpLogged]     = useState(false);
-  const searchRef = useRef<HTMLInputElement>(null);
+  const searchRef    = useRef<HTMLInputElement>(null);
+  const quickSaleRef = useRef<HTMLDivElement>(null);
 
-  const summary = { sales: "$124.50", expenses: "$45.00", profit: "$79.50", customers: "42", avgCustomer: "$2.96" };
-  const usage = { used: 127, limit: 500 };
+  const summary  = { sales: "$124.50", expenses: "$45.00", profit: "$79.50", customers: "42", avgCustomer: "$2.96" };
+  const usage    = { used: 127, limit: 500 };
   const usagePct = Math.min((usage.used / usage.limit) * 100, 100);
+
+  // Greeting
+  const now  = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const greetingKh = hour < 12 ? "អរុណសួស្តី" : hour < 17 ? "ទិវាសួស្តី" : "សាយ័ណ្ហសួស្តី";
+  const dateStr = now.toLocaleDateString("en-KH", { weekday: "long", month: "long", day: "numeric" });
+
+  // Goal ring
+  const goalPct   = Math.min((GOAL.current / GOAL.target) * 100, 100);
+  const radius    = 38;
+  const circum    = 2 * Math.PI * radius;
+  const strokeDash = (goalPct / 100) * circum;
 
   const weeklyData   = [40, 70, 45, 90, 65, 120, 85];
   const weeklyLabels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const monthlyData   = [320, 480, 410, 540];
   const monthlyLabels = ["Week 1","Week 2","Week 3","Week 4"];
 
+  // Auto-close sidebar when going desktop
+  useEffect(() => {
+    const onResize = () => { if (window.innerWidth >= 1024) setIsSidebarOpen(false); };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // Focus search on open
   useEffect(() => {
     if (quickSaleOpen) setTimeout(() => searchRef.current?.focus(), 120);
   }, [quickSaleOpen]);
 
+  // Escape closes quick sale
   useEffect(() => {
     const fn = (e: KeyboardEvent) => { if (e.key === "Escape") closeQuickSale(); };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
   }, []);
+
+  // Click-outside closes quick sale
+  useEffect(() => {
+    if (!quickSaleOpen) return;
+    const fn = (e: MouseEvent) => {
+      if (quickSaleRef.current && !quickSaleRef.current.contains(e.target as Node)) {
+        closeQuickSale();
+      }
+    };
+    setTimeout(() => document.addEventListener("mousedown", fn), 0);
+    return () => document.removeEventListener("mousedown", fn);
+  }, [quickSaleOpen]);
 
   const filteredProducts = PRODUCT_LIBRARY.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -98,163 +118,272 @@ export default function VendorDashboard() {
   };
 
   const changeQty = (id: string, delta: number) =>
-    setCart(prev => prev.map(i => i.product.id === id ? { ...i, qty: i.qty + delta } : i).filter(i => i.qty > 0));
+    setCart(prev =>
+      prev.map(i => i.product.id === id ? { ...i, qty: i.qty + delta } : i).filter(i => i.qty > 0)
+    );
 
-  const cartTotal = cart.reduce((sum, i) => sum + i.product.price * i.qty, 0);
-  const cartItems = cart.reduce((sum, i) => sum + i.qty, 0);
+  const cartTotal  = cart.reduce((sum, i) => sum + i.product.price * i.qty, 0);
+  const cartItems  = cart.reduce((sum, i) => sum + i.qty, 0);
 
-  const completeSale = () => { setCart([]); setCustomers(1); setSearchQuery(""); setQuickSaleOpen(false); };
-  const closeQuickSale = () => { setQuickSaleOpen(false); setCart([]); setSearchQuery(""); };
+  const completeSale   = () => { setCart([]); setCustomers(1); setSearchQuery(""); setQuickSaleOpen(false); };
+  const closeQuickSale = useCallback(() => { setQuickSaleOpen(false); setCart([]); setSearchQuery(""); }, []);
 
   const logExpense = () => {
-    if (!expAmount || !expCat) return;
     setExpLogged(true);
-    setExpAmount(""); setExpCat(""); setExpNote("");
     setTimeout(() => setExpLogged(false), 2200);
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden", fontFamily: "inherit", background: C.bg, color: C.text }}>
+    <div className="flex h-screen overflow-hidden bg-[#f0f2f5] text-[#111827]" style={{ fontFamily: "inherit" }}>
 
-      {/* Backdrop — sidebar */}
+      {/* Mobile sidebar backdrop */}
       {isSidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden" style={{ background: "rgba(0,0,0,0.5)" }}
-          onClick={() => setIsSidebarOpen(false)} />
-      )}
-      {/* Backdrop — quick sale */}
-      {quickSaleOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(0,0,0,0.3)" }}
-          onClick={closeQuickSale} />
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
       )}
 
       {/* ══ SIDEBAR ════════════════════════════════════════════════ */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col transition-transform duration-300 ease-in-out ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
-        style={{ width: 224, background: C.sidebar, flexShrink: 0, height: "100vh" }}
+        className={`
+          fixed lg:static inset-y-0 left-0 z-50
+          flex flex-col h-screen shrink-0
+          bg-[#0d1117]
+          transition-all duration-300 ease-in-out
+          ${isSidebarCollapsed ? "w-[68px]" : "w-72"}
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
       >
         {/* Logo */}
-        <div style={{ padding: "20px 18px 16px", borderBottom: `1px solid ${C.borderDark}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Link href="/vendor" style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
-            <div style={{ width: 32, height: 32, borderRadius: 9, background: C.accent, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: C.sidebar, fontSize: 14 }}>P</div>
-            <span style={{ fontWeight: 800, fontSize: 14, color: C.sidebarText, letterSpacing: ".02em" }}>PsarPulse KH</span>
-          </Link>
-          <button className="lg:hidden" onClick={() => setIsSidebarOpen(false)} style={{ background: "none", border: "none", color: C.sidebarMut, cursor: "pointer" }}>
-            <X size={16} />
+        <div className={`flex items-center border-b border-white/[0.07] h-[70px] shrink-0 ${isSidebarCollapsed ? "justify-center px-0" : "justify-between px-6"}`}>
+          {!isSidebarCollapsed && (
+            <Link href="/vendor" className="flex items-center gap-3 no-underline">
+              <div className="w-10 h-10 rounded-[10px] bg-[#3ecf8e] flex items-center justify-center font-extrabold text-[#0d1117] text-[17px] shrink-0">
+                P
+              </div>
+              <span className="font-extrabold text-[16px] text-[#e6edf3] tracking-[0.02em] whitespace-nowrap">PsarPulse KH</span>
+            </Link>
+          )}
+          {isSidebarCollapsed && (
+            <Link href="/vendor" className="flex items-center justify-center no-underline">
+              <div className="w-10 h-10 rounded-[10px] bg-[#3ecf8e] flex items-center justify-center font-extrabold text-[#0d1117] text-[17px]">P</div>
+            </Link>
+          )}
+          <button
+            className="lg:hidden bg-transparent border-0 text-[#7d8590] cursor-pointer p-0 shrink-0"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <X size={18} />
           </button>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, padding: "10px 10px 0", overflowY: "auto" }}>
-          <NavItem icon={LayoutDashboard}  title="Dashboard" khmerTitle="ផ្ទាំងគ្រប់គ្រង" href="/vendor"         active />
-          <NavItem icon={CircleDollarSign} title="Sales"     khmerTitle="ការលក់"           href="/vendor/sales"       />
-          <NavItem icon={Receipt}          title="Expenses"  khmerTitle="ចំណាយ"            href="/vendor/expenses"    />
-          <NavItem icon={Users}            title="Customers" khmerTitle="អតិថិជន"          href="/vendor/customer"    />
+        <nav className={`flex-1 pt-3 overflow-y-auto ${isSidebarCollapsed ? "px-2" : "px-3"}`}>
+          <NavItem icon={LayoutDashboard}  title="Dashboard" khmerTitle="ផ្ទាំងគ្រប់គ្រង" href="/vendor"         active collapsed={isSidebarCollapsed} />
+          <NavItem icon={CircleDollarSign} title="Sales"     khmerTitle="ការលក់"           href="/vendor/sales"       collapsed={isSidebarCollapsed} />
+          <NavItem icon={Receipt}          title="Expenses"  khmerTitle="ចំណាយ"            href="/vendor/expenses"    collapsed={isSidebarCollapsed} />
+          <NavItem icon={Users}            title="Customers" khmerTitle="អតិថិជន"          href="/vendor/customer"    collapsed={isSidebarCollapsed} />
         </nav>
 
         {/* Footer */}
-        <div style={{ padding: 10, borderTop: `1px solid ${C.borderDark}` }}>
-          <NavItem icon={Settings} title="Settings" khmerTitle="ការកំណត់" href="/vendor/settings" />
-          <div style={{ margin: "8px 0 0", padding: "12px 14px", background: "rgba(62,207,142,0.08)", border: "1px solid rgba(62,207,142,0.18)", borderRadius: 11 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 9 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: C.sidebarText }}>Free Plan</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: C.sidebarMut, textTransform: "uppercase", letterSpacing: ".06em" }}>ឥតគិតថ្លៃ</span>
+        <div className={`pb-3 pt-2 border-t border-white/[0.07] ${isSidebarCollapsed ? "px-2" : "px-3"}`}>
+          <NavItem icon={Settings} title="Settings" khmerTitle="ការកំណត់" href="/vendor/settings" collapsed={isSidebarCollapsed} />
+          {!isSidebarCollapsed && (
+            <>
+              <div className="mt-2 px-4 py-3.5 rounded-[11px] bg-[rgba(62,207,142,0.08)] border border-[rgba(62,207,142,0.18)]">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[13px] font-semibold text-[#e6edf3]">Free Plan</span>
+                  <span className="text-[11px] font-bold text-[#7d8590]">ឥតគិតថ្លៃ</span>
+                </div>
+                <Link
+                  href="/vendor/pricing"
+                  className="block text-center text-[13px] font-bold text-[#3ecf8e] bg-[rgba(62,207,142,0.12)] py-2 rounded-[8px] no-underline hover:bg-[rgba(62,207,142,0.18)] transition-colors"
+                >
+                  Upgrade Plan ↗
+                </Link>
+              </div>
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(o => !o)}
+                  className="w-full flex items-center gap-3 px-3 pt-4 pb-2 cursor-pointer bg-transparent border-0 text-left"
+                >
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[13px] font-bold text-white shrink-0">
+                    SM
+                  </div>
+                  <span className="text-[14px] font-medium text-[#e6edf3] flex-1">Sok Maly</span>
+                  <ChevronRight size={15} className={`text-[#7d8590] transition-transform duration-200 ${userMenuOpen ? "-rotate-90" : "rotate-0"}`} />
+                </button>
+
+                {userMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
+                    <div className="absolute bottom-[calc(100%-8px)] left-3 right-3 z-50 bg-white rounded-[16px] shadow-[0_4px_32px_rgba(0,0,0,0.14)] border border-[#e8eaed] overflow-hidden">
+                      {/* User info row */}
+                      <div className="flex items-center gap-3 px-5 py-4">
+                        <div className="w-10 h-10 rounded-full border-2 border-[#e8eaed] flex items-center justify-center shrink-0">
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                        </div>
+                        <div>
+                          <div className="text-[14px] font-semibold text-[#111827] leading-tight">Sok Maly</div>
+                          <div className="text-[12px] text-[#6b7280] mt-0.5">sokmaly@gmail.com</div>
+                        </div>
+                      </div>
+                      <div className="border-t border-[#f0f2f5]" />
+                      {/* Menu items */}
+                      <div className="py-1">
+                        <Link href="/vendor/settings" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] no-underline hover:bg-[#f7f8fa] transition-colors">
+                          <div className="w-5 h-5 rounded-full border border-[#d1d5db] flex items-center justify-center shrink-0">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+                          </div>
+                          account
+                        </Link>
+                        <Link href="/vendor/pricing" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] no-underline hover:bg-[#f7f8fa] transition-colors">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+                          Premium Plan
+                        </Link>
+                        <button className="w-full flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] bg-transparent border-0 cursor-pointer hover:bg-[#f7f8fa] transition-colors text-left">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                          log out
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+          {isSidebarCollapsed && (
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[13px] font-bold text-white">SM</div>
             </div>
-            <Link href="/vendor/pricing" style={{ display: "block", textAlign: "center", fontSize: 12, fontWeight: 700, color: C.accent, background: "rgba(62,207,142,0.12)", padding: "7px 0", borderRadius: 7, textDecoration: "none" }}>
-              Upgrade Plan ↗
-            </Link>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 12px 4px" }}>
-            <div style={{ width: 30, height: 30, borderRadius: "50%", background: `linear-gradient(135deg,${C.accent},#1a9c65)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0 }}>SM</div>
-            <span style={{ fontSize: 13, fontWeight: 500, color: C.sidebarText, flex: 1 }}>Vendor</span>
-            <ChevronRight size={13} style={{ color: C.sidebarMut }} />
-          </div>
+          )}
         </div>
       </aside>
 
-      {/* ══ MAIN — scrollable ══════════════════════════════════════ */}
-      <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100vh", overflow: "hidden" }}>
+      {/* ══ MAIN ══════════════════════════════════════════════════ */}
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
         {/* ── Topbar ── */}
-        <header style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "0 28px", height: 58, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, position: "relative", zIndex: 30 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button className="lg:hidden" onClick={() => setIsSidebarOpen(true)} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted }}>
-              <Menu size={20} />
+        <header className="bg-white border-b border-[#e8eaed] px-5 lg:px-7 h-[70px] flex items-center justify-between shrink-0 relative z-30">
+          <div className="flex items-center gap-3">
+            {/* Hamburger — visible only on mobile */}
+            <button
+              className="flex lg:hidden items-center justify-center w-10 h-10 rounded-[10px] bg-transparent border-0 cursor-pointer text-[#6b7280] hover:bg-[#f0f2f5] transition-colors"
+              onClick={() => setIsSidebarOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu size={22} />
             </button>
-            <h1 style={{ fontWeight: 700, fontSize: 17, color: C.text }}>Overview</h1>
+            {/* Desktop collapse toggle */}
+            <button
+              className="hidden lg:flex items-center justify-center w-10 h-10 rounded-[10px] bg-transparent border-0 cursor-pointer text-[#6b7280] hover:bg-[#f0f2f5] transition-colors"
+              onClick={() => setIsSidebarCollapsed(c => !c)}
+            >
+              {isSidebarCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+            </button>
+            <h1 className="font-bold text-[20px] text-[#111827]">Overview</h1>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div className="flex items-center gap-[10px]">
 
-            {/* ─── QUICK SALE BUTTON + DROPDOWN ─── */}
-            <div style={{ position: "relative", zIndex: 50 }}>
+            {/* ─── QUICK SALE ─── */}
+            <div ref={quickSaleRef} className="relative">
               <button
                 onClick={() => setQuickSaleOpen(o => !o)}
-                style={{ display: "flex", alignItems: "center", gap: 7, background: quickSaleOpen ? C.sidebar : C.accent, color: quickSaleOpen ? C.sidebarText : C.sidebar, border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all .2s", boxShadow: quickSaleOpen ? "none" : `0 2px 14px ${C.accentGlow}` }}
+                className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer transition-all duration-200 ${
+                  quickSaleOpen
+                    ? "bg-[#0d1117] text-[#e6edf3]"
+                    : "bg-[#3ecf8e] text-[#0d1117] shadow-[0_2px_14px_rgba(62,207,142,0.28)]"
+                }`}
               >
-                {quickSaleOpen ? <><X size={14} /> Cancel</> : <><Zap size={14} /> Quick Sale</>}
+                {quickSaleOpen
+                  ? <><X size={14} /> Cancel</>
+                  : <><Zap size={14} /> Quick Sale</>
+                }
                 {cartItems > 0 && !quickSaleOpen && (
-                  <span style={{ background: C.sidebar, color: C.accent, borderRadius: "50%", width: 18, height: 18, fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 2 }}>
+                  <span className="bg-[#0d1117] text-[#3ecf8e] rounded-full w-[18px] h-[18px] text-[10px] font-extrabold flex items-center justify-center ml-0.5">
                     {cartItems}
                   </span>
                 )}
               </button>
 
-              {/* Dropdown */}
+              {/* Dropdown panel */}
               {quickSaleOpen && (
-                <div style={{ position: "absolute", top: "calc(100% + 10px)", right: 0, width: 330, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: "0 20px 56px rgba(0,0,0,0.15)", zIndex: 60, overflow: "hidden" }}>
-                  <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 8 }}>
-                    <ShoppingCart size={14} style={{ color: C.accent }} />
-                    <span style={{ fontWeight: 700, fontSize: 14, color: C.text }}>Quick Sale</span>
-                    <span style={{ fontSize: 11, color: C.muted, marginLeft: "auto" }}>ការលក់រហ័ស</span>
+                <div
+                  className="absolute top-[calc(100%+10px)] right-0 w-[330px] bg-white border border-[#e8eaed] rounded-[14px] shadow-[0_20px_56px_rgba(0,0,0,0.18)] overflow-hidden"
+                  style={{ zIndex: 9999 }}
+                  onMouseDown={e => e.stopPropagation()}
+                >
+                  {/* Header */}
+                  <div className="flex items-center gap-2 px-[18px] py-[14px] border-b border-[#e8eaed]">
+                    <ShoppingCart size={14} className="text-[#3ecf8e]" />
+                    <span className="font-bold text-sm text-[#111827]">Quick Sale</span>
+                    <span className="text-[11px] text-[#6b7280] ml-auto">ការលក់រហ័ស</span>
                   </div>
 
-                  <div style={{ padding: "14px 18px" }}>
-                    {/* Search */}
-                    <div style={{ position: "relative", marginBottom: 14 }}>
-                      <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: C.muted, pointerEvents: "none" }} />
+                  <div className="p-[14px_18px]">
+                    {/* Search with autocomplete */}
+                    <div className="relative mb-[14px]">
+                      <Search size={13} className="absolute left-[11px] top-1/2 -translate-y-1/2 text-[#6b7280] pointer-events-none" />
                       <input
                         ref={searchRef}
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                         placeholder="Search product..."
-                        style={{ width: "100%", padding: "9px 11px 9px 33px", background: "#f7f8fa", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, fontFamily: "inherit", outline: "none", color: C.text }}
-                        onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
-                        onBlur={e  => (e.currentTarget.style.borderColor = C.border)}
+                        className="w-full pl-[33px] pr-[11px] py-[9px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[9px] text-[13px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
+                        style={{ fontFamily: "inherit" }}
                       />
                       {searchQuery && (
-                        <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: C.surface, border: `1px solid ${C.border}`, borderTop: "none", borderRadius: "0 0 9px 9px", zIndex: 10, boxShadow: "0 8px 24px rgba(0,0,0,.08)", overflow: "hidden" }}>
+                        <div
+                          className="absolute top-full left-0 right-0 bg-white border border-[#e8eaed] border-t-0 rounded-b-[9px] overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
+                          style={{ zIndex: 10 }}
+                        >
                           {filteredProducts.length ? filteredProducts.map(p => (
-                            <button key={p.id} onClick={() => addToCart(p)}
-                              style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 13px", background: "none", border: "none", cursor: "pointer", fontSize: 13, fontFamily: "inherit", color: C.text, textAlign: "left" }}
-                              onMouseEnter={e => (e.currentTarget.style.background = "#f7f8fa")}
-                              onMouseLeave={e => (e.currentTarget.style.background = "none")}
+                            <button
+                              key={p.id}
+                              onMouseDown={e => { e.preventDefault(); addToCart(p); }}
+                              className="w-full flex justify-between items-center px-[13px] py-[9px] bg-transparent border-0 cursor-pointer text-[13px] text-[#111827] text-left hover:bg-[#f7f8fa]"
+                              style={{ fontFamily: "inherit" }}
                             >
                               <span>{p.name}</span>
-                              <span style={{ color: C.accent, fontWeight: 700 }}>${p.price.toFixed(2)}</span>
+                              <span className="text-[#3ecf8e] font-bold">${p.price.toFixed(2)}</span>
                             </button>
-                          )) : <div style={{ padding: "10px 13px", fontSize: 12.5, color: C.muted }}>No products found</div>}
+                          )) : (
+                            <div className="px-[13px] py-[10px] text-[12.5px] text-[#6b7280]">No products found</div>
+                          )}
                         </div>
                       )}
                     </div>
 
                     {/* Product grid */}
                     {!searchQuery && (
-                      <div style={{ marginBottom: 14 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 8 }}>Tap to add</div>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                      <div className="mb-[14px]">
+                        <div className="text-[10px] font-bold text-[#6b7280] uppercase tracking-[0.07em] mb-2">Tap to add</div>
+                        <div className="grid grid-cols-2 gap-1.5">
                           {PRODUCT_LIBRARY.map(p => {
                             const inCart = cart.find(i => i.product.id === p.id);
                             return (
-                              <button key={p.id} onClick={() => addToCart(p)}
-                                style={{ padding: "9px 12px", background: inCart ? C.accentDim : "#f7f8fa", border: `1px solid ${inCart ? C.accent : C.border}`, borderRadius: 9, cursor: "pointer", textAlign: "left", transition: "all .12s", position: "relative" }}
-                                onMouseEnter={e => { if (!inCart) (e.currentTarget as HTMLButtonElement).style.background = "#eff0f2"; }}
-                                onMouseLeave={e => { if (!inCart) (e.currentTarget as HTMLButtonElement).style.background = "#f7f8fa"; }}
+                              <button
+                                key={p.id}
+                                onMouseDown={e => { e.preventDefault(); addToCart(p); }}
+                                className={`px-3 py-[9px] rounded-[9px] text-left cursor-pointer transition-all duration-[120ms] relative border ${
+                                  inCart
+                                    ? "bg-[rgba(62,207,142,0.12)] border-[#3ecf8e]"
+                                    : "bg-[#f7f8fa] border-[#e8eaed] hover:bg-[#eff0f2]"
+                                }`}
                               >
-                                <div style={{ fontSize: 12, fontWeight: 600, color: inCart ? C.accent : C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 2 }}>{p.name}</div>
-                                <div style={{ fontSize: 11, color: inCart ? C.accent : C.muted, fontWeight: 700 }}>${p.price.toFixed(2)}</div>
-                                {inCart && <span style={{ position: "absolute", top: 6, right: 8, background: C.accent, color: C.sidebar, borderRadius: "50%", width: 17, height: 17, fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{inCart.qty}</span>}
+                                <div className={`text-xs font-semibold truncate mb-0.5 ${inCart ? "text-[#3ecf8e]" : "text-[#111827]"}`}>
+                                  {p.name}
+                                </div>
+                                <div className={`text-[11px] font-bold ${inCart ? "text-[#3ecf8e]" : "text-[#6b7280]"}`}>
+                                  ${p.price.toFixed(2)}
+                                </div>
+                                {inCart && (
+                                  <span className="absolute top-1.5 right-2 bg-[#3ecf8e] text-[#0d1117] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
+                                    {inCart.qty}
+                                  </span>
+                                )}
                               </button>
                             );
                           })}
@@ -262,42 +391,68 @@ export default function VendorDashboard() {
                       </div>
                     )}
 
-                    {/* Cart */}
+                    {/* Cart items */}
                     {cart.length > 0 && (
-                      <div style={{ marginBottom: 12, maxHeight: 150, overflowY: "auto" }}>
+                      <div className="mb-3 max-h-[140px] overflow-y-auto">
                         {cart.map(item => (
-                          <div key={item.product.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: "1px solid #f0f2f5" }}>
-                            <span style={{ fontSize: 12.5, flex: 1, color: C.text }}>{item.product.name}</span>
-                            <div style={{ display: "flex", alignItems: "center", background: "#f7f8fa", border: `1px solid ${C.border}`, borderRadius: 7, overflow: "hidden" }}>
-                              <button onClick={() => changeQty(item.product.id, -1)} style={{ width: 24, height: 24, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}><Minus size={10} /></button>
-                              <span style={{ fontSize: 12, fontWeight: 700, minWidth: 18, textAlign: "center" }}>{item.qty}</span>
-                              <button onClick={() => changeQty(item.product.id, 1)} style={{ width: 24, height: 24, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}><Plus size={10} /></button>
+                          <div key={item.product.id} className="flex items-center gap-2 py-[7px] border-b border-[#f0f2f5]">
+                            <span className="text-[12.5px] flex-1 text-[#111827]">{item.product.name}</span>
+                            <div className="flex items-center bg-[#f7f8fa] border border-[#e8eaed] rounded-[7px] overflow-hidden">
+                              <button
+                                onMouseDown={e => { e.preventDefault(); changeQty(item.product.id, -1); }}
+                                className="w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center text-[#6b7280] hover:bg-[#e8eaed]"
+                              >
+                                <Minus size={10} />
+                              </button>
+                              <span className="text-xs font-bold min-w-[18px] text-center">{item.qty}</span>
+                              <button
+                                onMouseDown={e => { e.preventDefault(); changeQty(item.product.id, 1); }}
+                                className="w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center text-[#6b7280] hover:bg-[#e8eaed]"
+                              >
+                                <Plus size={10} />
+                              </button>
                             </div>
-                            <span style={{ fontSize: 12.5, fontWeight: 700, minWidth: 48, textAlign: "right" }}>${(item.product.price * item.qty).toFixed(2)}</span>
+                            <span className="text-[12.5px] font-bold min-w-[48px] text-right">${(item.product.price * item.qty).toFixed(2)}</span>
                           </div>
                         ))}
                       </div>
                     )}
 
                     {/* Customers */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid #f0f2f5", marginBottom: 12 }}>
-                      <span style={{ fontSize: 12, color: C.muted, fontWeight: 500 }}>Customers · អតិថិជន</span>
-                      <div style={{ display: "flex", alignItems: "center", background: "#f7f8fa", border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden" }}>
-                        <button onClick={() => setCustomers(c => Math.max(1, c - 1))} style={{ width: 28, height: 28, background: "none", border: "none", cursor: "pointer", color: C.muted, display: "flex", alignItems: "center", justifyContent: "center" }}><Minus size={11} /></button>
-                        <span style={{ fontSize: 13, fontWeight: 700, minWidth: 20, textAlign: "center" }}>{customers}</span>
-                        <button onClick={() => setCustomers(c => c + 1)} style={{ width: 28, height: 28, background: "none", border: "none", cursor: "pointer", color: C.muted, display: "flex", alignItems: "center", justifyContent: "center" }}><Plus size={11} /></button>
+                    <div className="flex items-center justify-between py-2 border-t border-[#f0f2f5] mb-3">
+                      <span className="text-xs text-[#6b7280] font-medium">Customers · អតិថិជន</span>
+                      <div className="flex items-center bg-[#f7f8fa] border border-[#e8eaed] rounded-[8px] overflow-hidden">
+                        <button
+                          onMouseDown={e => { e.preventDefault(); setCustomers(c => Math.max(1, c - 1)); }}
+                          className="w-7 h-7 bg-transparent border-0 cursor-pointer text-[#6b7280] flex items-center justify-center hover:bg-[#e8eaed]"
+                        >
+                          <Minus size={11} />
+                        </button>
+                        <span className="text-[13px] font-bold min-w-5 text-center">{customers}</span>
+                        <button
+                          onMouseDown={e => { e.preventDefault(); setCustomers(c => c + 1); }}
+                          className="w-7 h-7 bg-transparent border-0 cursor-pointer text-[#6b7280] flex items-center justify-center hover:bg-[#e8eaed]"
+                        >
+                          <Plus size={11} />
+                        </button>
                       </div>
                     </div>
 
-                    {/* Total + complete */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                      <span style={{ fontSize: 12, color: C.muted }}>{cartItems} item{cartItems !== 1 ? "s" : ""}</span>
-                      <span style={{ fontWeight: 800, fontSize: 20, color: C.accent }}>${cartTotal.toFixed(2)}</span>
+                    {/* Total */}
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs text-[#6b7280]">{cartItems} item{cartItems !== 1 ? "s" : ""}</span>
+                      <span className="font-extrabold text-xl text-[#3ecf8e]">${cartTotal.toFixed(2)}</span>
                     </div>
+
+                    {/* Complete sale */}
                     <button
-                      onClick={completeSale}
+                      onMouseDown={e => { e.preventDefault(); if (cart.length) completeSale(); }}
                       disabled={cart.length === 0}
-                      style={{ width: "100%", padding: "12px", background: cart.length ? C.accent : "#f0f2f5", color: cart.length ? C.sidebar : C.muted, fontWeight: 700, fontSize: 13.5, border: "none", borderRadius: 10, cursor: cart.length ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: cart.length ? `0 4px 14px ${C.accentGlow}` : "none" }}
+                      className={`w-full py-3 font-bold text-[13.5px] border-0 rounded-[10px] flex items-center justify-center gap-[7px] transition-all ${
+                        cart.length
+                          ? "bg-[#3ecf8e] text-[#0d1117] cursor-pointer shadow-[0_4px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a]"
+                          : "bg-[#f0f2f5] text-[#6b7280] cursor-not-allowed"
+                      }`}
                     >
                       <CheckCircle2 size={15} /> Complete Sale
                     </button>
@@ -306,37 +461,103 @@ export default function VendorDashboard() {
               )}
             </div>
 
-            <button style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, padding: 7, borderRadius: 8 }}>
-              <Bell size={18} />
-            </button>
-            <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.accentDim, border: `1.5px solid ${C.accent}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: C.accent }}>SM</div>
+            <div className="w-[34px] h-[34px] rounded-full bg-[rgba(62,207,142,0.12)] border-[1.5px] border-[#3ecf8e] flex items-center justify-center text-[11px] font-bold text-[#3ecf8e]">
+              SM
+            </div>
           </div>
         </header>
 
         {/* ── Scrollable page body ── */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "26px 36px" }}>
-          <div style={{ maxWidth: 1400, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+        <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px]">
+          <div className="max-w-[1400px] mx-auto flex flex-col gap-5">
+
+            {/* ══ WELCOME BANNER ══════════════════════════════════ */}
+            <div className="bg-[#0d1117] rounded-[14px] border border-white/[0.06] px-[26px] py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+              {/* Left — greeting */}
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[17px] font-extrabold text-white shrink-0 shadow-[0_0_0_3px_rgba(62,207,142,0.2)]">
+                  SM
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[18px] font-extrabold text-[#e6edf3]">{greeting}, Sok Maly 👋</span>
+                  </div>
+                  <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2">
+                    <span>{greetingKh}</span>
+                    <span className="w-[3px] h-[3px] rounded-full bg-[#4d5562] inline-block" />
+                    <Clock size={10} className="inline-block" />
+                    <span>{dateStr}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right — goal ring */}
+              <div className="flex items-center gap-5 sm:shrink-0">
+                {/* SVG ring */}
+                <div className="relative w-[88px] h-[88px]">
+                  <svg width="88" height="88" className="-rotate-90">
+                    <circle cx="44" cy="44" r={radius} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7" />
+                    <circle
+                      cx="44" cy="44" r={radius}
+                      fill="none"
+                      stroke="#3ecf8e"
+                      strokeWidth="7"
+                      strokeLinecap="round"
+                      strokeDasharray={`${strokeDash} ${circum}`}
+                      style={{ transition: "stroke-dasharray 1s ease" }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-[15px] font-extrabold text-[#e6edf3] leading-none">{Math.round(goalPct)}%</span>
+                    <span className="text-[9px] text-[#7d8590] mt-0.5">of goal</span>
+                  </div>
+                </div>
+                {/* Goal text */}
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Target size={12} className="text-[#3ecf8e]" />
+                    <span className="text-[11px] font-bold text-[#3ecf8e] uppercase tracking-[0.06em]">Daily Goal</span>
+                  </div>
+                  <div className="text-[22px] font-extrabold text-[#e6edf3] leading-none">${GOAL.current.toFixed(2)}</div>
+                  <div className="text-[11px] text-[#7d8590] mt-1">of ${GOAL.target.toFixed(2)} target</div>
+                  <div className="mt-2 w-[120px] h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#3ecf8e] rounded-full transition-[width] duration-700"
+                      style={{ width: `${goalPct}%` }}
+                    />
+                  </div>
+                  <div className="text-[10px] text-[#7d8590] mt-1">{GOAL.khmer}</div>
+                </div>
+              </div>
+            </div>
 
             {/* ── Usage bar ── */}
-            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "16px 22px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div className="bg-white border border-[#e8eaed] rounded-[14px] px-[22px] py-4">
+              <div className="flex items-center justify-between mb-[10px]">
                 <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 600, color: C.text }}>Monthly Sales Logs</div>
-                  <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>កំណត់ត្រាលក់ប្រចាំខែ</div>
+                  <div className="text-[13.5px] font-semibold text-[#111827]">Monthly Sales Logs</div>
+                  <div className="text-[11px] text-[#6b7280] mt-px">កំណត់ត្រាលក់ប្រចាំខែ</div>
                 </div>
-                <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{usage.used} <span style={{ color: C.muted, fontWeight: 400 }}>/ {usage.limit}</span></span>
+                <span className="text-sm font-bold text-[#111827]">
+                  {usage.used} <span className="text-[#6b7280] font-normal">/ {usage.limit}</span>
+                </span>
               </div>
-              <div style={{ width: "100%", height: 6, background: "#f0f2f5", borderRadius: 99, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${usagePct}%`, background: usagePct > 80 ? "#f59e0b" : C.accent, borderRadius: 99, transition: "width .6s ease" }} />
+              <div className="w-full h-1.5 bg-[#f0f2f5] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-[width] duration-[600ms] ease-in-out"
+                  style={{ width: `${usagePct}%`, background: usagePct > 80 ? "#f59e0b" : "#3ecf8e" }}
+                />
               </div>
-              <div style={{ fontSize: 12, color: C.muted, marginTop: 8 }}>
+              <div className="text-xs text-[#6b7280] mt-2">
                 {usage.limit - usage.used} logs remaining · Resets monthly ·{" "}
-                <Link href="/vendor/pricing" style={{ color: C.accent, textDecoration: "none", fontWeight: 600 }}>Upgrade for unlimited</Link>
+                <Link href="/vendor/pricing" className="text-[#3ecf8e] no-underline font-semibold">
+                  Upgrade for unlimited
+                </Link>
               </div>
             </div>
 
             {/* ── Metric cards ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <SummaryCard title="Total Sales"    khmerTitle="ការលក់សរុប"   value={summary.sales}     icon={CircleDollarSign} trend="+12%" isPositive />
               <SummaryCard title="Total Expenses" khmerTitle="ចំណាយសរុប"   value={summary.expenses}  icon={Receipt}          trend="-5%"  isPositive />
               <SummaryCard title="Net Profit"     khmerTitle="ប្រាក់ចំណេញ" value={summary.profit}    icon={TrendingUp}       trend="+18%" isPositive highlight />
@@ -344,170 +565,176 @@ export default function VendorDashboard() {
             </div>
 
             {/* ── Charts ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <ChartCard title="Weekly Revenue" khmer="ចំណូលប្រចាំសប្តាហ៍">
-                <div style={{ height: 180, display: "flex", alignItems: "flex-end", gap: 7 }}>
+                <div className="h-[180px] flex items-end gap-[7px]">
                   {weeklyData.map((v, i) => (
-                    <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-                      <div style={{ width: "100%", height: 155, position: "relative", background: C.accentDim, borderRadius: "7px 7px 0 0" }}>
-                        <div style={{ position: "absolute", bottom: 0, width: "100%", background: C.accent, borderRadius: "7px 7px 0 0", height: `${v}%`, transition: "height .5s ease" }} />
+                    <div key={i} className="flex-1 flex flex-col items-center gap-[5px]">
+                      <div className="w-full h-[155px] relative bg-[rgba(62,207,142,0.12)] rounded-t-[7px]">
+                        <div
+                          className="absolute bottom-0 w-full bg-[#3ecf8e] rounded-t-[7px] transition-[height] duration-500 ease-in-out"
+                          style={{ height: `${v}%` }}
+                        />
                       </div>
-                      <span style={{ fontSize: 10, color: C.muted }}>{weeklyLabels[i]}</span>
+                      <span className="text-[10px] text-[#6b7280]">{weeklyLabels[i]}</span>
                     </div>
                   ))}
                 </div>
               </ChartCard>
 
               <ChartCard title="Monthly Revenue" khmer="ចំណូលប្រចាំខែ">
-                <div style={{ height: 180, display: "flex", alignItems: "flex-end", gap: 14 }}>
+                <div className="h-[180px] flex items-end gap-3.5">
                   {monthlyData.map((v, i) => (
-                    <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: C.muted }}>${v}</span>
-                      <div style={{ width: "100%", flex: 1, position: "relative", background: C.accentDim, borderRadius: "7px 7px 0 0", minHeight: 10 }}>
-                        <div style={{ position: "absolute", bottom: 0, width: "100%", background: C.accent, borderRadius: "7px 7px 0 0", height: `${(v / 600) * 100}%`, transition: "height .5s ease" }} />
+                    <div key={i} className="flex-1 flex flex-col items-center gap-[5px]">
+                      <span className="text-[11px] font-bold text-[#6b7280]">${v}</span>
+                      <div className="w-full flex-1 relative bg-[rgba(62,207,142,0.12)] rounded-t-[7px] min-h-[10px]">
+                        <div
+                          className="absolute bottom-0 w-full bg-[#3ecf8e] rounded-t-[7px] transition-[height] duration-500 ease-in-out"
+                          style={{ height: `${(v / 600) * 100}%` }}
+                        />
                       </div>
-                      <span style={{ fontSize: 10, color: C.muted }}>{monthlyLabels[i]}</span>
+                      <span className="text-[10px] text-[#6b7280]">{monthlyLabels[i]}</span>
                     </div>
                   ))}
                 </div>
               </ChartCard>
             </div>
 
-            {/* ── Log Expense — full width horizontal bar ── */}
-            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "22px 26px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+            {/* ── Expenses Breakdown ── */}
+            <div className="bg-white border border-[#e8eaed] rounded-[14px] px-[26px] py-[22px]">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-[20px]">
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Log Expense</div>
-                  <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>ចំណាយ · Quick entry</div>
+                  <div className="text-sm font-semibold text-[#111827]">Expenses</div>
+                  <div className="text-[11px] text-[#6b7280] mt-0.5">ចំណាយតាមប្រភេទ</div>
                 </div>
                 {expLogged && (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 20, background: C.accentDim, color: C.accent, fontSize: 12, fontWeight: 700, border: `1px solid rgba(62,207,142,.2)` }}>
+                  <span className="inline-flex items-center gap-[5px] px-3 py-[5px] rounded-full bg-[rgba(62,207,142,0.12)] text-[#3ecf8e] text-xs font-bold border border-[rgba(62,207,142,0.2)]">
                     <CheckCircle2 size={13} /> Logged!
                   </span>
                 )}
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "170px 1fr 1fr auto", gap: 16, alignItems: "start" }}>
-                {/* Amount */}
-                <div>
-                  <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 7 }}>Amount</div>
-                  <div style={{ position: "relative" }}>
-                    <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", fontSize: 13, fontWeight: 700, color: C.muted }}>$</span>
+              {/* Horizontal bar chart rows */}
+              <div className="flex flex-col gap-[16px] mb-[24px]">
+                {EXP_BREAKDOWN.map(item => (
+                  <div key={item.key} className="flex items-center gap-4">
+                    {/* Khmer label */}
+                    <div className="w-[90px] shrink-0">
+                      <div className="text-[12.5px] font-medium text-[#111827] leading-tight">{item.label}</div>
+                    </div>
+                    {/* Track */}
+                    <div className="flex-1 h-[6px] bg-[#f0f2f5] rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-[width] duration-700 ease-out"
+                        style={{ width: `${item.pct}%`, background: item.color }}
+                      />
+                    </div>
+                    {/* Percent */}
+                    <div className="w-[36px] text-right text-[12.5px] font-bold text-[#6b7280] shrink-0">
+                      {item.pct}%
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Quick log form */}
+              <div className="pt-[18px] border-t border-[#f0f2f5]">
+                <div className="text-[10.5px] font-bold text-[#6b7280] uppercase tracking-[0.06em] mb-3">
+                  Quick Log · ចំណាយ
+                </div>
+                <div className="flex flex-wrap gap-3 items-end">
+                  {/* Amount */}
+                  <div className="relative w-[140px]">
+                    <span className="absolute left-[13px] top-1/2 -translate-y-1/2 text-[13px] font-bold text-[#6b7280]">$</span>
                     <input
-                      type="number" placeholder="0.00" value={expAmount}
-                      onChange={e => setExpAmount(e.target.value)}
-                      style={{ width: "100%", padding: "11px 12px 11px 28px", background: "#f7f8fa", border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 17, fontWeight: 700, fontFamily: "inherit", outline: "none", color: C.text }}
-                      onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
-                      onBlur={e  => (e.currentTarget.style.borderColor = C.border)}
+                      type="number"
+                      placeholder="0.00"
+                      className="w-full pl-7 pr-3 py-[10px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[10px] text-[15px] font-bold outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
+                      style={{ fontFamily: "inherit" }}
                     />
                   </div>
-                </div>
-
-                {/* Category */}
-                <div>
-                  <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 7 }}>Category</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-                    {EXP_CATS.map(cat => (
-                      <button key={cat.key} onClick={() => setExpCat(expCat === cat.key ? "" : cat.key)}
-                        style={{ padding: "8px 6px", borderRadius: 9, fontSize: 11.5, fontWeight: 600, border: `1px solid ${expCat === cat.key ? C.accent : C.border}`, background: expCat === cat.key ? C.accentDim : "#f7f8fa", color: expCat === cat.key ? C.accent : C.muted, cursor: "pointer", transition: "all .12s", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+                  {/* Category pills — clicking one logs */}
+                  <div className="flex flex-wrap gap-[6px]">
+                    {EXP_BREAKDOWN.map(cat => (
+                      <button
+                        key={cat.key}
+                        onClick={logExpense}
+                        className="px-3 py-[7px] rounded-[8px] text-[12px] font-semibold border border-[#e8eaed] bg-[#f7f8fa] text-[#6b7280] cursor-pointer hover:border-[#3ecf8e] hover:text-[#3ecf8e] hover:bg-[rgba(62,207,142,0.08)] transition-all duration-150"
                       >
-                        <span style={{ fontSize: 13 }}>{cat.emoji}</span>
-                        <span>{cat.label}</span>
+                        {cat.labelEn}
                       </button>
                     ))}
                   </div>
-                </div>
-
-                {/* Note */}
-                <div>
-                  <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 7 }}>
-                    Note <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span>
-                  </div>
+                  {/* Note */}
                   <input
-                    type="text" placeholder="e.g. Morning market run" value={expNote}
-                    onChange={e => setExpNote(e.target.value)}
-                    style={{ width: "100%", padding: "11px 14px", background: "#f7f8fa", border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 13.5, fontFamily: "inherit", outline: "none", color: C.text }}
-                    onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
-                    onBlur={e  => (e.currentTarget.style.borderColor = C.border)}
+                    type="text"
+                    placeholder="Note (optional)"
+                    className="flex-1 min-w-[160px] px-[14px] py-[10px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[10px] text-[13px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
+                    style={{ fontFamily: "inherit" }}
                   />
-                </div>
-
-                {/* Submit */}
-                <div style={{ paddingTop: 26 }}>
-                  <button
-                    onClick={logExpense}
-                    disabled={!expAmount || !expCat}
-                    style={{ padding: "11px 22px", background: expAmount && expCat ? C.sidebar : "#f0f2f5", color: expAmount && expCat ? C.sidebarText : C.muted, fontWeight: 700, fontSize: 13.5, border: "none", borderRadius: 10, cursor: expAmount && expCat ? "pointer" : "not-allowed", display: "flex", alignItems: "center", gap: 7, transition: "all .15s", whiteSpace: "nowrap" }}
-                    onMouseEnter={e => { if (expAmount && expCat) (e.currentTarget as HTMLButtonElement).style.background = C.sidebarHov; }}
-                    onMouseLeave={e => { if (expAmount && expCat) (e.currentTarget as HTMLButtonElement).style.background = C.sidebar; }}
-                  >
-                    <Receipt size={15} /> Log Expense
-                  </button>
                 </div>
               </div>
             </div>
 
-            {/* ── End of Day — full black ── */}
-            <div style={{ background: C.sidebar, borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
-              <div style={{ padding: "18px 26px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            {/* ── End of Day ── */}
+            <div className="bg-[#0d1117] rounded-[14px] border border-white/[0.06] overflow-hidden">
+              <div className="px-[26px] py-[18px] border-b border-white/[0.07] flex items-center justify-between">
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: C.sidebarText }}>End-of-Day Summary</div>
-                  <div style={{ fontSize: 11, color: C.sidebarMut, marginTop: 2 }}>សង្ខេបចុងថ្ងៃ</div>
+                  <div className="text-[15px] font-bold text-[#e6edf3]">End-of-Day Summary</div>
+                  <div className="text-[11px] text-[#7d8590] mt-0.5">សង្ខេបចុងថ្ងៃ</div>
                 </div>
                 {isDayLocked && (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 20, background: "rgba(62,207,142,0.15)", color: C.accent, fontSize: 12, fontWeight: 700, border: "1px solid rgba(62,207,142,0.25)" }}>
+                  <span className="inline-flex items-center gap-[5px] px-[14px] py-1.5 rounded-full bg-[rgba(62,207,142,0.15)] text-[#3ecf8e] text-xs font-bold border border-[rgba(62,207,142,0.25)]">
                     <CheckCircle2 size={13} /> Day Locked
                   </span>
                 )}
               </div>
 
-              <div style={{ padding: "22px 26px" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 18 }}>
-                  <div style={{ padding: "18px 20px", background: "rgba(255,255,255,0.05)", borderRadius: 12, textAlign: "center", border: "1px solid rgba(255,255,255,0.07)" }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: C.sidebarMut, marginBottom: 2 }}>Total Sales</div>
-                    <div style={{ fontSize: 10, color: "#4d5562", marginBottom: 10 }}>ការលក់សរុប</div>
-                    <div style={{ fontWeight: 700, fontSize: 26, color: C.sidebarText }}>{summary.sales}</div>
+              <div className="px-[26px] py-[22px]">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-[18px]">
+                  <div className="px-5 py-[18px] bg-white/[0.05] rounded-xl text-center border border-white/[0.07]">
+                    <div className="text-[11px] font-semibold text-[#7d8590] mb-0.5">Total Sales</div>
+                    <div className="text-[10px] text-[#4d5562] mb-[10px]">ការលក់សរុប</div>
+                    <div className="font-bold text-[26px] text-[#e6edf3]">{summary.sales}</div>
                   </div>
-                  <div style={{ padding: "18px 20px", background: "rgba(239,68,68,0.08)", borderRadius: 12, textAlign: "center", border: "1px solid rgba(239,68,68,0.15)" }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(239,68,68,0.85)", marginBottom: 2 }}>Total Expenses</div>
-                    <div style={{ fontSize: 10, color: "#4d5562", marginBottom: 10 }}>ចំណាយសរុប</div>
-                    <div style={{ fontWeight: 700, fontSize: 26, color: C.danger }}>{summary.expenses}</div>
+                  <div className="px-5 py-[18px] bg-[rgba(239,68,68,0.08)] rounded-xl text-center border border-[rgba(239,68,68,0.15)]">
+                    <div className="text-[11px] font-semibold text-[rgba(239,68,68,0.85)] mb-0.5">Total Expenses</div>
+                    <div className="text-[10px] text-[#4d5562] mb-[10px]">ចំណាយសរុប</div>
+                    <div className="font-bold text-[26px] text-[#ef4444]">{summary.expenses}</div>
                   </div>
-                  <div style={{ padding: "18px 20px", background: "rgba(62,207,142,0.10)", borderRadius: 12, textAlign: "center", border: "1px solid rgba(62,207,142,0.20)" }}>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: C.accent, marginBottom: 2 }}>Net Profit</div>
-                    <div style={{ fontSize: 10, color: "#4d5562", marginBottom: 10 }}>ប្រាក់ចំណេញ</div>
-                    <div style={{ fontWeight: 700, fontSize: 26, color: C.accent }}>{summary.profit}</div>
+                  <div className="px-5 py-[18px] bg-[rgba(62,207,142,0.10)] rounded-xl text-center border border-[rgba(62,207,142,0.20)]">
+                    <div className="text-[11px] font-semibold text-[#3ecf8e] mb-0.5">Net Profit</div>
+                    <div className="text-[10px] text-[#4d5562] mb-[10px]">ប្រាក់ចំណេញ</div>
+                    <div className="font-bold text-[26px] text-[#3ecf8e]">{summary.profit}</div>
                   </div>
                 </div>
 
-                <div style={{ fontSize: 12.5, color: C.sidebarMut, marginBottom: 18 }}>
+                <div className="text-[12.5px] text-[#7d8590] mb-[18px]">
                   Auto-calculated: {summary.sales} − {summary.expenses} ={" "}
-                  <strong style={{ color: C.sidebarText }}>{summary.profit}</strong>
+                  <strong className="text-[#e6edf3]">{summary.profit}</strong>
                 </div>
 
                 {!isDayLocked ? (
                   <button
                     onClick={() => setIsDayLocked(true)}
-                    style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: C.accent, color: C.sidebar, fontWeight: 700, fontSize: 15, padding: "16px", borderRadius: 11, border: "none", cursor: "pointer", transition: "all .2s", boxShadow: `0 4px 22px ${C.accentGlow}` }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "#4dd49a"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = C.accent; }}
+                    className="w-full flex items-center justify-center gap-[9px] bg-[#3ecf8e] text-[#0d1117] font-bold text-[15px] py-4 rounded-[11px] border-0 cursor-pointer transition-all duration-200 shadow-[0_4px_22px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a]"
                   >
                     <Lock size={16} />
                     Confirm &amp; Lock Day
-                    <span style={{ fontSize: 12, opacity: .65 }}>បញ្ជាក់ និងចាក់សោ</span>
+                    <span className="text-xs opacity-65">បញ្ជាក់ និងចាក់សោ</span>
                   </button>
                 ) : (
-                  <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.05)", color: C.sidebarMut, fontWeight: 600, fontSize: 14, padding: "16px", borderRadius: 11, border: "1px solid rgba(255,255,255,0.08)" }}>
-                    <CheckCircle2 size={16} style={{ color: C.accent }} />
+                  <div className="w-full flex items-center justify-center gap-2 bg-white/[0.05] text-[#7d8590] font-semibold text-sm py-4 rounded-[11px] border border-white/[0.08]">
+                    <CheckCircle2 size={16} className="text-[#3ecf8e]" />
                     Day Locked — Records Finalized
                   </div>
                 )}
               </div>
             </div>
 
-            {/* bottom breathing room */}
-            <div style={{ height: 16 }} />
-
+            {/* Bottom breathing room */}
+            <div className="h-4" />
           </div>
         </div>
       </main>
@@ -517,37 +744,64 @@ export default function VendorDashboard() {
 
 // ─── Sub-components ────────────────────────────────────────────────
 
-function NavItem({ icon: Icon, title, khmerTitle, href, active = false }: NavItemProps) {
+function NavItem({ icon: Icon, title, khmerTitle, href, active = false, collapsed = false }: NavItemProps) {
   return (
-    <Link href={href}
-      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", borderRadius: 8, marginBottom: 2, background: active ? "rgba(62,207,142,0.12)" : "transparent", color: active ? C.accent : C.sidebarMut, textDecoration: "none", transition: "all .12s" }}
-      className={!active ? "hover:bg-white/5 hover:!text-[#e6edf3]" : ""}
+    <Link
+      href={href}
+      title={collapsed ? title : undefined}
+      className={`flex items-center rounded-[10px] mb-0.5 no-underline transition-all duration-[120ms] ${
+        collapsed ? "justify-center w-full h-11" : "justify-between px-4 py-3"
+      } ${
+        active
+          ? "bg-[rgba(62,207,142,0.12)] text-[#3ecf8e]"
+          : "bg-transparent text-[#7d8590] hover:bg-white/[0.05] hover:text-[#e6edf3]"
+      }`}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-        <Icon size={15} />
-        <span style={{ fontSize: 13.5, fontWeight: active ? 600 : 400 }}>{title}</span>
+      <div className={`flex items-center ${collapsed ? "" : "gap-3"}`}>
+        <Icon size={20} />
+        {!collapsed && <span className={`text-[15px] ${active ? "font-semibold" : "font-normal"}`}>{title}</span>}
       </div>
-      <span style={{ fontSize: 10.5, opacity: .65 }}>{khmerTitle}</span>
+      {!collapsed && <span className="text-[11px] opacity-65">{khmerTitle}</span>}
     </Link>
   );
 }
 
 function SummaryCard({ title, khmerTitle, value, icon: Icon, trend, isPositive, subtext, highlight = false }: SummaryCardProps) {
   return (
-    <div style={{ padding: "24px 26px", borderRadius: 14, background: highlight ? C.accent : C.surface, border: highlight ? `1px solid ${C.accent}` : `1px solid ${C.border}`, boxShadow: "0 1px 4px rgba(0,0,0,.06)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+    <div className={`px-[26px] py-6 rounded-[14px] shadow-[0_1px_4px_rgba(0,0,0,0.06)] border ${
+      highlight ? "bg-[#3ecf8e] border-[#3ecf8e]" : "bg-white border-[#e8eaed]"
+    }`}>
+      <div className="flex justify-between items-start mb-5">
         <div>
-          <div style={{ fontSize: 10.5, fontWeight: 700, color: highlight ? "rgba(255,255,255,.8)" : C.muted, textTransform: "uppercase", letterSpacing: ".07em" }}>{title}</div>
-          <div style={{ fontSize: 10, color: highlight ? "rgba(255,255,255,.6)" : "#9ca3af", marginTop: 2 }}>{khmerTitle}</div>
+          <div className={`text-[10.5px] font-bold uppercase tracking-[0.07em] ${highlight ? "text-white/80" : "text-[#6b7280]"}`}>
+            {title}
+          </div>
+          <div className={`text-[10px] mt-0.5 ${highlight ? "text-white/60" : "text-[#9ca3af]"}`}>
+            {khmerTitle}
+          </div>
         </div>
-        <div style={{ width: 34, height: 34, borderRadius: 10, background: highlight ? "rgba(255,255,255,.2)" : "#f7f8fa", border: highlight ? "none" : `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Icon size={15} style={{ color: highlight ? "#fff" : C.accent }} />
+        <div className={`w-[34px] h-[34px] rounded-[10px] flex items-center justify-center border ${
+          highlight ? "bg-white/20 border-transparent" : "bg-[#f7f8fa] border-[#e8eaed]"
+        }`}>
+          <Icon size={15} className={highlight ? "text-white" : "text-[#3ecf8e]"} />
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-        <span style={{ fontWeight: 700, fontSize: 30, lineHeight: 1, color: highlight ? "#fff" : C.text }}>{value}</span>
-        {trend   && <span style={{ fontSize: 12.5, fontWeight: 700, color: highlight ? "#fff" : (isPositive ? C.accent : C.danger), marginBottom: 2 }}>{trend}</span>}
-        {subtext && <span style={{ fontSize: 12.5, color: highlight ? "rgba(255,255,255,.75)" : C.muted, marginBottom: 2 }}>{subtext}</span>}
+      <div className="flex items-end justify-between">
+        <span className={`font-bold text-[30px] leading-none ${highlight ? "text-white" : "text-[#111827]"}`}>
+          {value}
+        </span>
+        {trend && (
+          <span className={`text-[12.5px] font-bold mb-0.5 ${
+            highlight ? "text-white" : isPositive ? "text-[#3ecf8e]" : "text-[#ef4444]"
+          }`}>
+            {trend}
+          </span>
+        )}
+        {subtext && (
+          <span className={`text-[12.5px] mb-0.5 ${highlight ? "text-white/75" : "text-[#6b7280]"}`}>
+            {subtext}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -555,9 +809,9 @@ function SummaryCard({ title, khmerTitle, value, icon: Icon, trend, isPositive, 
 
 function ChartCard({ title, khmer, children }: { title: string; khmer: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "22px 26px", boxShadow: "0 1px 4px rgba(0,0,0,.06)" }}>
-      <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 2 }}>{title}</div>
-      <div style={{ fontSize: 11, color: C.muted, marginBottom: 20 }}>{khmer}</div>
+    <div className="bg-white border border-[#e8eaed] rounded-[14px] px-[26px] py-[22px] shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+      <div className="text-sm font-semibold text-[#111827] mb-0.5">{title}</div>
+      <div className="text-[11px] text-[#6b7280] mb-5">{khmer}</div>
       {children}
     </div>
   );

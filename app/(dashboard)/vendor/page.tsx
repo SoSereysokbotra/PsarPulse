@@ -1,377 +1,513 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import {
-  LayoutDashboard,
-  CircleDollarSign,
-  Receipt,
-  Users,
-  Settings,
-  Plus,
-  TrendingUp,
-  Menu,
-  X,
-  Bell,
-  ArrowUpRight,
-  Lock,
-  CheckCircle2,
+  LayoutDashboard, CircleDollarSign, Receipt, Users, Settings,
+  Plus, TrendingUp, Menu, X, Bell, Lock, CheckCircle2,
+  Search, ChevronRight, Minus, ShoppingCart, Zap,
 } from "lucide-react";
 
+// ─── Types ─────────────────────────────────────────────────────────
+interface NavItemProps   { icon: React.ElementType; title: string; khmerTitle: string; href: string; active?: boolean; }
+interface SummaryCardProps { title: string; khmerTitle: string; value: string; icon: React.ElementType; trend?: string; isPositive?: boolean; subtext?: string; highlight?: boolean; }
+interface Product        { id: string; name: string; price: number; }
+
+// ─── Constants ─────────────────────────────────────────────────────
+const PRODUCT_LIBRARY: Product[] = [
+  { id: "1", name: "Coffee Latte",      price: 4.50 },
+  { id: "2", name: "Green Tea",         price: 3.20 },
+  { id: "3", name: "Fried Rice",        price: 2.50 },
+  { id: "4", name: "Spring Roll",       price: 1.80 },
+  { id: "5", name: "Coconut Water",     price: 1.50 },
+  { id: "6", name: "Mango Sticky Rice", price: 2.00 },
+];
+
+const EXP_CATS = [
+  { key: "ingredients", label: "Ingredients", emoji: "🥦" },
+  { key: "rent",        label: "Rent",        emoji: "🏪" },
+  { key: "transport",   label: "Transport",   emoji: "🛺" },
+  { key: "electricity", label: "Electric",    emoji: "⚡" },
+  { key: "labor",       label: "Labor",       emoji: "👷" },
+  { key: "other",       label: "Other",       emoji: "📦" },
+];
+
+// ─── Palette ────────────────────────────────────────────────────────
+const C = {
+  accent:     "#3ecf8e",
+  accentDim:  "rgba(62,207,142,0.12)",
+  accentGlow: "rgba(62,207,142,0.28)",
+  sidebar:    "#0d1117",
+  sidebarHov: "#1c2330",
+  sidebarText:"#e6edf3",
+  sidebarMut: "#7d8590",
+  borderDark: "rgba(255,255,255,0.07)",
+  bg:         "#f0f2f5",
+  surface:    "#ffffff",
+  border:     "#e8eaed",
+  text:       "#111827",
+  muted:      "#6b7280",
+  danger:     "#ef4444",
+};
+
+// ═══════════════════════════════════════════════════════════════════
 export default function VendorDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDayLocked, setIsDayLocked] = useState(false);
+  const [isDayLocked,   setIsDayLocked]   = useState(false);
+  const [quickSaleOpen, setQuickSaleOpen] = useState(false);
+  const [searchQuery,   setSearchQuery]   = useState("");
+  const [cart,          setCart]          = useState<{ product: Product; qty: number }[]>([]);
+  const [customers,     setCustomers]     = useState(1);
+  const [expAmount,     setExpAmount]     = useState("");
+  const [expCat,        setExpCat]        = useState("");
+  const [expNote,       setExpNote]       = useState("");
+  const [expLogged,     setExpLogged]     = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
-  const summaryData = {
-    sales: "$124.50",
-    expenses: "$45.00",
-    profit: "$79.50",
-    customers: "42",
-    avgCustomer: "$2.96",
+  const summary = { sales: "$124.50", expenses: "$45.00", profit: "$79.50", customers: "42", avgCustomer: "$2.96" };
+  const usage = { used: 127, limit: 500 };
+  const usagePct = Math.min((usage.used / usage.limit) * 100, 100);
+
+  const weeklyData   = [40, 70, 45, 90, 65, 120, 85];
+  const weeklyLabels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const monthlyData   = [320, 480, 410, 540];
+  const monthlyLabels = ["Week 1","Week 2","Week 3","Week 4"];
+
+  useEffect(() => {
+    if (quickSaleOpen) setTimeout(() => searchRef.current?.focus(), 120);
+  }, [quickSaleOpen]);
+
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") closeQuickSale(); };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, []);
+
+  const filteredProducts = PRODUCT_LIBRARY.filter(p =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const addToCart = (product: Product) => {
+    setCart(prev => {
+      const exists = prev.find(i => i.product.id === product.id);
+      if (exists) return prev.map(i => i.product.id === product.id ? { ...i, qty: i.qty + 1 } : i);
+      return [...prev, { product, qty: 1 }];
+    });
+    setSearchQuery("");
+    searchRef.current?.focus();
   };
 
-  // Free plan: 500 logs/month cap
-  const usageData = {
-    used: 127,
-    limit: 500,
+  const changeQty = (id: string, delta: number) =>
+    setCart(prev => prev.map(i => i.product.id === id ? { ...i, qty: i.qty + delta } : i).filter(i => i.qty > 0));
+
+  const cartTotal = cart.reduce((sum, i) => sum + i.product.price * i.qty, 0);
+  const cartItems = cart.reduce((sum, i) => sum + i.qty, 0);
+
+  const completeSale = () => { setCart([]); setCustomers(1); setSearchQuery(""); setQuickSaleOpen(false); };
+  const closeQuickSale = () => { setQuickSaleOpen(false); setCart([]); setSearchQuery(""); };
+
+  const logExpense = () => {
+    if (!expAmount || !expCat) return;
+    setExpLogged(true);
+    setExpAmount(""); setExpCat(""); setExpNote("");
+    setTimeout(() => setExpLogged(false), 2200);
   };
-
-  // Weekly revenue data
-  const weeklyData = [40, 70, 45, 90, 65, 120, 85];
-  const weeklyLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-  // Monthly revenue data (4 weeks)
-  const monthlyData = [320, 480, 410, 540];
-  const monthlyLabels = ["Week 1", "Week 2", "Week 3", "Week 4"];
-
-  // Expenses by category
-  const expenseChartData = [
-    { label: "គ្រឿងផ្សំ", value: 43, color: "#29B28D" },
-    { label: "ថ្លៃជួល", value: 25, color: "#6366f1" },
-    { label: "ពលកម្ម", value: 16, color: "#f59e0b" },
-    { label: "ដឹកជញ្ជូន", value: 9, color: "#ef4444" },
-    { label: "អគ្គិសនី", value: 5, color: "#8b5cf6" },
-    { label: "ផ្សេងៗ", value: 2, color: "#94a3b8" },
-  ];
-
-  const usagePct = Math.min((usageData.used / usageData.limit) * 100, 100);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900 selection:bg-[#29B28D] selection:text-white">
-      {/* --- SIDEBAR --- */}
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden", fontFamily: "inherit", background: C.bg, color: C.text }}>
+
+      {/* Backdrop — sidebar */}
       {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 z-40 lg:hidden" style={{ background: "rgba(0,0,0,0.5)" }}
+          onClick={() => setIsSidebarOpen(false)} />
+      )}
+      {/* Backdrop — quick sale */}
+      {quickSaleOpen && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 40, background: "rgba(0,0,0,0.3)" }}
+          onClick={closeQuickSale} />
       )}
 
+      {/* ══ SIDEBAR ════════════════════════════════════════════════ */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col transition-transform duration-300 ease-in-out ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+        style={{ width: 224, background: C.sidebar, flexShrink: 0, height: "100vh" }}
       >
-        <div className="px-6 py-5 flex items-center justify-between border-b border-slate-100">
-          <Link href="/vendor" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#29B28D] flex items-center justify-center font-bold text-white shadow-sm">
-              P
-            </div>
-            <span className="font-bold text-[19px] tracking-tight">
-              PsarPulse KH
-            </span>
+        {/* Logo */}
+        <div style={{ padding: "20px 18px 16px", borderBottom: `1px solid ${C.borderDark}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/vendor" style={{ display: "flex", alignItems: "center", gap: 9, textDecoration: "none" }}>
+            <div style={{ width: 32, height: 32, borderRadius: 9, background: C.accent, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, color: C.sidebar, fontSize: 14 }}>P</div>
+            <span style={{ fontWeight: 800, fontSize: 14, color: C.sidebarText, letterSpacing: ".02em" }}>PsarPulse KH</span>
           </Link>
-          <button
-            className="lg:hidden text-slate-400"
-            onClick={() => setIsSidebarOpen(false)}
-          >
-            <X className="w-5 h-5" />
+          <button className="lg:hidden" onClick={() => setIsSidebarOpen(false)} style={{ background: "none", border: "none", color: C.sidebarMut, cursor: "pointer" }}>
+            <X size={16} />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-4 py-5 space-y-1.5">
-          <NavItem
-            icon={LayoutDashboard}
-            title="Dashboard"
-            khmerTitle="ផ្ទាំងគ្រប់គ្រង"
-            active
-          />
-          <NavItem icon={CircleDollarSign} title="Sales" khmerTitle="ការលក់" />
-          <NavItem icon={Receipt} title="Expenses" khmerTitle="ចំណាយ" />
-          <NavItem icon={Users} title="Customers" khmerTitle="អតិថិជន" />
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: "10px 10px 0", overflowY: "auto" }}>
+          <NavItem icon={LayoutDashboard}  title="Dashboard" khmerTitle="ផ្ទាំងគ្រប់គ្រង" href="/vendor"         active />
+          <NavItem icon={CircleDollarSign} title="Sales"     khmerTitle="ការលក់"           href="/vendor/sales"       />
+          <NavItem icon={Receipt}          title="Expenses"  khmerTitle="ចំណាយ"            href="/vendor/expenses"    />
+          <NavItem icon={Users}            title="Customers" khmerTitle="អតិថិជន"          href="/vendor/customer"    />
         </nav>
 
-        <div className="p-4 border-t border-slate-100">
-          <NavItem icon={Settings} title="Settings" khmerTitle="ការកំណត់" />
-          <div className="mt-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-sm text-slate-700">Free Plan</span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ឥតគិតថ្លៃ</span>
+        {/* Footer */}
+        <div style={{ padding: 10, borderTop: `1px solid ${C.borderDark}` }}>
+          <NavItem icon={Settings} title="Settings" khmerTitle="ការកំណត់" href="/vendor/settings" />
+          <div style={{ margin: "8px 0 0", padding: "12px 14px", background: "rgba(62,207,142,0.08)", border: "1px solid rgba(62,207,142,0.18)", borderRadius: 11 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 9 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: C.sidebarText }}>Free Plan</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: C.sidebarMut, textTransform: "uppercase", letterSpacing: ".06em" }}>ឥតគិតថ្លៃ</span>
             </div>
-            <Link
-              href="/vendor/pricing"
-              className="block w-full text-center text-[13px] font-bold text-[#29B28D] hover:text-[#239979] bg-[#29B28D]/10 hover:bg-[#29B28D]/15 py-2 rounded-lg transition-colors"
-            >
+            <Link href="/vendor/pricing" style={{ display: "block", textAlign: "center", fontSize: 12, fontWeight: 700, color: C.accent, background: "rgba(62,207,142,0.12)", padding: "7px 0", borderRadius: 7, textDecoration: "none" }}>
               Upgrade Plan ↗
             </Link>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 12px 4px" }}>
+            <div style={{ width: 30, height: 30, borderRadius: "50%", background: `linear-gradient(135deg,${C.accent},#1a9c65)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0 }}>SM</div>
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.sidebarText, flex: 1 }}>Vendor</span>
+            <ChevronRight size={13} style={{ color: C.sidebarMut }} />
           </div>
         </div>
       </aside>
 
-      {/* --- MAIN CONTENT --- */}
-      <main className="flex-1 flex flex-col w-full min-w-0">
-        <header className="bg-white border-b border-slate-200 px-6 md:px-8 py-4 flex items-center justify-between sticky top-0 z-30">
-          <div className="flex items-center gap-4">
-            <button
-              className="lg:hidden text-slate-500 hover:text-slate-900"
-              onClick={() => setIsSidebarOpen(true)}
-            >
-              <Menu className="w-6 h-6" />
+      {/* ══ MAIN — scrollable ══════════════════════════════════════ */}
+      <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, height: "100vh", overflow: "hidden" }}>
+
+        {/* ── Topbar ── */}
+        <header style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "0 28px", height: 58, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, position: "relative", zIndex: 30 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button className="lg:hidden" onClick={() => setIsSidebarOpen(true)} style={{ background: "none", border: "none", cursor: "pointer", color: C.muted }}>
+              <Menu size={20} />
             </button>
-            <div>
-              <h1 className="text-[22px] font-bold text-slate-900">Overview</h1>
-            </div>
+            <h1 style={{ fontWeight: 700, fontSize: 17, color: C.text }}>Overview</h1>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors relative">
-              <Bell className="w-5 h-5" />
-            </button>
-            <div className="w-9 h-9 rounded-full bg-[#29B28D]/10 flex items-center justify-center text-[#29B28D] font-bold border border-[#29B28D] text-sm shadow-sm">
-              SM
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+
+            {/* ─── QUICK SALE BUTTON + DROPDOWN ─── */}
+            <div style={{ position: "relative", zIndex: 50 }}>
+              <button
+                onClick={() => setQuickSaleOpen(o => !o)}
+                style={{ display: "flex", alignItems: "center", gap: 7, background: quickSaleOpen ? C.sidebar : C.accent, color: quickSaleOpen ? C.sidebarText : C.sidebar, border: "none", borderRadius: 10, padding: "9px 16px", fontWeight: 700, fontSize: 13, cursor: "pointer", transition: "all .2s", boxShadow: quickSaleOpen ? "none" : `0 2px 14px ${C.accentGlow}` }}
+              >
+                {quickSaleOpen ? <><X size={14} /> Cancel</> : <><Zap size={14} /> Quick Sale</>}
+                {cartItems > 0 && !quickSaleOpen && (
+                  <span style={{ background: C.sidebar, color: C.accent, borderRadius: "50%", width: 18, height: 18, fontSize: 10, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 2 }}>
+                    {cartItems}
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown */}
+              {quickSaleOpen && (
+                <div style={{ position: "absolute", top: "calc(100% + 10px)", right: 0, width: 330, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: "0 20px 56px rgba(0,0,0,0.15)", zIndex: 60, overflow: "hidden" }}>
+                  <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 8 }}>
+                    <ShoppingCart size={14} style={{ color: C.accent }} />
+                    <span style={{ fontWeight: 700, fontSize: 14, color: C.text }}>Quick Sale</span>
+                    <span style={{ fontSize: 11, color: C.muted, marginLeft: "auto" }}>ការលក់រហ័ស</span>
+                  </div>
+
+                  <div style={{ padding: "14px 18px" }}>
+                    {/* Search */}
+                    <div style={{ position: "relative", marginBottom: 14 }}>
+                      <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: C.muted, pointerEvents: "none" }} />
+                      <input
+                        ref={searchRef}
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        placeholder="Search product..."
+                        style={{ width: "100%", padding: "9px 11px 9px 33px", background: "#f7f8fa", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, fontFamily: "inherit", outline: "none", color: C.text }}
+                        onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
+                        onBlur={e  => (e.currentTarget.style.borderColor = C.border)}
+                      />
+                      {searchQuery && (
+                        <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: C.surface, border: `1px solid ${C.border}`, borderTop: "none", borderRadius: "0 0 9px 9px", zIndex: 10, boxShadow: "0 8px 24px rgba(0,0,0,.08)", overflow: "hidden" }}>
+                          {filteredProducts.length ? filteredProducts.map(p => (
+                            <button key={p.id} onClick={() => addToCart(p)}
+                              style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 13px", background: "none", border: "none", cursor: "pointer", fontSize: 13, fontFamily: "inherit", color: C.text, textAlign: "left" }}
+                              onMouseEnter={e => (e.currentTarget.style.background = "#f7f8fa")}
+                              onMouseLeave={e => (e.currentTarget.style.background = "none")}
+                            >
+                              <span>{p.name}</span>
+                              <span style={{ color: C.accent, fontWeight: 700 }}>${p.price.toFixed(2)}</span>
+                            </button>
+                          )) : <div style={{ padding: "10px 13px", fontSize: 12.5, color: C.muted }}>No products found</div>}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Product grid */}
+                    {!searchQuery && (
+                      <div style={{ marginBottom: 14 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".07em", marginBottom: 8 }}>Tap to add</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                          {PRODUCT_LIBRARY.map(p => {
+                            const inCart = cart.find(i => i.product.id === p.id);
+                            return (
+                              <button key={p.id} onClick={() => addToCart(p)}
+                                style={{ padding: "9px 12px", background: inCart ? C.accentDim : "#f7f8fa", border: `1px solid ${inCart ? C.accent : C.border}`, borderRadius: 9, cursor: "pointer", textAlign: "left", transition: "all .12s", position: "relative" }}
+                                onMouseEnter={e => { if (!inCart) (e.currentTarget as HTMLButtonElement).style.background = "#eff0f2"; }}
+                                onMouseLeave={e => { if (!inCart) (e.currentTarget as HTMLButtonElement).style.background = "#f7f8fa"; }}
+                              >
+                                <div style={{ fontSize: 12, fontWeight: 600, color: inCart ? C.accent : C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 2 }}>{p.name}</div>
+                                <div style={{ fontSize: 11, color: inCart ? C.accent : C.muted, fontWeight: 700 }}>${p.price.toFixed(2)}</div>
+                                {inCart && <span style={{ position: "absolute", top: 6, right: 8, background: C.accent, color: C.sidebar, borderRadius: "50%", width: 17, height: 17, fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{inCart.qty}</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Cart */}
+                    {cart.length > 0 && (
+                      <div style={{ marginBottom: 12, maxHeight: 150, overflowY: "auto" }}>
+                        {cart.map(item => (
+                          <div key={item.product.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: "1px solid #f0f2f5" }}>
+                            <span style={{ fontSize: 12.5, flex: 1, color: C.text }}>{item.product.name}</span>
+                            <div style={{ display: "flex", alignItems: "center", background: "#f7f8fa", border: `1px solid ${C.border}`, borderRadius: 7, overflow: "hidden" }}>
+                              <button onClick={() => changeQty(item.product.id, -1)} style={{ width: 24, height: 24, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}><Minus size={10} /></button>
+                              <span style={{ fontSize: 12, fontWeight: 700, minWidth: 18, textAlign: "center" }}>{item.qty}</span>
+                              <button onClick={() => changeQty(item.product.id, 1)} style={{ width: 24, height: 24, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: C.muted }}><Plus size={10} /></button>
+                            </div>
+                            <span style={{ fontSize: 12.5, fontWeight: 700, minWidth: 48, textAlign: "right" }}>${(item.product.price * item.qty).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Customers */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid #f0f2f5", marginBottom: 12 }}>
+                      <span style={{ fontSize: 12, color: C.muted, fontWeight: 500 }}>Customers · អតិថិជន</span>
+                      <div style={{ display: "flex", alignItems: "center", background: "#f7f8fa", border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden" }}>
+                        <button onClick={() => setCustomers(c => Math.max(1, c - 1))} style={{ width: 28, height: 28, background: "none", border: "none", cursor: "pointer", color: C.muted, display: "flex", alignItems: "center", justifyContent: "center" }}><Minus size={11} /></button>
+                        <span style={{ fontSize: 13, fontWeight: 700, minWidth: 20, textAlign: "center" }}>{customers}</span>
+                        <button onClick={() => setCustomers(c => c + 1)} style={{ width: 28, height: 28, background: "none", border: "none", cursor: "pointer", color: C.muted, display: "flex", alignItems: "center", justifyContent: "center" }}><Plus size={11} /></button>
+                      </div>
+                    </div>
+
+                    {/* Total + complete */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                      <span style={{ fontSize: 12, color: C.muted }}>{cartItems} item{cartItems !== 1 ? "s" : ""}</span>
+                      <span style={{ fontWeight: 800, fontSize: 20, color: C.accent }}>${cartTotal.toFixed(2)}</span>
+                    </div>
+                    <button
+                      onClick={completeSale}
+                      disabled={cart.length === 0}
+                      style={{ width: "100%", padding: "12px", background: cart.length ? C.accent : "#f0f2f5", color: cart.length ? C.sidebar : C.muted, fontWeight: 700, fontSize: 13.5, border: "none", borderRadius: 10, cursor: cart.length ? "pointer" : "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: cart.length ? `0 4px 14px ${C.accentGlow}` : "none" }}
+                    >
+                      <CheckCircle2 size={15} /> Complete Sale
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
+
+            <button style={{ background: "none", border: "none", cursor: "pointer", color: C.muted, padding: 7, borderRadius: 8 }}>
+              <Bell size={18} />
+            </button>
+            <div style={{ width: 34, height: 34, borderRadius: "50%", background: C.accentDim, border: `1.5px solid ${C.accent}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: C.accent }}>SM</div>
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7">
-          {/* Usage Limit Bar */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="font-semibold text-[15px] text-slate-900">
-                  Monthly Sales Logs
-                </h3>
-                <p className="text-[12px] font-khmer text-slate-400 mt-0.5">កំណត់ត្រាលក់ប្រចាំខែ</p>
-              </div>
-              <span className="text-[14px] font-bold text-slate-700">
-                {usageData.used} / {usageData.limit}
-              </span>
-            </div>
-            <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-700 ${usagePct > 80 ? "bg-orange-400" : "bg-[#29B28D]"}`}
-                style={{ width: `${usagePct}%` }}
-              ></div>
-            </div>
-            <p className="text-[12px] text-slate-400 mt-2 font-medium">
-              {usageData.limit - usageData.used} logs remaining · Resets monthly ·{" "}
-              <Link href="/vendor/settings" className="text-[#29B28D] hover:underline">
-                Upgrade for unlimited
-              </Link>
-            </p>
-          </div>
+        {/* ── Scrollable page body ── */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "26px 36px" }}>
+          <div style={{ maxWidth: 1400, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
 
-          {/* Metric Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <SummaryCard
-              title="Total Sales"
-              khmerTitle="ការលក់សរុប"
-              value={summaryData.sales}
-              icon={CircleDollarSign}
-              trend="+12%"
-              isPositive={true}
-            />
-            <SummaryCard
-              title="Total Expenses"
-              khmerTitle="ចំណាយសរុប"
-              value={summaryData.expenses}
-              icon={Receipt}
-              trend="-5%"
-              isPositive={true}
-            />
-            <SummaryCard
-              title="Net Profit"
-              khmerTitle="ប្រាក់ចំណេញ"
-              value={summaryData.profit}
-              icon={TrendingUp}
-              trend="+18%"
-              isPositive={true}
-              highlight
-            />
-            <SummaryCard
-              title="Customers"
-              khmerTitle="អតិថិជនសរុប"
-              value={summaryData.customers}
-              icon={Users}
-              subtext={`Avg: ${summaryData.avgCustomer}`}
-            />
-          </div>
-
-          {/* 3 Simple Charts: Weekly, Monthly, Expenses */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Weekly Revenue Chart */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="font-semibold text-[15px] text-slate-900 mb-1">
-                Weekly Revenue
-              </h3>
-              <p className="text-[12px] font-khmer text-slate-400 mb-5">ចំណូលប្រចាំសប្តាហ៍</p>
-              <div className="h-40 flex items-end gap-1.5">
-                {weeklyData.map((height, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 flex flex-col items-center gap-1"
-                  >
-                    <div className="w-full bg-[#29B28D]/10 rounded-t-lg relative group" style={{ height: "120px" }}>
-                      <div
-                        className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-lg transition-all duration-500 group-hover:bg-[#239979]"
-                        style={{ height: `${height}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-[10px] text-slate-400 font-medium">
-                      {weeklyLabels[i]}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Monthly Revenue Chart */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="font-semibold text-[15px] text-slate-900 mb-1">
-                Monthly Revenue
-              </h3>
-              <p className="text-[12px] font-khmer text-slate-400 mb-5">ចំណូលប្រចាំខែ</p>
-              <div className="h-40 flex items-end gap-2">
-                {monthlyData.map((val, i) => {
-                  const maxVal = 600;
-                  return (
-                    <div
-                      key={i}
-                      className="flex-1 flex flex-col items-center gap-1"
-                    >
-                      <span className="text-[11px] font-bold text-slate-500">${val}</span>
-                      <div className="w-full bg-[#29B28D]/10 rounded-t-lg relative group" style={{ height: "100px" }}>
-                        <div
-                          className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-lg transition-all duration-500 group-hover:bg-[#239979]"
-                          style={{ height: `${(val / maxVal) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        {monthlyLabels[i]}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Expenses Chart */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="font-semibold text-[15px] text-slate-900 mb-1">
-                Expenses
-              </h3>
-              <p className="text-[12px] font-khmer text-slate-400 mb-5">ការចំណាយ</p>
-              <div className="space-y-3">
-                {expenseChartData.map((item, i) => (
-                  <div key={i}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[12px] font-khmer font-medium text-slate-600">
-                        {item.label}
-                      </span>
-                      <span className="text-[12px] font-bold text-slate-500">
-                        {item.value}%
-                      </span>
-                    </div>
-                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${item.value}%`,
-                          backgroundColor: item.color,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
-              <div className="mb-5">
-                <h3 className="font-semibold text-[17px] text-slate-900">
-                  Quick Actions
-                </h3>
-                <p className="text-[12px] font-khmer text-slate-400 mt-0.5">សកម្មភាពរហ័ស</p>
-              </div>
-
-              <div className="flex-1 flex flex-col gap-4 justify-center">
-                <button className="w-full flex items-center justify-center gap-2.5 bg-[#29B28D] text-white font-medium text-[15px] py-3.5 px-4 rounded-xl shadow-sm hover:bg-[#239979] active:-translate-y-0 transition-all min-h-[52px]">
-                  <Plus className="w-5 h-5" />
-                  <span>Log Sale (ការលក់)</span>
-                </button>
-
-                <button className="w-full flex items-center justify-center gap-2.5 bg-slate-50 border border-slate-200 text-slate-700 font-medium text-[15px] py-3.5 px-4 rounded-xl hover:bg-slate-100 transition-colors min-h-[52px]">
-                  <Receipt className="w-5 h-5 text-slate-400" />
-                  <span>Log Expense (ចំណាយ)</span>
-                </button>
-              </div>
-            </div>
-
-            {/* End-of-Day Summary */}
-            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            {/* ── Usage bar ── */}
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "16px 22px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                 <div>
-                  <h3 className="font-semibold text-[17px] text-slate-900">
-                    End-of-Day Summary
-                  </h3>
-                  <p className="text-[12px] font-khmer text-slate-400 mt-0.5">សង្ខេបចុងថ្ងៃ</p>
+                  <div style={{ fontSize: 13.5, fontWeight: 600, color: C.text }}>Monthly Sales Logs</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>កំណត់ត្រាលក់ប្រចាំខែ</div>
                 </div>
-                {isDayLocked && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#29B28D]/10 text-[#29B28D] text-[12px] font-bold">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Day Locked
+                <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{usage.used} <span style={{ color: C.muted, fontWeight: 400 }}>/ {usage.limit}</span></span>
+              </div>
+              <div style={{ width: "100%", height: 6, background: "#f0f2f5", borderRadius: 99, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${usagePct}%`, background: usagePct > 80 ? "#f59e0b" : C.accent, borderRadius: 99, transition: "width .6s ease" }} />
+              </div>
+              <div style={{ fontSize: 12, color: C.muted, marginTop: 8 }}>
+                {usage.limit - usage.used} logs remaining · Resets monthly ·{" "}
+                <Link href="/vendor/pricing" style={{ color: C.accent, textDecoration: "none", fontWeight: 600 }}>Upgrade for unlimited</Link>
+              </div>
+            </div>
+
+            {/* ── Metric cards ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+              <SummaryCard title="Total Sales"    khmerTitle="ការលក់សរុប"   value={summary.sales}     icon={CircleDollarSign} trend="+12%" isPositive />
+              <SummaryCard title="Total Expenses" khmerTitle="ចំណាយសរុប"   value={summary.expenses}  icon={Receipt}          trend="-5%"  isPositive />
+              <SummaryCard title="Net Profit"     khmerTitle="ប្រាក់ចំណេញ" value={summary.profit}    icon={TrendingUp}       trend="+18%" isPositive highlight />
+              <SummaryCard title="Customers"      khmerTitle="អតិថិជនសរុប" value={summary.customers} icon={Users}            subtext={`Avg ${summary.avgCustomer}`} />
+            </div>
+
+            {/* ── Charts ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <ChartCard title="Weekly Revenue" khmer="ចំណូលប្រចាំសប្តាហ៍">
+                <div style={{ height: 180, display: "flex", alignItems: "flex-end", gap: 7 }}>
+                  {weeklyData.map((v, i) => (
+                    <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                      <div style={{ width: "100%", height: 155, position: "relative", background: C.accentDim, borderRadius: "7px 7px 0 0" }}>
+                        <div style={{ position: "absolute", bottom: 0, width: "100%", background: C.accent, borderRadius: "7px 7px 0 0", height: `${v}%`, transition: "height .5s ease" }} />
+                      </div>
+                      <span style={{ fontSize: 10, color: C.muted }}>{weeklyLabels[i]}</span>
+                    </div>
+                  ))}
+                </div>
+              </ChartCard>
+
+              <ChartCard title="Monthly Revenue" khmer="ចំណូលប្រចាំខែ">
+                <div style={{ height: 180, display: "flex", alignItems: "flex-end", gap: 14 }}>
+                  {monthlyData.map((v, i) => (
+                    <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: C.muted }}>${v}</span>
+                      <div style={{ width: "100%", flex: 1, position: "relative", background: C.accentDim, borderRadius: "7px 7px 0 0", minHeight: 10 }}>
+                        <div style={{ position: "absolute", bottom: 0, width: "100%", background: C.accent, borderRadius: "7px 7px 0 0", height: `${(v / 600) * 100}%`, transition: "height .5s ease" }} />
+                      </div>
+                      <span style={{ fontSize: 10, color: C.muted }}>{monthlyLabels[i]}</span>
+                    </div>
+                  ))}
+                </div>
+              </ChartCard>
+            </div>
+
+            {/* ── Log Expense — full width horizontal bar ── */}
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "22px 26px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Log Expense</div>
+                  <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>ចំណាយ · Quick entry</div>
+                </div>
+                {expLogged && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 20, background: C.accentDim, color: C.accent, fontSize: 12, fontWeight: 700, border: `1px solid rgba(62,207,142,.2)` }}>
+                    <CheckCircle2 size={13} /> Logged!
                   </span>
                 )}
               </div>
-              <div className="p-6">
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="p-4 bg-slate-50 rounded-xl text-center">
-                    <p className="text-[12px] font-semibold text-slate-500 mb-1">Total Sales</p>
-                    <p className="text-[12px] font-khmer text-slate-400 mb-2">ការលក់សរុប</p>
-                    <p className="text-[22px] font-bold text-slate-900">{summaryData.sales}</p>
-                  </div>
-                  <div className="p-4 bg-slate-50 rounded-xl text-center">
-                    <p className="text-[12px] font-semibold text-slate-500 mb-1">Total Expenses</p>
-                    <p className="text-[12px] font-khmer text-slate-400 mb-2">ចំណាយសរុប</p>
-                    <p className="text-[22px] font-bold text-red-500">{summaryData.expenses}</p>
-                  </div>
-                  <div className="p-4 bg-[#29B28D]/10 rounded-xl text-center border border-[#29B28D]/20">
-                    <p className="text-[12px] font-semibold text-[#29B28D] mb-1">Net Profit</p>
-                    <p className="text-[12px] font-khmer text-[#29B28D]/70 mb-2">ប្រាក់ចំណេញ</p>
-                    <p className="text-[22px] font-bold text-[#29B28D]">{summaryData.profit}</p>
+
+              <div style={{ display: "grid", gridTemplateColumns: "170px 1fr 1fr auto", gap: 16, alignItems: "start" }}>
+                {/* Amount */}
+                <div>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 7 }}>Amount</div>
+                  <div style={{ position: "relative" }}>
+                    <span style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)", fontSize: 13, fontWeight: 700, color: C.muted }}>$</span>
+                    <input
+                      type="number" placeholder="0.00" value={expAmount}
+                      onChange={e => setExpAmount(e.target.value)}
+                      style={{ width: "100%", padding: "11px 12px 11px 28px", background: "#f7f8fa", border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 17, fontWeight: 700, fontFamily: "inherit", outline: "none", color: C.text }}
+                      onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
+                      onBlur={e  => (e.currentTarget.style.borderColor = C.border)}
+                    />
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-[13px] text-slate-400 mb-5">
-                  <span>Auto-calculated: Sales ({summaryData.sales}) − Expenses ({summaryData.expenses}) = <strong className="text-slate-700">{summaryData.profit}</strong></span>
+                {/* Category */}
+                <div>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 7 }}>Category</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+                    {EXP_CATS.map(cat => (
+                      <button key={cat.key} onClick={() => setExpCat(expCat === cat.key ? "" : cat.key)}
+                        style={{ padding: "8px 6px", borderRadius: 9, fontSize: 11.5, fontWeight: 600, border: `1px solid ${expCat === cat.key ? C.accent : C.border}`, background: expCat === cat.key ? C.accentDim : "#f7f8fa", color: expCat === cat.key ? C.accent : C.muted, cursor: "pointer", transition: "all .12s", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+                      >
+                        <span style={{ fontSize: 13 }}>{cat.emoji}</span>
+                        <span>{cat.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Note */}
+                <div>
+                  <div style={{ fontSize: 10.5, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 7 }}>
+                    Note <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span>
+                  </div>
+                  <input
+                    type="text" placeholder="e.g. Morning market run" value={expNote}
+                    onChange={e => setExpNote(e.target.value)}
+                    style={{ width: "100%", padding: "11px 14px", background: "#f7f8fa", border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 13.5, fontFamily: "inherit", outline: "none", color: C.text }}
+                    onFocus={e => (e.currentTarget.style.borderColor = C.accent)}
+                    onBlur={e  => (e.currentTarget.style.borderColor = C.border)}
+                  />
+                </div>
+
+                {/* Submit */}
+                <div style={{ paddingTop: 26 }}>
+                  <button
+                    onClick={logExpense}
+                    disabled={!expAmount || !expCat}
+                    style={{ padding: "11px 22px", background: expAmount && expCat ? C.sidebar : "#f0f2f5", color: expAmount && expCat ? C.sidebarText : C.muted, fontWeight: 700, fontSize: 13.5, border: "none", borderRadius: 10, cursor: expAmount && expCat ? "pointer" : "not-allowed", display: "flex", alignItems: "center", gap: 7, transition: "all .15s", whiteSpace: "nowrap" }}
+                    onMouseEnter={e => { if (expAmount && expCat) (e.currentTarget as HTMLButtonElement).style.background = C.sidebarHov; }}
+                    onMouseLeave={e => { if (expAmount && expCat) (e.currentTarget as HTMLButtonElement).style.background = C.sidebar; }}
+                  >
+                    <Receipt size={15} /> Log Expense
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* ── End of Day — full black ── */}
+            <div style={{ background: C.sidebar, borderRadius: 14, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+              <div style={{ padding: "18px 26px", borderBottom: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: C.sidebarText }}>End-of-Day Summary</div>
+                  <div style={{ fontSize: 11, color: C.sidebarMut, marginTop: 2 }}>សង្ខេបចុងថ្ងៃ</div>
+                </div>
+                {isDayLocked && (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 20, background: "rgba(62,207,142,0.15)", color: C.accent, fontSize: 12, fontWeight: 700, border: "1px solid rgba(62,207,142,0.25)" }}>
+                    <CheckCircle2 size={13} /> Day Locked
+                  </span>
+                )}
+              </div>
+
+              <div style={{ padding: "22px 26px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 18 }}>
+                  <div style={{ padding: "18px 20px", background: "rgba(255,255,255,0.05)", borderRadius: 12, textAlign: "center", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: C.sidebarMut, marginBottom: 2 }}>Total Sales</div>
+                    <div style={{ fontSize: 10, color: "#4d5562", marginBottom: 10 }}>ការលក់សរុប</div>
+                    <div style={{ fontWeight: 700, fontSize: 26, color: C.sidebarText }}>{summary.sales}</div>
+                  </div>
+                  <div style={{ padding: "18px 20px", background: "rgba(239,68,68,0.08)", borderRadius: 12, textAlign: "center", border: "1px solid rgba(239,68,68,0.15)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(239,68,68,0.85)", marginBottom: 2 }}>Total Expenses</div>
+                    <div style={{ fontSize: 10, color: "#4d5562", marginBottom: 10 }}>ចំណាយសរុប</div>
+                    <div style={{ fontWeight: 700, fontSize: 26, color: C.danger }}>{summary.expenses}</div>
+                  </div>
+                  <div style={{ padding: "18px 20px", background: "rgba(62,207,142,0.10)", borderRadius: 12, textAlign: "center", border: "1px solid rgba(62,207,142,0.20)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: C.accent, marginBottom: 2 }}>Net Profit</div>
+                    <div style={{ fontSize: 10, color: "#4d5562", marginBottom: 10 }}>ប្រាក់ចំណេញ</div>
+                    <div style={{ fontWeight: 700, fontSize: 26, color: C.accent }}>{summary.profit}</div>
+                  </div>
+                </div>
+
+                <div style={{ fontSize: 12.5, color: C.sidebarMut, marginBottom: 18 }}>
+                  Auto-calculated: {summary.sales} − {summary.expenses} ={" "}
+                  <strong style={{ color: C.sidebarText }}>{summary.profit}</strong>
                 </div>
 
                 {!isDayLocked ? (
                   <button
                     onClick={() => setIsDayLocked(true)}
-                    className="w-full flex items-center justify-center gap-2.5 bg-[#29B28D] hover:bg-[#239979] text-white font-bold text-[16px] py-4 rounded-xl shadow-sm transition-all min-h-[56px]"
+                    style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 9, background: C.accent, color: C.sidebar, fontWeight: 700, fontSize: 15, padding: "16px", borderRadius: 11, border: "none", cursor: "pointer", transition: "all .2s", boxShadow: `0 4px 22px ${C.accentGlow}` }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "#4dd49a"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = C.accent; }}
                   >
-                    <Lock className="w-5 h-5" />
-                    <span>Confirm & Lock Day (បញ្ជាក់ និងចាក់សោ)</span>
+                    <Lock size={16} />
+                    Confirm &amp; Lock Day
+                    <span style={{ fontSize: 12, opacity: .65 }}>បញ្ជាក់ និងចាក់សោ</span>
                   </button>
                 ) : (
-                  <div className="w-full flex items-center justify-center gap-2.5 bg-slate-100 text-slate-500 font-bold text-[16px] py-4 rounded-xl min-h-[56px]">
-                    <CheckCircle2 className="w-5 h-5 text-[#29B28D]" />
-                    <span>Day Locked — Records Finalized</span>
+                  <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "rgba(255,255,255,0.05)", color: C.sidebarMut, fontWeight: 600, fontSize: 14, padding: "16px", borderRadius: 11, border: "1px solid rgba(255,255,255,0.08)" }}>
+                    <CheckCircle2 size={16} style={{ color: C.accent }} />
+                    Day Locked — Records Finalized
                   </div>
                 )}
               </div>
             </div>
+
+            {/* bottom breathing room */}
+            <div style={{ height: 16 }} />
+
           </div>
         </div>
       </main>
@@ -379,101 +515,50 @@ export default function VendorDashboard() {
   );
 }
 
-function NavItem({
-  icon: Icon,
-  title,
-  khmerTitle,
-  active = false,
-}: {
-  icon: any;
-  title: string;
-  khmerTitle: string;
-  active?: boolean;
-}) {
-  const hrefMap: Record<string, string> = {
-    Dashboard: "/vendor",
-    Sales: "/vendor/sales",
-    Expenses: "/vendor/expenses",
-    Customers: "/vendor/customer",
-    Settings: "/vendor/settings",
-  };
+// ─── Sub-components ────────────────────────────────────────────────
 
+function NavItem({ icon: Icon, title, khmerTitle, href, active = false }: NavItemProps) {
   return (
-    <Link
-      href={hrefMap[title] || "#"}
-      className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-colors min-h-[48px] ${
-        active
-          ? "bg-[#29B28D]/10 text-[#29B28D]"
-          : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-      }`}
+    <Link href={href}
+      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", borderRadius: 8, marginBottom: 2, background: active ? "rgba(62,207,142,0.12)" : "transparent", color: active ? C.accent : C.sidebarMut, textDecoration: "none", transition: "all .12s" }}
+      className={!active ? "hover:bg-white/5 hover:!text-[#e6edf3]" : ""}
     >
-      <div className="flex items-center gap-3">
-        <Icon
-          className={`w-4 h-4 ${active ? "text-[#29B28D]" : "text-slate-400"}`}
-        />
-        <span
-          className={`text-[15px] ${active ? "font-semibold" : "font-medium"}`}
-        >
-          {title}
-        </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+        <Icon size={15} />
+        <span style={{ fontSize: 13.5, fontWeight: active ? 600 : 400 }}>{title}</span>
       </div>
-      <span className="text-[11px] font-khmer opacity-60">{khmerTitle}</span>
+      <span style={{ fontSize: 10.5, opacity: .65 }}>{khmerTitle}</span>
     </Link>
   );
 }
 
-function SummaryCard({
-  title,
-  khmerTitle,
-  value,
-  icon: Icon,
-  trend,
-  isPositive,
-  subtext,
-  highlight = false,
-}: any) {
+function SummaryCard({ title, khmerTitle, value, icon: Icon, trend, isPositive, subtext, highlight = false }: SummaryCardProps) {
   return (
-    <div
-      className={`p-5 rounded-2xl border ${highlight ? "bg-[#29B28D] text-white border-transparent shadow-md" : "bg-white border-slate-200 shadow-sm"}`}
-    >
-      <div className="flex justify-between items-start mb-4">
+    <div style={{ padding: "24px 26px", borderRadius: 14, background: highlight ? C.accent : C.surface, border: highlight ? `1px solid ${C.accent}` : `1px solid ${C.border}`, boxShadow: "0 1px 4px rgba(0,0,0,.06)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
         <div>
-          <h4
-            className={`text-sm font-semibold ${highlight ? "text-white/90" : "text-slate-500"}`}
-          >
-            {title}
-          </h4>
-          <p
-            className={`text-[11px] font-khmer mt-0.5 ${highlight ? "text-white/70" : "text-slate-400"}`}
-          >
-            {khmerTitle}
-          </p>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: highlight ? "rgba(255,255,255,.8)" : C.muted, textTransform: "uppercase", letterSpacing: ".07em" }}>{title}</div>
+          <div style={{ fontSize: 10, color: highlight ? "rgba(255,255,255,.6)" : "#9ca3af", marginTop: 2 }}>{khmerTitle}</div>
         </div>
-        <div
-          className={`p-2 rounded-xl ${highlight ? "bg-white/20" : "bg-slate-50 text-[#29B28D] border border-slate-100"}`}
-        >
-          <Icon className="w-4 h-4" />
+        <div style={{ width: 34, height: 34, borderRadius: 10, background: highlight ? "rgba(255,255,255,.2)" : "#f7f8fa", border: highlight ? "none" : `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Icon size={15} style={{ color: highlight ? "#fff" : C.accent }} />
         </div>
       </div>
-      <div className="flex items-end justify-between">
-        <h2 className="text-[28px] font-bold tracking-tight leading-none">
-          {value}
-        </h2>
-        {trend && (
-          <span
-            className={`text-sm font-semibold mb-0.5 ${highlight ? "text-white" : isPositive ? "text-[#29B28D]" : "text-red-500"}`}
-          >
-            {trend}
-          </span>
-        )}
-        {subtext && (
-          <span
-            className={`text-sm font-medium mb-0.5 ${highlight ? "text-white/80" : "text-slate-400"}`}
-          >
-            {subtext}
-          </span>
-        )}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+        <span style={{ fontWeight: 700, fontSize: 30, lineHeight: 1, color: highlight ? "#fff" : C.text }}>{value}</span>
+        {trend   && <span style={{ fontSize: 12.5, fontWeight: 700, color: highlight ? "#fff" : (isPositive ? C.accent : C.danger), marginBottom: 2 }}>{trend}</span>}
+        {subtext && <span style={{ fontSize: 12.5, color: highlight ? "rgba(255,255,255,.75)" : C.muted, marginBottom: 2 }}>{subtext}</span>}
       </div>
+    </div>
+  );
+}
+
+function ChartCard({ title, khmer, children }: { title: string; khmer: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 14, padding: "22px 26px", boxShadow: "0 1px 4px rgba(0,0,0,.06)" }}>
+      <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 2 }}>{title}</div>
+      <div style={{ fontSize: 11, color: C.muted, marginBottom: 20 }}>{khmer}</div>
+      {children}
     </div>
   );
 }

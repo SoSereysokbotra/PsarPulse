@@ -18,110 +18,198 @@ import {
   Lock,
   CheckCircle2,
   ArrowUpRight,
-  Download,
-  FileText,
   FileSpreadsheet,
-  MapPin,
+  FileText,
   Sparkles,
   AlertTriangle,
-  Edit2,
-  PlusCircle,
-  Map,
-  CloudSun,
-  Brain,
-  MessageSquare,
-  Megaphone,
-  BellRing,
-  Calculator,
-  ShoppingCart,
-  Send,
-  Copy,
-  Facebook,
-  TrendingDown,
-  Target,
-  Zap,
-  ToggleRight,
-  ToggleLeft,
-  Tag,
+  Search,
   FileBarChart,
+  Tag,
+  Zap,
+  ShoppingCart,
+  Minus,
+  Clock,
+  Target,
+  MessageSquare,
+  Send,
+  Brain,
+  Megaphone,
+  TrendingDown,
 } from "lucide-react";
+
+// ─── Types ─────────────────────────────────────────────────────────
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+}
+
+// ─── Constants ─────────────────────────────────────────────────────
+const PRODUCT_LIBRARY: Product[] = [
+  { id: "1", name: "Coffee Latte", price: 4.5 },
+  { id: "2", name: "Green Tea", price: 3.2 },
+  { id: "3", name: "Fried Rice", price: 2.5 },
+  { id: "4", name: "Spring Roll", price: 1.8 },
+  { id: "5", name: "Coconut Water", price: 1.5 },
+  { id: "6", name: "Mango Sticky Rice", price: 2.0 },
+];
+
+const GOAL = {
+  label: "Daily Revenue Goal",
+  khmer: "គោលដៅចំណូលប្រចាំថ្ងៃ",
+  current: 485.5, // Different from pro
+  target: 500,
+};
 
 export default function PremiumDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDayLocked, setIsDayLocked] = useState(false);
-  const [isMapVisible, setIsMapVisible] = useState(true);
+  const [showCustomCategoryModal, setShowCustomCategoryModal] = useState(false);
+  const [customCategoryName, setCustomCategoryName] = useState("");
+
+  const [quickSaleOpen, setQuickSaleOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [cart, setCart] = useState<{ product: Product; qty: number }[]>([]);
+  const [customers, setCustomers] = useState(1);
+  const [expLogged, setExpLogged] = useState(false);
+  
+  // Chat state
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
+
+  const searchRef = React.useRef<HTMLInputElement>(null);
+  const quickSaleRef = React.useRef<HTMLDivElement>(null);
+
+  // Greeting
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const greetingKh = hour < 12 ? "អរុណសួស្តី" : hour < 17 ? "ទិវាសួស្តី" : "សាយ័ណ្ហសួស្តី";
+  const dateStr = now.toLocaleDateString("en-KH", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
+  // Goal ring logic
+  const goalPct = Math.min((GOAL.current / GOAL.target) * 100, 100);
+  const radius = 38;
+  const circum = 2 * Math.PI * radius;
+  const strokeDash = (goalPct / 100) * circum;
+
+  React.useEffect(() => {
+    if (quickSaleOpen) setTimeout(() => searchRef.current?.focus(), 120);
+  }, [quickSaleOpen]);
+
+  const closeQuickSale = React.useCallback(() => {
+    setQuickSaleOpen(false);
+    setCart([]);
+    setSearchQuery("");
+  }, []);
+
+  React.useEffect(() => {
+    const fn = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeQuickSale();
+    };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, [closeQuickSale]);
+
+  React.useEffect(() => {
+    if (!quickSaleOpen) return;
+    const fn = (e: MouseEvent) => {
+      if (quickSaleRef.current && !quickSaleRef.current.contains(e.target as Node)) {
+        closeQuickSale();
+      }
+    };
+    setTimeout(() => document.addEventListener("mousedown", fn), 0);
+    return () => document.removeEventListener("mousedown", fn);
+  }, [quickSaleOpen, closeQuickSale]);
+
+  const filteredProducts = PRODUCT_LIBRARY.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const addToCart = (product: Product) => {
+    setCart((prev) => {
+      const exists = prev.find((i) => i.product.id === product.id);
+      if (exists) return prev.map((i) => i.product.id === product.id ? { ...i, qty: i.qty + 1 } : i);
+      return [...prev, { product, qty: 1 }];
+    });
+    setSearchQuery("");
+    searchRef.current?.focus();
+  };
+
+  const changeQty = (id: string, delta: number) =>
+    setCart((prev) =>
+      prev
+        .map((i) => (i.product.id === id ? { ...i, qty: i.qty + delta } : i))
+        .filter((i) => i.qty > 0),
+    );
+
+  const cartTotal = cart.reduce((sum, i) => sum + i.product.price * i.qty, 0);
+  const cartItems = cart.reduce((sum, i) => sum + i.qty, 0);
+
+  const completeSale = () => {
+    setCart([]);
+    setCustomers(1);
+    setSearchQuery("");
+    setQuickSaleOpen(false);
+  };
 
   const summaryData = {
     sales: "$524.50",
     expenses: "$145.00",
     profit: "$379.50",
     customers: "124",
-    profitMargin: "72.3%",
+    avgCustomer: "$4.23",
     bestSelling: "Iced Coffee",
+    profitMargin: "72.3%",
   };
 
-  // Premium: Unlimited
   const usageData = { used: 3482, limit: Infinity };
 
-  // AI Forecaster data
-  const restockSuggestions = [
-    { item: "Iced Coffee", khmer: "កាហ្វេទឹកកក", suggestedQty: 60, reason: "High weekend demand predicted", confidence: 92 },
-    { item: "Mango Sticky Rice", khmer: "បាយដំណើបស្វាយ", suggestedQty: 25, reason: "Rainy evening → comfort food trend", confidence: 87 },
-    { item: "Noodle Soup", khmer: "គុយទាវ", suggestedQty: 40, reason: "Consistent weekday demand", confidence: 85 },
+  const weeklyData = [65, 88, 55, 110, 80, 145, 105];
+  const weeklyLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  const monthlyData = [580, 720, 680, 810];
+  const monthlyLabels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+
+  const bestSellingProducts = [
+    { name: "Iced Coffee", khmer: "កាហ្វេទឹកកក", qty: 62, revenue: "$93.00", pct: 100 },
+    { name: "Noodle Soup", khmer: "គុយទាវ", qty: 45, revenue: "$135.00", pct: 78 },
+    { name: "Hot Latte", khmer: "ឡាតេក្តៅ", qty: 35, revenue: "$70.00", pct: 62 },
+    { name: "Green Tea", khmer: "តែបៃតង", qty: 28, revenue: "$42.00", pct: 50 },
   ];
 
-  // Break-even data
-  const breakEvenData = {
-    customersNeeded: 18,
-    customersServed: 124,
-    dailyTarget: "$180.00",
-    currentRevenue: "$524.50",
-    status: "exceeded",
-  };
-
-  // Weather intelligence
-  const weatherData = {
-    condition: "Rainy Evening",
-    temp: "28°C",
-    icon: "🌧️",
-    impact: "busy",
-    suggestions: [
-      { product: "Mango Sticky Rice", change: "+20%", reason: "Comfort food demand rises in rain" },
-      { product: "Hot Latte", change: "+35%", reason: "Hot beverages spike on rainy days" },
-      { product: "Iced Coffee", change: "-10%", reason: "Cold drinks decrease slightly" },
-    ],
-  };
-
-  // Smart product suggestions
-  const smartSuggestions = [
-    { product: "Hot Chocolate", reason: "Trending in rainy season across similar stalls", potential: "$45/day", trend: "up" },
-    { product: "Banana Pancake", reason: "Tourist demand increasing near your location", potential: "$32/day", trend: "up" },
+  const expenseCategories = [
+    { label: "គ្រឿងផ្សំ", value: 35, color: "#9333ea" }, // Purple
+    { label: "ថ្លៃជួល", value: 25, color: "#a855f7" },
+    { label: "ពលកម្ម", value: 15, color: "#d946ef" }, // Fuchsia
+    { label: "ដឹកជញ្ជូន", value: 12, color: "#ec4899" }, // Pink
+    { label: "អគ្គិសនី", value: 5, color: "#f43f5e" },
+    { label: "ទីផ្សារ", value: 5, color: "#e879f9", custom: true },
+    { label: "ផ្សេងៗ", value: 3, color: "#94a3b8" },
   ];
 
-  // Marketing hub
-  const generatedPost = {
-    text: "🔥 សួស្តីអ្នកទាំងអស់គ្នា! ថ្ងៃនេះមានម៉ឺនុយពិសេស — កាហ្វេទឹកកកត្រជាក់ៗ និងបាយដំណើបស្វាយឆ្ងាញ់ៗ! មកទស្សនាតូបយើងខ្ញុំនៅ Night Market, Stall B42 🏪✨ #PsarPulse #NightMarket",
-    platform: "Facebook",
-  };
+  const inventoryItems = [
+    { id: 1, name: "Iced Coffee", khmer: "កាហ្វេទឹកកក", stock: 45, threshold: 10, status: "good" },
+    { id: 2, name: "Hot Latte", khmer: "ឡាតេក្តៅ", stock: 3, threshold: 10, status: "low" },
+    { id: 3, name: "Mango Sticky Rice", khmer: "បាយដំណើបស្វាយ", stock: 0, threshold: 5, status: "out" },
+    { id: 4, name: "Noodle Soup", khmer: "គុយទាវ", stock: 24, threshold: 15, status: "good" },
+    { id: 5, name: "Green Tea", khmer: "តែបៃតង", stock: 12, threshold: 10, status: "good" },
+  ];
 
-  // Notification alerts
+  // Premium Notification alerts
   const smartAlerts = [
-    { type: "warning", message: "Sales dropped 15% compared to usual Thursday average", time: "2 hours ago" },
     { type: "opportunity", message: "Nearby event detected: +40% foot traffic expected tonight", time: "30 min ago" },
-    { type: "restock", message: "Hot Latte stock critically low — 3 units left", time: "Just now" },
+    { type: "warning", message: "Trending Drop: Green Tea sales are down 15% today", time: "2 hours ago" },
   ];
 
-  // Chat messages
   const chatMessages = [
     { role: "assistant", text: "សួស្តី! I'm your AI assistant. How can I help you today?" },
     { role: "assistant", text: "I can help with sales analysis, inventory advice, marketing tips, and more. Just ask!" },
   ];
-
-  // Charts data
-  const weeklyData = [55, 82, 48, 95, 72, 130, 92];
-  const weeklyLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900 selection:bg-purple-500 selection:text-white">
@@ -148,6 +236,7 @@ export default function PremiumDashboard() {
           <NavItem icon={Users} title="Customers" khmerTitle="អតិថិជន" />
           <NavItem icon={Package} title="Inventory" khmerTitle="ស្តុក" />
           <NavItem icon={FileBarChart} title="Reports" khmerTitle="របាយការណ៍" />
+          <NavItem icon={Megaphone} title="Marketing" khmerTitle="ទីផ្សារ" />
         </nav>
 
         <div className="p-4 border-t border-slate-100">
@@ -157,7 +246,7 @@ export default function PremiumDashboard() {
               <Sparkles className="w-4 h-4 text-purple-400" />
               <span className="font-semibold text-sm">Premium Plan</span>
             </div>
-            <p className="text-xs text-slate-400 mb-2">$7/month · AI Assistant Active</p>
+            <p className="text-xs text-slate-400 mb-2">$7/month · Unlimited AI Logs</p>
             <Link
               href="/vendor/pricing"
               className="block w-full text-center text-[12px] font-bold text-purple-300 hover:text-purple-200 bg-white/10 hover:bg-white/15 py-1.5 rounded-lg transition-colors"
@@ -182,14 +271,237 @@ export default function PremiumDashboard() {
                   <Sparkles className="w-3 h-3" /> PREMIUM
                 </span>
               </div>
-              <p className="text-[12px] font-khmer text-slate-500">ផ្ទាំងគ្រប់គ្រង Premium</p>
+              <p className="text-[12px] font-khmer text-slate-500">ផ្ទាំងគ្រប់គ្រង</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="hidden sm:flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-3.5 py-2 rounded-xl transition-colors text-sm min-h-[40px]">
-              <FileText className="w-4 h-4" /> Export PDF
-            </button>
+             {/* ─── QUICK SALE ─── */}
+             <div ref={quickSaleRef} className="relative">
+              <button
+                onClick={() => setQuickSaleOpen((o) => !o)}
+                className={`flex items-center gap-[7px] border-0 rounded-xl px-4 py-[9px] font-bold text-[13px] cursor-pointer transition-all duration-200 ${
+                  quickSaleOpen
+                    ? "bg-slate-900 text-white"
+                    : "bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white hover:from-purple-600 hover:to-fuchsia-600 shadow-sm shadow-purple-200"
+                }`}
+              >
+                {quickSaleOpen ? (
+                  <>
+                    <X className="w-4 h-4" /> Cancel
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-4 h-4" /> Quick Sale
+                  </>
+                )}
+                {cartItems > 0 && !quickSaleOpen && (
+                  <span className="bg-white text-purple-600 rounded-full w-[18px] h-[18px] text-[10px] font-extrabold flex items-center justify-center ml-0.5 shadow-sm">
+                    {cartItems}
+                  </span>
+                )}
+              </button>
+
+              {/* Dropdown panel */}
+              {quickSaleOpen && (
+                <div
+                  className="absolute top-[calc(100%+10px)] right-0 w-[330px] bg-white border border-slate-200 rounded-2xl shadow-[0_20px_56px_rgba(0,0,0,0.18)] overflow-hidden"
+                  style={{ zIndex: 9999 }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center gap-2 px-[18px] py-[14px] border-b border-slate-100 bg-slate-50">
+                    <ShoppingCart className="w-4 h-4 text-purple-500" />
+                    <span className="font-bold text-sm text-slate-900">
+                      Quick Sale
+                    </span>
+                    <span className="text-[11px] text-slate-500 ml-auto font-khmer">
+                      ការលក់រហ័ស
+                    </span>
+                  </div>
+
+                  <div className="p-[14px_18px] max-h-[60vh] overflow-y-auto">
+                    <div className="relative mb-[14px]">
+                      <Search className="w-3.5 h-3.5 absolute left-[11px] top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      <input
+                        ref={searchRef}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search product..."
+                        className="w-full pl-[33px] pr-[11px] py-[9px] bg-slate-50 border border-slate-200 rounded-xl text-[13px] outline-none text-slate-900 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all font-sans"
+                      />
+                      {searchQuery && (
+                        <div
+                          className="absolute top-full left-0 right-0 bg-white border border-slate-200 border-t-0 rounded-b-xl overflow-hidden shadow-lg mt-0.5"
+                          style={{ zIndex: 10 }}
+                        >
+                          {filteredProducts.length ? (
+                            filteredProducts.map((p) => (
+                              <button
+                                key={p.id}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  addToCart(p);
+                                }}
+                                className="w-full flex justify-between items-center px-[13px] py-[9px] bg-transparent border-0 cursor-pointer text-[13px] text-slate-700 text-left hover:bg-slate-50 mb-0"
+                              >
+                                <span className="font-medium">{p.name}</span>
+                                <span className="text-purple-600 font-bold">
+                                  ${p.price.toFixed(2)}
+                                </span>
+                              </button>
+                            ))
+                          ) : (
+                            <div className="px-[13px] py-[10px] text-[12.5px] text-slate-500">
+                              No products found
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {!searchQuery && (
+                      <div className="mb-[14px]">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
+                          Tap to add
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {PRODUCT_LIBRARY.map((p) => {
+                            const inCart = cart.find(
+                              (i) => i.product.id === p.id,
+                            );
+                            return (
+                              <button
+                                key={p.id}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  addToCart(p);
+                                }}
+                                className={`px-3 py-[9px] rounded-xl text-left cursor-pointer transition-all duration-[120ms] relative border ${
+                                  inCart
+                                    ? "bg-purple-50 border-purple-300"
+                                    : "bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
+                                } mb-0`}
+                              >
+                                <div
+                                  className={`text-xs font-semibold truncate mb-0.5 ${inCart ? "text-purple-700" : "text-slate-700"}`}
+                                >
+                                  {p.name}
+                                </div>
+                                <div
+                                  className={`text-[11px] font-bold ${inCart ? "text-purple-600" : "text-slate-500"}`}
+                                >
+                                  ${p.price.toFixed(2)}
+                                </div>
+                                {inCart && (
+                                  <span className="absolute top-1.5 right-2 bg-purple-500 text-white rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center shadow-sm">
+                                    {inCart.qty}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {cart.length > 0 && (
+                      <div className="mb-3 max-h-[140px] overflow-y-auto pr-1">
+                        {cart.map((item) => (
+                          <div
+                            key={item.product.id}
+                            className="flex items-center gap-2 py-[7px] border-b border-slate-100"
+                          >
+                            <span className="text-[12.5px] flex-1 text-slate-700 font-medium">
+                              {item.product.name}
+                            </span>
+                            <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg overflow-hidden shrink-0">
+                              <button
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  changeQty(item.product.id, -1);
+                                }}
+                                className="w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors"
+                              >
+                                <Minus className="w-3 h-3" />
+                              </button>
+                              <span className="text-xs font-bold min-w-[20px] text-center text-slate-700">
+                                {item.qty}
+                              </span>
+                              <button
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  changeQty(item.product.id, 1);
+                                }}
+                                className="w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors"
+                              >
+                                <Plus className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <span className="text-[12.5px] font-bold min-w-[48px] text-right text-slate-900">
+                              ${(item.product.price * item.qty).toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between py-2 border-t border-slate-100 mb-3 mt-1">
+                      <span className="text-xs text-slate-500 font-medium">
+                        Customers · <span className="font-khmer">អតិថិជន</span>
+                      </span>
+                      <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg overflow-hidden">
+                        <button
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setCustomers((c) => Math.max(1, c - 1));
+                          }}
+                          className="w-7 h-7 bg-transparent border-0 cursor-pointer text-slate-500 flex items-center justify-center hover:bg-slate-200 hover:text-slate-700 transition-colors"
+                        >
+                          <Minus className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="text-[13px] font-bold min-w-[24px] text-center text-slate-700">
+                          {customers}
+                        </span>
+                        <button
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setCustomers((c) => c + 1);
+                          }}
+                          className="w-7 h-7 bg-transparent border-0 cursor-pointer text-slate-500 flex items-center justify-center hover:bg-slate-200 hover:text-slate-700 transition-colors"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                      <span className="text-xs text-slate-500 font-medium">
+                        {cartItems} item{cartItems !== 1 ? "s" : ""}
+                      </span>
+                      <span className="font-extrabold text-xl text-purple-600">
+                        ${cartTotal.toFixed(2)}
+                      </span>
+                    </div>
+
+                    <button
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        if (cart.length) completeSale();
+                      }}
+                      disabled={cart.length === 0}
+                      className={`w-full py-3.5 font-bold text-[13.5px] border-0 rounded-xl flex items-center justify-center gap-[7px] transition-all ${
+                        cart.length
+                          ? "bg-purple-600 text-white cursor-pointer shadow-md hover:bg-purple-700 hover:shadow-lg"
+                          : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                      } mb-0`}
+                    >
+                      <CheckCircle2 className="w-4 h-4" /> Complete Sale
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <button className="hidden sm:flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium px-3.5 py-2 rounded-xl transition-colors text-sm min-h-[40px]">
               <FileSpreadsheet className="w-4 h-4" /> Export Excel
             </button>
@@ -203,7 +515,7 @@ export default function PremiumDashboard() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7">
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7 max-w-7xl mx-auto w-full">
 
           {/* Smart Push Notifications */}
           {smartAlerts.length > 0 && (
@@ -227,10 +539,10 @@ export default function PremiumDashboard() {
                      <AlertTriangle className="w-4 h-4 text-red-600" />}
                   </div>
                   <div className="flex-1">
-                    <p className="text-[13px] font-medium text-slate-700">{alert.message}</p>
+                    <p className="text-[14px] font-bold text-slate-800">{alert.message}</p>
                     <p className="text-[11px] text-slate-400 mt-0.5">{alert.time}</p>
                   </div>
-                  <button className="text-[12px] font-semibold text-slate-500 hover:text-slate-700 px-3 py-1.5 rounded-lg hover:bg-white transition-colors">
+                  <button className="text-[12px] font-bold text-slate-500 hover:text-slate-900 px-3 py-1.5 rounded-lg hover:bg-white transition-colors">
                     Dismiss
                   </button>
                 </div>
@@ -238,20 +550,93 @@ export default function PremiumDashboard() {
             </div>
           )}
 
-          {/* Unlimited badge */}
-          <div className="bg-gradient-to-r from-purple-600 via-fuchsia-600 to-purple-700 rounded-2xl p-5 shadow-lg text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 rounded-xl">
-                <Sparkles className="w-6 h-6" />
+          {/* ══ WELCOME BANNER (Premium Styled) ══════════════════════════════════ */}
+          <div className="bg-slate-900 rounded-2xl p-6 md:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 shadow-lg overflow-hidden relative border border-slate-800">
+            {/* Background decoration */}
+            <div className="absolute -right-20 -top-20 w-64 h-64 bg-fuchsia-500 bg-opacity-30 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute -left-20 -bottom-20 w-64 h-64 bg-purple-500 bg-opacity-30 rounded-full blur-[80px] pointer-events-none" />
+
+            {/* Left — greeting */}
+            <div className="flex items-center gap-5 relative z-10">
+              <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-[19px] font-extrabold text-white shrink-0 shadow-lg">
+                SM
               </div>
-              <div>
-                <h3 className="font-bold text-[17px]">AI Business Assistant Active</h3>
-                <p className="text-purple-200 text-sm mt-0.5">{usageData.used.toLocaleString()} logs · Gemini AI insights enabled · Weather intelligence on</p>
+              <div className="space-y-1">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-[22px] font-extrabold text-white tracking-tight">
+                    {greeting}, Sok Maly{" "}
+                    <span className="inline-block origin-bottom-right hover:rotate-12 transition-transform cursor-default">
+                      👋
+                    </span>
+                  </span>
+                </div>
+                <div className="text-[13px] text-purple-200 mt-1 flex items-center gap-2 font-medium">
+                  <span className="font-khmer">{greetingKh}</span>
+                  <span className="w-1 h-1 rounded-full bg-purple-400/50 block" />
+                  <Clock className="w-3.5 h-3.5 text-purple-300" />
+                  <span>{dateStr}</span>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 bg-white/15 px-4 py-2 rounded-xl">
-              <CheckCircle2 className="w-4 h-4" />
-              <span className="text-sm font-semibold">Premium Active</span>
+
+            {/* Right — goal ring */}
+            <div className="flex items-center gap-6 sm:shrink-0 relative z-10 backdrop-blur-sm p-4 rounded-2xl">
+              {/* SVG ring */}
+              <div className="relative w-[88px] h-[88px]">
+                <svg width="88" height="88" className="-rotate-90">
+                  <circle
+                    cx="44"
+                    cy="44"
+                    r={radius}
+                    fill="none"
+                    stroke="rgba(255,255,255,0.06)"
+                    strokeWidth="7"
+                  />
+                  <circle
+                    cx="44"
+                    cy="44"
+                    r={radius}
+                    fill="none"
+                    stroke="#a855f7" // Purple
+                    strokeWidth="7"
+                    strokeLinecap="round"
+                    strokeDasharray={`${strokeDash} ${circum}`}
+                    style={{ transition: "stroke-dasharray 1s ease" }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-[15px] font-extrabold text-[#e6edf3] leading-none">
+                    {Math.round(goalPct)}%
+                  </span>
+                  <span className="text-[9px] text-[#7d8590] mt-0.5">
+                    of goal
+                  </span>
+                </div>
+              </div>
+              {/* Goal text */}
+              <div>
+                <div className="flex items-center gap-1.5 mb-1 text-purple-300">
+                  <Target className="w-3.5 h-3.5" />
+                  <span className="text-[11px] font-bold uppercase tracking-[0.06em]">
+                    Daily Goal
+                  </span>
+                </div>
+                <div className="text-[24px] font-extrabold text-white leading-none tracking-tight mb-1">
+                  ${GOAL.current.toFixed(2)}
+                </div>
+                <div className="text-[12px] text-purple-200 mt-0.5 font-medium">
+                  of ${GOAL.target.toFixed(2)} target
+                </div>
+                <div className="mt-2.5 w-[140px] h-2 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm shadow-inner">
+                  <div
+                    className="h-full bg-purple-500 rounded-full transition-[width] duration-700 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                    style={{ width: `${goalPct}%` }}
+                  />
+                </div>
+                <div className="text-[11px] font-khmer text-purple-300 mt-1.5 opacity-80">
+                  {GOAL.khmer}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -263,235 +648,133 @@ export default function PremiumDashboard() {
             <SummaryCard title="Customers" khmerTitle="អតិថិជន" value={summaryData.customers} icon={Users} trend="+18%" isPositive={true} />
           </div>
 
-          {/* AI Forecaster + Weather Intelligence Row */}
+          {/* Advanced Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            {/* AI Sales Forecaster / Smart Restock */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gradient-to-r from-purple-100 to-fuchsia-100 rounded-xl">
-                    <ShoppingCart className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-[16px] text-slate-900">Smart Restock Forecaster</h3>
-                    <p className="text-[11px] font-khmer text-slate-400 mt-0.5">ការព្យាករណ៍បំពេញស្តុក</p>
-                  </div>
-                </div>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-600 text-[10px] font-bold rounded-full">
-                  <Brain className="w-3 h-3" /> AI
-                </span>
-              </div>
-              <div className="p-5 space-y-4">
-                <p className="text-[13px] text-slate-500 bg-purple-50 p-3 rounded-lg border border-purple-100">
-                  <Sparkles className="w-4 h-4 text-purple-500 inline mr-1.5 -mt-0.5" />
-                  Based on your past 30 days of sales data, here&apos;s what to buy at the morning market:
-                </p>
-                {restockSuggestions.map((item, i) => (
-                  <div key={i} className="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100/50 transition-colors">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[14px] font-semibold text-slate-900">{item.item}</span>
-                        <span className="text-[11px] font-khmer text-slate-400">{item.khmer}</span>
-                      </div>
-                      <p className="text-[12px] text-slate-500">{item.reason}</p>
+            {/* Weekly Revenue */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-semibold text-[15px] text-slate-900 mb-1">Weekly Revenue</h3>
+              <p className="text-[12px] font-khmer text-slate-400 mb-5">ចំណូលប្រចាំសប្តាហ៍</p>
+              <div className="h-40 flex items-end gap-1.5">
+                {weeklyData.map((height, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <div className="w-full bg-purple-50 rounded-t-lg relative group" style={{ height: "120px" }}>
+                      <div className="absolute bottom-0 w-full bg-purple-500 rounded-t-lg transition-all duration-500 group-hover:bg-purple-600" style={{ height: `${height}%` }}></div>
                     </div>
-                    <div className="text-right ml-4">
-                      <p className="text-[18px] font-bold text-purple-600">{item.suggestedQty}</p>
-                      <p className="text-[10px] text-slate-400 font-medium">{item.confidence}% confident</p>
-                    </div>
+                    <span className="text-[10px] text-slate-400 font-medium">{weeklyLabels[i]}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Weather Correlation Intelligence */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-50 rounded-xl">
-                    <CloudSun className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-[16px] text-slate-900">Weather Intelligence</h3>
-                    <p className="text-[11px] font-khmer text-slate-400 mt-0.5">ព័ត៌មានអាកាសធាតុ</p>
-                  </div>
-                </div>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full">
-                  <Brain className="w-3 h-3" /> AI
-                </span>
-              </div>
-              <div className="p-5">
-                {/* Current Weather */}
-                <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 mb-5">
-                  <span className="text-4xl">{weatherData.icon}</span>
-                  <div>
-                    <p className="text-[16px] font-bold text-slate-900">{weatherData.condition}</p>
-                    <p className="text-[13px] text-slate-500">{weatherData.temp} · Expected to be <strong className="text-purple-600">{weatherData.impact}</strong></p>
-                  </div>
-                </div>
-
-                {/* Impact Suggestions */}
-                <h4 className="text-[13px] font-bold text-slate-500 uppercase tracking-wider mb-3">Predicted Impact on Products</h4>
-                <div className="space-y-3">
-                  {weatherData.suggestions.map((s, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                      <div>
-                        <p className="text-[14px] font-semibold text-slate-900">{s.product}</p>
-                        <p className="text-[12px] text-slate-500">{s.reason}</p>
+            {/* Monthly Revenue */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-semibold text-[15px] text-slate-900 mb-1">Monthly Revenue</h3>
+              <p className="text-[12px] font-khmer text-slate-400 mb-5">ចំណូលប្រចាំខែ</p>
+              <div className="h-40 flex items-end gap-2">
+                {monthlyData.map((val, i) => {
+                  const maxVal = 900;
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <span className="text-[11px] font-bold text-slate-500">${val}</span>
+                      <div className="w-full bg-fuchsia-50 rounded-t-lg relative group" style={{ height: "100px" }}>
+                        <div className="absolute bottom-0 w-full bg-fuchsia-500 rounded-t-lg transition-all duration-500 group-hover:bg-fuchsia-600" style={{ height: `${(val / maxVal) * 100}%` }}></div>
                       </div>
-                      <span className={`text-[15px] font-bold ${s.change.startsWith("+") ? "text-[#29B28D]" : "text-red-500"}`}>
-                        {s.change}
-                      </span>
+                      <span className="text-[10px] text-slate-400 font-medium">{monthlyLabels[i]}</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Break-Even Calculator */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 bg-emerald-50 rounded-xl">
-                <Target className="w-5 h-5 text-emerald-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-[16px] text-slate-900">Break-Even Tracker</h3>
-                <p className="text-[11px] font-khmer text-slate-400 mt-0.5">ការតាមដានចំណុចសមតុល្យ</p>
-              </div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-600 text-[10px] font-bold rounded-full ml-auto">
-                <Brain className="w-3 h-3" /> AI
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-slate-50 rounded-xl text-center">
-                <p className="text-[12px] font-semibold text-slate-500 mb-1">Daily Target</p>
-                <p className="text-[22px] font-bold text-slate-900">{breakEvenData.dailyTarget}</p>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-xl text-center">
-                <p className="text-[12px] font-semibold text-slate-500 mb-1">Current Revenue</p>
-                <p className="text-[22px] font-bold text-[#29B28D]">{breakEvenData.currentRevenue}</p>
-              </div>
-              <div className="p-4 bg-slate-50 rounded-xl text-center">
-                <p className="text-[12px] font-semibold text-slate-500 mb-1">Customers Served</p>
-                <p className="text-[22px] font-bold text-slate-900">{breakEvenData.customersServed}</p>
-              </div>
-              <div className="p-4 bg-emerald-50 rounded-xl text-center border border-emerald-100">
-                <p className="text-[12px] font-semibold text-emerald-600 mb-1">Status</p>
-                <div className="flex items-center justify-center gap-1.5">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                  <p className="text-[18px] font-bold text-emerald-600">Exceeded!</p>
-                </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="mt-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[12px] font-medium text-slate-500">Progress to break-even</span>
-                <span className="text-[12px] font-bold text-emerald-500">291% ✓</span>
-              </div>
-              <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500 transition-all duration-700" style={{ width: "100%" }}></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Smart Product Suggestions + Automated Marketing Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            {/* Smart Product Suggestions */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
-                <div className="p-2 bg-amber-50 rounded-xl">
-                  <TrendingUp className="w-5 h-5 text-amber-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[16px] text-slate-900">Smart Product Suggestions</h3>
-                  <p className="text-[11px] font-khmer text-slate-400 mt-0.5">ការណែនាំផលិតផលឆ្លាត</p>
+            {/* Expenses with Custom Categories */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col col-span-1 lg:col-span-2">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="font-semibold text-[15px] text-slate-900">Expenses</h3>
+                <div className="flex items-center gap-2">
+                  {expLogged && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-bold border border-emerald-100 uppercase tracking-wider">
+                      <CheckCircle2 className="w-3 h-3" /> Logged!
+                    </span>
+                  )}
                 </div>
               </div>
-              <div className="p-5 space-y-4">
-                <p className="text-[13px] text-slate-500 bg-amber-50 p-3 rounded-lg border border-amber-100">
-                  <Sparkles className="w-4 h-4 text-amber-500 inline mr-1.5 -mt-0.5" />
-                  Hidden trends detected based on weather, location, and market data:
-                </p>
-                {smartSuggestions.map((s, i) => (
-                  <div key={i} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-[15px] font-bold text-slate-900">{s.product}</h4>
-                      <span className="text-[13px] font-bold text-[#29B28D] flex items-center gap-1">
-                        <ArrowUpRight className="w-3.5 h-3.5" /> {s.potential}
-                      </span>
+              <p className="text-[12px] font-khmer text-slate-400 mb-4">ការចំណាយ</p>
+              <div className="space-y-3 flex-1">
+                {expenseCategories.map((item, i) => (
+                  <div key={i}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-khmer font-medium text-slate-700">{item.label}</span>
+                        {(item as any).custom && (
+                          <span className="text-[9px] font-bold text-purple-500 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">
+                            CUSTOM
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[13px] font-bold text-slate-500">{item.value}%</span>
                     </div>
-                    <p className="text-[12px] text-slate-500">{s.reason}</p>
+                    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${item.value}%`, backgroundColor: item.color }}></div>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Automated Marketing Hub */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-xl">
-                  <Megaphone className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[16px] text-slate-900">Marketing Hub</h3>
-                  <p className="text-[11px] font-khmer text-slate-400 mt-0.5">មជ្ឈមណ្ឌលទីផ្សារ</p>
-                </div>
-              </div>
-              <div className="p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">f</span>
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-semibold text-slate-700">Facebook Post</p>
-                    <p className="text-[11px] text-slate-400">Auto-generated in Khmer</p>
-                  </div>
-                  <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-600 text-[10px] font-bold rounded-full">
-                    <Brain className="w-3 h-3" /> AI Generated
-                  </span>
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-4">
-                  <p className="text-[14px] text-slate-700 leading-relaxed font-khmer">{generatedPost.text}</p>
-                </div>
-
-                <div className="flex gap-3">
-                  <button className="flex-1 flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition-colors text-sm min-h-[44px]">
-                    <Copy className="w-4 h-4" /> Copy Text
-                  </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors text-sm min-h-[44px]">
-                    <Send className="w-4 h-4" /> Post to Facebook
-                  </button>
-                </div>
-
-                <button className="w-full mt-3 flex items-center justify-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-600 font-semibold py-2.5 rounded-xl transition-colors text-sm">
-                  <Sparkles className="w-4 h-4" /> Regenerate Caption
-                </button>
-              </div>
-            </div>
           </div>
 
-          {/* End-of-Day Summary with AI Summary */}
+          {/* Best Selling Products */}
           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-[17px] text-slate-900">End-of-Day Summary</h3>
-                <p className="text-[12px] font-khmer text-slate-400 mt-0.5">សង្ខេបចុងថ្ងៃ</p>
+                <h3 className="font-bold text-[17px] text-slate-900">Best Selling Products</h3>
+                <p className="text-[12px] font-khmer text-slate-400 mt-0.5">ផលិតផលលក់ដាច់ជាងគេ</p>
+              </div>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-purple-100 to-fuchsia-100 text-purple-700 border border-purple-200 text-[11px] font-bold rounded-full">
+                <Crown className="w-3 h-3 text-purple-500" /> Premium Analytics
+              </span>
+            </div>
+            <div className="p-5 space-y-4">
+              {bestSellingProducts.map((item, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <span className="w-7 h-7 rounded-full bg-purple-50 text-purple-600 text-[12px] font-bold flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div>
+                        <span className="text-[14px] font-semibold text-slate-900">{item.name}</span>
+                        <span className="text-[11px] font-khmer text-slate-400 ml-2">{item.khmer}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[14px] font-bold text-purple-600">{item.revenue}</span>
+                        <span className="text-[12px] text-slate-400 ml-2">({item.qty} sold)</span>
+                      </div>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-full transition-all duration-700" style={{ width: `${item.pct}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+           {/* End-of-Day Summary with AI Summary */}
+           <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-[17px] text-slate-900">End-of-Day AI Summary</h3>
+                <p className="text-[12px] font-khmer text-slate-400 mt-0.5">សង្ខេបចុងថ្ងៃរហ័ស</p>
               </div>
               {isDayLocked && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-50 text-purple-600 text-[12px] font-bold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-purple-50 text-purple-600 text-[12px] font-bold border border-purple-100">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Day Locked
                 </span>
               )}
             </div>
 
             <div className="p-6">
+              {/* Summary Cards */}
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="p-4 bg-slate-50 rounded-xl text-center">
                   <p className="text-[12px] font-semibold text-slate-500 mb-1">Total Sales</p>
@@ -510,18 +793,14 @@ export default function PremiumDashboard() {
                 </div>
               </div>
 
-              {/* AI Summary */}
-              <div className="bg-gradient-to-r from-purple-50 via-fuchsia-50 to-indigo-50 rounded-xl p-5 mb-6 border border-purple-100">
+              {/* AI Summary Section */}
+              <div className="bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-xl p-5 mb-6 border border-purple-100">
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles className="w-5 h-5 text-purple-500" />
-                  <h4 className="font-bold text-[14px] text-purple-700">AI Daily Summary</h4>
-                  <span className="text-[10px] font-bold text-purple-400 bg-purple-100 px-2 py-0.5 rounded-full">PREMIUM</span>
+                  <h4 className="font-bold text-[14px] text-purple-700">Gemini Insight</h4>
                 </div>
                 <p className="text-[14px] text-slate-700 leading-relaxed">
-                  🚀 <strong>Outstanding day!</strong> Revenue soared 24% above average at $524.50 with a 72.3% margin.
-                  Break-even was reached by 11 AM with only 18 customers. The rainy evening drove a 35% spike in Hot Latte sales.
-                  Consider adding Hot Chocolate to your menu — similar stalls report $45/day from this item during rainy season.
-                  Tomorrow&apos;s forecast: Partly cloudy, expect standard traffic patterns. Suggested morning market buy: 60 Iced Coffee, 25 Mango Sticky Rice.
+                  📊 <strong>Incredible day!</strong> Revenue increased by +24% vs. yesterday. Iced Coffee remains your top seller. Watch your Hot Latte stock though, it's critically low!
                 </p>
               </div>
 
@@ -530,17 +809,12 @@ export default function PremiumDashboard() {
               </div>
 
               {!isDayLocked ? (
-                <button
-                  onClick={() => setIsDayLocked(true)}
-                  className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-600 hover:to-fuchsia-600 text-white font-bold text-[16px] py-4 rounded-xl shadow-lg shadow-purple-200 transition-all min-h-[56px]"
-                >
-                  <Lock className="w-5 h-5" />
-                  <span>Confirm & Lock Day (បញ្ជាក់ និងចាក់សោ)</span>
+                <button onClick={() => setIsDayLocked(true)} className="w-full flex items-center justify-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-[16px] py-4 rounded-xl shadow-sm transition-all min-h-[56px]">
+                  <Lock className="w-5 h-5 ml-2" /> <span>Confirm & Lock Day (បញ្ជាក់ និងចាក់សោ)</span>
                 </button>
               ) : (
                 <div className="w-full flex items-center justify-center gap-2.5 bg-slate-100 text-slate-500 font-bold text-[16px] py-4 rounded-xl min-h-[56px]">
-                  <CheckCircle2 className="w-5 h-5 text-purple-500" />
-                  <span>Day Locked — Records Finalized</span>
+                  <CheckCircle2 className="w-5 h-5 text-purple-500" /> <span>Day Locked — Records Finalized</span>
                 </div>
               )}
             </div>
@@ -559,19 +833,19 @@ export default function PremiumDashboard() {
       )}
 
       {isChatOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[520px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
+        <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[520px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5">
           {/* Chat Header */}
-          <div className="px-5 py-4 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-between">
+          <div className="px-5 py-4 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
-                <Brain className="w-5 h-5" />
+              <div className="w-9 h-9 bg-white/10 border border-white/20 rounded-full flex items-center justify-center shadow-inner">
+                <Brain className="w-5 h-5 text-purple-400" />
               </div>
               <div>
-                <p className="font-bold text-[14px]">AI Assistant</p>
-                <p className="text-[11px] text-purple-200">Powered by Gemini</p>
+                <p className="font-bold text-[14px]">Gemini Business Assistant</p>
+                <p className="text-[11px] text-purple-200">Online • Dashboard Hub</p>
               </div>
             </div>
-            <button onClick={() => setIsChatOpen(false)} className="text-white/70 hover:text-white p-1">
+            <button onClick={() => setIsChatOpen(false)} className="text-white/70 hover:text-white p-1 hover:bg-white/10 rounded-lg transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -580,11 +854,12 @@ export default function PremiumDashboard() {
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 min-h-[280px]">
             {chatMessages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed ${
+                <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed relative ${
                   msg.role === "user"
-                    ? "bg-purple-500 text-white rounded-br-md"
-                    : "bg-white border border-slate-200 text-slate-700 rounded-bl-md shadow-sm"
+                    ? "bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white rounded-br-sm shadow-sm"
+                    : "bg-white border border-slate-200 text-slate-700 rounded-tl-sm shadow-sm"
                 }`}>
+                  {msg.role !== "user" && <Sparkles className="w-3 h-3 text-purple-400 absolute -top-1 -left-1" />}
                   {msg.text}
                 </div>
               </div>
@@ -596,12 +871,12 @@ export default function PremiumDashboard() {
             <div className="flex items-center gap-2">
               <input
                 type="text"
-                placeholder="Ask me anything..."
+                placeholder="Ask your assistant..."
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
-                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[14px] focus:bg-white focus:border-purple-400 focus:ring-1 focus:ring-purple-400 outline-none transition-all min-h-[44px]"
+                className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[13px] focus:bg-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all placeholder:text-slate-400"
               />
-              <button className="p-3 bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white rounded-xl hover:opacity-90 transition-opacity min-h-[44px]">
+              <button className="p-2.5 bg-slate-900 text-white rounded-xl hover:opacity-90 transition-opacity shadow-sm">
                 <Send className="w-4 h-4" />
               </button>
             </div>
@@ -616,18 +891,19 @@ export default function PremiumDashboard() {
 function NavItem({ icon: Icon, title, khmerTitle, active = false }: { icon: any; title: string; khmerTitle: string; active?: boolean }) {
   const hrefMap: Record<string, string> = {
     Dashboard: "/vendor/premium",
-    Sales: "/vendor/sales",
-    Expenses: "/vendor/expenses",
-    Customers: "/vendor/customer",
-    Inventory: "/vendor/inventory",
-    Reports: "/vendor/reports",
+    Sales: "/vendor/premium/sales",
+    Expenses: "/vendor/premium/expenses",
+    Customers: "/vendor/premium/customer",
+    Inventory: "/vendor/premium/inventory",
+    Reports: "/vendor/premium/reports",
+    Marketing: "/vendor/premium/marketing",
     Settings: "/vendor/settings",
   };
   return (
-    <Link href={hrefMap[title] || "#"} className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-colors min-h-[48px] ${active ? "bg-purple-50 text-purple-600" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`}>
+    <Link href={hrefMap[title] || "#"} className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-colors min-h-[48px] ${active ? "bg-purple-50 text-purple-600 font-semibold" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium"}`}>
       <div className="flex items-center gap-3">
         <Icon className={`w-4 h-4 ${active ? "text-purple-500" : "text-slate-400"}`} />
-        <span className={`text-[15px] ${active ? "font-semibold" : "font-medium"}`}>{title}</span>
+        <span className={`text-[15px]`}>{title}</span>
       </div>
       <span className="text-[11px] font-khmer opacity-60">{khmerTitle}</span>
     </Link>

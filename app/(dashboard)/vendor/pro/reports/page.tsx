@@ -220,9 +220,6 @@ export default function ProReportsPage() {
 
             {/* Export Buttons - Pro Feature */}
             <div className="hidden lg:flex items-center gap-2">
-               <button className="flex items-center gap-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-medium px-4 py-2.5 rounded-xl transition-colors text-sm min-h-[44px]">
-                 <FileText className="w-4 h-4" /> Export CSV
-               </button>
                <button className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm min-h-[44px]">
                  <Download className="w-4 h-4" /> Export PDF
                </button>

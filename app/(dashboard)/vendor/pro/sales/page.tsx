@@ -21,7 +21,6 @@ import {
   FileBarChart,
   Crown,
   FileText,
-  FileSpreadsheet,
   CheckCircle2,
 } from "lucide-react";
 
@@ -167,9 +166,6 @@ export default function ProSalesPage() {
           <div className="flex items-center gap-3">
             <button className="hidden sm:flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-medium px-3.5 py-2 rounded-xl transition-colors text-sm min-h-[40px]">
               <FileText className="w-4 h-4" /> Export PDF
-            </button>
-            <button className="hidden sm:flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium px-3.5 py-2 rounded-xl transition-colors text-sm min-h-[40px]">
-              <FileSpreadsheet className="w-4 h-4" /> Export Excel
             </button>
             <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors relative">
               <Bell className="w-5 h-5" />
@@ -441,9 +437,9 @@ function NavItem({
     Dashboard: "/vendor/pro",
     Sales: "/vendor/pro/sales",
     Expenses: "/vendor/pro/expenses",
-    Customers: "/vendor/customer",
-    Inventory: "/vendor/inventory",
-    Reports: "/vendor/reports",
+    Customers: "/vendor/pro/customer",
+    Inventory: "/vendor/pro/inventory",
+    Reports: "/vendor/pro/reports",
     Settings: "/vendor/settings",
   };
 

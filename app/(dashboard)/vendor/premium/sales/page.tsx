@@ -316,6 +316,50 @@ export default function PremiumSalesPage() {
             ))}
           </div>
 
+          {/* ── Premium Metric Cards: 4 cards (Revenue, Transactions, Avg Sale, AI Forecast) ── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="bg-gradient-to-br from-purple-500 to-fuchsia-500 text-white rounded-2xl p-5 shadow-md flex items-center gap-4">
+              <div className="p-3 bg-white/20 rounded-xl">
+                <CircleDollarSign className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-purple-100">Today&apos;s Revenue</p>
+                <h3 className="text-[24px] font-bold">{breakEvenData.currentRevenue}</h3>
+                <p className="text-[11px] text-purple-200 mt-0.5 font-khmer">ចំណូលថ្ងៃនេះ</p>
+              </div>
+            </div>
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 flex items-center gap-4">
+              <div className="p-3 bg-purple-50 text-purple-500 rounded-xl border border-purple-100">
+                <Receipt className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-slate-600">Transactions</p>
+                <h3 className="text-[24px] font-bold text-slate-900">{breakEvenData.customersServed}</h3>
+                <p className="text-[11px] text-slate-400 mt-0.5 font-khmer">ប្រតិបត្តិការ</p>
+              </div>
+            </div>
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 flex items-center gap-4">
+              <div className="p-3 bg-purple-50 text-purple-500 rounded-xl border border-purple-100">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-slate-600">Avg. Sale Value</p>
+                <h3 className="text-[24px] font-bold text-slate-900">$4.23</h3>
+                <p className="text-[11px] text-slate-400 mt-0.5 font-khmer">តម្លៃលក់មធ្យម</p>
+              </div>
+            </div>
+            <div className="bg-white border border-purple-200 shadow-sm rounded-2xl p-5 flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-purple-100 to-fuchsia-100 text-purple-600 rounded-xl">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[13px] font-semibold text-slate-600">AI Next-Week</p>
+                <h3 className="text-[24px] font-bold text-purple-600">$3,120</h3>
+                <p className="text-[11px] text-purple-400 mt-0.5">Forecasted revenue</p>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column: Quick Log & Transactions array */}
             <div className="lg:col-span-2 space-y-6">
@@ -430,99 +474,64 @@ export default function PremiumSalesPage() {
 
             {/* Right Column: AI Insights & Predictors */}
             <div className="space-y-6">
-              {/* Daily Tracker & Break Even */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -z-10 -translate-y-1/2 translate-x-1/2"></div>
 
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="p-2 bg-emerald-50 rounded-xl">
-                    <Target className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-[16px] text-slate-900">
-                      Break-Even Calculator
-                    </h3>
-                    <p className="text-[11px] font-khmer text-slate-400 mt-0.5">
-                      ការតាមដានចំណុចសមតុល្យ
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-4 text-center">
-                  <span className="text-[12px] font-semibold text-slate-500 block mb-1">
-                    Current Revenue
-                  </span>
-                  <span className="text-[32px] font-bold text-[#29B28D] leading-none block">
-                    {breakEvenData.currentRevenue}
-                  </span>
-                  <div className="flex items-center justify-center gap-1.5 mt-2 bg-emerald-100 text-emerald-700 text-[12px] font-bold py-1 px-3 rounded-full w-max mx-auto">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Target (
-                    {breakEvenData.dailyTarget}) Exceeded
-                  </div>
-                </div>
-
-                <div className="mb-1">
-                  <p className="text-[13px] text-slate-600 mb-2">
-                    <strong className="text-slate-900">
-                      {breakEvenData.customersNeeded}
-                    </strong>{" "}
-                    more customers needed to hit minimum viability today based
-                    on fixed & variable costs.
-                  </p>
-                  <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-[#29B28D] transition-all duration-700"
-                      style={{ width: "100%" }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* AI Sales Forecaster */}
+              {/* AI Sales Forecaster — Premium exclusive: next-week revenue prediction */}
               <div className="bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-100 rounded-2xl shadow-sm p-5">
-                <div className="flex items-center gap-3 mb-5">
+                <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-white rounded-xl shadow-sm">
-                    <ShoppingCart className="w-5 h-5 text-purple-600" />
+                    <Sparkles className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-[16px] text-purple-900">
-                      Smart Restock Forecaster
-                    </h3>
-                    <p className="text-[11px] font-khmer text-purple-500 mt-0.5">
-                      ការព្យាករណ៍ស្តុកឆ្លាតវៃ
-                    </p>
+                    <h3 className="font-bold text-[16px] text-purple-900">AI Sales Forecaster</h3>
+                    <p className="text-[11px] font-khmer text-purple-500 mt-0.5">ការព្យាករណ៍ការលក់ AI</p>
                   </div>
                   <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 bg-white text-purple-600 text-[10px] font-bold rounded-full shadow-sm">
-                    <Brain className="w-3 h-3" /> AI
+                    <Brain className="w-3 h-3" /> Gemini
                   </span>
                 </div>
 
                 <p className="text-[13px] text-purple-800 mb-4 font-medium">
-                  Analysis indicates peak hours will demand higher stock today:
+                  Next-week revenue prediction based on trends &amp; weather:
                 </p>
 
-                <div className="space-y-3">
-                  {restockSuggestions.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex flex-col bg-white rounded-xl p-3 border border-purple-50 shadow-sm"
-                    >
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
-                          {item.item}
-                        </span>
-                        <span className="text-[15px] font-bold text-purple-600">
-                          Buy {item.suggestedQty}
-                        </span>
+                {/* Mini bar chart: solid = this week, faded = next-week forecast */}
+                <div className="flex items-end gap-1.5 mb-3" style={{ height: "64px" }}>
+                  {[65, 80, 72, 95, 88, 110, 102].map((h, i) => {
+                    const days = ["M", "T", "W", "T", "F", "S", "S"];
+                    const isForecast = i >= 4;
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                        <div
+                          className={`w-full rounded-t-sm ${isForecast ? "opacity-50" : ""}`}
+                          style={{
+                            height: `${(h / 110) * 56}px`,
+                            background: isForecast
+                              ? "linear-gradient(to top, #c084fc, #e879f9)"
+                              : "linear-gradient(to top, #7c3aed, #a855f7)",
+                          }}
+                        />
+                        <span className="text-[9px] font-bold text-purple-400">{days[i]}</span>
                       </div>
-                      <p className="text-[12px] text-slate-500 flex items-center justify-between">
-                        <span>{item.reason}</span>
-                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
-                          {item.confidence}% match
-                        </span>
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-purple-700" /> Actual
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+                    <div className="w-2.5 h-2.5 rounded-sm bg-fuchsia-300" /> Forecast
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl p-3 border border-purple-100">
+                  <p className="text-[12px] text-purple-700 font-semibold flex items-center gap-1.5">
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    Predicted: <span className="text-purple-900 font-bold">$3,120 next week</span>
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Rain expected Fri–Sat. Hot beverages may outsell iced drinks by 35%.
+                  </p>
                 </div>
               </div>
 
@@ -590,32 +599,6 @@ export default function PremiumSalesPage() {
                     ))}
                   </div>
                 </div>
-              </div>
-
-              {/* Smart Product Suggestions */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5">
-                <div className="flex items-center gap-2 mb-4 text-amber-600">
-                  <TrendingUp className="w-5 h-5" />
-                  <h3 className="font-bold text-[15px] text-slate-900">
-                    Hidden Market Trends
-                  </h3>
-                </div>
-                {smartSuggestions.map((s, i) => (
-                  <div
-                    key={i}
-                    className="bg-slate-50 rounded-xl p-4 border border-slate-100"
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <h4 className="font-bold text-[14px] text-slate-900">
-                        {s.product}
-                      </h4>
-                      <span className="text-[12px] font-bold text-[#29B28D] flex items-center gap-1">
-                        <ArrowUpRight className="w-3 h-3" /> {s.potential}
-                      </span>
-                    </div>
-                    <p className="text-[12px] text-slate-500">{s.reason}</p>
-                  </div>
-                ))}
               </div>
             </div>
           </div>

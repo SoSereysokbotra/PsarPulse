@@ -549,8 +549,8 @@ function NavItem({
     Sales: "/vendor/pro/sales",
     Expenses: "/vendor/pro/expenses",
     Customers: "/vendor/pro/customer",
-    Inventory: "/vendor/inventory",
-    Reports: "/vendor/reports",
+    Inventory: "/vendor/pro/inventory",
+    Reports: "/vendor/pro/reports",
     Settings: "/vendor/settings",
   };
 

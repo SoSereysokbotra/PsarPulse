@@ -2,341 +2,497 @@ import React from "react";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans font-['DM_Sans',_'Inter',_sans-serif]">
-      {/* Retained for keyframes and font import */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-        .fade-in { animation: fadeUp 0.7s ease both; }
-        .fade-in-1 { animation: fadeUp 0.7s 0.1s ease both; }
-        .fade-in-2 { animation: fadeUp 0.7s 0.2s ease both; }
-        .fade-in-3 { animation: fadeUp 0.7s 0.35s ease both; }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
-      {/* NAV */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-6 py-5 flex justify-between items-center">
+    <div className="min-h-screen bg-dark-bg text-white flex flex-col items-center justify-start font-sans selection:bg-brand-primary selection:text-white">
+      {/* ========================================
+        HEADER / NAV
+        ======================================== */}
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-dark-border bg-dark-bg/80 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-[30px] h-[30px] bg-[#29B28D] rounded-lg flex items-center justify-center font-bold text-white text-sm">
+            <div className="w-[30px] h-[30px] bg-brand-primary rounded-lg flex items-center justify-center font-bold text-white text-sm">
               P
             </div>
-            <span className="font-bold text-[15px] tracking-[-0.02em] text-slate-900">
+            <span className="font-bold text-[15px] tracking-[-0.02em] text-white">
               PsarPulse KH
             </span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
             <a
               href="#features"
-              className="text-slate-500 text-sm font-medium transition-colors duration-150 hover:text-slate-900"
+              className="text-muted text-sm font-medium transition-colors duration-150 hover:text-white"
             >
               Features
             </a>
             <a
+              href="#use-cases"
+              className="text-muted text-sm font-medium transition-colors duration-150 hover:text-white"
+            >
+              Use Cases
+            </a>
+            <a
               href="#pricing"
-              className="text-slate-500 text-sm font-medium transition-colors duration-150 hover:text-slate-900"
+              className="text-muted text-sm font-medium transition-colors duration-150 hover:text-white"
             >
               Pricing
             </a>
             <a
-              href="#"
-              className="text-slate-500 text-sm font-medium transition-colors duration-150 hover:text-slate-900"
+              href="#contact"
+              className="text-muted text-sm font-medium transition-colors duration-150 hover:text-white"
             >
-              Dashboard
+              Contact
             </a>
           </nav>
-          <div className="flex items-center gap-4">
-            <button className="hidden sm:block text-slate-500 text-sm font-medium transition-colors duration-150 hover:text-slate-900">
+          <div className="flex items-center gap-3">
+            <button className="hidden sm:block px-5 py-2.5 rounded-xl bg-dark-surface border border-dark-border hover:bg-dark-surface-hover transition-colors text-sm font-medium text-white">
               Log in
             </button>
-            <button className="bg-[#29B28D] text-white font-semibold py-2.5 px-6 rounded-[10px] transition-all duration-200 text-sm tracking-[-0.01em] shadow-sm shadow-[#29B28D]/20 hover:bg-[#249e7d] hover:-translate-y-[1px]">
-              Get started
+            <button className="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-colors text-white text-sm font-medium">
+              Get Started
             </button>
           </div>
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="max-w-5xl mx-auto px-6 pt-24 pb-24 text-center">
+      {/* ========================================
+        HERO SECTION
+        ======================================== */}
+      <section className="w-full flex flex-col items-center pt-36 sm:pt-44 px-4">
         <div className="fade-in inline-flex mb-6">
-          <span className="bg-[#29B28D]/10 text-[#219072] text-[11px] font-bold tracking-[0.08em] uppercase py-1 px-2.5 rounded-md">
+          <span className="bg-brand-primary/10 text-brand-primary text-[11px] font-bold tracking-[0.08em] uppercase py-1.5 px-3 rounded-full border border-brand-primary/20">
             New — Gemini AI Forecaster is live
           </span>
         </div>
 
-        <h1 className="fade-in-1 text-[clamp(40px,6vw,72px)] font-bold leading-[1.05] tracking-[-0.03em] mb-6 text-slate-900">
-          Smart business for
-          <br />
-          <span className="text-[#29B28D]">night market stalls.</span>
+        <h1 className="fade-in-1 text-4xl sm:text-5xl md:text-6xl font-semibold text-center leading-[1.15] mb-6 max-w-4xl tracking-tight">
+          Smart business for <br className="hidden sm:block" />
+          Cambodia&apos;s night markets
+          <span className="text-brand-primary">.</span>
         </h1>
 
-        <p className="fade-in-2 text-slate-600 text-lg leading-[1.7] max-w-[520px] mx-auto mb-9 font-normal">
+        <p className="fade-in-2 text-muted text-center text-sm sm:text-base max-w-2xl mb-10 leading-relaxed">
           Data-driven analytics and AI forecasting built exclusively for
-          Cambodia's informal economy.
+          Cambodia&apos;s informal economy. Log sales, track growth, and let AI
+          prepare your next move.
         </p>
 
-        <div className="fade-in-3 flex flex-col sm:flex-row gap-3 justify-center">
-          <button className="bg-[#29B28D] text-white font-semibold py-[14px] px-8 rounded-[10px] transition-all duration-200 text-[15px] tracking-[-0.01em] shadow-md shadow-[#29B28D]/20 hover:bg-[#249e7d] hover:-translate-y-[1px]">
-            Start logging for free →
+        <div className="fade-in-3 flex flex-col sm:flex-row items-center gap-4 mb-16 w-full sm:w-auto">
+          <button className="px-6 py-3.5 rounded-xl bg-dark-surface border border-dark-border hover:bg-dark-surface-hover transition-colors text-sm font-medium w-full sm:w-auto">
+            Explore Features
           </button>
-          <button className="text-slate-700 bg-white font-medium py-[14px] px-8 rounded-[10px] transition-all duration-200 text-[15px] border border-slate-200 shadow-sm hover:bg-slate-50 hover:border-slate-300">
-            Book a demo
+          <button className="px-6 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-colors text-white text-sm font-medium w-full sm:w-auto shadow-lg shadow-brand-primary/20">
+            Start Logging Free →
           </button>
         </div>
 
-        {/* DASHBOARD MOCKUP */}
-        <div className="fade-in-3 bg-white border border-slate-200 rounded-[20px] mt-16 text-left overflow-hidden shadow-xl shadow-slate-200/50 transition-colors duration-200 hover:border-[#29B28D]/30">
-          {/* Browser chrome */}
-          <div className="bg-slate-50 border-b border-slate-200 py-[14px] px-5 flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-            <div className="flex-1 ml-3 bg-white border border-slate-200 rounded-md py-1 px-3 text-[11px] text-slate-400 max-w-[200px] shadow-sm">
-              app.psarpulse.kh
+        {/* DASHBOARD PREVIEW */}
+        <div className="fade-in-4 relative w-full max-w-[900px] mb-20">
+          <div className="relative w-full rounded-2xl overflow-hidden border border-dark-border bg-dark-surface shadow-2xl shadow-brand-primary/5">
+            {/* Browser chrome */}
+            <div className="bg-dark-surface border-b border-dark-border py-3 px-5 flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-[#333]"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-[#333]"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-[#333]"></div>
+              <div className="flex-1 ml-3 bg-dark-bg border border-dark-border rounded-md py-1 px-3 text-[11px] text-muted max-w-[200px]">
+                app.psarpulse.kh
+              </div>
+            </div>
+
+            {/* Dashboard content */}
+            <div className="grid md:grid-cols-3 gap-0">
+              {/* Revenue card */}
+              <div className="py-8 px-7 border-b md:border-b-0 md:border-r border-dark-border">
+                <p className="text-[11px] text-muted tracking-[0.06em] uppercase mb-1.5 font-semibold">
+                  Sokha&apos;s Grill Station
+                </p>
+                <p className="text-muted text-[13px] mb-5">
+                  Today&apos;s Revenue
+                </p>
+                <div className="text-4xl font-bold text-brand-primary mb-2 tracking-[-0.02em]">
+                  ៛ 450,000
+                </div>
+                <span className="inline-block text-[12px] text-brand-primary bg-brand-primary/10 border border-brand-primary/20 py-[3px] px-2 rounded-md font-semibold">
+                  +14% vs yesterday
+                </span>
+                <button className="block w-full mt-7 bg-brand-primary text-white font-semibold text-[13px] p-2.5 rounded-lg text-center shadow-sm hover:bg-brand-primary-hover transition-colors">
+                  + Log Sale
+                </button>
+              </div>
+
+              {/* AI Insight */}
+              <div className="py-8 px-7 col-span-2">
+                <div className="flex gap-4 items-start">
+                  <div className="w-10 h-10 rounded-[10px] bg-brand-primary/10 flex items-center justify-center shrink-0">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#29B28D"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="bg-brand-primary/10 text-brand-primary text-[10px] font-bold tracking-[0.1em] uppercase py-[3px] px-2 rounded-md border border-brand-primary/20">
+                        AI Insight
+                      </span>
+                    </div>
+                    <h4 className="text-base font-semibold mb-2.5 tracking-[-0.01em] text-white">
+                      Busy night tomorrow
+                    </h4>
+                    <p className="text-muted text-sm leading-[1.65]">
+                      Clear weather forecast + historical data shows a 35% surge
+                      in foot traffic this weekend at Phnom Penh Night Market.
+                      Prepare 30% more grilled skewer inventory.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Mini stats row */}
+                <div className="grid grid-cols-3 gap-3 mt-7">
+                  {[
+                    ["1,240", "Sales logged"],
+                    ["98%", "Uptime"],
+                    ["4.9★", "Vendor rating"],
+                  ].map(([val, lbl]) => (
+                    <div
+                      key={lbl}
+                      className="bg-dark-bg rounded-[10px] py-3.5 px-4 border border-dark-border"
+                    >
+                      <div className="text-xl font-bold tracking-[-0.02em] mb-0.5 text-white">
+                        {val}
+                      </div>
+                      <div className="text-muted text-[11px] font-medium">
+                        {lbl}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-0">
-            {/* Revenue card */}
-            <div className="py-8 px-7 border-b md:border-b-0 md:border-r border-slate-200">
-              <p className="text-[11px] text-slate-400 tracking-[0.06em] uppercase mb-1.5 font-semibold">
-                Sokha's Grill Station
-              </p>
-              <p className="text-slate-600 text-[13px] mb-5">Today's Revenue</p>
-              <div className="text-4xl font-bold text-[#29B28D] mb-2 tracking-[-0.02em]">
-                ៛ 450,000
-              </div>
-              <span className="inline-block text-[12px] text-emerald-700 bg-emerald-100 border border-emerald-200 py-[3px] px-2 rounded-md font-semibold">
-                +14% vs yesterday
-              </span>
-              <button className="block w-full mt-7 bg-[#29B28D] text-white font-semibold text-[13px] p-2.5 rounded-lg text-center shadow-sm hover:bg-[#249e7d] transition-colors">
-                + Log Sale
-              </button>
-            </div>
+          {/* Shadow fade overlay */}
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-dark-bg pointer-events-none"></div>
+        </div>
+      </section>
 
-            {/* AI Insight */}
-            <div className="py-8 px-7 col-span-2">
-              <div className="flex gap-4 items-start">
-                <div className="w-10 h-10 rounded-[10px] bg-[#29B28D]/10 flex items-center justify-center shrink-0">
+      {/* ========================================
+        WHY CHOOSE HEADING
+        ======================================== */}
+      <h2 className="text-3xl sm:text-4xl font-medium text-center tracking-tight mb-24 px-4">
+        Why Choose <span className="text-secondary">PsarPulse</span> for Your
+        Business?
+      </h2>
+
+      {/* ========================================
+        ALTERNATING FEATURE SECTIONS
+        ======================================== */}
+      <div
+        id="features"
+        className="w-full max-w-6xl mx-auto flex flex-col gap-32 pb-24 px-4 sm:px-8"
+      >
+        {/* Feature 1: AI Forecasting */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-12 md:gap-20">
+          <div className="w-full md:w-1/2 text-left">
+            <h3 className="text-3xl sm:text-4xl font-semibold leading-[1.2] mb-6 tracking-tight">
+              Gemini-Powered <br />
+              <span className="text-secondary">AI Forecasting</span>
+            </h3>
+            <p className="text-muted text-sm sm:text-base leading-relaxed max-w-lg">
+              Predict tomorrow&apos;s customer traffic using local weather data
+              and historical sales patterns. Get inventory recommendations
+              before the night begins and auto-generate Khmer Facebook selling
+              posts with one click.
+            </p>
+          </div>
+          <div className="w-full md:w-1/2 flex justify-center md:justify-end">
+            <div className="relative w-full max-w-[400px] aspect-square rounded-2xl bg-dark-surface border border-dark-border flex items-center justify-center overflow-hidden">
+              {/* Icon visual */}
+              <div className="flex flex-col items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
                   <svg
-                    width="18"
-                    height="18"
+                    width="40"
+                    height="40"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#219072"
-                    strokeWidth="2"
+                    stroke="#29B28D"
+                    strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
                     <path d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="bg-[#29B28D]/10 text-[#219072] text-[10px] font-bold tracking-[0.1em] uppercase py-[3px] px-2 rounded-md border border-[#29B28D]/20">
-                      AI Insight
-                    </span>
-                  </div>
-                  <h4 className="text-base font-semibold mb-2.5 tracking-[-0.01em] text-slate-900">
-                    Busy night tomorrow
-                  </h4>
-                  <p className="text-slate-600 text-sm leading-[1.65]">
-                    Clear weather forecast + historical data shows a 35% surge
-                    in foot traffic this weekend at Phnom Penh Night Market.
-                    Prepare 30% more grilled skewer inventory.
+                <div className="text-center px-8">
+                  <p className="text-white font-semibold text-lg mb-2">
+                    AI Predictions
                   </p>
+                  <p className="text-muted text-sm">
+                    Tomorrow: +35% foot traffic
+                  </p>
+                  <div className="mt-4 flex items-center gap-2 justify-center">
+                    <div className="h-8 w-3 bg-brand-primary/20 rounded-sm"></div>
+                    <div className="h-12 w-3 bg-brand-primary/30 rounded-sm"></div>
+                    <div className="h-16 w-3 bg-brand-primary/50 rounded-sm"></div>
+                    <div className="h-20 w-3 bg-brand-primary/70 rounded-sm"></div>
+                    <div className="h-24 w-3 bg-brand-primary rounded-sm"></div>
+                  </div>
                 </div>
               </div>
-
-              {/* Mini stats row */}
-              <div className="grid grid-cols-3 gap-3 mt-7">
-                {[
-                  ["1,240", "Sales logged"],
-                  ["98%", "Uptime"],
-                  ["4.9★", "Vendor rating"],
-                ].map(([val, lbl]) => (
-                  <div
-                    key={lbl}
-                    className="bg-slate-50 rounded-[10px] py-3.5 px-4 border border-slate-200"
-                  >
-                    <div className="text-xl font-bold tracking-[-0.02em] mb-0.5 text-slate-900">
-                      {val}
-                    </div>
-                    <div className="text-slate-500 text-[11px] font-medium">
-                      {lbl}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-dark-bg pointer-events-none"></div>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* TRUST STRIP */}
-      <div className="border-y border-slate-200 py-6 bg-white">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12">
-          <p className="text-slate-400 text-[11px] font-bold tracking-[0.1em] uppercase">
-            Trusted across
-          </p>
-          {[
-            "Russian Market",
-            "PP Night Market",
-            "Siem Reap Old Market",
-            "Psar Leu",
-          ].map((m) => (
-            <span key={m} className="text-[13px] font-bold text-slate-300">
-              {m}
-            </span>
-          ))}
+        {/* Feature 2: Advanced Analytics (Reversed) */}
+        <div className="flex flex-col md:flex-row-reverse items-center justify-between gap-12 md:gap-20">
+          <div className="w-full md:w-1/2 text-left">
+            <h3 className="text-3xl sm:text-4xl font-semibold leading-[1.2] mb-6 tracking-tight">
+              Real-Time Analytics <br />
+              <span className="text-secondary">Track Every Sale</span>
+            </h3>
+            <p className="text-muted text-sm sm:text-base leading-relaxed max-w-lg">
+              Log sales instantly with one tap. View best-sellers, profit
+              margins, daily revenue trends, and compare weekly growth — all
+              designed for vendors who need speed over complexity.
+            </p>
+          </div>
+          <div className="w-full md:w-1/2 flex justify-center md:justify-start">
+            <div className="relative w-full max-w-[400px] aspect-square rounded-2xl bg-dark-surface border border-dark-border flex items-center justify-center overflow-hidden">
+              <div className="flex flex-col items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#29B28D"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div className="text-center px-8">
+                  <p className="text-white font-semibold text-lg mb-2">
+                    Sales Dashboard
+                  </p>
+                  <p className="text-muted text-sm">Today: ៛ 450,000</p>
+                  <div className="mt-4 grid grid-cols-3 gap-3">
+                    {[
+                      ["24", "Items"],
+                      ["+14%", "Growth"],
+                      ["៛18k", "Avg"],
+                    ].map(([v, l]) => (
+                      <div
+                        key={l}
+                        className="bg-dark-bg rounded-lg py-2 px-3 border border-dark-border"
+                      >
+                        <p className="text-brand-primary font-bold text-sm">
+                          {v}
+                        </p>
+                        <p className="text-muted text-[10px]">{l}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-dark-bg pointer-events-none"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Feature 3: Local Payments */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-12 md:gap-20">
+          <div className="w-full md:w-1/2 text-left">
+            <h3 className="text-3xl sm:text-4xl font-semibold leading-[1.2] mb-6 tracking-tight">
+              Local Payments <br />
+              <span className="text-secondary">ABA & KHQR Built-In</span>
+            </h3>
+            <p className="text-muted text-sm sm:text-base leading-relaxed max-w-lg">
+              Accept payments through ABA PayWay and KHQR directly in the
+              platform. Manage subscriptions, track Riel transactions, and
+              reconcile everything in one place — no extra apps needed.
+            </p>
+          </div>
+          <div className="w-full md:w-1/2 flex justify-center md:justify-end">
+            <div className="relative w-full max-w-[400px] aspect-square rounded-2xl bg-dark-surface border border-dark-border flex items-center justify-center overflow-hidden">
+              <div className="flex flex-col items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#29B28D"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <div className="text-center px-8">
+                  <p className="text-white font-semibold text-lg mb-2">
+                    Payment Integration
+                  </p>
+                  <p className="text-muted text-sm">KHQR • ABA PayWay</p>
+                  <div className="mt-4 flex items-center gap-3 justify-center">
+                    <div className="bg-dark-bg border border-dark-border rounded-lg py-2 px-4">
+                      <p className="text-brand-primary font-bold text-xs">
+                        KHQR
+                      </p>
+                    </div>
+                    <div className="bg-dark-bg border border-dark-border rounded-lg py-2 px-4">
+                      <p className="text-brand-primary font-bold text-xs">
+                        ABA
+                      </p>
+                    </div>
+                    <div className="bg-dark-bg border border-dark-border rounded-lg py-2 px-4">
+                      <p className="text-brand-primary font-bold text-xs">
+                        ៛ KHR
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-dark-bg pointer-events-none"></div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* FEATURES */}
-      <section id="features" className="max-w-5xl mx-auto px-6 py-28">
-        <div className="mb-14">
-          <span className="bg-[#29B28D]/10 text-[#219072] text-[11px] font-bold tracking-[0.08em] uppercase py-1 px-2.5 rounded-md mb-4 inline-block">
-            Features
-          </span>
-          <h2 className="text-[clamp(28px,4vw,44px)] font-bold tracking-[-0.03em] leading-[1.1] mb-4 text-slate-900">
-            Intelligence for the
-            <br />
-            informal economy.
-          </h2>
-          <p className="text-slate-600 text-base max-w-[420px] leading-[1.7]">
-            Enterprise-grade analytics at street-vendor prices. Built for how
-            Cambodia actually works.
-          </p>
-        </div>
+      {/* ========================================
+        REAL-WORLD USE CASES
+        ======================================== */}
+      <div id="use-cases" className="w-full pt-12 pb-32">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium text-center tracking-tight leading-[1.15] mb-16 px-4">
+          Real-World Applications <br />
+          <span className="text-secondary">The Cambodian Context</span>
+        </h2>
 
-        <div className="grid md:grid-cols-3 gap-4">
-          {/* Large feature */}
-          <div className="bg-white border border-slate-200 rounded-[20px] transition-colors duration-200 hover:border-[#29B28D]/40 md:col-span-2 py-9 px-8 shadow-sm">
-            <div className="w-11 h-11 rounded-xl bg-[#29B28D]/10 flex items-center justify-center mb-5">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#219072"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          {/* Left Column */}
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <div className="relative w-full h-[450px] sm:h-[550px] rounded-3xl overflow-hidden group bg-dark-surface border border-dark-border">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img
+                  src="https://res.cloudinary.com/dg5grwcd5/image/upload/v1773387153/pexels-chuck-2973392_t3hik9.jpg"
+                  alt="Night Market Vendors"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent z-10"></div>
+              <div className="absolute inset-x-0 bottom-0 p-8 flex flex-col items-center text-center z-20">
+                <h4 className="text-3xl font-bold text-white mb-3">
+                  Night Market Stalls
+                </h4>
+                <p className="text-muted text-sm max-w-[280px]">
+                  Track sales, predict busy nights, and manage inventory across
+                  Phnom Penh&apos;s busiest markets.
+                </p>
+              </div>
             </div>
-            <h3 className="text-xl font-bold mb-2.5 tracking-[-0.02em] text-slate-900">
-              Gemini AI Forecasting
-            </h3>
-            <p className="text-slate-600 text-sm leading-[1.7]">
-              Predictive notifications for inventory preparation based on local
-              weather and market events. Auto-generate Khmer Facebook selling
-              posts with one click.
-            </p>
+
+            <div className="relative w-full h-[350px] rounded-3xl overflow-hidden group bg-dark-surface border border-dark-border">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img
+                  src="https://res.cloudinary.com/dg5grwcd5/image/upload/v1773386990/pexels-zakhar-9407601_jpbr7t.jpg"
+                  alt="Street Food Vendors"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent z-10"></div>
+              <div className="absolute inset-x-0 bottom-0 p-8 flex flex-col items-center text-center z-20">
+                <h4 className="text-2xl font-bold text-white mb-3">
+                  Street Food Carts
+                </h4>
+                <p className="text-muted text-sm max-w-[280px]">
+                  One-tap sale logging designed for speed when customers are
+                  lining up.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-[20px] transition-colors duration-200 hover:border-[#29B28D]/40 py-9 px-8 shadow-sm">
-            <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center mb-5">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#475569"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+          {/* Right Column */}
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <div className="relative w-full h-[350px] rounded-3xl overflow-hidden group bg-dark-surface border border-dark-border">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img
+                  src="https://res.cloudinary.com/dg5grwcd5/image/upload/v1773386708/pexels-cottonbro-4709369_ys1qfj.jpg"
+                  alt="Small Retail Shops"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent z-10"></div>
+              <div className="absolute inset-x-0 bottom-0 p-8 flex flex-col items-center text-center z-20">
+                <h4 className="text-2xl font-bold text-white mb-3">
+                  Small Retail Shops
+                </h4>
+                <p className="text-muted text-sm max-w-[280px]">
+                  Full inventory management with low-stock SMS alerts and
+                  AI-powered restock suggestions.
+                </p>
+              </div>
             </div>
-            <h3 className="text-lg font-bold mb-2.5 tracking-[-0.02em] text-slate-900">
-              Advanced Analytics
-            </h3>
-            <p className="text-slate-600 text-[13px] leading-[1.7]">
-              Log sales instantly. View best-sellers, profit margins, and
-              compare growth.
-            </p>
-          </div>
 
-          <div className="bg-white border border-slate-200 rounded-[20px] transition-colors duration-200 hover:border-[#29B28D]/40 py-9 px-8 shadow-sm">
-            <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center mb-5">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#475569"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-              </svg>
+            <div className="relative w-full h-[504px] rounded-3xl overflow-hidden group bg-dark-surface border border-dark-border">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img
+                  src="https://res.cloudinary.com/dg5grwcd5/image/upload/v1773387072/pexels-tima-miroshnichenko-5380664_api0pc.jpg"
+                  alt="Digital Analytics Dashboard"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent z-10"></div>
+              <div className="absolute inset-x-0 bottom-0 p-8 flex flex-col items-center text-center z-20">
+                <h4 className="text-2xl font-bold text-white mb-3">
+                  Your <span className="text-secondary">Command Centre</span>
+                </h4>
+                <p className="text-muted text-sm max-w-[280px]">
+                  A real-time dashboard with revenue charts, AI insights, and
+                  growth analytics at your fingertips.
+                </p>
+              </div>
             </div>
-            <h3 className="text-lg font-bold mb-2.5 tracking-[-0.02em] text-slate-900">
-              Local Payments
-            </h3>
-            <p className="text-slate-600 text-[13px] leading-[1.7]">
-              ABA PayWay and KHQR integrated. Manage subscriptions or accept
-              Riel payments.
-            </p>
-          </div>
-
-          {/* CTA bento */}
-          <div className="md:col-span-2 bg-[#29B28D] rounded-[20px] py-9 px-8 flex items-center justify-between shadow-md shadow-[#29B28D]/20">
-            <div>
-              <h3 className="text-[22px] font-bold text-white mb-1.5 tracking-[-0.02em]">
-                Ready to grow?
-              </h3>
-              <p className="text-white/80 text-sm mb-6">
-                Join hundreds of vendors tracking their success.
-              </p>
-              <button className="bg-white text-[#219072] hover:bg-slate-50 font-semibold text-[13px] py-2.5 px-[22px] rounded-lg transition-colors">
-                Create free account
-              </button>
-            </div>
-            <svg
-              width="80"
-              height="80"
-              viewBox="0 0 24 24"
-              fill="rgba(255,255,255,0.15)"
-              className="hidden md:block"
-            >
-              <path d="M12 2L2 22h20L12 2z" />
-            </svg>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* PRICING */}
+      {/* ========================================
+        PRICING SECTION
+        ======================================== */}
       <section
         id="pricing"
-        className="border-t border-slate-200 py-20 px-6 bg-white"
+        className="w-full py-24 px-4 sm:px-8 border-t border-dark-border"
       >
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-14">
-            <span className="bg-[#29B28D]/10 text-[#219072] text-[11px] font-bold tracking-[0.08em] uppercase py-1 px-2.5 rounded-md mb-3.5 inline-block">
+            <span className="bg-brand-primary/10 text-brand-primary text-[11px] font-bold tracking-[0.08em] uppercase py-1.5 px-3 rounded-full border border-brand-primary/20 mb-4 inline-block">
               Pricing
             </span>
-            <h2 className="text-[clamp(28px,4vw,42px)] font-bold tracking-[-0.03em] mb-2.5 text-slate-900">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight mb-3">
               Vendor-friendly pricing
             </h2>
-            <p className="text-slate-600 text-[15px]">
+            <p className="text-muted text-sm sm:text-base">
               Integrated with ABA PayWay for seamless subscriptions.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-5">
             {/* Basic */}
-            <div className="bg-white border border-slate-200 rounded-[20px] transition-colors duration-200 hover:border-[#29B28D]/40 py-8 px-7 flex flex-col shadow-sm">
-              <p className="text-[13px] font-semibold text-slate-500 mb-4">
+            <div className="bg-dark-surface border border-dark-border rounded-[20px] transition-colors duration-200 hover:border-brand-primary/30 py-8 px-7 flex flex-col">
+              <p className="text-[13px] font-semibold text-muted mb-4">
                 Basic
               </p>
-              <p className="text-[40px] font-bold tracking-[-0.03em] mb-6 text-slate-900">
+              <p className="text-[40px] font-bold tracking-[-0.03em] mb-6 text-white">
                 Free
               </p>
               <div className="flex-1 flex flex-col gap-3 mb-7">
@@ -347,31 +503,31 @@ export default function LandingPage() {
                   "Khmer/English UI toggle",
                 ].map((f) => (
                   <div key={f} className="flex gap-2.5 items-start">
-                    <div className="w-[5px] h-[5px] rounded-full bg-slate-300 shrink-0 mt-[7px]"></div>
-                    <span className="text-slate-600 text-[13px]">{f}</span>
+                    <div className="w-[5px] h-[5px] rounded-full bg-[#333] shrink-0 mt-[7px]"></div>
+                    <span className="text-muted text-[13px]">{f}</span>
                   </div>
                 ))}
               </div>
-              <button className="w-full p-3 rounded-[10px] border border-slate-200 bg-slate-50 text-slate-700 font-semibold text-sm hover:bg-slate-100 transition-colors">
+              <button className="w-full p-3 rounded-xl border border-dark-border bg-dark-bg text-white font-semibold text-sm hover:bg-dark-surface-hover transition-colors">
                 Start Free
               </button>
             </div>
 
             {/* Pro */}
-            <div className="bg-white border-2 border-[#29B28D] rounded-[20px] shadow-lg shadow-[#29B28D]/10 py-8 px-7 flex flex-col relative transform md:-translate-y-2">
+            <div className="bg-dark-surface border-2 border-brand-primary rounded-[20px] shadow-lg shadow-brand-primary/10 py-8 px-7 flex flex-col relative transform md:-translate-y-2">
               <div className="flex justify-between items-center mb-4">
-                <p className="text-[13px] font-bold text-slate-900">Pro</p>
-                <span className="bg-[#29B28D]/10 text-[#219072] text-[10px] font-bold tracking-[0.1em] uppercase py-[3px] px-2 rounded-md">
+                <p className="text-[13px] font-bold text-white">Pro</p>
+                <span className="bg-brand-primary/10 text-brand-primary text-[10px] font-bold tracking-[0.1em] uppercase py-[3px] px-2 rounded-md border border-brand-primary/20">
                   Popular
                 </span>
               </div>
-              <div className="mb-1 text-slate-900">
+              <div className="mb-1 text-white">
                 <span className="text-[40px] font-bold tracking-[-0.03em]">
                   $3
                 </span>
-                <span className="text-slate-500 text-sm ml-1">/mo</span>
+                <span className="text-muted text-sm ml-1">/mo</span>
               </div>
-              <p className="text-xs text-[#219072] font-semibold mb-6">
+              <p className="text-xs text-brand-primary font-semibold mb-6">
                 ≈ 12,000 Riel
               </p>
               <div className="flex-1 flex flex-col gap-3 mb-7">
@@ -382,28 +538,28 @@ export default function LandingPage() {
                   "ABA PayWay integration",
                 ].map((f) => (
                   <div key={f} className="flex gap-2.5 items-start">
-                    <div className="w-[5px] h-[5px] rounded-full bg-[#29B28D] shrink-0 mt-[7px]"></div>
-                    <span className="text-slate-700 font-medium text-[13px]">
+                    <div className="w-[5px] h-[5px] rounded-full bg-brand-primary shrink-0 mt-[7px]"></div>
+                    <span className="text-white font-medium text-[13px]">
                       {f}
                     </span>
                   </div>
                 ))}
               </div>
-              <button className="bg-[#29B28D] text-white font-semibold py-[13px] px-7 rounded-[10px] transition-all duration-200 text-sm tracking-[-0.01em] hover:bg-[#249e7d] hover:-translate-y-[1px] w-full shadow-sm">
+              <button className="bg-brand-primary text-white font-semibold py-[13px] px-7 rounded-xl transition-all duration-200 text-sm tracking-[-0.01em] hover:bg-brand-primary-hover hover:-translate-y-[1px] w-full shadow-sm">
                 Upgrade to Pro
               </button>
             </div>
 
             {/* Premium */}
-            <div className="bg-white border border-slate-200 rounded-[20px] transition-colors duration-200 hover:border-[#29B28D]/40 py-8 px-7 flex flex-col shadow-sm">
-              <p className="text-[13px] font-semibold text-slate-500 mb-4">
+            <div className="bg-dark-surface border border-dark-border rounded-[20px] transition-colors duration-200 hover:border-brand-primary/30 py-8 px-7 flex flex-col">
+              <p className="text-[13px] font-semibold text-muted mb-4">
                 Premium
               </p>
-              <div className="mb-6 text-slate-900">
+              <div className="mb-6 text-white">
                 <span className="text-[40px] font-bold tracking-[-0.03em]">
                   $7
                 </span>
-                <span className="text-slate-500 text-sm ml-1">/mo</span>
+                <span className="text-muted text-sm ml-1">/mo</span>
               </div>
               <div className="flex-1 flex flex-col gap-3 mb-7">
                 {[
@@ -413,12 +569,12 @@ export default function LandingPage() {
                   "FB post auto-generator",
                 ].map((f) => (
                   <div key={f} className="flex gap-2.5 items-start">
-                    <div className="w-[5px] h-[5px] rounded-full bg-slate-300 shrink-0 mt-[7px]"></div>
-                    <span className="text-slate-600 text-[13px]">{f}</span>
+                    <div className="w-[5px] h-[5px] rounded-full bg-[#333] shrink-0 mt-[7px]"></div>
+                    <span className="text-muted text-[13px]">{f}</span>
                   </div>
                 ))}
               </div>
-              <button className="w-full p-3 rounded-[10px] border border-slate-200 bg-slate-50 text-slate-700 font-semibold text-sm hover:bg-slate-100 transition-colors">
+              <button className="w-full p-3 rounded-xl border border-dark-border bg-dark-bg text-white font-semibold text-sm hover:bg-dark-surface-hover transition-colors">
                 Get Premium
               </button>
             </div>
@@ -426,73 +582,74 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-slate-200 pt-12 px-6 pb-9 bg-slate-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between gap-10 mb-12">
-            <div>
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-7 h-7 bg-[#29B28D] rounded-md flex items-center justify-center font-bold text-white text-[13px]">
-                  P
-                </div>
-                <span className="font-bold text-[15px] tracking-[-0.02em] text-slate-900">
-                  PsarPulse KH
-                </span>
-              </div>
-              <p className="text-slate-500 text-[13px] max-w-[240px] leading-[1.7]">
-                Empowering Cambodia's informal economy with data-driven
-                insights. Built with ❤️ in Phnom Penh.
-              </p>
-            </div>
-            <div className="flex gap-12">
-              <div>
-                <p className="text-xs font-bold mb-3.5 text-slate-400 tracking-[0.06em] uppercase">
-                  Product
-                </p>
-                <div className="flex flex-col gap-2.5">
-                  {["Features", "Pricing"].map((l) => (
-                    <a
-                      key={l}
-                      href="#"
-                      className="text-[13px] text-slate-500 transition-colors duration-150 hover:text-slate-900"
-                    >
-                      {l}
-                    </a>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-xs font-bold mb-3.5 text-slate-400 tracking-[0.06em] uppercase">
-                  Legal
-                </p>
-                <div className="flex flex-col gap-2.5">
-                  {["Privacy", "Terms"].map((l) => (
-                    <a
-                      key={l}
-                      href="#"
-                      className="text-[13px] text-slate-500 transition-colors duration-150 hover:text-slate-900"
-                    >
-                      {l}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </div>
+      {/* ========================================
+        CONTACT & FOOTER
+        ======================================== */}
+      <div
+        id="contact"
+        className="w-full max-w-5xl mx-auto py-24 px-4 sm:px-8 flex flex-col items-center"
+      >
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium text-center tracking-tight mb-4">
+          Ready to <span className="text-secondary">Grow</span>?
+        </h2>
+        <p className="text-muted text-center text-sm sm:text-base mb-16 max-w-lg">
+          Join hundreds of Cambodian vendors already using PsarPulse to track
+          sales, forecast demand, and grow their business.
+        </p>
+
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 text-center mb-16">
+          <div className="flex flex-col items-center">
+            <h4 className="text-lg font-semibold mb-2">Support</h4>
+            <a
+              href="mailto:support@psarpulse.kh"
+              className="text-brand-primary hover:underline"
+            >
+              support@psarpulse.kh
+            </a>
           </div>
-          <div className="border-t border-slate-200 pt-5 flex justify-between items-center flex-wrap gap-3">
-            <p className="text-slate-400 text-xs">
-              © 2026 PsarPulse KH. All rights reserved.
-            </p>
-            <div className="flex bg-slate-200/50 rounded-lg p-[3px] border border-slate-200">
-              <button className="text-xs font-semibold py-1.5 px-3.5 rounded-md bg-white text-slate-900 shadow-sm border border-slate-200/50">
-                English
-              </button>
-              <button className="text-xs font-medium py-1.5 px-3.5 text-slate-500 hover:text-slate-700 transition-colors">
-                ភាសាខ្មែរ
-              </button>
-            </div>
+          <div className="flex flex-col items-center">
+            <h4 className="text-lg font-semibold mb-2">Location</h4>
+            <p className="text-muted text-sm">Phnom Penh, Cambodia</p>
           </div>
         </div>
+
+        <button className="px-8 py-4 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-all duration-200 text-white font-semibold shadow-lg shadow-brand-primary/20 hover:-translate-y-[1px]">
+          Create Free Account →
+        </button>
+      </div>
+
+      <footer className="relative w-full mt-12 pt-20 pb-10 px-4 sm:px-8 flex flex-col items-center overflow-hidden border-t border-dark-border/50">
+        <div className="flex items-center gap-3 mb-8 z-10">
+          <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center font-bold text-white text-sm">
+            P
+          </div>
+          <h3 className="text-2xl font-medium tracking-wide">PsarPulse KH</h3>
+        </div>
+
+        <div className="flex gap-8 mb-8 z-10">
+          {["Features", "Pricing", "Privacy", "Terms"].map((l) => (
+            <a
+              key={l}
+              href="#"
+              className="text-muted text-sm hover:text-white transition-colors"
+            >
+              {l}
+            </a>
+          ))}
+        </div>
+
+        <div className="flex bg-dark-surface rounded-lg p-[3px] border border-dark-border mb-8 z-10">
+          <button className="text-xs font-semibold py-1.5 px-3.5 rounded-md bg-dark-surface-hover text-white border border-dark-border/50">
+            English
+          </button>
+          <button className="text-xs font-medium py-1.5 px-3.5 text-muted hover:text-white transition-colors">
+            ភាសាខ្មែរ
+          </button>
+        </div>
+
+        <p className="text-muted text-xs sm:text-sm z-10">
+          © 2026 PsarPulse KH. Empowering Cambodia&apos;s Informal Economy.
+        </p>
       </footer>
     </div>
   );

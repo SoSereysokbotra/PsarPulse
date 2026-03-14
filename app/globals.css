@@ -1,25 +1,63 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-outfit), var(--font-suwannaphum), sans-serif;
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Dark theme palette */
+  --color-dark-bg: #0a0a0a;
+  --color-dark-surface: #111111;
+  --color-dark-surface-hover: #1a1a1a;
+  --color-dark-border: #1a1a1a;
+  --color-dark-border-dashed: #333333;
+
+  /* Brand */
+  --color-brand-primary: #29B28D;
+  --color-brand-primary-hover: #249e7d;
+  --color-brand-dark: #219072;
+
+  /* Text */
+  --color-muted: #888888;
+  --color-secondary: #29B28D;
+  --color-placeholder: #555555;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeUp 0.7s ease both;
+}
+.fade-in-1 {
+  animation: fadeUp 0.7s 0.1s ease both;
+}
+.fade-in-2 {
+  animation: fadeUp 0.7s 0.2s ease both;
+}
+.fade-in-3 {
+  animation: fadeUp 0.7s 0.35s ease both;
+}
+.fade-in-4 {
+  animation: fadeUp 0.7s 0.5s ease both;
 }

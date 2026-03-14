@@ -329,7 +329,7 @@ export default function PremiumCustomersPage() {
         </header>
 
         {/* Sticky sub-header: title + search + tabs */}
-        <div className="bg-slate-100 sticky top-[57px] z-20 px-6 md:px-8 pt-6 pb-0">
+        <div className="bg-slate-100 sticky top-14 z-20 px-6 md:px-8 pt-6 pb-0">
           {/* Page title + search */}
           <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
             <div>

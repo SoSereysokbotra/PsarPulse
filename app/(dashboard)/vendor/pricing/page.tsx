@@ -33,13 +33,6 @@ interface Plan {
   features: Feature[];
 }
 
-interface ComparisonRow {
-  feature: string;
-  free: boolean | string;
-  pro: boolean | string;
-  premium: boolean | string;
-}
-
 const plans: Plan[] = [
   {
     id: "free",
@@ -49,20 +42,20 @@ const plans: Plan[] = [
     annualPrice: "$0",
     period: "/month",
     annualPeriod: "/year",
-    description: "Perfect for getting started with basic sales tracking",
+    description: "Essential tools to get your stall up and running with structured daily tracking.",
     icon: Shield,
     features: [
-      { text: "Basic Sales Logging", included: true },
-      { text: "500 Logs/Month Cap", included: true },
-      { text: "Manual Expense Tracking", included: true },
-      { text: "Predefined Khmer Categories", included: true },
-      { text: "3 Simple Charts (Weekly, Monthly, Expenses)", included: true },
-      { text: "End-of-Day Summary & Lock", included: true },
-      { text: "Custom Expense Categories", included: false },
-      { text: "Export to PDF/Excel", included: false },
-      { text: "Inventory Management", included: false },
-      { text: "AI Features", included: false },
-      { text: "Public Map Visibility", included: false },
+      { text: "Sales Logging — up to 500 entries/month",  included: true  },
+      { text: "Manual Expense Tracking",                   included: true  },
+      { text: "Predefined Khmer Business Categories",      included: true  },
+      { text: "3 Core Performance Charts",                 included: true  },
+      { text: "Daily Summary & End-of-Day Lock",           included: true  },
+      { text: "Inventory Tracking — up to 20 items",       included: true  },
+      { text: "Custom Expense Categories",                 included: false },
+      { text: "Export Reports (PDF / Excel)",              included: false },
+      { text: "Public Map Listing",                        included: false },
+      { text: "AI-Powered Features",                       included: false },
+      { text: "AI Assistant (Gemini)",                     included: false },
     ],
   },
   {
@@ -73,22 +66,21 @@ const plans: Plan[] = [
     annualPrice: "$30",
     period: "/month",
     annualPeriod: "/year",
-    description: "Unlock unlimited data & robust management tools",
+    description: "Comprehensive analytics, full inventory control, and automated reporting for growing businesses.",
     icon: Crown,
     popular: true,
     features: [
-      { text: "Everything in Free", included: true },
-      { text: "Unlimited Transaction Logs", included: true },
-      { text: "Advanced Analytics & Metrics", included: true },
-      { text: "Best-Selling Products Tracking", included: true },
-      { text: "Inventory Management System", included: true },
-      { text: "Custom Expense Categories", included: true },
-      { text: "Export to PDF & Excel", included: true },
-      { text: "Public Discovery Map", included: true },
-      { text: "AI-Generated Daily Summaries", included: true },
-      { text: "AI Sales Forecaster", included: false },
-      { text: "Weather Intelligence", included: false },
-      { text: "AI Marketing & Chatbot", included: false },
+      { text: "Everything in Free",                        included: true  },
+      { text: "Unlimited Transaction Logs",                included: true  },
+      { text: "Advanced Analytics & Business Metrics",     included: true  },
+      { text: "Inventory Management — up to 100 items",    included: true  },
+      { text: "Custom Expense Categories",                 included: true  },
+      { text: "Export Reports (PDF & Excel)",              included: true  },
+      { text: "Public Business Map Listing",               included: true  },
+      { text: "AI-Generated Daily Business Summaries",     included: true  },
+      { text: "AI Sales Forecaster",                       included: false },
+      { text: "Weather Demand Intelligence",               included: false },
+      { text: "AI Assistant (Gemini)",                     included: false },
     ],
   },
   {
@@ -99,37 +91,22 @@ const plans: Plan[] = [
     annualPrice: "$70",
     period: "/month",
     annualPeriod: "/year",
-    description: "AI-powered business assistant with Gemini",
+    description: "Full-suite AI intelligence to forecast, optimize, and scale your market business.",
     icon: Sparkles,
     features: [
-      { text: "Everything in Pro", included: true },
-      { text: "AI Sales Forecaster", included: true },
-      { text: "Break-Even Calculator", included: true },
-      { text: "Weather Correlation Intelligence", included: true },
-      { text: "Smart Product Suggestions", included: true },
-      { text: "Automated Marketing Hub", included: true },
-      { text: "Facebook Post Generator (Khmer)", included: true },
-      { text: "AI Chatbot Assistant", included: true },
-      { text: "Smart Push Notifications", included: true },
-      { text: "Loss & Sales Drop Alerts", included: true },
-      { text: "Priority Support", included: true },
+      { text: "Everything in Pro",                              included: true },
+      { text: "Unlimited Inventory Items",                      included: true },
+      { text: "AI Sales Forecaster & Break-Even Calculator",    included: true },
+      { text: "Weather-Driven Demand Intelligence",             included: true },
+      { text: "Smart Restock & Low-Stock Forecaster",           included: true },
+      { text: "AI Perishable Waste Reduction",                  included: true },
+      { text: "AI Customer Segmentation (VIP / At-Risk)",       included: true },
+      { text: "AI Cost Optimization Recommendations",           included: true },
+      { text: "Gemini Weekly Business Intelligence Report",     included: true },
+      { text: "Smart Push Alerts & Sales Drop Notifications",   included: true },
+      { text: "Floating AI Business Assistant (Gemini)",        included: true },
     ],
   },
-];
-
-const comparisonRows: ComparisonRow[] = [
-  { feature: "Sales Logging", free: "30/month", pro: "500/month", premium: "Unlimited" },
-  { feature: "Expense Categories", free: "Predefined", pro: "Custom", premium: "Custom + AI" },
-  { feature: "Analytics Charts", free: "3 Basic", pro: "Advanced", premium: "AI-Powered" },
-  { feature: "Inventory Management", free: false, pro: true, premium: true },
-  { feature: "Export (PDF/Excel)", free: false, pro: true, premium: true },
-  { feature: "Public Map Visibility", free: false, pro: true, premium: true },
-  { feature: "AI Daily Summaries", free: false, pro: true, premium: true },
-  { feature: "Sales Forecaster", free: false, pro: false, premium: true },
-  { feature: "Weather Intelligence", free: false, pro: false, premium: true },
-  { feature: "Marketing Hub", free: false, pro: false, premium: true },
-  { feature: "AI Chatbot", free: false, pro: false, premium: true },
-  { feature: "Smart Notifications", free: false, pro: false, premium: true },
 ];
 
 const gradientTextStyle: React.CSSProperties = {
@@ -163,14 +140,14 @@ export default function PricingPage() {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold mb-4 bg-[#29B28D]/10 text-[#29B28D]">
             <Zap className="w-4 h-4" />
-            Choose the right plan for your business
+            Simple, transparent pricing for every stage
           </div>
           <h2 className="text-4xl font-bold text-slate-900 mb-3">
-            Grow Your Stall with{" "}
+            Scale Your Business with{" "}
             <span style={gradientTextStyle}>PsarPulse</span>
           </h2>
           <p className="text-slate-500 text-base max-w-xl mx-auto leading-relaxed">
-            From basic logging to AI-powered insights — pick the plan that matches your needs. Upgrade or downgrade anytime.
+            Start free and upgrade as your business grows. Every plan is built for Cambodian market vendors — no complexity, no hidden costs.
           </p>
 
           {/* Billing Toggle */}
@@ -294,7 +271,7 @@ export default function PricingPage() {
 
                   <div className="border-t border-slate-100 pt-5 mb-1">
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
-                      What&apos;s included
+                      Features included
                     </p>
                   </div>
 
@@ -331,80 +308,15 @@ export default function PricingPage() {
           })}
         </div>
 
-        {/* Comparison Table */}
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-10">
-          <div className="px-6 py-5 border-b border-slate-100">
-            <h3 className="font-bold text-lg text-slate-900">Full Feature Comparison</h3>
-            <p className="text-xs text-slate-500 mt-0.5">ការប្រៀបធៀបមុខងារពេញលេញ</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                  <th className="px-6 py-4">Feature</th>
-                  <th className="px-6 py-4 text-center">Free</th>
-                  <th className="px-6 py-4 text-center text-indigo-600">Pro</th>
-                  <th className="px-6 py-4 text-center text-purple-600">Premium</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {comparisonRows.map((row, i) => (
-                  <tr key={i} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-slate-700">{row.feature}</td>
-                    {(["free", "pro", "premium"] as const).map((col) => {
-                      const val = row[col as keyof ComparisonRow];
-                      return (
-                        <td key={col} className="px-6 py-4 text-center">
-                          {typeof val === "boolean" ? (
-                            val ? (
-                              <Check
-                                className="w-5 h-5 mx-auto"
-                                style={{
-                                  color:
-                                    col === "premium"
-                                      ? "#a855f7"
-                                      : col === "pro"
-                                      ? "#6366f1"
-                                      : "#29B28D",
-                                }}
-                              />
-                            ) : (
-                              <X className="w-5 h-5 text-slate-300 mx-auto" />
-                            )
-                          ) : (
-                            <span
-                              className="text-xs font-semibold"
-                              style={{
-                                color:
-                                  col === "premium"
-                                    ? "#9333ea"
-                                    : col === "pro"
-                                    ? "#4f46e5"
-                                    : "#64748b",
-                              }}
-                            >
-                              {val as string}
-                            </span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
         {/* Footer note */}
         <div className="text-center pb-8">
           <div className="flex items-center justify-center gap-4 text-sm text-slate-400 font-medium flex-wrap">
             <Shield className="w-4 h-4 text-[#29B28D]" />
-            <span>Secure payments via ABA PayWay & KHQR</span>
+            <span>Payments secured via ABA PayWay & KHQR</span>
             <span>·</span>
-            <span>Cancel anytime</span>
+            <span>Cancel or change plan anytime</span>
             <span>·</span>
-            <span>No hidden fees</span>
+            <span>No hidden fees, ever</span>
           </div>
         </div>
 

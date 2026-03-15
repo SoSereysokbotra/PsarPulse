@@ -6,49 +6,49 @@ export default function LandingPage() {
       {/* ========================================
         HEADER / NAV
         ======================================== */}
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-dark-border bg-dark-bg/80 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-[30px] h-[30px] bg-brand-primary rounded-lg flex items-center justify-center font-bold text-white text-sm">
-              P
-            </div>
-            <span className="font-bold text-[15px] tracking-[-0.02em] text-white">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-md">
+        <div className="max-w-[1200px] mx-auto px-6 h-14 flex justify-between items-center">
+          {/* Left: Brand / Logo */}
+          <div className="flex items-center gap-2.5 cursor-pointer">
+            <span className="font-semibold text-[15px] tracking-tight text-[#F7F8F8]">
               PsarPulse KH
             </span>
           </div>
-          <nav className="hidden md:flex items-center gap-8">
-            <a
-              href="#features"
-              className="text-muted text-sm font-medium transition-colors duration-150 hover:text-white"
-            >
-              Features
-            </a>
-            <a
-              href="#use-cases"
-              className="text-muted text-sm font-medium transition-colors duration-150 hover:text-white"
-            >
-              Use Cases
-            </a>
-            <a
-              href="#pricing"
-              className="text-muted text-sm font-medium transition-colors duration-150 hover:text-white"
-            >
-              Pricing
-            </a>
-            <a
-              href="#contact"
-              className="text-muted text-sm font-medium transition-colors duration-150 hover:text-white"
-            >
-              Contact
-            </a>
-          </nav>
-          <div className="flex items-center gap-3">
-            <button className="hidden sm:block px-5 py-2.5 rounded-xl bg-dark-surface border border-dark-border hover:bg-dark-surface-hover transition-colors text-sm font-medium text-white">
-              Log in
-            </button>
-            <button className="px-5 py-2.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-colors text-white text-sm font-medium">
-              Get Started
-            </button>
+
+          {/* Right: Navigation & Auth Actions */}
+          <div className="flex items-center gap-6">
+            {/* Navigation Links */}
+            <nav className="hidden md:flex items-center gap-6">
+              {[
+                "Product",
+                "Resources",
+                "Customers",
+                "Pricing",
+                "Now",
+                "Contact",
+              ].map((item) => (
+                <a
+                  key={item}
+                  href={`#${item.toLowerCase()}`}
+                  className="text-[13px] font-medium text-[#8A8F98] transition-colors hover:text-white"
+                >
+                  {item}
+                </a>
+              ))}
+            </nav>
+
+            {/* Auth Actions with Divider */}
+            <div className="hidden md:flex items-center gap-5 ml-1">
+              {/* Faint vertical divider */}
+              <div className="w-[1px] h-3.5 bg-white/15"></div>
+
+              <button className="text-[13px] font-medium text-[#8A8F98] hover:text-white transition-colors">
+                Log in
+              </button>
+              <button className="px-3 py-1.5 rounded-md bg-[#F7F8F8] hover:bg-white transition-colors text-black text-[13px] font-medium">
+                Sign up
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -489,9 +489,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-5">
             {/* Basic */}
             <div className="bg-dark-surface border border-dark-border rounded-[20px] transition-colors duration-200 hover:border-brand-primary/30 py-8 px-7 flex flex-col">
-              <p className="text-[13px] font-semibold text-muted mb-4">
-                Basic
-              </p>
+              <p className="text-[13px] font-semibold text-muted mb-4">Basic</p>
               <p className="text-[40px] font-bold tracking-[-0.03em] mb-6 text-white">
                 Free
               </p>
@@ -618,38 +616,136 @@ export default function LandingPage() {
         </button>
       </div>
 
-      <footer className="relative w-full mt-12 pt-20 pb-10 px-4 sm:px-8 flex flex-col items-center overflow-hidden border-t border-dark-border/50">
-        <div className="flex items-center gap-3 mb-8 z-10">
-          <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center font-bold text-white text-sm">
-            P
+      <footer className="relative w-full mt-24 pt-16 pb-[18vw] sm:pb-[14vw] lg:pb-[12vw] px-4 sm:px-8 lg:px-12 bg-[#15191e] border-t border-gray-800/60 overflow-hidden">
+        {/* Top Grid Section */}
+        <div className="relative z-20 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+          {/* Brand & Tagline */}
+          <div className="flex flex-col">
+            <h4 className="text-2xl font-bold text-white mb-4 tracking-tight">
+              i<span className="text-[#ff5e3a]">PPM</span>
+            </h4>
+            <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-xs">
+              The next generation of industrial IoT and Vision AI. Real-time
+              telemetry and edge computing for modern production lines.
+            </p>
+            {/* Simple Social Icons */}
+            <div className="flex gap-4">
+              <a
+                href="#"
+                className="w-8 h-8 rounded-full border border-gray-700 flex items-center justify-center hover:border-[#ff5e3a] hover:text-[#ff5e3a] transition-colors text-gray-400"
+              >
+                <span className="text-xs font-bold">IN</span>
+              </a>
+              <a
+                href="#"
+                className="w-8 h-8 rounded-full border border-gray-700 flex items-center justify-center hover:border-[#ff5e3a] hover:text-[#ff5e3a] transition-colors text-gray-400"
+              >
+                <span className="text-xs font-bold">GH</span>
+              </a>
+            </div>
           </div>
-          <h3 className="text-2xl font-medium tracking-wide">PsarPulse KH</h3>
+
+          {/* Links Column 1 */}
+          <div className="flex flex-col">
+            <h5 className="text-white text-sm font-semibold uppercase tracking-wider mb-6">
+              Platform
+            </h5>
+            <ul className="flex flex-col gap-3 text-sm text-gray-400">
+              <li>
+                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
+                  Edge Nodes
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
+                  Vision AI
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
+                  Telemetry Dashboard
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
+                  API Documentation
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Links Column 2 */}
+          <div className="flex flex-col">
+            <h5 className="text-white text-sm font-semibold uppercase tracking-wider mb-6">
+              Company
+            </h5>
+            <ul className="flex flex-col gap-3 text-sm text-gray-400">
+              <li>
+                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
+                  Engineering Team
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
+                  Careers
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
+                  Contact
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Status & Location */}
+          <div className="flex flex-col">
+            <h5 className="text-white text-sm font-semibold uppercase tracking-wider mb-6">
+              System Status
+            </h5>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]"></div>
+              <span className="text-sm text-gray-300 font-medium">
+                All Nodes Operational
+              </span>
+            </div>
+            <p className="text-gray-500 text-xs uppercase tracking-widest mb-2">
+              HQ Location
+            </p>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Traeng Trayueng, Kampong Speu
+              <br />
+              Cambodia
+            </p>
+          </div>
         </div>
 
-        <div className="flex gap-8 mb-8 z-10">
-          {["Features", "Pricing", "Privacy", "Terms"].map((l) => (
-            <a
-              key={l}
-              href="#"
-              className="text-muted text-sm hover:text-white transition-colors"
-            >
-              {l}
+        {/* Bottom Section: Copyright */}
+        <div className="relative z-20 max-w-7xl mx-auto border-t border-gray-800/50 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 mt-8">
+          <p className="text-gray-500 text-xs sm:text-sm text-center md:text-left">
+            © {new Date().getFullYear()} iPPM Platform. Empowering
+            Cambodia&apos;s Industrial Future.
+          </p>
+          <div className="flex gap-6 text-xs text-gray-500">
+            <a href="#" className="hover:text-white transition-colors">
+              Privacy Policy
             </a>
-          ))}
+            <a href="#" className="hover:text-white transition-colors">
+              Terms of Service
+            </a>
+          </div>
         </div>
 
-        <div className="flex bg-dark-surface rounded-lg p-[3px] border border-dark-border mb-8 z-10">
-          <button className="text-xs font-semibold py-1.5 px-3.5 rounded-md bg-dark-surface-hover text-white border border-dark-border/50">
-            English
-          </button>
-          <button className="text-xs font-medium py-1.5 px-3.5 text-muted hover:text-white transition-colors">
-            ភាសាខ្មែរ
-          </button>
-        </div>
-
-        <p className="text-muted text-xs sm:text-sm z-10">
-          © 2026 PsarPulse KH. Empowering Cambodia&apos;s Informal Economy.
-        </p>
+        {/* Massive Background Text & Gradient */}
+        <h3 className="absolute bottom-[-10px] sm:bottom-[-20px] left-1/2 -translate-x-1/2 text-[14vw] sm:text-[10vw] font-bold tracking-tighter z-0 opacity-[0.03] whitespace-nowrap text-white pointer-events-none select-none ">
+          INTELLIGENT PPM
+        </h3>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-[#ff5e3a] opacity-[0.03] blur-[80px] rounded-full pointer-events-none z-0"></div>
       </footer>
     </div>
   );

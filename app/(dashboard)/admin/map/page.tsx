@@ -1,0 +1,455 @@
+"use client";
+
+import { useState } from "react";
+import { Map, Overlay, ZoomControl } from "pigeon-maps";
+import {
+  Map as MapIcon,
+  Filter,
+  Eye,
+  EyeOff,
+  Search,
+  Clock,
+  ShieldAlert,
+  Navigation,
+  Layers,
+  ChevronRight,
+  TrendingUp,
+  X,
+  CreditCard,
+  Building,
+  User,
+  Store,
+} from "lucide-react";
+import Link from "next/link";
+
+// Mock Data with real geo-coordinates (lat, lng)
+const initialPins = [
+  {
+    id: 1,
+    name: "Sokha's Grill",
+    owner: "Sokha Heng",
+    status: "Active",
+    tier: "Pro",
+    topItem: "Beef Skewers",
+    lat: 11.3193,
+    lng: 104.1485,
+    publicVisible: true,
+    visitors: 142,
+  },
+  {
+    id: 2,
+    name: "Nita Clothing",
+    owner: "Nita Vong",
+    status: "Active",
+    tier: "Starter",
+    topItem: "Silk Scarves",
+    lat: 11.321,
+    lng: 104.152,
+    publicVisible: false,
+    visitors: 45,
+  },
+  {
+    id: 3,
+    name: "Tech Accessories",
+    owner: "Rithy Sok",
+    status: "Pending",
+    tier: "Premium",
+    topItem: "Phone Cases",
+    lat: 11.318,
+    lng: 104.145,
+    publicVisible: false,
+    visitors: 89,
+  },
+  {
+    id: 4,
+    name: "Bopha Smoothies",
+    owner: "Bopha Ly",
+    status: "Suspended",
+    tier: "Pro",
+    topItem: "Mango Tango",
+    lat: 11.315,
+    lng: 104.149,
+    publicVisible: false,
+    visitors: 0,
+  },
+  {
+    id: 5,
+    name: "Royal Jewelry",
+    owner: "Kosal Rath",
+    status: "Active",
+    tier: "Premium",
+    topItem: "Gold Necklaces",
+    lat: 11.322,
+    lng: 104.146,
+    publicVisible: true,
+    visitors: 312,
+  },
+];
+
+export default function VendorMapPage() {
+  const [pins, setPins] = useState(initialPins);
+  const [selectedPin, setSelectedPin] = useState<any>(null);
+  const [mapMode, setMapMode] = useState<"internal" | "public">("internal");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState({
+    active: true,
+    pending: true,
+    suspended: true,
+  });
+
+  // Map state
+  const [center, setCenter] = useState<[number, number]>([11.3193, 104.1485]);
+  const [zoom, setZoom] = useState(14.5);
+
+  // Filtered Pins
+  const filteredPins = pins.filter((pin) => {
+    if (mapMode === "public" && !pin.publicVisible) return false;
+    if (mapMode === "internal") {
+      if (!activeFilters.active && pin.status === "Active") return false;
+      if (!activeFilters.pending && pin.status === "Pending") return false;
+      if (!activeFilters.suspended && pin.status === "Suspended") return false;
+    }
+    if (
+      searchQuery &&
+      !pin.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+      return false;
+    return true;
+  });
+
+  const togglePublicVisibility = (pinId: number) => {
+    setPins((current) =>
+      current.map((p) => {
+        if (p.id === pinId) {
+          const updated = { ...p, publicVisible: !p.publicVisible };
+          if (selectedPin?.id === pinId) {
+            setSelectedPin(updated);
+          }
+          return updated;
+        }
+        return p;
+      }),
+    );
+  };
+
+  return (
+    <div className="h-[calc(100vh-6rem)] flex flex-col pt-2 pb-6 px-4 sm:px-8 bg-slate-50/50">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+            <MapIcon className="w-6 h-6 text-indigo-600" />
+            Vendor Mapping
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Manage vendor geolocations, zones & public visibility.
+          </p>
+        </div>
+
+        {/* Toggle Mode */}
+        <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-sm relative z-20">
+          <button
+            onClick={() => {
+              setMapMode("internal");
+              setSelectedPin(null);
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mapMode === "internal" ? "bg-slate-900 shadow text-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"}`}
+          >
+            <ShieldAlert
+              className={`h-4 w-4 ${mapMode === "internal" ? "text-indigo-400" : ""}`}
+            />
+            Internal Ops
+          </button>
+          <button
+            onClick={() => {
+              setMapMode("public");
+              setSelectedPin(null);
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mapMode === "public" ? "bg-indigo-600 shadow text-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"}`}
+          >
+            <Navigation
+              className={`h-4 w-4 ${mapMode === "public" ? "text-indigo-200" : ""}`}
+            />
+            Public Map
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 relative rounded-2xl border border-slate-200/60 shadow-lg shadow-slate-200/40 overflow-hidden flex bg-slate-100/50">
+        {/* Map Sidebar Filters */}
+        <div className="absolute left-4 top-4 bottom-4 w-80 bg-white/95 backdrop-blur-xl border border-white/20 shadow-[-10px_0_30px_rgba(0,0,0,0.05)] rounded-xl flex flex-col shrink-0 z-20 overflow-hidden ring-1 ring-slate-900/5">
+          <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white">
+            <h2 className="font-semibold text-slate-800 flex items-center gap-2">
+              <Filter className="h-4 w-4 text-indigo-500" />
+              Map Controls
+            </h2>
+          </div>
+
+          <div className="p-5 space-y-6 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
+            <div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search pins..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-slate-700 placeholder:text-slate-400"
+                />
+              </div>
+            </div>
+
+            {mapMode === "internal" ? (
+              <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                <div>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                    <Layers className="h-3 w-3" /> Status Layer
+                  </label>
+                  <div className="space-y-2.5">
+                    <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors">
+                      <div className="flex items-center gap-3 text-sm font-medium text-slate-700">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
+                        Verified (Active)
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={activeFilters.active}
+                        onChange={(e) =>
+                          setActiveFilters({
+                            ...activeFilters,
+                            active: e.target.checked,
+                          })
+                        }
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors">
+                      <div className="flex items-center gap-3 text-sm font-medium text-slate-700">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
+                        Pending Verif.
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={activeFilters.pending}
+                        onChange={(e) =>
+                          setActiveFilters({
+                            ...activeFilters,
+                            pending: e.target.checked,
+                          })
+                        }
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors">
+                      <div className="flex items-center gap-3 text-sm font-medium text-slate-700">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></span>
+                        Suspended/Off
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={activeFilters.suspended}
+                        onChange={(e) =>
+                          setActiveFilters({
+                            ...activeFilters,
+                            suspended: e.target.checked,
+                          })
+                        }
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
+                <div>
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                    <Navigation className="h-3 w-3" /> Public Curation
+                  </label>
+                  <div className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50/50 border border-indigo-100/60 rounded-xl shadow-sm">
+                    <p className="text-sm font-medium text-indigo-900 mb-3 leading-relaxed">
+                      You are previewing exactly what users see within the
+                      custom PsarPulse consumer app.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 bg-slate-50 border-t border-slate-100 mt-auto">
+            <div className="grid grid-cols-2 gap-3 text-center">
+              <div className="bg-white py-3 rounded-lg border border-slate-100 shadow-sm">
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Total Mapped
+                </p>
+                <p className="text-xl font-black text-slate-800 tracking-tight">
+                  {filteredPins.length}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Real Free Map Area (Pigeon Maps + OpenStreetMap) */}
+        <div className="flex-1 relative w-full h-full bg-[#e5e7eb] overflow-hidden">
+          <Map
+            center={center}
+            zoom={zoom}
+            onBoundsChanged={({ center, zoom }) => {
+              setCenter(center);
+              setZoom(zoom);
+            }}
+            onClick={() => setSelectedPin(null)}
+          >
+            <ZoomControl />
+
+            {/* Render Custom Map Markers as Overlays */}
+            {filteredPins.map((pin) => {
+              const isSelected = selectedPin?.id === pin.id;
+              return (
+                <Overlay
+                  key={pin.id}
+                  anchor={[pin.lat, pin.lng]}
+                  offset={[20, 48]} // Offsets the HTML so the tail points exactly at the GPS coordinate
+                >
+                  <div
+                    className="group cursor-pointer relative flex flex-col items-center"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPin(pin);
+                    }}
+                  >
+                    {/* Pin Head */}
+                    <div
+                      className={`
+                      relative z-10 w-10 h-10 rounded-full flex items-center justify-center text-white 
+                      shadow-[0_4px_14px_0_rgba(0,0,0,0.15)] transition-all duration-300
+                      ${pin.status === "Active" ? "bg-gradient-to-tr from-emerald-600 to-emerald-400" : ""}
+                      ${pin.status === "Pending" ? "bg-gradient-to-tr from-amber-500 to-amber-300" : ""}
+                      ${pin.status === "Suspended" ? "bg-gradient-to-tr from-red-600 to-red-400" : ""}
+                      ${isSelected ? "ring-4 ring-white shadow-[0_8px_24px_0_rgba(0,0,0,0.25)] scale-110 !z-30" : "hover:scale-110"}
+                    `}
+                    >
+                      {pin.status === "Active" && <Store className="h-4 w-4" />}
+                      {pin.status === "Pending" && (
+                        <Clock className="h-4 w-4" />
+                      )}
+                      {pin.status === "Suspended" && (
+                        <ShieldAlert className="h-4 w-4" />
+                      )}
+
+                      {/* Public App Indicator */}
+                      {mapMode === "internal" && pin.publicVisible && (
+                        <div className="absolute -top-1 -right-1 bg-indigo-500 w-3.5 h-3.5 rounded-full border-2 border-white flex items-center justify-center"></div>
+                      )}
+                    </div>
+                    {/* Pin Tail */}
+                    <div
+                      className={`
+                      w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[10px]
+                      transition-all duration-300 -mt-1 relative z-0
+                      ${pin.status === "Active" ? "border-t-emerald-600" : ""}
+                      ${pin.status === "Pending" ? "border-t-amber-500" : ""}
+                      ${pin.status === "Suspended" ? "border-t-red-600" : ""}
+                    `}
+                    ></div>
+
+                    {/* Pulse effect for pending */}
+                    {pin.status === "Pending" && (
+                      <div className="absolute inset-0 top-0 bottom-3 rounded-full bg-amber-500 animate-ping opacity-40"></div>
+                    )}
+                  </div>
+                </Overlay>
+              );
+            })}
+
+            {/* Custom Tooltip Overlay */}
+            {selectedPin && (
+              <Overlay
+                anchor={[selectedPin.lat, selectedPin.lng]}
+                offset={[144, 260]} // Positioned beautifully above the custom pin
+              >
+                <div
+                  className="bg-white rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] border border-slate-100/50 w-72 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="p-5">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-lg truncate pr-2 leading-tight">
+                          {selectedPin.name}
+                        </h3>
+                        <p className="text-sm font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
+                          <User className="w-3.5 h-3.5" /> {selectedPin.owner}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setSelectedPin(null)}
+                        className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full p-1.5 transition-colors -mr-2"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-sm mb-5 p-3 bg-slate-50/80 rounded-xl border border-slate-100">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                          Plan
+                        </span>
+                        <span className="font-semibold text-slate-800 flex items-center gap-1">
+                          <CreditCard className="w-3.5 h-3.5 text-indigo-500" />{" "}
+                          {selectedPin.tier}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                          Metrics
+                        </span>
+                        <span className="font-semibold text-emerald-600 flex items-center gap-1">
+                          <TrendingUp className="w-3.5 h-3.5" />{" "}
+                          {selectedPin.visitors}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Link
+                        href={`/admin/vendors/${selectedPin.id}`}
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-slate-900/10"
+                      >
+                        Vendor Details <ChevronRight className="w-4 h-4" />
+                      </Link>
+
+                      {selectedPin.status === "Active" &&
+                        mapMode === "internal" && (
+                          <button
+                            className={`w-full text-center py-2.5 border rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                              selectedPin.publicVisible
+                                ? "border-indigo-100 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100/80"
+                                : "border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
+                            }`}
+                            onClick={() =>
+                              togglePublicVisibility(selectedPin.id)
+                            }
+                          >
+                            {selectedPin.publicVisible ? (
+                              <EyeOff className="h-3.5 w-3.5" />
+                            ) : (
+                              <Eye className="h-3.5 w-3.5" />
+                            )}
+                            {selectedPin.publicVisible
+                              ? "Hide from Consumers"
+                              : "Publish to App"}
+                          </button>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              </Overlay>
+            )}
+          </Map>
+        </div>
+      </div>
+    </div>
+  );
+}

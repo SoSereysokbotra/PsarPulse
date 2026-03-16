@@ -171,8 +171,7 @@ export default function BillingPage() {
   const [showCashModal, setShowCashModal] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8 font-sans text-slate-900">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="space-y-8 font-sans text-slate-900">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -377,7 +376,6 @@ export default function BillingPage() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Slide-over Overlay Drawer for Details */}
       {selectedTxn && (

@@ -56,135 +56,41 @@ export default function LandingPage() {
       {/* ========================================
         HERO SECTION
         ======================================== */}
-      <section className="w-full flex flex-col items-center pt-36 sm:pt-44 px-4">
-        <div className="fade-in inline-flex mb-6">
-          <span className="bg-brand-primary/10 text-brand-primary text-[11px] font-bold tracking-[0.08em] uppercase py-1.5 px-3 rounded-full border border-brand-primary/20">
-            New — Gemini AI Forecaster is live
-          </span>
-        </div>
-
-        <h1 className="fade-in-1 text-4xl sm:text-5xl md:text-6xl font-semibold text-center leading-[1.15] mb-6 max-w-4xl tracking-tight">
+      <section
+        className="relative w-full flex flex-col items-center pt-50 sm:pt-65 pb-8 px-4 bg-cover bg-center bg-no-repeat"
+        style={{
+          // Replace the URL with your preferred night market image
+          // The linear-gradient overlays black (from 80% opacity at top to 95% at bottom) to reduce the light
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.95)), url('https://res.cloudinary.com/dg5grwcd5/image/upload/v1773661915/cambodia-night-market-phsar-chas-2_1_ii8ae1.jpg')`,
+        }}
+      >
+        <h1 className="fade-in-1 text-4xl sm:text-5xl md:text-6xl font-semibold text-center text-white leading-[1.15] mb-6 max-w-4xl tracking-tight relative z-10">
           Smart business for <br className="hidden sm:block" />
           Cambodia&apos;s night markets
           <span className="text-brand-primary">.</span>
         </h1>
 
-        <p className="fade-in-2 text-muted text-center text-sm sm:text-base max-w-2xl mb-10 leading-relaxed">
+        <p className="fade-in-2 text-gray-300 text-center text-sm sm:text-base max-w-2xl mb-10 leading-relaxed relative z-10">
           Data-driven analytics and AI forecasting built exclusively for
           Cambodia&apos;s informal economy. Log sales, track growth, and let AI
           prepare your next move.
         </p>
 
-        <div className="fade-in-3 flex flex-col sm:flex-row items-center gap-4 mb-16 w-full sm:w-auto">
-          <button className="px-6 py-3.5 rounded-xl bg-dark-surface border border-dark-border hover:bg-dark-surface-hover transition-colors text-sm font-medium w-full sm:w-auto">
-            Explore Features
+        {/* CTA Buttons */}
+        <div className="fade-in-3 flex flex-col sm:flex-row items-center gap-4 mb-36 relative z-10">
+          <button className="px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-all duration-200 text-white font-semibold text-sm shadow-lg shadow-brand-primary/20 hover:-translate-y-[1px]">
+            Get Started Free →
           </button>
-          <button className="px-6 py-3.5 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-colors text-white text-sm font-medium w-full sm:w-auto shadow-lg shadow-brand-primary/20">
-            Start Logging Free →
+          <button className="px-6 py-3 rounded-xl border border-white/15 text-white/80 hover:text-white hover:border-white/30 transition-all duration-200 font-medium text-sm">
+            See How It Works
           </button>
-        </div>
-
-        {/* DASHBOARD PREVIEW */}
-        <div className="fade-in-4 relative w-full max-w-[900px] mb-20">
-          <div className="relative w-full rounded-2xl overflow-hidden border border-dark-border bg-dark-surface shadow-2xl shadow-brand-primary/5">
-            {/* Browser chrome */}
-            <div className="bg-dark-surface border-b border-dark-border py-3 px-5 flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#333]"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-[#333]"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-[#333]"></div>
-              <div className="flex-1 ml-3 bg-dark-bg border border-dark-border rounded-md py-1 px-3 text-[11px] text-muted max-w-[200px]">
-                app.psarpulse.kh
-              </div>
-            </div>
-
-            {/* Dashboard content */}
-            <div className="grid md:grid-cols-3 gap-0">
-              {/* Revenue card */}
-              <div className="py-8 px-7 border-b md:border-b-0 md:border-r border-dark-border">
-                <p className="text-[11px] text-muted tracking-[0.06em] uppercase mb-1.5 font-semibold">
-                  Sokha&apos;s Grill Station
-                </p>
-                <p className="text-muted text-[13px] mb-5">
-                  Today&apos;s Revenue
-                </p>
-                <div className="text-4xl font-bold text-brand-primary mb-2 tracking-[-0.02em]">
-                  ៛ 450,000
-                </div>
-                <span className="inline-block text-[12px] text-brand-primary bg-brand-primary/10 border border-brand-primary/20 py-[3px] px-2 rounded-md font-semibold">
-                  +14% vs yesterday
-                </span>
-                <button className="block w-full mt-7 bg-brand-primary text-white font-semibold text-[13px] p-2.5 rounded-lg text-center shadow-sm hover:bg-brand-primary-hover transition-colors">
-                  + Log Sale
-                </button>
-              </div>
-
-              {/* AI Insight */}
-              <div className="py-8 px-7 col-span-2">
-                <div className="flex gap-4 items-start">
-                  <div className="w-10 h-10 rounded-[10px] bg-brand-primary/10 flex items-center justify-center shrink-0">
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#29B28D"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="bg-brand-primary/10 text-brand-primary text-[10px] font-bold tracking-[0.1em] uppercase py-[3px] px-2 rounded-md border border-brand-primary/20">
-                        AI Insight
-                      </span>
-                    </div>
-                    <h4 className="text-base font-semibold mb-2.5 tracking-[-0.01em] text-white">
-                      Busy night tomorrow
-                    </h4>
-                    <p className="text-muted text-sm leading-[1.65]">
-                      Clear weather forecast + historical data shows a 35% surge
-                      in foot traffic this weekend at Phnom Penh Night Market.
-                      Prepare 30% more grilled skewer inventory.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Mini stats row */}
-                <div className="grid grid-cols-3 gap-3 mt-7">
-                  {[
-                    ["1,240", "Sales logged"],
-                    ["98%", "Uptime"],
-                    ["4.9★", "Vendor rating"],
-                  ].map(([val, lbl]) => (
-                    <div
-                      key={lbl}
-                      className="bg-dark-bg rounded-[10px] py-3.5 px-4 border border-dark-border"
-                    >
-                      <div className="text-xl font-bold tracking-[-0.02em] mb-0.5 text-white">
-                        {val}
-                      </div>
-                      <div className="text-muted text-[11px] font-medium">
-                        {lbl}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Shadow fade overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-dark-bg pointer-events-none"></div>
         </div>
       </section>
 
       {/* ========================================
         WHY CHOOSE HEADING
         ======================================== */}
-      <h2 className="text-3xl sm:text-4xl font-medium text-center tracking-tight mb-24 px-4">
+      <h2 className="text-3xl sm:text-4xl font-medium text-center tracking-tight mb-24 px-4 mt-20">
         Why Choose <span className="text-secondary">PsarPulse</span> for Your
         Business?
       </h2>
@@ -580,67 +486,31 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ========================================
-        CONTACT & FOOTER
-        ======================================== */}
-      <div
-        id="contact"
-        className="w-full max-w-5xl mx-auto py-24 px-4 sm:px-8 flex flex-col items-center"
-      >
-        <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium text-center tracking-tight mb-4">
-          Ready to <span className="text-secondary">Grow</span>?
-        </h2>
-        <p className="text-muted text-center text-sm sm:text-base mb-16 max-w-lg">
-          Join hundreds of Cambodian vendors already using PsarPulse to track
-          sales, forecast demand, and grow their business.
-        </p>
-
-        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 text-center mb-16">
-          <div className="flex flex-col items-center">
-            <h4 className="text-lg font-semibold mb-2">Support</h4>
-            <a
-              href="mailto:support@psarpulse.kh"
-              className="text-brand-primary hover:underline"
-            >
-              support@psarpulse.kh
-            </a>
-          </div>
-          <div className="flex flex-col items-center">
-            <h4 className="text-lg font-semibold mb-2">Location</h4>
-            <p className="text-muted text-sm">Phnom Penh, Cambodia</p>
-          </div>
-        </div>
-
-        <button className="px-8 py-4 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-all duration-200 text-white font-semibold shadow-lg shadow-brand-primary/20 hover:-translate-y-[1px]">
-          Create Free Account →
-        </button>
-      </div>
-
-      <footer className="relative w-full mt-24 pt-16 pb-[18vw] sm:pb-[14vw] lg:pb-[12vw] px-4 sm:px-8 lg:px-12 bg-[#15191e] border-t border-gray-800/60 overflow-hidden">
+      <footer className="relative w-full mt-24 pt-16 pb-[18vw] sm:pb-[14vw] lg:pb-[12vw] px-4 sm:px-8 lg:px-12 bg-[#0d0d0d] border-t border-dark-border overflow-hidden">
         {/* Top Grid Section */}
         <div className="relative z-20 max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Brand & Tagline */}
           <div className="flex flex-col">
-            <h4 className="text-2xl font-bold text-white mb-4 tracking-tight">
-              i<span className="text-[#ff5e3a]">PPM</span>
+            <h4 className="text-xl font-bold text-white mb-4 tracking-tight">
+              Psar<span className="text-brand-primary">Pulse</span>
             </h4>
             <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-xs">
-              The next generation of industrial IoT and Vision AI. Real-time
-              telemetry and edge computing for modern production lines.
+              Smart business analytics for Cambodia&apos;s night market vendors.
+              Track sales, forecast demand, and grow with AI-powered insights.
             </p>
-            {/* Simple Social Icons */}
+            {/* Social Icons */}
             <div className="flex gap-4">
               <a
                 href="#"
-                className="w-8 h-8 rounded-full border border-gray-700 flex items-center justify-center hover:border-[#ff5e3a] hover:text-[#ff5e3a] transition-colors text-gray-400"
+                className="w-8 h-8 rounded-full border border-dark-border flex items-center justify-center hover:border-brand-primary hover:text-brand-primary transition-colors text-gray-400"
               >
-                <span className="text-xs font-bold">IN</span>
+                <span className="text-xs font-bold">FB</span>
               </a>
               <a
                 href="#"
-                className="w-8 h-8 rounded-full border border-gray-700 flex items-center justify-center hover:border-[#ff5e3a] hover:text-[#ff5e3a] transition-colors text-gray-400"
+                className="w-8 h-8 rounded-full border border-dark-border flex items-center justify-center hover:border-brand-primary hover:text-brand-primary transition-colors text-gray-400"
               >
-                <span className="text-xs font-bold">GH</span>
+                <span className="text-xs font-bold">TG</span>
               </a>
             </div>
           </div>
@@ -648,27 +518,39 @@ export default function LandingPage() {
           {/* Links Column 1 */}
           <div className="flex flex-col">
             <h5 className="text-white text-sm font-semibold uppercase tracking-wider mb-6">
-              Platform
+              Product
             </h5>
             <ul className="flex flex-col gap-3 text-sm text-gray-400">
               <li>
-                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
-                  Edge Nodes
+                <a
+                  href="#features"
+                  className="hover:text-brand-primary transition-colors"
+                >
+                  AI Forecasting
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
-                  Vision AI
+                <a
+                  href="#features"
+                  className="hover:text-brand-primary transition-colors"
+                >
+                  Sales Analytics
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
-                  Telemetry Dashboard
+                <a
+                  href="#features"
+                  className="hover:text-brand-primary transition-colors"
+                >
+                  KHQR &amp; ABA Pay
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
-                  API Documentation
+                <a
+                  href="#pricing"
+                  className="hover:text-brand-primary transition-colors"
+                >
+                  Pricing
                 </a>
               </li>
             </ul>
@@ -681,23 +563,35 @@ export default function LandingPage() {
             </h5>
             <ul className="flex flex-col gap-3 text-sm text-gray-400">
               <li>
-                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
+                <a
+                  href="#"
+                  className="hover:text-brand-primary transition-colors"
+                >
                   About Us
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
-                  Engineering Team
+                <a
+                  href="#use-cases"
+                  className="hover:text-brand-primary transition-colors"
+                >
+                  Use Cases
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-[#ff5e3a] transition-colors">
+                <a
+                  href="#contact"
+                  className="hover:text-brand-primary transition-colors"
+                >
                   Contact
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  className="hover:text-brand-primary transition-colors"
+                >
+                  Privacy Policy
                 </a>
               </li>
             </ul>
@@ -706,30 +600,28 @@ export default function LandingPage() {
           {/* Status & Location */}
           <div className="flex flex-col">
             <h5 className="text-white text-sm font-semibold uppercase tracking-wider mb-6">
-              System Status
+              Status
             </h5>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.6)]"></div>
+              <div className="w-3 h-3 rounded-full bg-brand-primary animate-pulse shadow-[0_0_10px_rgba(41,178,141,0.6)]"></div>
               <span className="text-sm text-gray-300 font-medium">
-                All Nodes Operational
+                All Systems Operational
               </span>
             </div>
             <p className="text-gray-500 text-xs uppercase tracking-widest mb-2">
-              HQ Location
+              Based In
             </p>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Traeng Trayueng, Kampong Speu
-              <br />
-              Cambodia
+              Phnom Penh, Cambodia
             </p>
           </div>
         </div>
 
         {/* Bottom Section: Copyright */}
-        <div className="relative z-20 max-w-7xl mx-auto border-t border-gray-800/50 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 mt-8">
+        <div className="relative z-20 max-w-7xl mx-auto border-t border-dark-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4 mt-8">
           <p className="text-gray-500 text-xs sm:text-sm text-center md:text-left">
-            © {new Date().getFullYear()} iPPM Platform. Empowering
-            Cambodia&apos;s Industrial Future.
+            © {new Date().getFullYear()} PsarPulse KH. Built for Cambodia&apos;s
+            vendors.
           </p>
           <div className="flex gap-6 text-xs text-gray-500">
             <a href="#" className="hover:text-white transition-colors">
@@ -742,10 +634,10 @@ export default function LandingPage() {
         </div>
 
         {/* Massive Background Text & Gradient */}
-        <h3 className="absolute bottom-[-10px] sm:bottom-[-20px] left-1/2 -translate-x-1/2 text-[14vw] sm:text-[10vw] font-bold tracking-tighter z-0 opacity-[0.03] whitespace-nowrap text-white pointer-events-none select-none ">
-          INTELLIGENT PPM
+        <h3 className="absolute bottom-[-10px] sm:bottom-[-20px] left-1/2 -translate-x-1/2 text-[14vw] sm:text-[10vw] font-bold tracking-tighter z-0 opacity-[0.03] whitespace-nowrap text-white pointer-events-none select-none">
+          PSARPULSE
         </h3>
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-[#ff5e3a] opacity-[0.03] blur-[80px] rounded-full pointer-events-none z-0"></div>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-brand-primary opacity-[0.04] blur-[80px] rounded-full pointer-events-none z-0"></div>
       </footer>
     </div>
   );

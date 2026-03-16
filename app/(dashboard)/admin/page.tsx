@@ -21,8 +21,7 @@ import {
 
 export default function AdminDashboardPage() {
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8 font-sans text-slate-900">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="space-y-8 font-sans text-slate-900">
         {/* Header & Context Bar */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div>
@@ -227,7 +226,6 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

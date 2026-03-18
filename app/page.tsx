@@ -1,6 +1,31 @@
-import React from "react";
+"use client";
+
+"use client";
+
+"use client";
+
+import React, { useState, useRef, useEffect } from "react";
 
 export default function LandingPage() {
+  const [signupOpen, setSignupOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const signupRef = useRef(null);
+  const loginRef = useRef(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (signupRef.current && !signupRef.current.contains(e.target)) {
+        setSignupOpen(false);
+      }
+      if (loginRef.current && !loginRef.current.contains(e.target)) {
+        setLoginOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="min-h-screen bg-dark-bg text-white flex flex-col items-center justify-start font-sans selection:bg-brand-primary selection:text-white">
       {/* ========================================
@@ -42,12 +67,147 @@ export default function LandingPage() {
               {/* Faint vertical divider */}
               <div className="w-[1px] h-3.5 bg-white/15"></div>
 
-              <button className="text-[13px] font-medium text-[#8A8F98] hover:text-white transition-colors">
-                Log in
-              </button>
-              <button className="px-3 py-1.5 rounded-md bg-[#F7F8F8] hover:bg-white transition-colors text-black text-[13px] font-medium">
-                Sign up
-              </button>
+              {/* ── Log in dropdown ── */}
+              <div className="relative" ref={loginRef}>
+                <button
+                  onClick={() => {
+                    setLoginOpen((v) => !v);
+                    setSignupOpen(false);
+                  }}
+                  className="text-[13px] font-medium text-[#8A8F98] hover:text-white transition-colors flex items-center gap-1"
+                >
+                  Log in
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    className={`transition-transform duration-200 ${loginOpen ? "rotate-180" : ""}`}
+                  >
+                    <path
+                      d="M2 4l3 3 3-3"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                {loginOpen && (
+                  <div className="absolute right-0 top-[calc(100%+10px)] w-[210px] bg-[#111] border border-white/10 rounded-xl p-1.5 shadow-xl shadow-black/50 z-50">
+                    {/* Vendor */}
+                    <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left">
+                      <div className="w-7 h-7 rounded-md bg-brand-primary/10 flex items-center justify-center text-sm shrink-0">
+                        🏪
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-medium text-white leading-tight">
+                          Vendor log in
+                        </p>
+                        <p className="text-[11px] text-[#8A8F98] leading-tight mt-0.5">
+                          Manage stall & analytics
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Divider */}
+                    <div className="my-1 h-[0.5px] bg-white/8" />
+
+                    {/* Customer */}
+                    <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left">
+                      <div className="w-7 h-7 rounded-md bg-blue-400/10 flex items-center justify-center text-sm shrink-0">
+                        🛍️
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-medium text-white leading-tight">
+                          Customer log in
+                        </p>
+                        <p className="text-[11px] text-[#8A8F98] leading-tight mt-0.5">
+                          Browse & follow stalls
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Guest */}
+                    <div className="my-1 h-[0.5px] bg-white/8" />
+                    <button className="w-full text-center py-2 text-[11px] text-[#8A8F98] hover:text-white transition-colors">
+                      Try Demo →
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Sign up dropdown ── */}
+              <div className="relative" ref={signupRef}>
+                <button
+                  onClick={() => {
+                    setSignupOpen((v) => !v);
+                    setLoginOpen(false);
+                  }}
+                  className="px-3 py-1.5 rounded-md bg-[#F7F8F8] hover:bg-white transition-colors text-black text-[13px] font-medium flex items-center gap-1.5"
+                >
+                  Sign up
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 10 10"
+                    fill="none"
+                    className={`transition-transform duration-200 ${signupOpen ? "rotate-180" : ""}`}
+                  >
+                    <path
+                      d="M2 4l3 3 3-3"
+                      stroke="black"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                {signupOpen && (
+                  <div className="absolute right-0 top-[calc(100%+10px)] w-[210px] bg-[#111] border border-white/10 rounded-xl p-1.5 shadow-xl shadow-black/50 z-50">
+                    {/* Vendor */}
+                    <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left">
+                      <div className="w-7 h-7 rounded-md bg-brand-primary/10 flex items-center justify-center text-sm shrink-0">
+                        🏪
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-medium text-white leading-tight">
+                          I&apos;m a Vendor
+                        </p>
+                        <p className="text-[11px] text-[#8A8F98] leading-tight mt-0.5">
+                          Sell at night markets
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Divider */}
+                    <div className="my-1 h-[0.5px] bg-white/8" />
+
+                    {/* Customer */}
+                    <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left">
+                      <div className="w-7 h-7 rounded-md bg-blue-400/10 flex items-center justify-center text-sm shrink-0">
+                        🛍️
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-medium text-white leading-tight">
+                          I&apos;m a Customer
+                        </p>
+                        <p className="text-[11px] text-[#8A8F98] leading-tight mt-0.5">
+                          Browse & follow stalls
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Guest */}
+                    <div className="my-1 h-[0.5px] bg-white/8" />
+                    <button className="w-full text-center py-2 text-[11px] text-[#8A8F98] hover:text-white transition-colors">
+                      Try Demo →
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -59,8 +219,6 @@ export default function LandingPage() {
       <section
         className="relative w-full flex flex-col items-center pt-50 sm:pt-65 pb-8 px-4 bg-cover bg-center bg-no-repeat"
         style={{
-          // Replace the URL with your preferred night market image
-          // The linear-gradient overlays black (from 80% opacity at top to 95% at bottom) to reduce the light
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.95)), url('https://res.cloudinary.com/dg5grwcd5/image/upload/v1773661915/cambodia-night-market-phsar-chas-2_1_ii8ae1.jpg')`,
         }}
       >
@@ -77,14 +235,19 @@ export default function LandingPage() {
         </p>
 
         {/* CTA Buttons */}
-        <div className="fade-in-3 flex flex-col sm:flex-row items-center gap-4 mb-36 relative z-10">
+        <div className="fade-in-3 flex flex-col sm:flex-row items-center gap-4 mb-6 relative z-10">
           <button className="px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-all duration-200 text-white font-semibold text-sm shadow-lg shadow-brand-primary/20 hover:-translate-y-[1px]">
-            Get Started Free →
+            Get Started as Vendor →
           </button>
-          <button className="px-6 py-3 rounded-xl border border-white/15 text-white/80 hover:text-white hover:border-white/30 transition-all duration-200 font-medium text-sm">
-            See How It Works
+          <button className="px-6 py-3 rounded-xl border border-blue-400/40 text-blue-400 hover:border-blue-400/70 hover:text-blue-300 transition-all duration-200 font-medium text-sm">
+            Sign in as Customer
           </button>
         </div>
+
+        {/* Guest link */}
+        <button className="fade-in-3 mb-28 text-[13px] text-white/30 hover:text-white/60 transition-colors underline underline-offset-2 relative z-10">
+          Or try the demo
+        </button>
       </section>
 
       {/* ========================================
@@ -118,7 +281,6 @@ export default function LandingPage() {
           </div>
           <div className="w-full md:w-1/2 flex justify-center md:justify-end">
             <div className="relative w-full max-w-[400px] aspect-square rounded-2xl bg-dark-surface border border-dark-border flex items-center justify-center overflow-hidden">
-              {/* Icon visual */}
               <div className="flex flex-col items-center gap-6">
                 <div className="w-20 h-20 rounded-2xl bg-brand-primary/10 flex items-center justify-center">
                   <svg

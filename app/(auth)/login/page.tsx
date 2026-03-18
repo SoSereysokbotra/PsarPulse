@@ -3,64 +3,18 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import {
-  User,
+  LogIn,
   Mail,
   Lock,
-  ArrowLeft,
   Loader2,
-  CheckCircle2,
   TrendingUp,
-  Smartphone,
   CloudOff,
+  Smartphone,
 } from "lucide-react";
+import { AuthLayout, LeftPanelContent, FormInput } from "@/components/auth";
 
-/**
- * REUSABLE COMPONENTS
- */
-
-interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-  khmerLabel?: string;
-  icon: React.ElementType;
-}
-
-const FormInput: React.FC<FormInputProps> = ({
-  label,
-  khmerLabel,
-  icon: Icon,
-  id,
-  ...props
-}) => {
-  return (
-    <div>
-      <label
-        htmlFor={id}
-        className="block text-sm font-bold text-slate-900 mb-2"
-      >
-        {label}{" "}
-        {khmerLabel && (
-          <span className="text-[#29B28D] font-khmer ml-1 font-normal">
-            / {khmerLabel}
-          </span>
-        )}
-      </label>
-      <div className="relative group">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Icon className="h-5 w-5 text-slate-400 group-focus-within:text-[#29B28D] transition-colors" />
-        </div>
-        <input
-          id={id}
-          className="block w-full pl-11 pr-4 py-4 bg-slate-50 border-2 border-transparent rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:border-[#29B28D] focus:ring-0 outline-none transition-all duration-200 min-h-[56px]" // min-h for 44px+ touch target
-          {...props}
-        />
-      </div>
-    </div>
-  );
-};
-
-export default function SignupPage() {
+export default function LoginPage() {
   const [formData, setFormData] = useState({
-    fullName: "",
     email: "",
     password: "",
   });
@@ -74,260 +28,182 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    try {
-      // Logic for registration validation and duplicate account checking [cite: 168, 169]
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Account Created Successfully:", formData);
-    } finally {
-      setIsLoading(false);
-    }
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    console.log("Login attempt:", formData);
+    setIsLoading(false);
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row font-sans bg-white selection:bg-[#29B28D] selection:text-white">
-      {/* --- LEFT SIDE: Brand & Value Prop (SRS 1.1 & 2.1) --- */}
-      <div className="hidden lg:flex lg:w-5/12 bg-slate-900 relative overflow-hidden flex-col justify-between p-12 text-white border-r-4 border-[#29B28D]">
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#29B28D] rounded-full mix-blend-multiply filter blur-[128px] opacity-30"></div>
-
-        <div className="relative z-10">
-          <Link href="/" className="inline-flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#29B28D] flex items-center justify-center font-bold text-white text-2xl shadow-lg">
-              P
-            </div>
-            <span className="font-extrabold text-2xl tracking-tight">
-              PsarPulse KH
-            </span>
-          </Link>
-        </div>
-
-        <div className="relative z-10 my-auto">
-          <h2 className="text-4xl xl:text-5xl font-extrabold leading-[1.2] mb-8">
-            Modernize your <br />
-            <span className="text-[#29B28D]">market stall operations.</span>
-          </h2>
-
-          <div className="space-y-8">
-            <FeatureItem
-              icon={TrendingUp}
-              title="Real-time Analytics"
-              desc="Track daily sales, expenses, and profits automatically."
-            />
-            <FeatureItem
-              icon={CloudOff}
-              title="Offline-First Logging"
-              desc="Record transactions even without internet signal."
-            />
-            <FeatureItem
-              icon={Smartphone}
-              title="Khmer Interface"
-              desc="Designed specifically for local Cambodian vendors."
-            />
-          </div>
-        </div>
-
-        <p className="relative z-10 text-slate-500 text-sm font-medium">
-          © 2026 PsarPulse KH • Developed at Kirirom Institute of Technology
-        </p>
-      </div>
-
-      {/* --- RIGHT SIDE: Signup Form (SRS 3.1) --- */}
-      <div className="flex-1 flex flex-col justify-center relative bg-white py-12 px-6 sm:px-12 lg:px-20 xl:px-32">
-        {/* Language & Navigation */}
-        <div className="absolute top-8 left-6 right-6 lg:left-12 lg:right-12 flex justify-between items-center">
-          <Link
-            href="/"
-            className="text-slate-400 hover:text-slate-900 transition-colors flex items-center font-bold"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back
-          </Link>
-          <div className="flex bg-slate-100 p-1 rounded-xl">
-            <button className="px-4 py-2 bg-white text-slate-900 rounded-lg font-bold shadow-sm text-xs">
-              EN
-            </button>
-            <button className="px-4 py-2 text-slate-500 font-khmer text-xs">
-              ខ្មែរ
-            </button>
-          </div>
-        </div>
-
-        <div className="w-full max-w-md mx-auto">
-          <header className="mb-10 mt-8 lg:mt-0">
-            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
-              Create Account
-            </h1>
-            <p className="text-slate-500 font-medium font-khmer text-lg">
-              ចុះឈ្មោះដើម្បីគ្រប់គ្រងអាជីវកម្មរបស់អ្នក
-            </p>
-          </header>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <FormInput
-              id="fullName"
-              name="fullName"
-              type="text"
-              label="Full Name"
-              khmerLabel="ឈ្មោះ​ពេញ"
-              icon={User}
-              placeholder="e.g. Sokha Meas"
-              value={formData.fullName}
-              onChange={handleInputChange}
-              required
-              disabled={isLoading}
-            />
-
-            <FormInput
-              id="email"
-              name="email"
-              type="email"
-              label="Email Address"
-              khmerLabel="អ៊ីមែល"
-              icon={Mail}
-              placeholder="vendor@psarpulse.kh"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              disabled={isLoading}
-            />
-
-            <FormInput
-              id="password"
-              name="password"
-              type="password"
-              label="Password"
-              khmerLabel="ពាក្យសម្ងាត់"
-              icon={Lock}
-              placeholder="Min. 8 characters"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              minLength={8}
-              disabled={isLoading}
-            />
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full mt-4 flex items-center justify-center gap-2 bg-[#29B28D] text-white font-bold text-lg py-5 rounded-2xl shadow-xl hover:bg-[#239979] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-70"
-            >
-              {isLoading ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                "Start Your Free Trial"
-              )}
-            </button>
-          </form>
-
-          {/* OAUTH SECTION */}
-          <div className="relative my-10">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-100"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-slate-400 font-medium">
-                Quick Sign Up
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <SocialButton
-              icon="google"
-              onClick={() => {}}
-              disabled={isLoading}
-            />
-            <SocialButton
-              icon="facebook"
-              onClick={() => {}}
-              disabled={isLoading}
-            />
-            <SocialButton
-              icon="tiktok"
-              onClick={() => {}}
-              disabled={isLoading}
-            />
-          </div>
-
-          <p className="mt-10 text-center text-slate-500 font-medium">
-            Already using PsarPulse?{" "}
-            <Link
-              href="/login"
-              className="text-[#29B28D] font-extrabold hover:underline"
-            >
-              Sign In
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * HELPER COMPONENTS
- */
-
-function FeatureItem({
-  icon: Icon,
-  title,
-  desc,
-}: {
-  icon: any;
-  title: string;
-  desc: string;
-}) {
-  return (
-    <div className="flex gap-5 items-start">
-      <div className="mt-1 w-12 h-12 rounded-2xl bg-[#29B28D]/10 flex items-center justify-center flex-shrink-0 text-[#29B28D]">
-        <Icon className="w-6 h-6" />
-      </div>
-      <div>
-        <h4 className="font-bold text-xl mb-1">{title}</h4>
-        <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
-      </div>
-    </div>
-  );
-}
-
-function SocialButton({
-  icon,
-  onClick,
-  disabled,
-}: {
-  icon: string;
-  onClick: () => void;
-  disabled: boolean;
-}) {
-  const icons: any = {
-    google: (
-      <path
-        fill="#EA4335"
-        d="M12.48 10.92v3.28h7.84c-.24 1.84-.9 3.47-1.92 4.64-1.16 1.16-2.67 2.01-4.51 2.01-3.6 0-6.53-2.93-6.53-6.53s2.93-6.53 6.53-6.53c1.94 0 3.69.83 4.93 2.18l2.3-2.3C19.17 5.62 16.1 4 12.48 4 6.7 4 2 8.7 2 14.48s4.7 10.48 10.48 10.48c3.14 0 5.51-1.04 7.37-2.93 1.91-1.91 2.51-4.6 2.51-6.84 0-.67-.05-1.32-.16-1.97h-9.71z"
-      />
-    ),
-    facebook: (
-      <path
-        fill="#1877F2"
-        d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-      />
-    ),
-    tiktok: (
-      <path
-        fill="currentColor"
-        d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"
-      />
-    ),
-  };
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="flex items-center justify-center py-4 px-4 border-2 border-slate-50 rounded-2xl hover:bg-slate-50 hover:border-slate-100 transition-all text-slate-600 disabled:opacity-50"
+    <AuthLayout
+      leftContent={
+        <LeftPanelContent
+          icon={<LogIn className="w-8 h-8" />}
+          title="Welcome back to your dashboard."
+          subtitle="Access your real‑time sales data, manage inventory, and track business growth."
+          features={[
+            {
+              title: "Real-time Analytics",
+              desc: "Monitor daily sales, expenses, and profits automatically.",
+            },
+            {
+              title: "Offline-First Logging",
+              desc: "Record transactions even without internet signal.",
+            },
+            {
+              title: "Khmer Interface",
+              desc: "Designed specifically for local Cambodian vendors.",
+            },
+          ]}
+          footerText="© 2026 PsarPulse KH • Developed at Kirirom Institute of Technology"
+        />
+      }
+      showLangToggle
+      backHref="/"
     >
-      <svg className="w-6 h-6" viewBox="0 0 24 24">
-        {icons[icon]}
-      </svg>
-    </button>
+      <header className="mb-10">
+        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
+          Sign In
+        </h1>
+        <p className="text-slate-500 font-medium font-khmer text-lg">
+          ចូលគណនីរបស់អ្នកដើម្បីបន្ត
+        </p>
+      </header>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <FormInput
+          id="email"
+          name="email"
+          type="email"
+          label="Email Address"
+          khmerLabel="អ៊ីមែល"
+          icon={Mail}
+          placeholder="vendor@psarpulse.kh"
+          value={formData.email}
+          onChange={handleInputChange}
+          required
+          disabled={isLoading}
+        />
+
+        <FormInput
+          id="password"
+          name="password"
+          type="password"
+          label="Password"
+          khmerLabel="ពាក្យសម្ងាត់"
+          icon={Lock}
+          placeholder="••••••••"
+          value={formData.password}
+          onChange={handleInputChange}
+          required
+          disabled={isLoading}
+          rightLabelElement={
+            <Link
+              href="/forgot-password"
+              className="text-sm font-bold text-psar-primary hover:underline hover:text-psar-dark transition-colors"
+            >
+              Forgot password?
+            </Link>
+          }
+        />
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-xl hover:bg-[#239979] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-70"
+        >
+          {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Sign In"}
+        </button>
+      </form>
+
+      {/* Social login section */}
+      <div className="relative my-10">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-slate-100"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-4 bg-white text-slate-400 font-medium">
+            Or continue with
+          </span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        {/* Google */}
+        <button
+          type="button"
+          onClick={() => console.log("Google login")}
+          disabled={isLoading}
+          className="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 transition-all disabled:opacity-50"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
+            <path
+              fill="#4285F4" // Google Blue
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            />
+            <path
+              fill="#34A853" // Google Green
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            />
+            <path
+              fill="#FBBC05" // Google Yellow
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+            />
+            <path
+              fill="#EA4335" // Google Red
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+            />
+          </svg>
+          <span className="text-sm font-medium text-slate-700">Google</span>
+        </button>
+
+        {/* Facebook */}
+        <button
+          type="button"
+          onClick={() => console.log("Facebook login")}
+          disabled={isLoading}
+          className="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 transition-all disabled:opacity-50"
+        >
+          <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+          </svg>
+          <span className="text-sm font-medium text-slate-700">Facebook</span>
+        </button>
+
+        {/* TikTok */}
+        <button
+          type="button"
+          onClick={() => console.log("TikTok login")}
+          disabled={isLoading}
+          className="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 transition-all disabled:opacity-50"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 448 512">
+            <path
+              fill="#24f6f0"
+              d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31v89.89a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14Z"
+            />
+            <path
+              fill="#fe2c55"
+              d="M438 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 175 188.31v89.89a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 371 102.39a121.43 121.43 0 0 0 67 20.14Z"
+            />
+            <path
+              fill="#000000"
+              d="M443 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 180 188.31v89.89a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 376 102.39a121.43 121.43 0 0 0 67 20.14Z"
+            />
+          </svg>
+          <span className="text-sm font-medium text-slate-700">TikTok</span>
+        </button>
+      </div>
+
+      <p className="mt-8 text-center text-slate-500 font-medium">
+        Don't have an account?{" "}
+        <Link
+          href="/signup"
+          className="text-psar-primary font-extrabold hover:underline"
+        >
+          Sign up for free
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }

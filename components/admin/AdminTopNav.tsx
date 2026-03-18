@@ -11,6 +11,7 @@ import {
   CreditCard,
   LogOut,
   MailOpen,
+  ClipboardList,
   Bell,
   ChevronDown,
 } from "lucide-react";
@@ -19,10 +20,10 @@ import { useState } from "react";
 const navItems = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Vendors", href: "/admin/vendors", icon: Store },
+  { name: "Requests", href: "/admin/vendor-requests", icon: ClipboardList },
   { name: "Stall Map", href: "/admin/map", icon: Map },
   { name: "Invitations", href: "/admin/invites", icon: MailOpen },
   { name: "Billing", href: "/admin/billing", icon: CreditCard },
-  { name: "Rankings", href: "/admin/rankings", icon: TrendingUp },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 

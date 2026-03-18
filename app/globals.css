@@ -22,6 +22,11 @@
   --color-brand-primary-hover: #249e7d;
   --color-brand-dark: #219072;
 
+  /* Psar Colors */
+  --color-psar-dark: #0E1319;
+  --color-psar-white: #FFFFFF;
+  --color-psar-primary: #29B28D;
+
   /* Text */
   --color-muted: #888888;
   --color-secondary: #29B28D;

@@ -19,7 +19,6 @@ const navItems = [
   { name: "Stall Map", href: "/admin/map", icon: Map },
   { name: "Invitations", href: "/admin/invites", icon: MailOpen },
   { name: "Billing", href: "/admin/billing", icon: CreditCard },
-  { name: "Rankings", href: "/admin/rankings", icon: TrendingUp },
 ];
 
 export function AdminSidebar() {

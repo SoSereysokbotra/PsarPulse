@@ -22,11 +22,30 @@ export default function InvitesPage() {
   const [copied, setCopied] = useState(false);
   const [generatedLink, setGeneratedLink] = useState("");
   const [inviteType, setInviteType] = useState("vip");
+  const [emailInput, setEmailInput] = useState("");
+  const [inviteSent, setInviteSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleGenerate = (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setGeneratedLink(`https://psarpulse.kh/register?token=pp_kh_${Math.random().toString(36).substring(7)}`);
+    setIsLoading(true);
+
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const token = Math.random().toString(36).substring(7);
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://psarpulse.kh';
+    
+    if (inviteType === "vip" && emailInput) {
+      setGeneratedLink(`${baseUrl}/vendor/vip?token=pp_vip_${token}&email=${encodeURIComponent(emailInput)}`);
+      setInviteSent(true);
+    } else {
+      setGeneratedLink(`${baseUrl}/vendor/vip?token=pp_vip_${token}`);
+      setInviteSent(false);
+    }
+    
     setCopied(false);
+    setIsLoading(false);
   };
 
   const copyToClipboard = () => {
@@ -102,6 +121,8 @@ export default function InvitesPage() {
                     <input 
                       type="email" 
                       placeholder="e.g. sokha@gmail.com"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
                       className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-emerald-500/50"
                     />
                     <p className="text-xs text-slate-500 mt-1">If left blank, link can be copied and shared via Telegram.</p>
@@ -118,12 +139,29 @@ export default function InvitesPage() {
 
               <button 
                 type="submit"
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 mt-2"
+                disabled={isLoading}
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <RefreshCw className="h-4 w-4" />
-                Generate Link
+                {isLoading ? (
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                ) : emailInput ? (
+                  <MailOpen className="h-4 w-4" />
+                ) : (
+                  <RefreshCw className="h-4 w-4" />
+                )}
+                {isLoading ? "Processing..." : emailInput ? "Send Invite Email" : "Generate Link"}
               </button>
             </form>
+
+            {inviteSent && (
+              <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                <Check className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-semibold text-emerald-800">Invitation Sent Successfully!</h4>
+                  <p className="text-xs text-emerald-600 mt-1">An email with the registration link has been dispatched to {emailInput}.</p>
+                </div>
+              </div>
+            )}
 
             {generatedLink && (
               <div className="mt-6 pt-6 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-2 duration-300">

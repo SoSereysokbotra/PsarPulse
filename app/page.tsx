@@ -1,14 +1,11 @@
 "use client";
 
-"use client";
-
-"use client";
-
 import React, { useState, useRef, useEffect } from "react";
 
 export default function LandingPage() {
   const [signupOpen, setSignupOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+
   const signupRef = useRef<HTMLDivElement>(null);
   const loginRef = useRef<HTMLDivElement>(null);
 

@@ -10,11 +10,16 @@ import {
   PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 
+// Reusable components
+import FreeSidebar from "@/components/vendor/FreeSidebar";
+import FreeTopbar from "@/components/vendor/FreeTopbar";
+import FreeStatCard from "@/components/vendor/FreeStatCard";
+
 // ─── Types ────────────────────────────────────────────────────────
 type Period  = "Day" | "Week" | "Month";
 type Method  = "Cash" | "ABA/KHQR" | "Other";
 type ToastT  = { id: number; msg: string; type: "success" | "error" | "undo" | "locked"; txnId?: string; };
-
+  
 interface NavItemProps { icon: React.ElementType; title: string; href: string; active?: boolean; collapsed?: boolean; }
 
 interface Transaction {
@@ -171,116 +176,61 @@ export default function SalesDemoDashboard() {
       )}
 
       {/* ══ SIDEBAR ════════════════════════════════════════════════ */}
-      <aside
-        className={`
-          fixed lg:static inset-y-0 left-0 z-50
-          flex flex-col h-screen shrink-0
-          bg-[#0d1117]
-          transition-all duration-300 ease-in-out
-          ${isSidebarCollapsed ? "w-[68px]" : "w-72"}
-          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        `}
-      >
-        {/* Logo */}
-        <div className={`flex items-center border-b border-white/[0.07] h-[70px] shrink-0 ${isSidebarCollapsed ? "justify-center px-0" : "justify-between px-6"}`}>
-          {!isSidebarCollapsed && (
-            <Link href="/" className="flex items-center gap-3 no-underline">
-              <div className="w-10 h-10 rounded-[10px] bg-[#3ecf8e] flex items-center justify-center font-extrabold text-[#0d1117] text-[17px] shrink-0">P</div>
-              <span className="font-extrabold text-[16px] text-[#e6edf3] tracking-[0.02em] whitespace-nowrap">PsarPulse KH</span>
-            </Link>
-          )}
-          {isSidebarCollapsed && (
-            <Link href="/" className="flex items-center justify-center no-underline">
-              <div className="w-10 h-10 rounded-[10px] bg-[#3ecf8e] flex items-center justify-center font-extrabold text-[#0d1117] text-[17px]">P</div>
-            </Link>
-          )}
-          <button className="lg:hidden bg-transparent border-0 text-[#7d8590] cursor-pointer p-0 shrink-0" onClick={() => setIsSidebarOpen(false)}>
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Nav */}
-        <nav className={`flex-1 pt-3 overflow-y-auto ${isSidebarCollapsed ? "px-2" : "px-3"}`}>
-          <NavItem icon={LayoutDashboard}  title="Dashboard" href="/guest" collapsed={isSidebarCollapsed} />
-          <NavItem icon={CircleDollarSign} title="Sales"     href="/guest/sales" active collapsed={isSidebarCollapsed} />
-          <NavItem icon={Receipt}          title="Expenses"  href="/guest/expenses"  collapsed={isSidebarCollapsed} />
-          <NavItem icon={Users}            title="Customers" href="/guest/customers" collapsed={isSidebarCollapsed} />
-        </nav>
-
-        {/* Footer */}
-        <div className={`pb-3 pt-2 border-t border-white/[0.07] ${isSidebarCollapsed ? "px-2" : "px-3"}`}>
-          <NavItem icon={Settings} title="Settings" href="/guest/settings" collapsed={isSidebarCollapsed} />
-          {!isSidebarCollapsed && (
-            <>
-              <div className="mt-2 px-4 py-3.5 rounded-[11px] bg-[rgba(62,207,142,0.08)] border border-[rgba(62,207,142,0.18)]">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[13px] font-semibold text-[#e6edf3]">Free Plan</span>
-                  <span className="text-[11px] font-bold text-[#7d8590]">ឥតគិតថ្លៃ</span>
-                </div>
-                <Link href="/pricing" className="block text-center text-[13px] font-bold text-[#3ecf8e] bg-[rgba(62,207,142,0.12)] py-2 rounded-[8px] no-underline hover:bg-[rgba(62,207,142,0.18)] transition-colors">
-                  Upgrade Plan ↗
-                </Link>
-              </div>
-              <div className="flex items-center gap-3 px-3 pt-4 pb-2">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[13px] font-bold text-white shrink-0">SM</div>
-                <span className="text-[14px] font-medium text-[#e6edf3] flex-1">Guest User</span>
-                <ChevronRight size={15} className="text-[#7d8590]" />
-              </div>
-            </>
-          )}
-        </div>
-      </aside>
+      <FreeSidebar
+        isOpen={isSidebarOpen}
+        isCollapsed={isSidebarCollapsed}
+        setIsOpen={setIsSidebarOpen}
+        currentPath="/guest/sales"
+        navItems={[
+          { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/guest" },
+          { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/guest/sales" },
+          { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/guest/expenses" },
+          { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/guest/customers" },
+        ]}
+      />
 
       {/* ══ MAIN ══════════════════════════════════════════════════ */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
         {/* ── Topbar ── */}
-        <header className="bg-white border-b border-[#e8eaed] px-5 lg:px-7 h-[70px] flex items-center justify-between shrink-0 relative z-30">
-          <div className="flex items-center gap-3">
-            <button className="flex lg:hidden items-center justify-center w-10 h-10 rounded-[10px] bg-transparent border-0 cursor-pointer text-[#6b7280] hover:bg-[#f0f2f5] transition-colors" onClick={() => setIsSidebarOpen(true)}>
-              <Menu size={22} />
-            </button>
-            <button
-              className="hidden lg:flex items-center justify-center w-10 h-10 rounded-[10px] bg-transparent border-0 cursor-pointer text-[#6b7280] hover:bg-[#f0f2f5] transition-colors"
-              onClick={() => setIsSidebarCollapsed(c => !c)}
-            >
-              {isSidebarCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
-            </button>
-            <h1 className="font-bold text-[20px] text-[#111827]">Sales</h1>
-            <span className="text-[13px] text-[#6b7280] hidden sm:block">ការគ្រប់គ្រងការលក់</span>
-          </div>
+        <FreeTopbar
+          title="Sales"
+          isSidebarCollapsed={isSidebarCollapsed}
+          setIsSidebarCollapsed={setIsSidebarCollapsed}
+          setIsMobileSidebarOpen={setIsSidebarOpen}
+          rightActions={
+            <>
+              <div className="hidden sm:flex items-center bg-[#f0f2f5] border border-[#e8eaed] rounded-[10px] p-[3px]">
+                {(["Day", "Week", "Month"] as Period[]).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setPeriod(p)}
+                    className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${
+                      period === p
+                        ? "bg-white text-[#111827] shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
+                        : "bg-transparent text-[#6b7280] hover:text-[#111827]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
 
-          <div className="flex items-center gap-[10px]">
-            <div className="hidden sm:flex items-center bg-[#f0f2f5] border border-[#e8eaed] rounded-[10px] p-[3px]">
-              {(["Day", "Week", "Month"] as Period[]).map(p => (
+              <DemoTooltip title="Quick Entry" desc="Log sales instantly. On mobile, this opens a quick num-pad. (Disabled in Demo)" position="bottom">
                 <button
-                  key={p}
-                  onClick={() => setPeriod(p)}
-                  className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${
-                    period === p
-                      ? "bg-white text-[#111827] shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
-                      : "bg-transparent text-[#6b7280] hover:text-[#111827]"
-                  }`}
+                  onClick={triggerDemoLock}
+                  className="flex items-center gap-[7px] bg-[#3ecf8e] text-[#0d1117] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a] transition-colors"
                 >
-                  {p}
+                  <Plus size={14} /> Add Sale
                 </button>
-              ))}
-            </div>
+              </DemoTooltip>
 
-            <DemoTooltip title="Quick Entry" desc="Log sales instantly. On mobile, this opens a quick num-pad. (Disabled in Demo)" position="bottom">
-              <button
-                onClick={triggerDemoLock}
-                className="flex items-center gap-[7px] bg-[#3ecf8e] text-[#0d1117] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a] transition-colors"
-              >
-                <Plus size={14} /> Add Sale
-              </button>
-            </DemoTooltip>
-
-            <div className="w-[34px] h-[34px] rounded-full bg-[rgba(62,207,142,0.12)] border-[1.5px] border-[#3ecf8e] flex items-center justify-center text-[11px] font-bold text-[#3ecf8e]">
-              SM
-            </div>
-          </div>
-        </header>
+              <div className="w-[34px] h-[34px] rounded-full bg-[rgba(62,207,142,0.12)] border-[1.5px] border-[#3ecf8e] flex items-center justify-center text-[11px] font-bold text-[#3ecf8e]">
+                SM
+              </div>
+            </>
+          }
+        />
 
         {/* ── Scrollable body ── */}
         <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px]">
@@ -301,62 +251,32 @@ export default function SalesDemoDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
               <DemoTooltip title="Revenue Tracking" desc="Monitor gross income calculated in real-time. Changes dynamically when you switch between Day/Week/Month.">
-                <div className="bg-[#0d1117] rounded-[14px] border border-white/[0.06] px-[26px] py-6 h-full">
-                  <div className="flex justify-between items-start mb-5">
-                    <div>
-                      <div className="text-[10.5px] font-bold text-[#7d8590] uppercase tracking-[0.07em]">{period}'s Revenue</div>
-                      <div className="text-[10px] text-[#4d5562] mt-0.5">ចំណូលប្រចាំ</div>
-                    </div>
-                    <div className="w-[34px] h-[34px] rounded-[10px] bg-[rgba(62,207,142,0.12)] border border-[rgba(62,207,142,0.2)] flex items-center justify-center">
-                      <CircleDollarSign size={15} className="text-[#3ecf8e]" />
-                    </div>
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <span className="font-bold text-[30px] leading-none text-[#e6edf3]">
-                      ${totalRevenue.toFixed(2)}
-                    </span>
-                    <span className={`text-[12.5px] font-bold mb-0.5 flex items-center gap-1 ${statChange.positive ? "text-[#3ecf8e]" : "text-[#ef4444]"}`}>
-                      {statChange.positive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                      {statChange.change}
-                    </span>
-                  </div>
-                </div>
+                <FreeStatCard
+                  variant="dark"
+                  title={`${period}'s Revenue`}
+                  khmerTitle="ចំណូលប្រចាំ"
+                  value={`$${totalRevenue.toFixed(2)}`}
+                  trend={statChange.change}
+                  trendDirection={statChange.positive ? "up" : "down"}
+                />
               </DemoTooltip>
 
               <DemoTooltip title="Transaction Volume" desc="Total number of receipts logged. High volume with low revenue might indicate a need for upselling.">
-                <div className="bg-white border border-[#e8eaed] rounded-[14px] px-[26px] py-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] h-full">
-                  <div className="flex justify-between items-start mb-5">
-                    <div>
-                      <div className="text-[10.5px] font-bold text-[#6b7280] uppercase tracking-[0.07em]">Transactions</div>
-                      <div className="text-[10px] text-[#9ca3af] mt-0.5">ចំនួនការលក់</div>
-                    </div>
-                    <div className="w-[34px] h-[34px] rounded-[10px] bg-[#f7f8fa] border border-[#e8eaed] flex items-center justify-center">
-                      <ShoppingCart size={15} className="text-[#3ecf8e]" />
-                    </div>
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <span className="font-bold text-[30px] leading-none text-[#111827]">{activeTxns.length}</span>
-                    <span className="text-[12.5px] text-[#6b7280] mb-0.5">sales today</span>
-                  </div>
-                </div>
+                <FreeStatCard
+                  title="Transactions"
+                  khmerTitle="ចំនួនការលក់"
+                  value={activeTxns.length}
+                  subtext="sales today"
+                />
               </DemoTooltip>
 
               <DemoTooltip title="Average Ticket Size" desc="The average dollar amount a customer spends. Essential metric for determining business efficiency.">
-                <div className="bg-white border border-[#e8eaed] rounded-[14px] px-[26px] py-6 shadow-[0_1px_4px_rgba(0,0,0,0.06)] h-full">
-                  <div className="flex justify-between items-start mb-5">
-                    <div>
-                      <div className="text-[10.5px] font-bold text-[#6b7280] uppercase tracking-[0.07em]">Avg. Sale</div>
-                      <div className="text-[10px] text-[#9ca3af] mt-0.5">មធ្យមតម្លៃ</div>
-                    </div>
-                    <div className="w-[34px] h-[34px] rounded-[10px] bg-[#f7f8fa] border border-[#e8eaed] flex items-center justify-center">
-                      <BarChart3 size={15} className="text-[#3ecf8e]" />
-                    </div>
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <span className="font-bold text-[30px] leading-none text-[#111827]">${avgSale.toFixed(2)}</span>
-                    <span className="text-[12.5px] text-[#6b7280] mb-0.5">per txn</span>
-                  </div>
-                </div>
+                <FreeStatCard
+                  title="Avg. Sale"
+                  khmerTitle="មធ្យមតម្លៃ"
+                  value={`$${avgSale.toFixed(2)}`}
+                  subtext="per txn"
+                />
               </DemoTooltip>
 
             </div>
@@ -474,22 +394,4 @@ export default function SalesDemoDashboard() {
   );
 }
 
-// ─── NavItem ──────────────────────────────────────────────────────
-function NavItem({ icon: Icon, title, href, active = false, collapsed = false }: NavItemProps) {
-  return (
-    <Link
-      href={href}
-      title={collapsed ? title : undefined}
-      className={`flex items-center rounded-[10px] mb-0.5 no-underline transition-all duration-[120ms] ${
-        collapsed ? "justify-center w-full h-11" : "gap-3 px-4 py-3"
-      } ${
-        active
-          ? "bg-[rgba(62,207,142,0.12)] text-[#3ecf8e]"
-          : "bg-transparent text-[#7d8590] hover:bg-white/[0.05] hover:text-[#e6edf3]"
-      }`}
-    >
-      <Icon size={20} />
-      {!collapsed && <span className={`text-[15px] ${active ? "font-semibold" : "font-normal"}`}>{title}</span>}
-    </Link>
-  );
-}
+// ─── END COMPONENT ────────────────────────────────────────────────

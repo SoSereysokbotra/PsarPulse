@@ -10,6 +10,10 @@ import {
   PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 
+import FreeSidebar from "@/components/vendor/FreeSidebar";
+import FreeTopbar from "@/components/vendor/FreeTopbar";
+import FreeStatCard from "@/components/vendor/FreeStatCard";
+
 // ─── Types ─────────────────────────────────────────────────────────
 interface NavItemProps     { icon: React.ElementType; title: string; khmerTitle: string; href: string; active?: boolean; collapsed?: boolean; }
 interface SummaryCardProps { title: string; khmerTitle: string; value: string; icon: React.ElementType; trend?: string; isPositive?: boolean; subtext?: string; highlight?: boolean; }
@@ -40,7 +44,6 @@ const GOAL = { label: "Daily Revenue Goal", khmer: "គោលដៅចំណូ�
 export default function VendorDashboard() {
   const [isSidebarOpen,      setIsSidebarOpen]      = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [userMenuOpen,       setUserMenuOpen]       = useState(false);
   const [isDayLocked,        setIsDayLocked]        = useState(false);
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [searchQuery,   setSearchQuery]   = useState("");
@@ -134,7 +137,7 @@ export default function VendorDashboard() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f0f2f5] text-[#111827]" style={{ fontFamily: "inherit" }}>
+    <div className="min-h-screen bg-slate-100 flex font-sans text-slate-900 selection:bg-[#29B28D] selection:text-white">
 
       {/* Mobile sidebar backdrop */}
       {isSidebarOpen && (
@@ -145,148 +148,24 @@ export default function VendorDashboard() {
       )}
 
       {/* ══ SIDEBAR ════════════════════════════════════════════════ */}
-      <aside
-        className={`
-          fixed lg:static inset-y-0 left-0 z-50
-          flex flex-col h-screen shrink-0
-          bg-[#0d1117]
-          transition-all duration-300 ease-in-out
-          ${isSidebarCollapsed ? "w-[68px]" : "w-72"}
-          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        `}
-      >
-        {/* Logo */}
-        <div className={`flex items-center border-b border-white/[0.07] h-[70px] shrink-0 ${isSidebarCollapsed ? "justify-center px-0" : "justify-between px-6"}`}>
-          {!isSidebarCollapsed && (
-            <Link href="/vendor" className="flex items-center gap-3 no-underline">
-              <div className="w-10 h-10 rounded-[10px] bg-[#3ecf8e] flex items-center justify-center font-extrabold text-[#0d1117] text-[17px] shrink-0">
-                P
-              </div>
-              <span className="font-extrabold text-[16px] text-[#e6edf3] tracking-[0.02em] whitespace-nowrap">PsarPulse KH</span>
-            </Link>
-          )}
-          {isSidebarCollapsed && (
-            <Link href="/vendor" className="flex items-center justify-center no-underline">
-              <div className="w-10 h-10 rounded-[10px] bg-[#3ecf8e] flex items-center justify-center font-extrabold text-[#0d1117] text-[17px]">P</div>
-            </Link>
-          )}
-          <button
-            className="lg:hidden bg-transparent border-0 text-[#7d8590] cursor-pointer p-0 shrink-0"
-            onClick={() => setIsSidebarOpen(false)}
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Nav */}
-        <nav className={`flex-1 pt-3 overflow-y-auto ${isSidebarCollapsed ? "px-2" : "px-3"}`}>
-          <NavItem icon={LayoutDashboard}  title="Dashboard" khmerTitle="ផ្ទាំងគ្រប់គ្រង" href="/vendor"         active collapsed={isSidebarCollapsed} />
-          <NavItem icon={CircleDollarSign} title="Sales"     khmerTitle="ការលក់"           href="/vendor/sales"       collapsed={isSidebarCollapsed} />
-          <NavItem icon={Receipt}          title="Expenses"  khmerTitle="ចំណាយ"            href="/vendor/expenses"    collapsed={isSidebarCollapsed} />
-          <NavItem icon={Users}            title="Customers" khmerTitle="អតិថិជន"          href="/vendor/customer"    collapsed={isSidebarCollapsed} />
-        </nav>
-
-        {/* Footer */}
-        <div className={`pb-3 pt-2 border-t border-white/[0.07] ${isSidebarCollapsed ? "px-2" : "px-3"}`}>
-          <NavItem icon={Settings} title="Settings" khmerTitle="ការកំណត់" href="/vendor/settings" collapsed={isSidebarCollapsed} />
-          {!isSidebarCollapsed && (
-            <>
-              <div className="mt-2 px-4 py-3.5 rounded-[11px] bg-[rgba(62,207,142,0.08)] border border-[rgba(62,207,142,0.18)]">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[13px] font-semibold text-[#e6edf3]">Free Plan</span>
-                  <span className="text-[11px] font-bold text-[#7d8590]">ឥតគិតថ្លៃ</span>
-                </div>
-                <Link
-                  href="/vendor/pricing"
-                  className="block text-center text-[13px] font-bold text-[#3ecf8e] bg-[rgba(62,207,142,0.12)] py-2 rounded-[8px] no-underline hover:bg-[rgba(62,207,142,0.18)] transition-colors"
-                >
-                  Upgrade Plan ↗
-                </Link>
-              </div>
-              <div className="relative">
-                <button
-                  onClick={() => setUserMenuOpen(o => !o)}
-                  className="w-full flex items-center gap-3 px-3 pt-4 pb-2 cursor-pointer bg-transparent border-0 text-left"
-                >
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[13px] font-bold text-white shrink-0">
-                    SM
-                  </div>
-                  <span className="text-[14px] font-medium text-[#e6edf3] flex-1">Sok Maly</span>
-                  <ChevronRight size={15} className={`text-[#7d8590] transition-transform duration-200 ${userMenuOpen ? "-rotate-90" : "rotate-0"}`} />
-                </button>
-
-                {userMenuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                    <div className="absolute bottom-[calc(100%-8px)] left-3 right-3 z-50 bg-white rounded-[16px] shadow-[0_4px_32px_rgba(0,0,0,0.14)] border border-[#e8eaed] overflow-hidden">
-                      {/* User info row */}
-                      <div className="flex items-center gap-3 px-5 py-4">
-                        <div className="w-10 h-10 rounded-full border-2 border-[#e8eaed] flex items-center justify-center shrink-0">
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                        </div>
-                        <div>
-                          <div className="text-[14px] font-semibold text-[#111827] leading-tight">Sok Maly</div>
-                          <div className="text-[12px] text-[#6b7280] mt-0.5">sokmaly@gmail.com</div>
-                        </div>
-                      </div>
-                      <div className="border-t border-[#f0f2f5]" />
-                      {/* Menu items */}
-                      <div className="py-1">
-                        <Link href="/vendor/settings" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] no-underline hover:bg-[#f7f8fa] transition-colors">
-                          <div className="w-5 h-5 rounded-full border border-[#d1d5db] flex items-center justify-center shrink-0">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                          </div>
-                          account
-                        </Link>
-                        <Link href="/vendor/pricing" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] no-underline hover:bg-[#f7f8fa] transition-colors">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-                          Premium Plan
-                        </Link>
-                        <button className="w-full flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] bg-transparent border-0 cursor-pointer hover:bg-[#f7f8fa] transition-colors text-left">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                          log out
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </>
-          )}
-          {isSidebarCollapsed && (
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[13px] font-bold text-white">SM</div>
-            </div>
-          )}
-        </div>
-      </aside>
+      <FreeSidebar
+        isOpen={isSidebarOpen}
+        isCollapsed={isSidebarCollapsed}
+        setIsOpen={setIsSidebarOpen}
+        currentPath="/vendor"
+      />
 
       {/* ══ MAIN ══════════════════════════════════════════════════ */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
 
         {/* ── Topbar ── */}
-        <header className="bg-white border-b border-[#e8eaed] px-5 lg:px-7 h-[70px] flex items-center justify-between shrink-0 relative z-30">
-          <div className="flex items-center gap-3">
-            {/* Hamburger — visible only on mobile */}
-            <button
-              className="flex lg:hidden items-center justify-center w-10 h-10 rounded-[10px] bg-transparent border-0 cursor-pointer text-[#6b7280] hover:bg-[#f0f2f5] transition-colors"
-              onClick={() => setIsSidebarOpen(true)}
-              aria-label="Open menu"
-            >
-              <Menu size={22} />
-            </button>
-            {/* Desktop collapse toggle */}
-            <button
-              className="hidden lg:flex items-center justify-center w-10 h-10 rounded-[10px] bg-transparent border-0 cursor-pointer text-[#6b7280] hover:bg-[#f0f2f5] transition-colors"
-              onClick={() => setIsSidebarCollapsed(c => !c)}
-            >
-              {isSidebarCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
-            </button>
-            <h1 className="font-bold text-[20px] text-[#111827]">Overview</h1>
-          </div>
-
-          <div className="flex items-center gap-[10px]">
-
+        <FreeTopbar
+          title="Overview"
+          isSidebarCollapsed={isSidebarCollapsed}
+          setIsSidebarCollapsed={setIsSidebarCollapsed}
+          setIsMobileSidebarOpen={setIsSidebarOpen}
+          rightActions={
+            <>
             {/* ─── QUICK SALE ─── */}
             <div ref={quickSaleRef} className="relative">
               <button
@@ -460,12 +339,9 @@ export default function VendorDashboard() {
                 </div>
               )}
             </div>
-
-            <div className="w-[34px] h-[34px] rounded-full bg-[rgba(62,207,142,0.12)] border-[1.5px] border-[#3ecf8e] flex items-center justify-center text-[11px] font-bold text-[#3ecf8e]">
-              SM
-            </div>
-          </div>
-        </header>
+            </>
+          }
+        />
 
         {/* ── Scrollable page body ── */}
         <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px]">
@@ -558,10 +434,10 @@ export default function VendorDashboard() {
 
             {/* ── Metric cards ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <SummaryCard title="Total Sales"    khmerTitle="ការលក់សរុប"   value={summary.sales}     icon={CircleDollarSign} trend="+12%" isPositive />
-              <SummaryCard title="Total Expenses" khmerTitle="ចំណាយសរុប"   value={summary.expenses}  icon={Receipt}          trend="-5%"  isPositive />
-              <SummaryCard title="Net Profit"     khmerTitle="ប្រាក់ចំណេញ" value={summary.profit}    icon={TrendingUp}       trend="+18%" isPositive highlight />
-              <SummaryCard title="Customers"      khmerTitle="អតិថិជនសរុប" value={summary.customers} icon={Users}            subtext={`Avg ${summary.avgCustomer}`} />
+              <FreeStatCard variant="light" title="Total Sales"    khmerTitle="ការលក់សរុប"   value={summary.sales} />
+              <FreeStatCard variant="dark"  title="Total Expenses" khmerTitle="ចំណាយសរុប"   value={summary.expenses} />
+              <FreeStatCard variant="green" title="Net Profit"     khmerTitle="ប្រាក់ចំណេញ" value={summary.profit} />
+              <FreeStatCard variant="light" title="Customers"      khmerTitle="អតិថិជនសរុប" value={summary.customers} subtext={`Avg ${summary.avgCustomer}`} />
             </div>
 
             {/* ── Charts ── */}
@@ -743,69 +619,6 @@ export default function VendorDashboard() {
 }
 
 // ─── Sub-components ────────────────────────────────────────────────
-
-function NavItem({ icon: Icon, title, khmerTitle, href, active = false, collapsed = false }: NavItemProps) {
-  return (
-    <Link
-      href={href}
-      title={collapsed ? title : undefined}
-      className={`flex items-center rounded-[10px] mb-0.5 no-underline transition-all duration-[120ms] ${
-        collapsed ? "justify-center w-full h-11" : "justify-between px-4 py-3"
-      } ${
-        active
-          ? "bg-[rgba(62,207,142,0.12)] text-[#3ecf8e]"
-          : "bg-transparent text-[#7d8590] hover:bg-white/[0.05] hover:text-[#e6edf3]"
-      }`}
-    >
-      <div className={`flex items-center ${collapsed ? "" : "gap-3"}`}>
-        <Icon size={20} />
-        {!collapsed && <span className={`text-[15px] ${active ? "font-semibold" : "font-normal"}`}>{title}</span>}
-      </div>
-      {!collapsed && <span className="text-[11px] opacity-65">{khmerTitle}</span>}
-    </Link>
-  );
-}
-
-function SummaryCard({ title, khmerTitle, value, icon: Icon, trend, isPositive, subtext, highlight = false }: SummaryCardProps) {
-  return (
-    <div className={`px-[26px] py-6 rounded-[14px] shadow-[0_1px_4px_rgba(0,0,0,0.06)] border ${
-      highlight ? "bg-[#3ecf8e] border-[#3ecf8e]" : "bg-white border-[#e8eaed]"
-    }`}>
-      <div className="flex justify-between items-start mb-5">
-        <div>
-          <div className={`text-[10.5px] font-bold uppercase tracking-[0.07em] ${highlight ? "text-white/80" : "text-[#6b7280]"}`}>
-            {title}
-          </div>
-          <div className={`text-[10px] mt-0.5 ${highlight ? "text-white/60" : "text-[#9ca3af]"}`}>
-            {khmerTitle}
-          </div>
-        </div>
-        <div className={`w-[34px] h-[34px] rounded-[10px] flex items-center justify-center border ${
-          highlight ? "bg-white/20 border-transparent" : "bg-[#f7f8fa] border-[#e8eaed]"
-        }`}>
-          <Icon size={15} className={highlight ? "text-white" : "text-[#3ecf8e]"} />
-        </div>
-      </div>
-      <div className="flex items-end justify-between">
-        <span className={`font-bold text-[30px] leading-none ${highlight ? "text-white" : "text-[#111827]"}`}>
-          {value}
-        </span>
-        {trend && (
-          <span className={`text-[12.5px] font-bold mb-0.5 ${
-            highlight ? "text-white" : isPositive ? "text-[#3ecf8e]" : "text-[#ef4444]"
-          }`}>
-            {trend}
-          </span>
-        )}
-        {subtext && (
-          <span className={`text-[12.5px] mb-0.5 ${highlight ? "text-white/75" : "text-[#6b7280]"}`}>
-            {subtext}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
 
 function ChartCard({ title, khmer, children }: { title: string; khmer: string; children: React.ReactNode }) {
   return (

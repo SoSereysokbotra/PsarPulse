@@ -34,7 +34,7 @@ import {
   Megaphone,
   TrendingDown,
 } from "lucide-react";
-import VendorSidebar from "@/components/vendor/VendorSidebar";
+import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
 // ─── Types ─────────────────────────────────────────────────────────
@@ -72,7 +72,6 @@ const PREMIUM_NAV = [
 ];
 
 export default function PremiumDashboard() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDayLocked, setIsDayLocked] = useState(false);
   const [showCustomCategoryModal, setShowCustomCategoryModal] = useState(false);
   const [customCategoryName, setCustomCategoryName] = useState("");
@@ -191,45 +190,15 @@ export default function PremiumDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] flex text-[#111827]">
-
-      {/* Mobile backdrop */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
-      )}
-
-      {/* ══ SIDEBAR (shared component) ═══════════════════════════ */}
-      <VendorSidebar
-        plan="premium"
-        navLinks={PREMIUM_NAV}
-        settingsHref="/vendor/settings"
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
-
-      {/* ══ MAIN CONTENT ════════════════════════════════════════ */}
-      <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
-
-        {/* ── Topbar ── */}
-        <header className="bg-white border-b border-[#e8eaed] px-6 md:px-8 h-[70px] flex items-center justify-between sticky top-0 z-30 shrink-0">
-          <div className="flex items-center gap-4">
-            <button className="lg:hidden text-[#6b7280] bg-transparent border-0 cursor-pointer" onClick={() => setIsSidebarOpen(true)}>
-              <Menu className="w-6 h-6" />
-            </button>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-[22px] font-bold text-[#111827]">Premium Dashboard</h1>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(41,178,141,0.12)] text-[#29B28D] text-[11px] font-bold rounded-full border border-[rgba(41,178,141,0.25)]">
-                  <Sparkles className="w-3 h-3" /> PREMIUM
-                </span>
-              </div>
-              <p className="text-[12px] text-[#6b7280]">ផ្ទាំងគ្រប់គ្រង Premium</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* ─── QUICK SALE ─── */}
-            <div ref={quickSaleRef} className="relative">
+    <VendorDashboardLayout
+      plan="premium"
+      navLinks={PREMIUM_NAV}
+      currentPath="/vendor/premium"
+      title="Premium Dashboard"
+      planBadge={{ label: "PREMIUM", icon: Sparkles }}
+      rightActions={
+        <>
+          <div ref={quickSaleRef} className="relative">
               <button
                 onClick={() => setQuickSaleOpen((o) => !o)}
                 className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer transition-all duration-200 ${
@@ -338,18 +307,11 @@ export default function PremiumDashboard() {
             <button className="hidden sm:flex items-center gap-2 bg-white border border-[#e8eaed] hover:bg-[#f7f8fa] text-[#111827] font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer">
               <FileSpreadsheet className="w-4 h-4" /> Export Excel
             </button>
-            <button className="p-2 text-[#6b7280] hover:text-[#111827] transition-colors relative bg-transparent border-0 cursor-pointer">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
-            </button>
-            <div className="w-9 h-9 rounded-full bg-[rgba(41,178,141,0.12)] border border-[rgba(41,178,141,0.3)] flex items-center justify-center text-[#29B28D] font-bold text-sm shrink-0">
-              SM
-            </div>
-          </div>
-        </header>
-
-        {/* ── Scrollable body ── */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7 max-w-7xl mx-auto w-full">
+        </>
+      }
+    >
+      {/* ── Scrollable body ── */}
+      <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7 max-w-7xl mx-auto w-full">
 
           {/* Smart Push Notifications */}
           {smartAlerts.length > 0 && (
@@ -607,7 +569,6 @@ export default function PremiumDashboard() {
             </div>
           </div>
         </div>
-      </main>
 
       {/* Custom Category Modal */}
       {showCustomCategoryModal && (
@@ -688,6 +649,6 @@ export default function PremiumDashboard() {
           </div>
         </div>
       )}
-    </div>
+    </VendorDashboardLayout>
   );
 }

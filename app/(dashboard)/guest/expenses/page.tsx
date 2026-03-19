@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 
 // Reusable components
-import FreeSidebar from "@/components/vendor/FreeSidebar";
-import FreeTopbar from "@/components/vendor/FreeTopbar";
-import FreeStatCard from "@/components/vendor/FreeStatCard";
+import VendorSidebar from "@/components/vendor/VendorSidebar";
+import VendorTopbar from "@/components/vendor/VendorTopbar";
+import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
 // ─── Types ────────────────────────────────────────────────────────
 type Category = "Ingredients" | "Rent" | "Transport" | "Electricity" | "Labor" | "Others";
@@ -161,24 +161,25 @@ export default function ExpensesDemoDashboard() {
       )}
 
       {/* ══ SIDEBAR ══════════════════════════════════════════════ */}
-      <FreeSidebar
-        isOpen={isSidebarOpen}
-        isCollapsed={isSidebarCollapsed}
-        setIsOpen={setIsSidebarOpen}
-        currentPath="/guest/expenses"
-        navItems={[
+      <VendorSidebar
+        plan="free"
+        navLinks={[
           { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/guest" },
           { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/guest/sales" },
           { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/guest/expenses" },
           { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/guest/customers" },
         ]}
+        currentPath="/guest/expenses"
+        collapsed={isSidebarCollapsed}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       {/* ══ MAIN ══════════════════════════════════════════════════ */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
         {/* ── Topbar ── */}
-        <FreeTopbar
+        <VendorTopbar
           title="Expenses"
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
@@ -213,7 +214,7 @@ export default function ExpensesDemoDashboard() {
             {/* ── Stat cards ── */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <DemoTooltip title="Daily Spending" desc="Total expenses logged for today. Monitor daily cash out.">
-                <FreeStatCard
+                <VendorSummaryCard
                   variant="dark"
                   title="Today's Expenses"
                   khmerTitle="ចំណាយថ្ងៃនេះ"
@@ -223,7 +224,7 @@ export default function ExpensesDemoDashboard() {
               </DemoTooltip>
 
               <DemoTooltip title="Highest Expense" desc="The category where you are currently spending the most capital.">
-                <FreeStatCard
+                <VendorSummaryCard
                   title="Top Category"
                   khmerTitle="ប្រភេទច្រើនជាងគេ"
                   value={topCat.label}
@@ -232,7 +233,7 @@ export default function ExpensesDemoDashboard() {
               </DemoTooltip>
 
               <DemoTooltip title="Weekly Total" desc="Cumulative spending over the last 7 days.">
-                <FreeStatCard
+                <VendorSummaryCard
                   variant="green"
                   title="Weekly Expenses"
                   khmerTitle="ចំណាយប្រចាំសប្តាហ៍"
@@ -243,7 +244,7 @@ export default function ExpensesDemoDashboard() {
               </DemoTooltip>
 
               <DemoTooltip title="Monthly Forecast" desc="Total rolling expenses for the current billing cycle.">
-                <FreeStatCard
+                <VendorSummaryCard
                   title="Monthly Total"
                   khmerTitle="សរុបប្រចាំខែ"
                   value="$650.00"

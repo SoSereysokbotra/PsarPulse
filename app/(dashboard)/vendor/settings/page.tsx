@@ -18,9 +18,9 @@ import {
   Globe,
 } from "lucide-react";
 
-// Import your new reusable components
-import FreeSidebar from "@/components/vendor/FreeSidebar";
-import FreeTopbar from "@/components/vendor/FreeTopbar";
+// Import unified reusable components
+import VendorSidebar from "@/components/vendor/VendorSidebar";
+import VendorTopbar from "@/components/vendor/VendorTopbar";
 
 type SettingsTab = "profile" | "billing" | "subscriptions";
 
@@ -321,17 +321,21 @@ export default function SettingsPage() {
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 font-sans text-slate-900">
       {/* ══ REUSABLE SIDEBAR ══ */}
-      <FreeSidebar
-        isOpen={isSidebarOpen}
-        setIsOpen={setIsSidebarOpen}
-        isCollapsed={isSidebarCollapsed}
+      <VendorSidebar
+        plan="free"
+        navLinks={[
+          { icon: User, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
+        ]}
         currentPath="/vendor/settings"
+        collapsed={isSidebarCollapsed}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       {/* ══ MAIN ══ */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-white">
         {/* ══ REUSABLE TOPBAR ══ */}
-        <FreeTopbar
+        <VendorTopbar
           setIsMobileSidebarOpen={setIsSidebarOpen}
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}

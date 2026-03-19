@@ -20,6 +20,7 @@ interface VendorSidebarProps {
   collapsed?: boolean;
   isOpen?: boolean;
   onClose?: () => void;
+  currentPath?: string;
   userName?: string;
   userInitials?: string;
   userEmail?: string;
@@ -59,6 +60,7 @@ export default function VendorSidebar({
   collapsed = false,
   isOpen = false,
   onClose,
+  currentPath,
   userName = "Sok Maly",
   userInitials = "SM",
   userEmail = "sokmaly@gmail.com",
@@ -66,6 +68,12 @@ export default function VendorSidebar({
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const config = PLAN_CONFIG[plan];
   const PlanIcon = config.icon;
+
+  // Determine active state: explicit `active` prop takes priority, otherwise match currentPath
+  const resolvedLinks = navLinks.map((link) => ({
+    ...link,
+    active: link.active !== undefined ? link.active : currentPath === link.href,
+  }));
 
   return (
     <aside
@@ -113,7 +121,7 @@ export default function VendorSidebar({
 
       {/* Nav */}
       <nav className={`flex-1 pt-3 overflow-y-auto ${collapsed ? "px-2" : "px-3"}`}>
-        {navLinks.map((item) => (
+        {resolvedLinks.map((item) => (
           <VendorNavItem
             key={item.title}
             icon={item.icon}
@@ -133,6 +141,7 @@ export default function VendorSidebar({
           title="Settings"
           khmerTitle="ការកំណត់"
           href={settingsHref}
+          active={currentPath === settingsHref}
           collapsed={collapsed}
         />
 

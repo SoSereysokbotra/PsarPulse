@@ -11,19 +11,22 @@ import {
   Trash2,
   RotateCcw,
   AlertCircle,
-  PanelLeftClose,
-  PanelLeftOpen,
+  LayoutDashboard,
+  CircleDollarSign,
   Receipt,
+  Users,
   Tag,
   TrendingDown,
   Clock,
   Camera,
+  Filter,
+  MoreVertical,
 } from "lucide-react";
 
-// Import our reusable components
-import FreeSidebar from "@/components/vendor/FreeSidebar";
-import FreeTopbar from "@/components/vendor/FreeTopbar";
-import FreeStatCard from "@/components/vendor/FreeStatCard";
+// Import unified reusable components
+import VendorSidebar from "@/components/vendor/VendorSidebar";
+import VendorTopbar from "@/components/vendor/VendorTopbar";
+import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { ConfirmModal } from "@/components/ConfirmModal";
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -299,6 +302,21 @@ export default function ExpensesPage() {
   const avgExpense = activeTxns.length ? totalExpense / activeTxns.length : 0;
   const statChange = STATS[period];
 
+  const topCategoryData = activeTxns.reduce(
+    (acc, txn) => {
+      acc[txn.category] = (acc[txn.category] || 0) + txn.amount;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+  const topCategoryKey = Object.keys(topCategoryData).sort(
+    (a, b) => topCategoryData[b] - topCategoryData[a],
+  )[0];
+  const topCategoryName = topCategoryKey
+    ? CATEGORIES.find((c) => c.value === topCategoryKey)?.label ||
+      topCategoryKey
+    : "None";
+
   return (
     <div className="min-h-screen bg-slate-100 flex font-sans text-slate-900 selection:bg-[#29B28D] selection:text-white">
       {/* ── Toasts ── */}
@@ -343,11 +361,38 @@ export default function ExpensesPage() {
       </div>
 
       {/* ── Extracted Components ── */}
-      <FreeSidebar
-        isOpen={isSidebarOpen}
-        isCollapsed={isSidebarCollapsed}
-        setIsOpen={setIsSidebarOpen}
+      <VendorSidebar
+        plan="free"
+        navLinks={[
+          {
+            icon: LayoutDashboard,
+            title: "Dashboard",
+            khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
+            href: "/vendor",
+          },
+          {
+            icon: CircleDollarSign,
+            title: "Sales",
+            khmerTitle: "ការលក់",
+            href: "/vendor/sales",
+          },
+          {
+            icon: Receipt,
+            title: "Expenses",
+            khmerTitle: "ចំណាយ",
+            href: "/vendor/expenses",
+          },
+          {
+            icon: Users,
+            title: "Customers",
+            khmerTitle: "អតិថិជន",
+            href: "/vendor/customer",
+          },
+        ]}
         currentPath="/vendor/expenses"
+        collapsed={isSidebarCollapsed}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       <ConfirmModal
@@ -488,7 +533,7 @@ export default function ExpensesPage() {
       {/* ══ MAIN ══════════════════════════════════════════════════ */}
       <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
         {/* ── Topbar (Matched with Sales) ── */}
-        <FreeTopbar
+        <VendorTopbar
           title="Expenses"
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
@@ -532,34 +577,36 @@ export default function ExpensesPage() {
               </p>
             </div>
 
-            {/* ── 3 Stat Cards (Exactly like Sales Page layout) ── */}
-            <div className="grid grid-cols-1  sm:grid-cols-4 gap-4">
-              <FreeStatCard
-                variant="dark"
+            {/* Metric Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <VendorSummaryCard
                 title="Today's Expenses"
                 khmerTitle="ចំណាយថ្ងៃនេះ"
                 value={`$${totalExpense.toFixed(2)}`}
+                icon={Receipt}
+                trend={`${activeTxns.length} Transactions`}
+                isPositive={false}
+                highlight
               />
-              <FreeStatCard
+              <VendorSummaryCard
                 title="Top Category"
-                khmerTitle="ប្រភេទច្រើនជាងគេ"
-                value={activeTxns.length}
-                subtext="expenses today"
+                khmerTitle="ប្រភេទចំណាយច្រើនជាងគេ"
+                value={topCategoryName}
+                icon={Tag}
               />
-              <FreeStatCard
-                variant="green"
+              <VendorSummaryCard
                 title="Weekly Expenses"
                 khmerTitle="ចំណាយប្រចាំសប្តាហ៍"
                 value={`$${avgExpense.toFixed(2)}`}
-                subtext="per txn"
-                trend="+5%"
-                trendDirection="up"
+                icon={TrendingDown}
+                trend="+5% vs last week"
+                isPositive={false}
               />
-              <FreeStatCard
+              <VendorSummaryCard
                 title="Monthly Total"
                 khmerTitle="សរុបប្រចាំខែ"
                 value="$650.00"
-                subtext="this month"
+                icon={CircleDollarSign}
               />
             </div>
 
@@ -610,155 +657,101 @@ export default function ExpensesPage() {
               </div>
             </div>
 
-            {/* ── Expense Table (Search Bar matched exactly with Sales) ── */}
-            <div className="bg-white border border-[#e8eaed] rounded-[14px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-              <div className="px-[22px] py-4 border-b border-[#f0f2f5] flex items-center justify-between gap-3 flex-wrap">
+            {/* Expense History Log */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <div className="text-[14px] font-semibold text-[#111827]">
+                  <h3 className="font-bold text-[17px] text-slate-900">
                     Expense History
-                  </div>
-                  <div className="text-[11px] text-[#6b7280] mt-0.5">
-                    {activeTxns.length} record
-                    {activeTxns.length !== 1 ? "s" : ""} · Click row to edit
-                  </div>
+                  </h3>
+                  <p className="text-sm font-khmer text-slate-500 mt-0.5">
+                    ប្រវត្តិការចំណាយ
+                  </p>
                 </div>
-                <div className="relative">
-                  <Search
-                    size={13}
-                    className="absolute left-[11px] top-1/2 -translate-y-1/2 text-[#6b7280] pointer-events-none"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search expenses..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-[33px] pr-4 py-[9px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[9px] text-[13px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors w-[200px]"
-                    style={{ fontFamily: "inherit" }}
-                  />
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative w-full sm:w-auto">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search expenses..."
+                      className="w-full sm:w-auto pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 min-h-[40px]"
+                    />
+                  </div>
+                  <button className="p-2 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors min-h-[40px] cursor-pointer bg-white">
+                    <Filter className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-[#f0f2f5]">
-                    <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">
-                      Time
-                    </th>
-                    <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">
-                      Category
-                    </th>
-                    <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">
-                      Note
-                    </th>
-                    <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">
-                      Amount
-                    </th>
-                    <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.length ? (
-                    filtered.map((e, i) => {
-                      const cat = CAT_MAP[e.category];
-                      return (
-                        <tr
-                          key={e.id}
-                          className={`group transition-colors hover:bg-[#f7f8fa] cursor-pointer ${i < filtered.length - 1 ? "border-b border-[#f0f2f5]" : ""}`}
-                          onClick={() => openEdit(e)}
-                        >
-                          <td className="px-[22px] py-[14px] text-[13px] text-[#6b7280] whitespace-nowrap">
-                            <div className="flex items-center gap-1.5">
-                              <Clock size={12} className="text-[#9ca3af]" />
-                              {e.time}
-                            </div>
-                          </td>
-                          <td className="px-[22px] py-[14px]">
-                            <span
-                              className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[11.5px] font-semibold border"
-                              style={{
-                                background: `${cat.color}14`,
-                                color: cat.color,
-                                borderColor: `${cat.color}30`,
-                              }}
-                            >
-                              {e.category}
-                            </span>
-                          </td>
-                          <td className="px-[22px] py-[14px]">
-                            <div className="flex items-center gap-2">
-                              <span className="text-[13px] font-medium text-[#111827] truncate max-w-[220px]">
-                                {e.note || "—"}
-                              </span>
-                              {e.hasReceipt && (
-                                <Camera
-                                  size={13}
-                                  className="text-[#3ecf8e] shrink-0"
-                                />
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-[22px] py-[14px] text-[13.5px] font-bold text-[#ef4444] text-right whitespace-nowrap">
-                            -${e.amount.toFixed(2)}
-                          </td>
-                          <td
-                            className="px-[22px] py-[14px] text-right"
-                            onClick={(ev) => ev.stopPropagation()}
-                          >
-                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button
-                                onClick={() => openEdit(e)}
-                                className="w-8 h-8 rounded-[8px] bg-transparent hover:bg-[#f0f2f5] border-0 flex items-center justify-center cursor-pointer text-[#6b7280] hover:text-[#111827] transition-colors"
-                              >
-                                <Pencil size={13} />
-                              </button>
-                              <button
-                                onClick={() => setDeleteTarget(e)}
-                                className="w-8 h-8 rounded-[8px] bg-transparent hover:bg-[rgba(239,68,68,0.08)] border-0 flex items-center justify-center cursor-pointer text-[#6b7280] hover:text-[#ef4444] transition-colors"
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="px-[22px] py-14 text-center">
-                        <div className="text-[13px] text-[#9ca3af]">
-                          {search
-                            ? "No expenses match your search"
-                            : "No expenses yet — log your first one!"}
-                        </div>
-                        {!search && (
-                          <button
-                            onClick={openAdd}
-                            className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3ecf8e] bg-transparent border-0 cursor-pointer hover:underline"
-                          >
-                            <Plus size={14} /> Add first expense
-                          </button>
-                        )}
-                      </td>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[600px]">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-100 text-[13px] text-slate-500 uppercase tracking-wider font-semibold">
+                      <th className="px-6 py-4">Time</th>
+                      <th className="px-6 py-4">Category</th>
+                      <th className="px-6 py-4">Note / Receipt</th>
+                      <th className="px-6 py-4">Amount</th>
+                      <th className="px-6 py-4 text-center">Actions</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filtered.map((exp) => (
+                      <tr
+                        key={exp.id}
+                        className="hover:bg-psar-primary/10/30 transition-colors group"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900">
+                            <Clock className="w-4 h-4 text-slate-400" />
+                            {exp.time}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-bold border bg-slate-100 text-slate-700 border-slate-200"
+                            >
+                              {exp.category}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[14px] text-slate-600">
+                              {exp.note}
+                            </span>
+                            {exp.hasReceipt && (
+                              <span
+                                title="Receipt attached"
+                                className="flex items-center"
+                              >
+                                <Camera className="w-4 h-4 text-psar-primary" />
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-[16px] font-bold text-red-500">
+                            -${exp.amount.toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <button className="p-2 text-slate-400 hover:text-psar-primary rounded-lg hover:bg-psar-primary/10 transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 bg-transparent cursor-pointer">
+                            <MoreVertical className="w-5 h-5 mx-auto" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-              {activeTxns.length > 0 && (
-                <div className="px-[22px] py-3 border-t border-[#f0f2f5] flex items-center justify-between">
-                  <span className="text-[12px] text-[#9ca3af]">
-                    {filtered.length} of {activeTxns.length} records
-                  </span>
-                  <span className="text-[13px] font-bold text-[#111827]">
-                    Total:{" "}
-                    <span className="text-[#ef4444]">
-                      ${filtered.reduce((s, e) => s + e.amount, 0).toFixed(2)}
-                    </span>
-                  </span>
-                </div>
-              )}
+              <div className="p-4 border-t border-slate-100 bg-slate-50 text-center">
+                <button className="text-[14px] font-semibold text-psar-primary hover:text-psar-primary hover:underline min-h-[40px] px-4 border-0 bg-transparent cursor-pointer">
+                  View All Pro Expenses
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center gap-2 px-1">

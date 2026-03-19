@@ -24,9 +24,9 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 
-import FreeSidebar from "@/components/vendor/FreeSidebar";
-import FreeTopbar from "@/components/vendor/FreeTopbar";
-import FreeStatCard from "@/components/vendor/FreeStatCard";
+import VendorSidebar from "@/components/vendor/VendorSidebar";
+import VendorTopbar from "@/components/vendor/VendorTopbar";
+import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
 const TABS = [
   { id: "analysis", label: "Customers Analysis", khmer: "វិភាគអតិថិជន" },
@@ -74,16 +74,23 @@ export default function CustomersPage() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex font-sans text-slate-900 selection:bg-[#29B28D] selection:text-white">
-      <FreeSidebar
-        isOpen={isMobileOpen}
-        isCollapsed={isCollapsed}
-        setIsOpen={setIsMobileOpen}
+      <VendorSidebar
+        plan="free"
+        navLinks={[
+          { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
+          { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/sales" },
+          { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/expenses" },
+          { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/customer" },
+        ]}
         currentPath="/vendor/customer"
+        collapsed={isCollapsed}
+        isOpen={isMobileOpen}
+        onClose={() => setIsMobileOpen(false)}
       />
 
       {/* ── MAIN ── */}
       <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
-        <FreeTopbar
+        <VendorTopbar
           title="Customers"
           isSidebarCollapsed={isCollapsed}
           setIsSidebarCollapsed={setIsCollapsed}
@@ -93,14 +100,6 @@ export default function CustomersPage() {
               <button className="hidden sm:flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
                 <Zap className="w-3.5 h-3.5 text-[#29B28D]" />
                 Quick sale
-              </button>
-              <button className="hidden sm:flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
-                <FileText className="w-3.5 h-3.5" />
-                Export PDF
-              </button>
-              <button className="hidden sm:flex items-center gap-1.5 border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-xl transition-colors">
-                <FileSpreadsheet className="w-3.5 h-3.5" />
-                Export Excel
               </button>
             </>
           }
@@ -141,11 +140,11 @@ export default function CustomersPage() {
 
           {/* 5 Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <FreeStatCard variant="dark" title="Today Customer" khmerTitle="អតិថិជនថ្ងៃនេះ" value={summaryData.todayCount} subtext={`${summaryData.todayLogs} logs`} />
-            <FreeStatCard title="Avg.Spend" khmerTitle="កាន់ឈ្នួលការចាយ" value={summaryData.avgSpend} subtext="per customer" />
-            <FreeStatCard variant="green" title="Weekly Customer" khmerTitle="អតិថិជនច្រើនជាងក្នុងរូប" value={summaryData.weeklyCount} subtext={summaryData.weeklyChange} />
-            <FreeStatCard title="Peak Time" khmerTitle="ណែនាំការប្រា" value={summaryData.peakTime} subtext={summaryData.weeklyCustomers} />
-            <FreeStatCard title="Avg.LTV" khmerTitle="ភ្លេចអតិថិជន" value={summaryData.avgLTV} subtext="Per Customer" />
+            <VendorSummaryCard variant="dark" title="Today Customer" khmerTitle="អតិថិជនថ្ងៃនេះ" value={summaryData.todayCount} subtext={`${summaryData.todayLogs} logs`} />
+            <VendorSummaryCard title="Avg.Spend" khmerTitle="កាន់ឈ្នួលការចាយ" value={summaryData.avgSpend} subtext="per customer" />
+            <VendorSummaryCard variant="green" title="Weekly Customer" khmerTitle="អតិថិជនច្រើនជាងក្នុងរូប" value={summaryData.weeklyCount} subtext={summaryData.weeklyChange} />
+            <VendorSummaryCard title="Peak Time" khmerTitle="ណែនាំការប្រា" value={summaryData.peakTime} subtext={summaryData.weeklyCustomers} />
+            <VendorSummaryCard title="Avg.LTV" khmerTitle="ភ្លេចអតិថិជន" value={summaryData.avgLTV} subtext="Per Customer" />
           </div>
 
           {/* Log Customers Bar */}
@@ -246,4 +245,4 @@ export default function CustomersPage() {
     </div>
   );
 }
-
+

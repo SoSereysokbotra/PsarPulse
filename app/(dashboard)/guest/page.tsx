@@ -39,9 +39,9 @@ import {
 } from "lucide-react";
 
 // Reusable components
-import FreeSidebar from "@/components/vendor/FreeSidebar";
-import FreeTopbar from "@/components/vendor/FreeTopbar";
-import FreeStatCard from "@/components/vendor/FreeStatCard";
+import VendorSidebar from "@/components/vendor/VendorSidebar";
+import VendorTopbar from "@/components/vendor/VendorTopbar";
+import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface Product {
@@ -288,17 +288,24 @@ export default function DemoDashboard() {
         </div>
 
         {/* ══ SIDEBAR (Reusable) ═══════════════════════════════════ */}
-        <FreeSidebar
-          isOpen={isSidebarOpen}
-          isCollapsed={isSidebarCollapsed}
-          setIsOpen={setIsSidebarOpen}
+        <VendorSidebar
+          plan="free"
+          navLinks={[
+            { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/guest" },
+            { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/guest/sales" },
+            { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/guest/expenses" },
+            { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/guest/customers" },
+          ]}
           currentPath="/guest"
+          collapsed={isSidebarCollapsed}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
 
         {/* ══ MAIN ══════════════════════════════════════════════════ */}
         <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
           {/* ── Topbar (Reusable) ── */}
-          <FreeTopbar
+          <VendorTopbar
             title="Overview"
             isSidebarCollapsed={isSidebarCollapsed}
             setIsSidebarCollapsed={setIsSidebarCollapsed}
@@ -717,7 +724,7 @@ export default function DemoDashboard() {
                   }
                   onMouseLeave={() => setTooltip({ content: null, x: 0, y: 0 })}
                 >
-                  <FreeStatCard
+                  <VendorSummaryCard
                     title="Total Sales"
                     khmerTitle="ការលក់សរុប"
                     value={demoSummary.sales}
@@ -734,7 +741,7 @@ export default function DemoDashboard() {
                   }
                   onMouseLeave={() => setTooltip({ content: null, x: 0, y: 0 })}
                 >
-                  <FreeStatCard
+                  <VendorSummaryCard
                     title="Total Expenses"
                     khmerTitle="ចំណាយសរុប"
                     value={demoSummary.expenses}
@@ -751,7 +758,7 @@ export default function DemoDashboard() {
                   }
                   onMouseLeave={() => setTooltip({ content: null, x: 0, y: 0 })}
                 >
-                  <FreeStatCard
+                  <VendorSummaryCard
                     variant="green"
                     title="Net Profit"
                     khmerTitle="ប្រាក់ចំណេញ"
@@ -769,7 +776,7 @@ export default function DemoDashboard() {
                   }
                   onMouseLeave={() => setTooltip({ content: null, x: 0, y: 0 })}
                 >
-                  <FreeStatCard
+                  <VendorSummaryCard
                     title="Customers"
                     khmerTitle="អតិថិជនសរុប"
                     value={demoSummary.customers}

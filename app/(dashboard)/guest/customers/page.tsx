@@ -35,9 +35,9 @@ import {
 } from "lucide-react";
 
 // Reusable components
-import FreeSidebar from "@/components/vendor/FreeSidebar";
-import FreeTopbar from "@/components/vendor/FreeTopbar";
-import FreeStatCard from "@/components/vendor/FreeStatCard";
+import VendorSidebar from "@/components/vendor/VendorSidebar";
+import VendorTopbar from "@/components/vendor/VendorTopbar";
+import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface Product {
@@ -253,17 +253,24 @@ export default function CustomersPage() {
       {/* Main layout with top padding for guest strip */}
       <div className="flex h-screen w-full overflow-hidden bg-slate-100 pt-[36px]">
         {/* Reusable Sidebar */}
-        <FreeSidebar
-          isOpen={isSidebarOpen}
-          isCollapsed={isSidebarCollapsed}
-          setIsOpen={setIsSidebarOpen}
+        <VendorSidebar
+          plan="free"
+          navLinks={[
+            { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/guest" },
+            { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/guest/sales" },
+            { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/guest/expenses" },
+            { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/guest/customers" },
+          ]}
           currentPath="/guest/customers"
+          collapsed={isSidebarCollapsed}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
 
         {/* Main content area */}
         <main className="flex-1 flex flex-col w-full min-w-0 h-full overflow-hidden">
           {/* Reusable Topbar with custom right actions */}
-          <FreeTopbar
+          <VendorTopbar
             title="Customers"
             isSidebarCollapsed={isSidebarCollapsed}
             setIsSidebarCollapsed={setIsSidebarCollapsed}
@@ -497,33 +504,33 @@ export default function CustomersPage() {
 
               {/* 5 Summary Cards using FreeStatCard */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <FreeStatCard
+                <VendorSummaryCard
                   variant="dark"
                   title="Today Customer"
                   khmerTitle="អតិថិជនថ្ងៃនេះ"
                   value={summaryData.todayCount}
                   subtext={`${summaryData.todayLogs} logs recorded`}
                 />
-                <FreeStatCard
+                <VendorSummaryCard
                   title="Avg.Spend"
                   khmerTitle="ការចំណាយជាមធ្យម"
                   value={summaryData.avgSpend}
                   subtext="per customer"
                 />
-                <FreeStatCard
+                <VendorSummaryCard
                   variant="green"
                   title="Weekly Customer"
                   khmerTitle="អតិថិជនសប្តាហ៍នេះ"
                   value={summaryData.weeklyCount}
                   subtext={summaryData.weeklyChange}
                 />
-                <FreeStatCard
+                <VendorSummaryCard
                   title="Peak Time"
                   khmerTitle="ម៉ោងមមាញឹក"
                   value={summaryData.peakTime}
                   subtext={summaryData.weeklyCustomers}
                 />
-                <FreeStatCard
+                <VendorSummaryCard
                   title="Avg.LTV"
                   khmerTitle="តម្លៃអតិថិជនមធ្យម"
                   value={summaryData.avgLTV}

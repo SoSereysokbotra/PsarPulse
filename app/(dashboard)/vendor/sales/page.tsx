@@ -11,17 +11,18 @@ import {
   Trash2,
   RotateCcw,
   AlertCircle,
-  PanelLeftClose,
-  PanelLeftOpen,
+  LayoutDashboard,
   CircleDollarSign,
+  Receipt,
+  Users,
   ShoppingCart,
   BarChart3,
 } from "lucide-react";
 
-// Import our newly created reusable components
-import FreeSidebar from "@/components/vendor/FreeSidebar";
-import FreeTopbar from "@/components/vendor/FreeTopbar";
-import FreeStatCard from "@/components/vendor/FreeStatCard";
+// Import unified reusable components
+import VendorSidebar from "@/components/vendor/VendorSidebar";
+import VendorTopbar from "@/components/vendor/VendorTopbar";
+import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { ConfirmModal } from "@/components/ConfirmModal";
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -315,11 +316,18 @@ export default function SalesDashboard() {
       </div>
 
       {/* ── Extracted Components ── */}
-      <FreeSidebar
-        isOpen={isSidebarOpen}
-        isCollapsed={isSidebarCollapsed}
-        setIsOpen={setIsSidebarOpen}
+      <VendorSidebar
+        plan="free"
+        navLinks={[
+          { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
+          { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/sales" },
+          { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/expenses" },
+          { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/customer" },
+        ]}
         currentPath="/vendor/sales"
+        collapsed={isSidebarCollapsed}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       <ConfirmModal
@@ -465,7 +473,7 @@ export default function SalesDashboard() {
       {/* ══ MAIN ══════════════════════════════════════════════════ */}
       <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
         {/* ── Topbar ── */}
-        <FreeTopbar
+        <VendorTopbar
           title="Sales"
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
@@ -510,19 +518,19 @@ export default function SalesDashboard() {
 
             {/* ── 3 stat cards (Using Extracted Components) ── */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <FreeStatCard
+              <VendorSummaryCard
                 variant="dark"
                 title={`${period}'s Revenue`}
                 khmerTitle="ចំណូលប្រចាំ"
                 value={`$${totalRevenue.toFixed(2)}`}
               />
-              <FreeStatCard
+              <VendorSummaryCard
                 title="Transactions"
                 khmerTitle="ចំនួនការលក់"
                 value={activeTxns.length}
                 subtext="sales today"
               />
-              <FreeStatCard
+              <VendorSummaryCard
                 title="Avg. Sale"
                 khmerTitle="មធ្យមតម្លៃ"
                 value={`$${avgSale.toFixed(2)}`}

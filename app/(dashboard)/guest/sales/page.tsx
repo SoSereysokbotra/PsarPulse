@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 
 // Reusable components
-import FreeSidebar from "@/components/vendor/FreeSidebar";
-import FreeTopbar from "@/components/vendor/FreeTopbar";
-import FreeStatCard from "@/components/vendor/FreeStatCard";
+import VendorSidebar from "@/components/vendor/VendorSidebar";
+import VendorTopbar from "@/components/vendor/VendorTopbar";
+import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
 // ─── Types ────────────────────────────────────────────────────────
 type Period  = "Day" | "Week" | "Month";
@@ -176,24 +176,25 @@ export default function SalesDemoDashboard() {
       )}
 
       {/* ══ SIDEBAR ════════════════════════════════════════════════ */}
-      <FreeSidebar
-        isOpen={isSidebarOpen}
-        isCollapsed={isSidebarCollapsed}
-        setIsOpen={setIsSidebarOpen}
-        currentPath="/guest/sales"
-        navItems={[
+      <VendorSidebar
+        plan="free"
+        navLinks={[
           { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/guest" },
           { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/guest/sales" },
           { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/guest/expenses" },
           { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/guest/customers" },
         ]}
+        currentPath="/guest/sales"
+        collapsed={isSidebarCollapsed}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       {/* ══ MAIN ══════════════════════════════════════════════════ */}
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
         {/* ── Topbar ── */}
-        <FreeTopbar
+        <VendorTopbar
           title="Sales"
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
@@ -251,7 +252,7 @@ export default function SalesDemoDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
               <DemoTooltip title="Revenue Tracking" desc="Monitor gross income calculated in real-time. Changes dynamically when you switch between Day/Week/Month.">
-                <FreeStatCard
+                <VendorSummaryCard
                   variant="dark"
                   title={`${period}'s Revenue`}
                   khmerTitle="ចំណូលប្រចាំ"
@@ -262,7 +263,7 @@ export default function SalesDemoDashboard() {
               </DemoTooltip>
 
               <DemoTooltip title="Transaction Volume" desc="Total number of receipts logged. High volume with low revenue might indicate a need for upselling.">
-                <FreeStatCard
+                <VendorSummaryCard
                   title="Transactions"
                   khmerTitle="ចំនួនការលក់"
                   value={activeTxns.length}
@@ -271,7 +272,7 @@ export default function SalesDemoDashboard() {
               </DemoTooltip>
 
               <DemoTooltip title="Average Ticket Size" desc="The average dollar amount a customer spends. Essential metric for determining business efficiency.">
-                <FreeStatCard
+                <VendorSummaryCard
                   title="Avg. Sale"
                   khmerTitle="មធ្យមតម្លៃ"
                   value={`$${avgSale.toFixed(2)}`}

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ChevronDown,
   Sparkles,
@@ -16,6 +17,7 @@ import {
   Phone,
   MapPin,
   Globe,
+  ArrowRight,
 } from "lucide-react";
 
 // Import unified reusable components
@@ -275,10 +277,9 @@ export default function SettingsPage() {
   // Layout State
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   // Settings State
-  const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
+  const [activeTab, setActiveTab] = useState<SettingsTab>("billing");
 
   // Profile
   const [fullName, setFullName] = useState("Sok Maly");
@@ -287,28 +288,18 @@ export default function SettingsPage() {
   const [location, setLocation] = useState("Phnom Penh Market");
   const [saved, setSaved] = useState(false);
 
-  // Billing
-  const [selectedMethod, setSelectedMethod] = useState<"aba" | "acleda">("aba");
-  const [showQR, setShowQR] = useState(false);
-  const [paying, setPaying] = useState(false);
-  const [paid, setPaid] = useState(false);
+  // Billing & Roblox-style Checkout State
+  const [selectedMethod, setSelectedMethod] = useState<"aba" | "acleda" | "bakong">("aba");
+  const [checkoutPlan, setCheckoutPlan] = useState<"pro" | "premium">("premium");
+  const [tosAccepted, setTosAccepted] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<"idle" | "processing" | "success">("idle");
   const [showHistory, setShowHistory] = useState(false);
+  
+  const router = useRouter();
 
   const handleSave = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
-  };
-  const handlePay = () => {
-    setPaying(true);
-    setTimeout(() => {
-      setPaying(false);
-      setPaid(true);
-    }, 2200);
-  };
-  const changeMethod = (m: "aba" | "acleda") => {
-    setSelectedMethod(m);
-    setShowQR(false);
-    setPaid(false);
   };
 
   const SUBNAV: { id: SettingsTab; label: string; icon: React.ElementType }[] =
@@ -383,7 +374,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Main Content Area */}
-              <div className="flex-1 min-w-0 p-6 md:p-10 max-w-3xl">
+              <div className="flex-1 min-w-0 p-6 md:p-10 max-w-4xl">
                 {/* ══ MY PROFILE ══ */}
                 {activeTab === "profile" && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -549,268 +540,277 @@ export default function SettingsPage() {
                 {/* ══ PAYMENT METHOD ══ */}
                 {activeTab === "billing" && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                    {/* Method Selection */}
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-4">
-                        Select Payment Method
-                      </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {(["aba", "acleda"] as const).map((bank) => (
-                          <button
-                            key={bank}
-                            onClick={() => changeMethod(bank)}
-                            className={`relative flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
-                              selectedMethod === bank
-                                ? "border-emerald-500 bg-emerald-50/30"
-                                : "border-slate-200 hover:border-slate-300 bg-white"
-                            }`}
-                          >
-                            {selectedMethod === bank && (
-                              <div className="absolute top-4 right-4 text-emerald-500">
-                                <CheckCircle2 size={20} />
-                              </div>
-                            )}
-                            <div
-                              className={`w-14 h-14 rounded-lg flex flex-col items-center justify-center shrink-0 shadow-sm ${bank === "aba" ? "bg-[#d32f2f]" : "bg-[#1565c0]"}`}
-                            >
-                              <span className="text-white font-bold text-sm">
-                                {bank === "aba" ? "ABA" : "ACLEDA"}
-                              </span>
-                            </div>
-                            <div>
-                              <div className="text-sm font-semibold text-slate-900">
-                                {bank === "aba" ? "ABA KHQR" : "ACLEDA QR"}
-                              </div>
-                              <div className="text-xs text-slate-500 mt-0.5">
-                                {bank === "aba"
-                                  ? "Advanced Bank of Asia"
-                                  : "ACLEDA Bank Plc."}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Interactive QR Card */}
-                    <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                      <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    
+                    {paymentStatus !== "success" ? (
+                      <>
+                        {/* Method Selection */}
                         <div>
-                          <h4 className="text-base font-semibold text-slate-900">
-                            {selectedMethod === "aba"
-                              ? "ABA KHQR"
-                              : "ACLEDA QR"}{" "}
-                            <span className="text-slate-400 font-normal">
-                              — $7.00 / month
-                            </span>
-                          </h4>
-                          <p className="text-sm text-slate-500 mt-1">
-                            Scan using your mobile banking app to process
-                            payment.
-                          </p>
-                        </div>
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-md shrink-0">
-                          <Shield size={14} className="text-emerald-600" />
-                          <span className="text-xs font-medium text-emerald-700">
-                            Secure Payment
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="p-8">
-                        {/* Step 1: Pre-generate */}
-                        {!showQR && !paid && (
-                          <div className="flex flex-col items-center text-center py-6">
-                            <div className="w-20 h-20 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center mb-4">
-                              <QrCode size={32} className="text-slate-400" />
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-semibold text-slate-900">
+                              Select Payment Method
+                            </h3>
+                            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
+                              <button onClick={() => setCheckoutPlan("pro")} className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${checkoutPlan === "pro" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>Pro ($3)</button>
+                              <button onClick={() => setCheckoutPlan("premium")} className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${checkoutPlan === "premium" ? "bg-emerald-500 text-white shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>Premium ($7)</button>
                             </div>
-                            <h5 className="text-base font-medium text-slate-900 mb-2">
-                              Ready to Pay?
-                            </h5>
-                            <p className="text-sm text-slate-500 mb-6 max-w-sm">
-                              Generate a secure, one-time QR code to finalize
-                              your subscription renewal.
-                            </p>
-                            <button
-                              onClick={() => setShowQR(true)}
-                              className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-6 py-3 font-medium text-sm transition-colors shadow-sm"
-                            >
-                              <QrCode size={18} /> Generate QR Code
-                            </button>
                           </div>
-                        )}
-
-                        {/* Step 2: Show QR */}
-                        {showQR && !paid && (
-                          <div className="flex flex-col md:flex-row gap-8 items-start">
-                            <div className="w-full md:w-auto flex flex-col items-center">
-                              <div
-                                className={`p-3 bg-white rounded-xl shadow-sm border ${selectedMethod === "aba" ? "border-[#d32f2f]/20" : "border-[#1565c0]/20"}`}
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {(["aba", "acleda", "bakong"] as const).map((bank) => (
+                              <button
+                                key={bank}
+                                onClick={() => setSelectedMethod(bank)}
+                                className={`relative flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+                                  selectedMethod === bank
+                                    ? "border-emerald-500 bg-emerald-50/40"
+                                    : "border-slate-200 hover:border-slate-300 bg-white"
+                                }`}
                               >
-                                <QRCode bank={selectedMethod} />
-                              </div>
-                              <span className="text-sm font-medium text-slate-500 mt-4">
-                                Scan to pay $7.00
+                                {selectedMethod === bank && (
+                                  <div className="absolute top-4 right-4 text-emerald-500">
+                                    <CheckCircle2 size={20} />
+                                  </div>
+                                )}
+                                <div
+                                  className={`w-14 h-14 rounded-lg flex flex-col items-center justify-center shrink-0 shadow-sm ${bank === "aba" ? "bg-[#d32f2f]" : bank === "acleda" ? "bg-[#1565c0]" : "bg-[#e11d48]"}`}
+                                >
+                                  <span className="text-white font-bold text-sm">
+                                    {bank === "aba" ? "ABA" : bank === "acleda" ? "ACL" : "BKG"}
+                                  </span>
+                                </div>
+                                <div>
+                                  <div className="text-sm font-semibold text-slate-900">
+                                    {bank === "aba" ? "ABA KHQR" : bank === "acleda" ? "ACLEDA QR" : "BAKONG QR"}
+                                  </div>
+                                  <div className="text-xs text-slate-500 mt-0.5">
+                                    {bank === "aba"
+                                      ? "Advanced Bank of Asia"
+                                      : bank === "acleda" ? "ACLEDA Bank Plc." : "National Bank"}
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Interactive QR Card */}
+                        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                          <div className="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                              <h4 className="text-base font-semibold text-slate-900">
+                                {selectedMethod === "aba"
+                                  ? "ABA KHQR"
+                                  : selectedMethod === "acleda" ? "ACLEDA QR" : "BAKONG QR"}{" "}
+                                <span className="text-slate-400 font-normal">
+                                  — {checkoutPlan === "premium" ? "$7.00" : "$3.00"} / month
+                                </span>
+                              </h4>
+                              <p className="text-sm text-slate-500 mt-1">
+                                Scan using your mobile banking app to process
+                                payment.
+                              </p>
+                            </div>
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-100 rounded-md shrink-0">
+                              <Shield size={14} className="text-emerald-600" />
+                              <span className="text-xs font-medium text-emerald-700">
+                                Secure Payment
                               </span>
                             </div>
+                          </div>
 
-                            <div className="flex-1 w-full space-y-6">
-                              <div>
-                                <h5 className="text-sm font-semibold text-slate-900 mb-4">
-                                  Payment Instructions
-                                </h5>
-                                <div className="space-y-3">
-                                  {[
-                                    `Open ${selectedMethod === "aba" ? "ABA Mobile" : "ACLEDA Mobile"} app`,
-                                    "Tap the QR scan icon",
-                                    "Point camera at QR code",
-                                    "Confirm $7.00 payment",
-                                  ].map((step, i) => (
-                                    <div
-                                      key={i}
-                                      className="flex items-center gap-3"
-                                    >
-                                      <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-medium shrink-0">
-                                        {i + 1}
-                                      </div>
-                                      <span className="text-sm text-slate-600">
-                                        {step}
-                                      </span>
-                                    </div>
-                                  ))}
+                          <div className="p-8">
+                            <div className="flex flex-col md:flex-row gap-8 items-start">
+                              <div className="w-full md:w-auto flex flex-col items-center">
+                                <div
+                                  className={`p-3 bg-white rounded-xl shadow-sm border ${selectedMethod === "aba" ? "border-[#d32f2f]/20" : selectedMethod === "acleda" ? "border-[#1565c0]/20" : "border-[#e11d48]/20"}`}
+                                >
+                                  <QRCode bank={selectedMethod === "acleda" ? "acleda" : "aba"} />
                                 </div>
-                              </div>
-
-                              <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-100 rounded-lg">
-                                <Clock
-                                  size={16}
-                                  className="text-amber-500 shrink-0"
-                                />
-                                <span className="text-sm text-amber-700">
-                                  QR code expires in{" "}
-                                  <strong className="font-semibold">
-                                    15 minutes
-                                  </strong>
+                                <span className="text-sm font-medium text-slate-500 mt-4">
+                                  Scan to pay {checkoutPlan === "premium" ? "$7.00" : "$3.00"}
                                 </span>
                               </div>
 
-                              <button
-                                onClick={handlePay}
-                                disabled={paying}
-                                className={`w-full flex items-center justify-center gap-2 rounded-lg py-3 font-medium text-sm transition-all shadow-sm ${
-                                  paying
-                                    ? "bg-emerald-50 text-emerald-600 border border-emerald-200 cursor-not-allowed"
-                                    : "bg-slate-900 text-white hover:bg-slate-800"
-                                }`}
-                              >
-                                {paying ? (
-                                  <>
-                                    <SpinIcon
-                                      size={16}
-                                      className="animate-spin"
-                                    />{" "}
-                                    Verifying Payment...
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircle2 size={18} /> I have completed
-                                    the payment
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Step 3: Success */}
-                        {paid && (
-                          <div className="flex flex-col items-center text-center py-8">
-                            <div className="w-16 h-16 rounded-full bg-emerald-100 border-4 border-emerald-50 flex items-center justify-center mb-4">
-                              <CheckCircle2
-                                size={32}
-                                className="text-emerald-500"
-                              />
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">
-                              Payment Confirmed!
-                            </h3>
-                            <p className="text-sm text-slate-600 mb-1">
-                              $7.00 successfully processed via{" "}
-                              {selectedMethod === "aba"
-                                ? "ABA KHQR"
-                                : "ACLEDA QR"}
-                              .
-                            </p>
-                            <p className="text-sm text-slate-500">
-                              Your Premium Plan is active until May 1, 2026.
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* History Section */}
-                    <div>
-                      <button
-                        onClick={() => setShowHistory((h) => !h)}
-                        className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors mb-4"
-                      >
-                        <ChevronDown
-                          size={16}
-                          className={`transition-transform duration-200 ${showHistory ? "rotate-180" : ""}`}
-                        />
-                        {showHistory
-                          ? "Hide Payment History"
-                          : "View Payment History"}
-                      </button>
-
-                      {showHistory && (
-                        <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden animate-in fade-in slide-in-from-top-2">
-                          <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                              <thead>
-                                <tr className="bg-slate-50 border-b border-slate-200">
-                                  {["Date", "Plan", "Amount", "Method"].map(
-                                    (h) => (
-                                      <th
-                                        key={h}
-                                        className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                              <div className="flex-1 w-full space-y-6">
+                                <div>
+                                  <h5 className="text-sm font-semibold text-slate-900 mb-4">
+                                    Payment Instructions
+                                  </h5>
+                                  <div className="space-y-3">
+                                    {[
+                                      `Open ${selectedMethod === "aba" ? "ABA Mobile" : selectedMethod === "acleda" ? "ACLEDA Mobile" : "Bakong"} app`,
+                                      "Tap the QR scan icon",
+                                      "Point camera at QR code",
+                                      `Confirm ${checkoutPlan === "premium" ? "$7.00" : "$3.00"} payment`,
+                                    ].map((step, i) => (
+                                      <div
+                                        key={i}
+                                        className="flex items-center gap-3"
                                       >
-                                        {h}
-                                      </th>
-                                    ),
+                                        <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-medium shrink-0">
+                                          {i + 1}
+                                        </div>
+                                        <span className="text-sm text-slate-600">
+                                          {step}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <label className="flex items-start gap-3 cursor-pointer mt-6 mb-2 group">
+                                  <div className="relative flex items-start pt-0.5 mt-0.5 shrink-0">
+                                    <input 
+                                      type="checkbox" 
+                                      className="peer sr-only" 
+                                      checked={tosAccepted}
+                                      onChange={(e) => setTosAccepted(e.target.checked)}
+                                    />
+                                    <div className="w-4 h-4 border border-slate-300 rounded peer-checked:bg-[#2563eb] peer-checked:border-[#2563eb] transition-colors flex items-center justify-center bg-white shadow-sm">
+                                      <Check className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" strokeWidth={3} />
+                                    </div>
+                                  </div>
+                                  <span className="text-[12px] text-slate-500 leading-relaxed font-medium">
+                                    I agree that I am purchasing a limited license to access the product governed by the <span className="underline hover:text-slate-800">Terms of License</span>. I am at least 18 years old. I allow PsarPulse to charge the total amount shown monthly. I can cancel anytime.
+                                  </span>
+                                </label>
+
+                                <button
+                                  onClick={() => {
+                                    if (!tosAccepted || paymentStatus !== "idle") return;
+                                    setPaymentStatus("processing");
+                                    setTimeout(() => setPaymentStatus("success"), 2000); // Wait 2s
+                                  }}
+                                  disabled={!tosAccepted || paymentStatus !== "idle"}
+                                  className={`w-full flex items-center justify-center gap-2 rounded-xl py-3.5 font-bold text-[15px] transition-all duration-300 shadow-sm ${
+                                    !tosAccepted
+                                      ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                      : paymentStatus === "processing"
+                                      ? "bg-[#2563eb] text-white cursor-wait opacity-80"
+                                      : paymentStatus === "success"
+                                      ? "bg-[#10b981] text-white shadow-lg shadow-emerald-200/50"
+                                      : "bg-[#2563eb] text-white hover:bg-[#1d4ed8] hover:shadow-md active:scale-[0.98]"
+                                  }`}
+                                >
+                                  {paymentStatus === "processing" && (
+                                    <>
+                                      <SpinIcon size={18} className="animate-spin mr-1" />
+                                      Processing Payment...
+                                    </>
                                   )}
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-100">
-                                {TRANSACTION_HISTORY.map((tx, i) => (
-                                  <tr
-                                    key={i}
-                                    className="hover:bg-slate-50 transition-colors"
-                                  >
-                                    <td className="px-6 py-4 text-sm text-slate-600">
-                                      {tx.date}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm font-medium text-slate-900">
-                                      {tx.plan}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm font-semibold text-slate-900">
-                                      {tx.amount}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                                        <QrCode size={12} />
-                                        {tx.method}
-                                      </span>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                                  {paymentStatus === "success" && (
+                                    <>
+                                      <Check className="w-5 h-5 mr-1 animate-in zoom-in" strokeWidth={3} />
+                                      Subscribed
+                                    </>
+                                  )}
+                                  {paymentStatus === "idle" && "Subscribe"}
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      )}
-                    </div>
+
+                        {/* History Section */}
+                        <div>
+                          <button
+                            onClick={() => setShowHistory((h) => !h)}
+                            className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors mb-4"
+                          >
+                            <ChevronDown
+                              size={16}
+                              className={`transition-transform duration-200 ${showHistory ? "rotate-180" : ""}`}
+                            />
+                            {showHistory ? "Hide Payment History" : "View Payment History"}
+                          </button>
+
+                          {showHistory && (
+                            <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden animate-in fade-in slide-in-from-top-2">
+                              {/* Table */}
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                  <thead>
+                                    <tr className="bg-slate-50 border-b border-slate-200">
+                                      {["Date", "Plan", "Amount", "Method"].map(
+                                        (h) => (
+                                          <th
+                                            key={h}
+                                            className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                                          >
+                                            {h}
+                                          </th>
+                                        ),
+                                      )}
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100">
+                                    {TRANSACTION_HISTORY.map((tx, i) => (
+                                      <tr
+                                        key={i}
+                                        className="hover:bg-slate-50 transition-colors"
+                                      >
+                                        <td className="px-6 py-4 text-sm text-slate-600">
+                                          {tx.date}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                                          {tx.plan}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-semibold text-slate-900">
+                                          {tx.amount}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                                            <QrCode size={12} />
+                                            {tx.method}
+                                          </span>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      // ══ SUCCESS PAGE (Inline layout match) ══
+                      <div className="bg-white border border-slate-200 rounded-xl shadow-md min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(52,211,153,0.03)_0%,transparent_100%)] pointer-events-none" />
+                        
+                        <div className="animate-in fade-in zoom-in slide-in-from-bottom-6 duration-700 flex flex-col items-center text-center p-8 max-w-lg z-10 w-full">
+                          <div className="w-20 h-20 bg-emerald-100/60 rounded-full flex items-center justify-center mb-6 relative shadow-in">
+                             <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-20 duration-1000 delay-300"></div>
+                             <CheckCircle2 className="w-10 h-10 text-[#10b981]" />
+                          </div>
+                          <h2 className="text-[32px] font-extrabold text-slate-900 mb-2 tracking-tight">Payment Successful!</h2>
+                          <div className="bg-slate-50 border border-slate-100 rounded-lg px-6 py-4 mb-8 w-full">
+                             <p className="text-slate-500 text-[14px] leading-relaxed font-medium">
+                               Thank you for subscribing to PsarPulse. You now have full access to all <strong className="text-slate-800">{checkoutPlan === "premium" ? "Premium" : "Pro"}</strong> Plan features and tools.
+                             </p>
+                          </div>
+                          
+                          <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
+                            <button 
+                              onClick={() => router.push(`/vendor/${checkoutPlan}`)}
+                              className="py-3.5 px-6 rounded-lg font-bold text-sm text-white bg-slate-900 hover:bg-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                            >
+                               Return to Dashboard
+                               <ArrowRight className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => {
+                                setPaymentStatus("idle");
+                                setTosAccepted(false);
+                              }}
+                              className="py-3.5 px-6 rounded-lg font-bold text-sm text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors flex items-center justify-center"
+                            >
+                               View Receipt
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

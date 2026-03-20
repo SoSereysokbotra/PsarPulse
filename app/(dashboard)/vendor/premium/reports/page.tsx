@@ -142,23 +142,20 @@ export default function PremiumReportsPage() {
           </p>
         </div>
 
-        {/* ── Pill Tab Navigation (reused from pro/reports) ── */}
-        <div className="flex overflow-x-auto gap-3 pb-2 -mb-2 scrollbar-none">
+        {/* ── Tabs ── */}
+        <div className="flex items-end gap-0 border-b border-[#e8eaed] -mt-3 overflow-x-auto scrollbar-none">
           {TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-none px-4 py-2.5 rounded-xl text-[14px] font-semibold transition-colors flex items-center gap-2 border-0 cursor-pointer ${
+              className={`px-5 py-3 text-[13.5px] font-medium border-b-2 -mb-px flex flex-col items-start gap-0.5 bg-transparent border-x-0 border-t-0 cursor-pointer transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? "bg-[#3ecf8e] text-[#0d1117] shadow-md"
-                  : "bg-white border border-[#e8eaed] text-[#6b7280] hover:bg-[#f7f8fa] hover:text-[#111827]"
+                  ? "border-b-[#111827] text-[#111827] font-semibold"
+                  : "border-b-transparent text-[#6b7280] hover:text-[#111827]"
               }`}
-              style={{ border: activeTab === tab.id ? "none" : undefined }}
             >
               <span>{tab.label}</span>
-              <span className={`text-[12px] ${activeTab === tab.id ? "text-[#0d1117]/70" : "text-[#9ca3af]"}`}>
-                {tab.khmer}
-              </span>
+              <span className="text-[10px] text-[#9ca3af]">{tab.khmer}</span>
             </button>
           ))}
         </div>

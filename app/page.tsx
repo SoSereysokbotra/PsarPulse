@@ -5,9 +5,35 @@ import React, { useState, useRef, useEffect } from "react";
 export default function LandingPage() {
   const [signupOpen, setSignupOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [lang, setLang] = useState<"en" | "km">("en");
 
   const signupRef = useRef<HTMLDivElement>(null);
   const loginRef = useRef<HTMLDivElement>(null);
+
+  const t = {
+    en: {
+      nav: ["Product", "Resources", "Customers", "Pricing", "Now", "Contact"],
+      login: "Log in",
+      signup: "Sign up",
+      heroTitle1: "Smart business for",
+      heroTitle2: "Cambodia's night markets",
+      heroDesc: "Data-driven analytics and AI forecasting built exclusively for Cambodia's informal economy. Log sales, track growth, and let AI prepare your next move.",
+      btnVendor: "Get Started as Vendor →",
+      btnCustomer: "Sign in as Customer",
+      btnDemo: "Or try the demo",
+    },
+    km: {
+      nav: ["ផលិតផល", "ធនធាន", "អតិថិជន", "តម្លៃ", "ឥឡូវនេះ", "ទំនាក់ទំនង"],
+      login: "ចូលគណនី",
+      signup: "ចុះឈ្មោះ",
+      heroTitle1: "អាជីវកម្មឆ្លាតវៃសម្រាប់",
+      heroTitle2: "ផ្សាររាត្រីនៅកម្ពុជា",
+      heroDesc: "ការវិភាគទិន្នន័យ និងការព្យាករណ៍ AI សម្រាប់សេដ្ឋកិច្ចក្រៅប្រព័ន្ធរបស់កម្ពុជា។ កត់ត្រាការលក់តាមដាននិងអនុញ្ញាតឱ្យ AI រៀបចំដំណើរការអាជីវកម្មអ្នក។",
+      btnVendor: "ចាប់ផ្តើមជាអ្នកលក់ →",
+      btnCustomer: "ចូលជាអតិថិជន",
+      btnDemo: "ឬសាកល្បងវេបសាយគំរូ",
+    }
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -41,17 +67,10 @@ export default function LandingPage() {
           <div className="flex items-center gap-6">
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center gap-6">
-              {[
-                "Product",
-                "Resources",
-                "Customers",
-                "Pricing",
-                "Now",
-                "Contact",
-              ].map((item) => (
+              {t[lang].nav.map((item, idx) => (
                 <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
+                  key={idx}
+                  href={`#section-${idx}`}
                   className="text-[13px] font-medium text-[#8A8F98] transition-colors hover:text-white"
                 >
                   {item}
@@ -61,6 +80,14 @@ export default function LandingPage() {
 
             {/* Auth Actions with Divider */}
             <div className="hidden md:flex items-center gap-5 ml-1">
+              {/* Language Switch Toggle */}
+              <button
+                onClick={() => setLang(lang === "en" ? "km" : "en")}
+                className="text-[13px] font-medium text-brand-primary hover:text-brand-primary-hover transition-colors items-center gap-1 uppercase"
+              >
+                {lang === "en" ? "🇰🇭 KH" : "🇬🇧 EN"}
+              </button>
+
               {/* Faint vertical divider */}
               <div className="w-[1px] h-3.5 bg-white/15"></div>
 
@@ -73,7 +100,7 @@ export default function LandingPage() {
                   }}
                   className="text-[13px] font-medium text-[#8A8F98] hover:text-white transition-colors flex items-center gap-1"
                 >
-                  Log in
+                  {t[lang].login}
                   <svg
                     width="10"
                     height="10"
@@ -144,7 +171,7 @@ export default function LandingPage() {
                   }}
                   className="px-3 py-1.5 rounded-md bg-[#F7F8F8] hover:bg-white transition-colors text-black text-[13px] font-medium flex items-center gap-1.5"
                 >
-                  Sign up
+                  {t[lang].signup}
                   <svg
                     width="10"
                     height="10"
@@ -219,31 +246,29 @@ export default function LandingPage() {
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.95)), url('https://res.cloudinary.com/dg5grwcd5/image/upload/v1773661915/cambodia-night-market-phsar-chas-2_1_ii8ae1.jpg')`,
         }}
       >
-        <h1 className="fade-in-1 text-4xl sm:text-5xl md:text-6xl font-semibold text-center text-white leading-[1.15] mb-6 max-w-4xl tracking-tight relative z-10">
-          Smart business for <br className="hidden sm:block" />
-          Cambodia&apos;s night markets
+        <h1 className="fade-in-1 text-4xl sm:text-5xl md:text-6xl font-semibold text-center text-white leading-[1.15] mb-6 max-w-4xl tracking-tight relative z-10 w-full" style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)", lineHeight: "1.4" } : {}}>
+          {t[lang].heroTitle1} <br className="hidden sm:block" />
+          {t[lang].heroTitle2}
           <span className="text-brand-primary">.</span>
         </h1>
 
-        <p className="fade-in-2 text-gray-300 text-center text-sm sm:text-base max-w-2xl mb-10 leading-relaxed relative z-10">
-          Data-driven analytics and AI forecasting built exclusively for
-          Cambodia&apos;s informal economy. Log sales, track growth, and let AI
-          prepare your next move.
+        <p className="fade-in-2 text-gray-300 text-center text-sm sm:text-base max-w-2xl mb-10 leading-relaxed relative z-10" style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)", lineHeight: "1.8", fontSize: "16px" } : {}}>
+          {t[lang].heroDesc}
         </p>
 
         {/* CTA Buttons */}
         <div className="fade-in-3 flex flex-col sm:flex-row items-center gap-4 mb-6 relative z-10">
-          <button className="px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-all duration-200 text-white font-semibold text-sm shadow-lg shadow-brand-primary/20 hover:-translate-y-[1px]">
-            Get Started as Vendor →
+          <button className="px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-all duration-200 text-white font-semibold text-sm shadow-lg shadow-brand-primary/20 hover:-translate-y-[1px]" style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}}>
+            {t[lang].btnVendor}
           </button>
-          <button className="px-6 py-3 rounded-xl border border-blue-400/40 text-blue-400 hover:border-blue-400/70 hover:text-blue-300 transition-all duration-200 font-medium text-sm">
-            Sign in as Customer
+          <button className="px-6 py-3 rounded-xl border border-blue-400/40 text-blue-400 hover:border-blue-400/70 hover:text-blue-300 transition-all duration-200 font-medium text-sm" style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}}>
+            {t[lang].btnCustomer}
           </button>
         </div>
 
         {/* Guest link */}
-        <button className="fade-in-3 mb-28 text-[13px] text-white/30 hover:text-white/60 transition-colors underline underline-offset-2 relative z-10">
-          Or try the demo
+        <button className="fade-in-3 mb-28 text-[13px] text-white/30 hover:text-white/60 transition-colors underline underline-offset-2 relative z-10" style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)", fontSize: "14px" } : {}}>
+          {t[lang].btnDemo}
         </button>
       </section>
 

@@ -171,21 +171,19 @@ export default function ProReportsPage() {
       <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
 
           {/* Tabs Navigation */}
-          <div className="flex overflow-x-auto gap-3 pb-2 -mb-2 scrollbar-none">
+          <div className="flex items-end gap-0 border-b border-[#e8eaed] -mt-3 overflow-x-auto scrollbar-none">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-none px-4 py-2.5 rounded-xl text-[14px] font-semibold transition-colors flex items-center gap-2 ${
+                className={`px-5 py-3 text-[13.5px] font-medium border-b-2 -mb-px flex flex-col items-start gap-0.5 bg-transparent border-x-0 border-t-0 cursor-pointer transition-colors whitespace-nowrap ${
                   activeTab === tab.id
-                    ? "bg-psar-primary text-white shadow-md"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    ? "border-b-[#111827] text-[#111827] font-semibold"
+                    : "border-b-transparent text-[#6b7280] hover:text-[#111827]"
                 }`}
               >
                 <span>{tab.label}</span>
-                <span className={`text-[12px] font-khmer ${activeTab === tab.id ? "text-indigo-200" : "text-slate-400"}`}>
-                  {tab.khmer}
-                </span>
+                <span className="text-[10px] text-[#9ca3af]">{tab.khmer}</span>
               </button>
             ))}
           </div>

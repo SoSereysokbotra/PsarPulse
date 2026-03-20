@@ -29,7 +29,7 @@ export default function AdminDashboardPage() {
               Dashboard Overview
             </h1>
             <p className="text-sm text-slate-500 mt-1">
-              High-level summary of the market's digital ecosystem.
+              High-level summary of the market`s digital ecosystem.
             </p>
           </div>
 
@@ -200,7 +200,7 @@ export default function AdminDashboardPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-sm font-semibold text-slate-900">
-                        Sokha's Fresh Veggies {item}
+                        Sokha`s Fresh Veggies {item}
                       </p>
                       <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
                         <MapPin className="h-3 w-3" /> Zone B, Stall{" "}

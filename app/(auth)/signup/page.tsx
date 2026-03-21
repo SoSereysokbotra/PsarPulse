@@ -32,7 +32,7 @@ export default function SignupPageAlt() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     console.log("Alt signup:", formData);
     setIsLoading(false);
-    router.push("/vendor");
+    router.push("/customer");
   };
 
   return (

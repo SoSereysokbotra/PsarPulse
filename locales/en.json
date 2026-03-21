@@ -109,5 +109,35 @@
       "feature3Title": "Secure Platform",
       "feature3Desc": "Reliable and secure infrastructure for market operations."
     }
+  },
+  "customer": {
+    "tabs": {
+      "discover": "Discover",
+      "map": "Map View",
+      "favorites": "Favorites"
+    },
+    "searchPlaceholder": "Search vendors...",
+    "filters": {
+      "all": "All Filters",
+      "categories": {
+        "khmer": "Khmer",
+        "coffee": "Coffee",
+        "bakery": "Bakery",
+        "vegetarian": "Vegetarian",
+        "fastFood": "Fast Food",
+        "desserts": "Desserts"
+      }
+    },
+    "sortBy": "Sort by",
+    "recommended": "Recommended",
+    "deliveryTime": "MIN",
+    "actions": {
+      "directions": "Directions",
+      "review": "Review"
+    },
+    "favoritesEmpty": {
+      "title": "No favorites yet",
+      "desc": "Tap the heart on any vendor to save them here."
+    }
   }
 }

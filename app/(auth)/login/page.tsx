@@ -41,7 +41,7 @@ export default function LoginPage() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     console.log("Login attempt:", formData);
     setIsLoading(false);
-    router.push("/vendor");
+    router.push("/customer");
   };
 
   return (

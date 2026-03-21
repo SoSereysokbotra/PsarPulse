@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Outfit, Suwannaphum } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { LanguageProvider } from "@/components/providers/LanguageProvider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -25,11 +27,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${outfit.variable} ${suwannaphum.variable} antialiased`}
+        className={`${outfit.variable} ${suwannaphum.variable} antialiased font-sans`}
       >
-        {children}
+        <ThemeProvider>
+          <LanguageProvider>
+            {children}
+          </LanguageProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

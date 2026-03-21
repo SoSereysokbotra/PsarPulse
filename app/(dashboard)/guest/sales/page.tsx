@@ -14,6 +14,8 @@ import {
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Types ────────────────────────────────────────────────────────
 type Period  = "Day" | "Week" | "Month";
@@ -83,6 +85,11 @@ const METHOD_BADGE: Record<Method, string> = {
 
 // ═════════════════════════════════════════════════════════════════
 export default function SalesDemoDashboard() {
+  const { resolvedTheme } = useTheme();
+  const { language, t } = useLanguage();
+  const isDark = resolvedTheme === "dark";
+  const isKhmer = language === "km";
+
   const [isSidebarOpen,      setIsSidebarOpen]      = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [period,             setPeriod]             = useState<Period>("Day");
@@ -102,11 +109,12 @@ export default function SalesDemoDashboard() {
   const dismissToast = (id: number) => setToasts(p => p.filter(t => t.id !== id));
 
   // Demo Interceptor
-  const triggerDemoLock = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    const id = Date.now();
-    setToasts(p => [...p, { id, msg: "Guest View: Editing is restricted", type: "locked" }]);
-    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500);
+  const triggerDemoLock = (e?: any) => {
+    if (e && typeof e === 'object' && 'stopPropagation' in e) e.stopPropagation();
+    const mid = Date.now();
+    const msg = isKhmer ? "ទិដ្ឋភាពភ្ញៀវ៖ ការកែសម្រួលត្រូវបានដាក់កម្រិត" : "Guest View: Editing is restricted";
+    setToasts(p => [...p, { id: mid, msg, type: "locked" }]);
+    setTimeout(() => setToasts(p => p.filter(t => t.id !== mid)), 3500);
     setShowDemoModal(true);
   };
 
@@ -122,7 +130,21 @@ export default function SalesDemoDashboard() {
   const statChange   = STATS[period];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f0f2f5] text-[#111827]" style={{ fontFamily: "inherit" }}>
+    <div className={`flex flex-col h-screen overflow-hidden transition-colors duration-500 ${isDark ? "bg-[#0b0f14]" : "bg-[#f0f2f5]"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+      {/* ── Guest Mode Strip ── */}
+      <div className={`shrink-0 border-b py-2 text-center flex items-center justify-center h-[36px] transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/10" : "bg-[#111827] border-[#3ecf8e]/20"}`}>
+        <span className="text-xs text-[#e6edf3]">
+          {isKhmer ? "អ្នកកំពុងស្ថិតក្នុង Guest Mode — ទិន្នន័យនឹងមិនត្រូវបានរក្សាទុកទេ" : "You are in Guest Mode — data will not be saved"}
+        </span>
+        <button 
+          onClick={triggerDemoLock} 
+          className="ml-3 text-xs font-bold text-[#3ecf8e] hover:underline cursor-pointer"
+        >
+          {isKhmer ? "បង្កើតគណនី →" : "Create account →"}
+        </button>
+      </div>
+
+      <div className={`flex flex-1 overflow-hidden transition-colors duration-500 ${isDark ? "bg-[#0b0f14] text-[#e6edf3]" : "bg-[#f0f2f5] text-[#111827]"}`} style={{ fontFamily: "inherit" }}>
 
       {isSidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
@@ -158,16 +180,20 @@ export default function SalesDemoDashboard() {
               <div className="w-20 h-20 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Lock size={36} className="text-yellow-500" />
               </div>
-              <h3 className="text-2xl font-black mb-2 tracking-tight text-[#111827]">Unlock Full Access</h3>
+              <h3 className="text-2xl font-black mb-2 tracking-tight text-[#111827]">
+                {isKhmer ? "បើកសិទ្ធិចូលប្រើប្រាស់ពេញលេញ" : "Unlock Full Access"}
+              </h3>
               <p className="text-[#6b7280] text-[14px] mb-8 leading-relaxed font-medium">
-                You're currently in <b>Guest View</b>. Create a free account to log real sales, edit history, and manage your store.
+                {isKhmer 
+                  ? "អ្នកកំពុងស្ថិតក្នុង Guest View។ បង្កើតគណនីឥតគិតថ្លៃដើម្បីកត់ត្រាការលក់ពិតប្រាកដ កែសម្រួលប្រវត្តិ និងគ្រប់គ្រងហាងរបស់អ្នក។"
+                  : "You're currently in Guest View. Create a free account to log real sales, edit history, and manage your store."}
               </p>
               <div className="space-y-3">
-                <button onClick={() => window.location.reload()} className="w-full py-3.5 bg-[#3ecf8e] text-[#0d1117] font-bold rounded-[12px] hover:bg-[#4dd49a] transition-all shadow-[0_4px_14px_rgba(62,207,142,0.3)]">
-                  Create Free Account
+                <button onClick={() => (window.location.href = "/signup")} className="w-full py-3.5 bg-[#3ecf8e] text-[#0d1117] font-bold rounded-[12px] hover:bg-[#4dd49a] transition-all shadow-[0_4px_14px_rgba(62,207,142,0.3)]">
+                  {isKhmer ? "បង្កើតគណនីឥតគិតថ្លៃ" : "Create Free Account"}
                 </button>
                 <button onClick={() => setShowDemoModal(false)} className="w-full py-3.5 bg-[#f0f2f5] text-[#6b7280] font-bold rounded-[12px] hover:bg-[#e8eaed] transition-all border-0 cursor-pointer">
-                  Keep Browsing Demo
+                  {isKhmer ? "បន្តមើលការសាកល្បង" : "Keep Browsing Demo"}
                 </button>
               </div>
             </div>
@@ -178,6 +204,8 @@ export default function SalesDemoDashboard() {
       {/* ══ SIDEBAR ════════════════════════════════════════════════ */}
       <VendorSidebar
         plan="free"
+        isGuest={true}
+        onLockedClick={() => triggerDemoLock("settings")}
         navLinks={[
           { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/guest" },
           { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/guest/sales" },
@@ -208,11 +236,13 @@ export default function SalesDemoDashboard() {
                     onClick={() => setPeriod(p)}
                     className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${
                       period === p
-                        ? "bg-white text-[#111827] shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
-                        : "bg-transparent text-[#6b7280] hover:text-[#111827]"
+                        ? (isDark ? "bg-white/10 text-white shadow-xl" : "bg-white text-[#111827] shadow-[0_1px_4px_rgba(0,0,0,0.08)]")
+                        : (isDark ? "bg-transparent text-[#7d8590] hover:text-[#e6edf3]" : "bg-transparent text-[#6b7280] hover:text-[#111827]")
                     }`}
                   >
-                    {p}
+                    {isKhmer 
+                      ? (p === "Day" ? "ថ្ងៃ" : p === "Week" ? "សប្តាហ៍" : "ខែ")
+                      : p}
                   </button>
                 ))}
               </div>
@@ -222,7 +252,7 @@ export default function SalesDemoDashboard() {
                   onClick={triggerDemoLock}
                   className="flex items-center gap-[7px] bg-[#3ecf8e] text-[#0d1117] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a] transition-colors"
                 >
-                  <Plus size={14} /> Add Sale
+                  <Plus size={14} /> {isKhmer ? "បន្ថែមការលក់" : "Add Sale"}
                 </button>
               </DemoTooltip>
 
@@ -240,21 +270,28 @@ export default function SalesDemoDashboard() {
             {/* ══ SALES HEADER ══════════════════════════════════════ */}
             <div className="pt-1 pb-2 flex justify-between items-center">
               <div>
-                <h2 className="text-[32px] font-extrabold text-[#111827] leading-tight">My Sales</h2>
-                <p className="text-[14px] text-[#6b7280] mt-1">Track and manage your daily sales · <span className="text-[#9ca3af]">តាមដាន និងគ្រប់គ្រងការលក់</span></p>
+                <h2 className={`text-[32px] font-extrabold leading-tight transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
+                  {isKhmer ? "ការលក់របស់ខ្ញុំ" : "My Sales"}
+                </h2>
+                <p className="text-[14px] text-[#6b7280] mt-1">
+                  {isKhmer ? "តាមដាន និងគ្រប់គ្រងការលក់ប្រចាំថ្ងៃរបស់អ្នក" : "Track and manage your daily sales"}
+                </p>
               </div>
               <div className="px-3 py-1.5 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5">
-                <Lock size={12} /> Guest Demo Mode
+                <Lock size={12} /> {isKhmer ? "របៀបសាកល្បងសម្រាប់ភ្ញៀវ" : "Guest Demo Mode"}
               </div>
             </div>
 
             {/* ── 3 stat cards ── */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-              <DemoTooltip title="Revenue Tracking" desc="Monitor gross income calculated in real-time. Changes dynamically when you switch between Day/Week/Month.">
+              <DemoTooltip 
+                title={isKhmer ? "ការតាមដានចំណូល" : "Revenue Tracking"} 
+                desc={isKhmer ? "តាមដានចំណូលសរុបដែលបានគណនាក្នុងពេលជាក់ស្តែង។" : "Monitor gross income calculated in real-time. Changes dynamically when you switch between Day/Week/Month."}
+              >
                 <VendorSummaryCard
-                  variant="dark"
-                  title={`${period}'s Revenue`}
+                  variant={isDark ? "dark" : "light"}
+                  title={isKhmer ? (period === "Day" ? "ចំណូលថ្ងៃនេះ" : period === "Week" ? "ចំណូលសប្តាហ៍នេះ" : "ចំណូលខែនេះ") : `${period}'s Revenue`}
                   khmerTitle="ចំណូលប្រចាំ"
                   value={`$${totalRevenue.toFixed(2)}`}
                   trend={statChange.change}
@@ -262,44 +299,57 @@ export default function SalesDemoDashboard() {
                 />
               </DemoTooltip>
 
-              <DemoTooltip title="Transaction Volume" desc="Total number of receipts logged. High volume with low revenue might indicate a need for upselling.">
+              <DemoTooltip 
+                title={isKhmer ? "ចំនួនប្រតិបត្តិការ" : "Transaction Volume"} 
+                desc={isKhmer ? "ចំនួនសរុបនៃវិក្កយបត្រដែលបានកត់ត្រា។" : "Total number of receipts logged. High volume with low revenue might indicate a need for upselling."}
+              >
                 <VendorSummaryCard
-                  title="Transactions"
+                  variant={isDark ? "dark" : "light"}
+                  title={isKhmer ? "ប្រតិបត្តិការ" : "Transactions"}
                   khmerTitle="ចំនួនការលក់"
                   value={activeTxns.length}
-                  subtext="sales today"
+                  subtext={isKhmer ? "ការលក់ថ្ងៃនេះ" : "sales today"}
                 />
               </DemoTooltip>
 
-              <DemoTooltip title="Average Ticket Size" desc="The average dollar amount a customer spends. Essential metric for determining business efficiency.">
+              <DemoTooltip 
+                title={isKhmer ? "ទំហំលក់មធ្យម" : "Average Ticket Size"} 
+                desc={isKhmer ? "ចំនួនទឹកប្រាក់មធ្យមដែលអតិថិជនម្នាក់ៗចំណាយ។" : "The average dollar amount a customer spends. Essential metric for determining business efficiency."}
+              >
                 <VendorSummaryCard
-                  title="Avg. Sale"
+                  variant={isDark ? "dark" : "light"}
+                  title={isKhmer ? "ការលក់មធ្យម" : "Avg. Sale"}
                   khmerTitle="មធ្យមតម្លៃ"
                   value={`$${avgSale.toFixed(2)}`}
-                  subtext="per txn"
+                  subtext={isKhmer ? "ក្នុងម្នាក់" : "per txn"}
                 />
               </DemoTooltip>
 
             </div>
 
             {/* ── Transactions table ── */}
-            <DemoTooltip title="Transaction Ledger" desc="Your complete sales history. Instantly search receipts by item or timestamp. (Edits disabled in Demo)">
-              <div className="bg-white border border-[#e8eaed] rounded-[14px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-                <div className="px-[22px] py-4 border-b border-[#f0f2f5] flex items-center justify-between gap-3 flex-wrap">
+            <DemoTooltip 
+              title={isKhmer ? "សៀវភៅបញ្ជីប្រតិបត្តិការ" : "Transaction Ledger"} 
+              desc={isKhmer ? "ប្រវត្តិនៃការលក់ពេញលេញរបស់អ្នក។ (ការកែសម្រួលត្រូវបានដាក់កម្រិតក្នុងការសាកល្បង)" : "Your complete sales history. Instantly search receipts by item or timestamp. (Edits disabled in Demo)"}
+            >
+              <div className={`border rounded-[14px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)] transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/[0.06]" : "bg-white border-[#e8eaed]"}`}>
+                <div className={`px-[22px] py-4 border-b flex items-center justify-between gap-3 flex-wrap transition-colors duration-500 ${isDark ? "border-white/[0.07]" : "border-[#f0f2f5]"}`}>
                   <div>
-                    <div className="text-[14px] font-semibold text-[#111827]">Transaction History</div>
+                    <div className={`text-[14px] font-semibold transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
+                      {isKhmer ? "ប្រវត្តិនៃការលក់" : "Transaction History"}
+                    </div>
                     <div className="text-[11px] text-[#6b7280] mt-0.5">
-                      {activeTxns.length} record{activeTxns.length !== 1 ? "s" : ""} · Click row to edit
+                      {activeTxns.length} {isKhmer ? "កំណត់ត្រា" : "record"}{activeTxns.length !== 1 ? (isKhmer ? "" : "s") : ""} · {isKhmer ? "ចុចលើជួរដើម្បីកែសម្រួល" : "Click row to edit"}
                     </div>
                   </div>
                   <div className="relative">
                     <Search size={13} className="absolute left-[11px] top-1/2 -translate-y-1/2 text-[#6b7280] pointer-events-none" />
                     <input
                       type="text"
-                      placeholder="Search transactions..."
+                      placeholder={isKhmer ? "ស្វែងរក..." : "Search transactions..."}
                       value={search}
                       onChange={e => setSearch(e.target.value)}
-                      className="pl-[33px] pr-4 py-[9px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[9px] text-[13px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors w-[200px]"
+                      className={`pl-[33px] pr-4 py-[9px] border rounded-[9px] text-[13px] outline-none transition-colors w-[200px] ${isDark ? "bg-white/5 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-[#f7f8fa] border-[#e8eaed] text-[#111827] focus:border-[#3ecf8e]"}`}
                       style={{ fontFamily: "inherit" }}
                     />
                   </div>
@@ -307,26 +357,28 @@ export default function SalesDemoDashboard() {
 
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="border-b border-[#f0f2f5]">
-                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">Time</th>
-                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">Items</th>
-                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">Method</th>
-                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">Amount</th>
-                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">Actions</th>
+                    <tr className={`border-b transition-colors duration-500 ${isDark ? "bg-white/[0.02] border-white/[0.07]" : "border-[#f0f2f5]"}`}>
+                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">{isKhmer ? "ម៉ោង" : "Time"}</th>
+                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">{isKhmer ? "មុខទំនិញ" : "Items"}</th>
+                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">{isKhmer ? "វិធីបង់ប្រាក់" : "Method"}</th>
+                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">{isKhmer ? "ទឹកប្រាក់" : "Amount"}</th>
+                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">{isKhmer ? "សកម្មភាព" : "Actions"}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.length ? filtered.map((t, i) => (
                       <tr
                         key={t.id}
-                        className={`group transition-colors hover:bg-[#f7f8fa] cursor-pointer ${i < filtered.length - 1 ? "border-b border-[#f0f2f5]" : ""}`}
+                        className={`group transition-colors cursor-pointer border-b transition-colors duration-500 ${isDark ? "hover:bg-white/5 border-white/[0.07]" : "hover:bg-[#f7f8fa] border-[#f0f2f5]"}`}
                         onClick={triggerDemoLock}
                       >
                         <td className="px-[22px] py-[14px] text-[13px] text-[#6b7280] whitespace-nowrap">{t.time}</td>
-                        <td className="px-[22px] py-[14px] text-[13px] font-medium text-[#111827] max-w-[280px] truncate">{t.items || "—"}</td>
+                        <td className={`px-[22px] py-[14px] text-[13px] font-medium max-w-[280px] truncate transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>{t.items || "—"}</td>
                         <td className="px-[22px] py-[14px]">
                           <span className={`inline-block px-2.5 py-[3px] rounded-full text-[11.5px] font-semibold ${METHOD_BADGE[t.method]}`}>
-                            {t.method}
+                            {isKhmer 
+                              ? (t.method === "Cash" ? "សាច់ប្រាក់" : t.method === "ABA/KHQR" ? "ABA/KHQR" : "ផ្សេងៗ")
+                              : t.method}
                           </span>
                         </td>
                         <td className="px-[22px] py-[14px] text-[13.5px] font-bold text-[#3ecf8e] text-right whitespace-nowrap">
@@ -336,14 +388,14 @@ export default function SalesDemoDashboard() {
                           <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button
                               onClick={triggerDemoLock}
-                              className="w-8 h-8 rounded-[8px] bg-transparent hover:bg-[#f0f2f5] border-0 flex items-center justify-center cursor-pointer text-[#6b7280] hover:text-[#111827] transition-colors"
+                              className={`w-8 h-8 rounded-[8px] border-0 flex items-center justify-center cursor-pointer transition-colors ${isDark ? "bg-transparent hover:bg-white/5 text-[#7d8590] hover:text-[#e6edf3]" : "bg-transparent hover:bg-[#f0f2f5] text-[#6b7280] hover:text-[#111827]"}`}
                               title="Edit"
                             >
                               <Pencil size={13} />
                             </button>
                             <button
                               onClick={triggerDemoLock}
-                              className="w-8 h-8 rounded-[8px] bg-transparent hover:bg-[rgba(239,68,68,0.08)] border-0 flex items-center justify-center cursor-pointer text-[#6b7280] hover:text-[#ef4444] transition-colors"
+                              className={`w-8 h-8 rounded-[8px] border-0 flex items-center justify-center cursor-pointer transition-colors ${isDark ? "bg-transparent hover:bg-red-500/10 text-red-400" : "bg-transparent hover:bg-[rgba(239,68,68,0.08)] text-[#6b7280] hover:text-[#ef4444]"}`}
                               title="Delete"
                             >
                               <Trash2 size={13} />
@@ -355,14 +407,16 @@ export default function SalesDemoDashboard() {
                       <tr>
                         <td colSpan={5} className="px-[22px] py-14 text-center">
                           <div className="text-[13px] text-[#9ca3af]">
-                            {search ? "No transactions match your search" : "No transactions yet — add your first sale!"}
+                            {search 
+                              ? (isKhmer ? "មិនមានប្រតិបត្តិការដែលត្រូវនឹងការស្វែងរករបស់អ្នកទេ" : "No transactions match your search") 
+                              : (isKhmer ? "មិនទាន់មានប្រតិបត្តិការនៅឡើយទេ — បន្ថែមការលក់ដំបូងរបស់អ្នក!" : "No transactions yet — add your first sale!")}
                           </div>
                           {!search && (
                             <button
                               onClick={triggerDemoLock}
                               className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3ecf8e] bg-transparent border-0 cursor-pointer hover:underline"
                             >
-                              <Plus size={14} /> Add first sale
+                              <Plus size={14} /> {isKhmer ? "បន្ថែមការលក់ដំបូង" : "Add first sale"}
                             </button>
                           )}
                         </td>
@@ -372,10 +426,12 @@ export default function SalesDemoDashboard() {
                 </table>
 
                 {activeTxns.length > 0 && (
-                  <div className="px-[22px] py-3 border-t border-[#f0f2f5] flex items-center justify-between">
-                    <span className="text-[12px] text-[#9ca3af]">{filtered.length} of {activeTxns.length} records</span>
-                    <span className="text-[13px] font-bold text-[#111827]">
-                      Total: <span className="text-[#3ecf8e]">${filtered.reduce((s, t) => s + t.amount, 0).toFixed(2)}</span>
+                  <div className={`px-[22px] py-3 border-t flex items-center justify-between transition-colors duration-500 ${isDark ? "border-white/[0.07]" : "border-[#f0f2f5]"}`}>
+                    <span className="text-[12px] text-[#9ca3af]">
+                      {filtered.length} {isKhmer ? "ក្នុងចំណោម" : "of"} {activeTxns.length} {isKhmer ? "កំណត់ត្រា" : "records"}
+                    </span>
+                    <span className={`text-[13px] font-bold transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
+                      {isKhmer ? "សរុប" : "Total"}: <span className="text-[#3ecf8e]">${filtered.reduce((s, t) => s + t.amount, 0).toFixed(2)}</span>
                     </span>
                   </div>
                 )}
@@ -384,13 +440,18 @@ export default function SalesDemoDashboard() {
 
             <div className="flex items-center gap-2 px-1">
               <RotateCcw size={12} className="text-[#9ca3af]" />
-              <span className="text-[11.5px] text-[#9ca3af]">Deleted records can be undone within 5 seconds · Click any row to edit</span>
+              <span className="text-[11.5px] text-[#9ca3af]">
+                {isKhmer 
+                  ? "កំណត់ត្រាដែលបានលុបអាចទាញយកមកវិញក្នុងរយៈពេល ៥ វិនាទី · ចុចលើជួរណាមួយដើម្បីកែសម្រួល"
+                  : "Deleted records can be undone within 5 seconds · Click any row to edit"}
+              </span>
             </div>
 
             <div className="h-4" />
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }

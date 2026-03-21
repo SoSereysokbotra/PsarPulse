@@ -41,7 +41,6 @@ const PREMIUM_NAV = [
   { icon: Users,            title: "Customers",  khmerTitle: "អតិថិជន",          href: "/vendor/premium/customer", active: true },
   { icon: Package,          title: "Inventory",  khmerTitle: "ស្តុក",            href: "/vendor/premium/inventory" },
   { icon: FileBarChart,     title: "Reports",    khmerTitle: "របាយការណ៍",        href: "/vendor/premium/reports" },
-  { icon: Megaphone,        title: "Marketing",  khmerTitle: "ទីផ្សារ",          href: "/vendor/premium/marketing" },
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -193,6 +192,7 @@ export default function PremiumCustomerPage() {
       plan="premium"
       navLinks={PREMIUM_NAV}
       currentPath="/vendor/premium/customer"
+      settingsHref="/vendor/premium/settings"
       title="Customers"
       planBadge={{ label: "PREMIUM", icon: Sparkles }}
       rightActions={

@@ -14,6 +14,8 @@ import {
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Types ────────────────────────────────────────────────────────
 type Category = "Ingredients" | "Rent" | "Transport" | "Electricity" | "Labor" | "Others";
@@ -81,6 +83,11 @@ const INITIAL_EXPENSES: Expense[] = [
 
 // ═════════════════════════════════════════════════════════════════
 export default function ExpensesDemoDashboard() {
+  const { resolvedTheme } = useTheme();
+  const { language, t } = useLanguage();
+  const isDark = resolvedTheme === "dark";
+  const isKhmer = language === "km";
+
   const [isSidebarOpen,      setIsSidebarOpen]      = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [expenses,           setExpenses]           = useState<Expense[]>(INITIAL_EXPENSES);
@@ -99,11 +106,12 @@ export default function ExpensesDemoDashboard() {
   const dismissToast = (id: number) => setToasts(p => p.filter(t => t.id !== id));
 
   // Demo Interceptor
-  const triggerDemoLock = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    const id = Date.now();
-    setToasts(p => [...p, { id, msg: "Guest View: Editing is restricted", type: "locked" }]);
-    setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500);
+  const triggerDemoLock = (e?: any) => {
+    if (e && typeof e === 'object' && 'stopPropagation' in e) e.stopPropagation();
+    const mid = Date.now();
+    const msg = isKhmer ? "ទិដ្ឋភាពភ្ញៀវ៖ ការកែសម្រួលត្រូវបានដាក់កម្រិត" : "Guest View: Editing is restricted";
+    setToasts(p => [...p, { id: mid, msg, type: "locked" }]);
+    setTimeout(() => setToasts(p => p.filter(t => t.id !== mid)), 3500);
     setShowDemoModal(true);
   };
 
@@ -114,7 +122,21 @@ export default function ExpensesDemoDashboard() {
   const topCat      = CATEGORIES.find(c => c.value === "Ingredients")!;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f0f2f5] text-[#111827]" style={{ fontFamily: "inherit" }}>
+    <div className={`flex flex-col h-screen overflow-hidden transition-colors duration-500 ${isDark ? "bg-[#0b0f14]" : "bg-[#f0f2f5]"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+      {/* ── Guest Mode Strip ── */}
+      <div className={`shrink-0 border-b py-2 text-center flex items-center justify-center h-[36px] transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/10" : "bg-[#111827] border-[#3ecf8e]/20"}`}>
+        <span className="text-xs text-[#e6edf3]">
+          {isKhmer ? "អ្នកកំពុងស្ថិតក្នុង Guest Mode — ទិន្នន័យនឹងមិនត្រូវបានរក្សាទុកទេ" : "You are in Guest Mode — data will not be saved"}
+        </span>
+        <button 
+          onClick={triggerDemoLock} 
+          className="ml-3 text-xs font-bold text-[#3ecf8e] hover:underline cursor-pointer"
+        >
+          {isKhmer ? "បង្កើតគណនី →" : "Create account →"}
+        </button>
+      </div>
+
+      <div className={`flex flex-1 overflow-hidden transition-colors duration-500 ${isDark ? "bg-[#0b0f14] text-[#e6edf3]" : "bg-[#f0f2f5] text-[#111827]"}`} style={{ fontFamily: "inherit" }}>
 
       {isSidebarOpen && <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setIsSidebarOpen(false)} />}
 
@@ -143,16 +165,20 @@ export default function ExpensesDemoDashboard() {
               <div className="w-20 h-20 bg-yellow-50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Lock size={36} className="text-yellow-500" />
               </div>
-              <h3 className="text-2xl font-black mb-2 tracking-tight text-[#111827]">Unlock Full Access</h3>
+              <h3 className="text-2xl font-black mb-2 tracking-tight text-[#111827]">
+                {isKhmer ? "បើកសិទ្ធិចូលប្រើប្រាស់ពេញលេញ" : "Unlock Full Access"}
+              </h3>
               <p className="text-[#6b7280] text-[14px] mb-8 leading-relaxed font-medium">
-                You're currently in <b>Guest View</b>. Create a free account to log real expenses, edit history, and manage your store.
+                {isKhmer 
+                  ? "អ្នកកំពុងស្ថិតក្នុង Guest View។ បង្កើតគណនីឥតគិតថ្លៃដើម្បីកត់ត្រាការចំណាយពិតប្រាកដ កែសម្រួលប្រវត្តិ និងគ្រប់គ្រងហាងរបស់អ្នក។"
+                  : "You're currently in Guest View. Create a free account to log real expenses, edit history, and manage your store."}
               </p>
               <div className="space-y-3">
-                <button onClick={() => window.location.reload()} className="w-full py-3.5 bg-[#3ecf8e] text-[#0d1117] font-bold rounded-[12px] hover:bg-[#4dd49a] transition-all shadow-[0_4px_14px_rgba(62,207,142,0.3)]">
-                  Create Free Account
+                <button onClick={() => (window.location.href = "/signup")} className="w-full py-3.5 bg-[#3ecf8e] text-[#0d1117] font-bold rounded-[12px] hover:bg-[#4dd49a] transition-all shadow-[0_4px_14px_rgba(62,207,142,0.3)]">
+                  {isKhmer ? "បង្កើតគណនីឥតគិតថ្លៃ" : "Create Free Account"}
                 </button>
                 <button onClick={() => setShowDemoModal(false)} className="w-full py-3.5 bg-[#f0f2f5] text-[#6b7280] font-bold rounded-[12px] hover:bg-[#e8eaed] transition-all border-0 cursor-pointer">
-                  Keep Browsing Demo
+                  {isKhmer ? "បន្តមើលការសាកល្បង" : "Keep Browsing Demo"}
                 </button>
               </div>
             </div>
@@ -163,6 +189,8 @@ export default function ExpensesDemoDashboard() {
       {/* ══ SIDEBAR ══════════════════════════════════════════════ */}
       <VendorSidebar
         plan="free"
+        isGuest={true}
+        onLockedClick={() => triggerDemoLock("settings")}
         navLinks={[
           { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/guest" },
           { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/guest/sales" },
@@ -186,9 +214,13 @@ export default function ExpensesDemoDashboard() {
           setIsMobileSidebarOpen={setIsSidebarOpen}
           rightActions={
             <>
-              <DemoTooltip title="Log Expense" desc="Record new outgoing payments. (Disabled in Demo)" position="bottom">
-                <button onClick={triggerDemoLock} className="flex items-center gap-[7px] bg-[#3ecf8e] text-[#0d1117] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a] transition-colors">
-                  <Plus size={14} /> Add Expense
+              <DemoTooltip 
+                title={isKhmer ? "កត់ត្រាចំណាយ" : "Log Expense"} 
+                desc={isKhmer ? "កត់ត្រាការទូទាត់ចេញថ្មី។ (មិនអាចប្រើបានក្នុងការសាកល្បង)" : "Record new outgoing payments. (Disabled in Demo)"} 
+                position="bottom"
+              >
+                <button onClick={triggerDemoLock} className="flex items-center gap-[7px] bg-[#3ecf8e] text-[#0d1117] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(62,207_142,0.28)] hover:bg-[#4dd49a] transition-colors">
+                  <Plus size={14} /> {isKhmer ? "បន្ថែមចំណាយ" : "Add Expense"}
                 </button>
               </DemoTooltip>
               <div className="w-[34px] h-[34px] rounded-full bg-[rgba(62,207,142,0.12)] border-[1.5px] border-[#3ecf8e] flex items-center justify-center text-[11px] font-bold text-[#3ecf8e]">SM</div>
@@ -203,8 +235,12 @@ export default function ExpensesDemoDashboard() {
             {/* ── Page header ── */}
             <div className="pt-1 pb-2 flex justify-between items-center">
               <div>
-                <h2 className="text-[32px] font-extrabold text-[#111827] leading-tight">My Expenses</h2>
-                <p className="text-[14px] text-[#6b7280] mt-1">Track and manage your spending · <span className="text-[#9ca3af]">តាមដាន និងគ្រប់គ្រងចំណាយ</span></p>
+                <h2 className={`text-[32px] font-extrabold leading-tight transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
+                  {isKhmer ? "ចំណាយរបស់ខ្ញុំ" : "My Expenses"}
+                </h2>
+                <p className="text-[14px] text-[#6b7280] mt-1">
+                  {isKhmer ? "តាមដាន និងគ្រប់គ្រងការចំណាយរបស់អ្នក" : "Track and manage your spending"}
+                </p>
               </div>
               <div className="px-3 py-1.5 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5">
                 <Lock size={12} /> Guest Demo Mode
@@ -213,29 +249,39 @@ export default function ExpensesDemoDashboard() {
 
             {/* ── Stat cards ── */}
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-              <DemoTooltip title="Daily Spending" desc="Total expenses logged for today. Monitor daily cash out.">
+               <DemoTooltip 
+                title={isKhmer ? "ការចំណាយប្រចាំថ្ងៃ" : "Daily Spending"} 
+                desc={isKhmer ? "ការចំណាយសរុបដែលបានកត់ត្រាសម្រាប់ថ្ងៃនេះ។" : "Total expenses logged for today. Monitor daily cash out."}
+              >
                 <VendorSummaryCard
-                  variant="dark"
-                  title="Today's Expenses"
+                  variant={isDark ? "dark" : "light"}
+                  title={isKhmer ? "ចំណាយថ្ងៃនេះ" : "Today's Expenses"}
                   khmerTitle="ចំណាយថ្ងៃនេះ"
                   value={`$${todayTotal.toFixed(2)}`}
-                  subtext={`${active.length} txns`}
+                  subtext={isKhmer ? `${active.length} ប្រតិបត្តិការ` : `${active.length} txns`}
                 />
               </DemoTooltip>
 
-              <DemoTooltip title="Highest Expense" desc="The category where you are currently spending the most capital.">
+               <DemoTooltip 
+                title={isKhmer ? "ចំណាយច្រើនជាងគេ" : "Highest Expense"} 
+                desc={isKhmer ? "ប្រភេទដែលអ្នកកំពុងចំណាយច្រើនបំផុត។" : "The category where you are currently spending the most capital."}
+              >
                 <VendorSummaryCard
-                  title="Top Category"
+                  variant={isDark ? "dark" : "light"}
+                  title={isKhmer ? "ប្រភេទចំណាយច្រើនជាងគេ" : "Top Category"}
                   khmerTitle="ប្រភេទច្រើនជាងគេ"
-                  value={topCat.label}
-                  subtext={topCat.khmer}
+                  value={isKhmer ? topCat.khmer : topCat.label}
+                  subtext={isKhmer ? topCat.label : topCat.khmer}
                 />
               </DemoTooltip>
 
-              <DemoTooltip title="Weekly Total" desc="Cumulative spending over the last 7 days.">
+               <DemoTooltip 
+                title={isKhmer ? "សរុបប្រចាំសប្តាហ៍" : "Weekly Total"} 
+                desc={isKhmer ? "ការចំណាយសរុបក្នុងរយៈពេល ៧ ថ្ងៃចុងក្រោយ។" : "Cumulative spending over the last 7 days."}
+              >
                 <VendorSummaryCard
                   variant="green"
-                  title="Weekly Expenses"
+                  title={isKhmer ? "ចំណាយសប្តាហ៍នេះ" : "Weekly Expenses"}
                   khmerTitle="ចំណាយប្រចាំសប្តាហ៍"
                   value={`$${weeklyTotal.toFixed(2)}`}
                   trend="+5%"
@@ -243,20 +289,28 @@ export default function ExpensesDemoDashboard() {
                 />
               </DemoTooltip>
 
-              <DemoTooltip title="Monthly Forecast" desc="Total rolling expenses for the current billing cycle.">
+               <DemoTooltip 
+                title={isKhmer ? "ការរំពឹងទុកប្រចាំខែ" : "Monthly Forecast"} 
+                desc={isKhmer ? "ការចំណាយសរុបសម្រាប់វដ្តវិក្កយបត្របច្ចុប្បន្ន។" : "Total rolling expenses for the current billing cycle."}
+              >
                 <VendorSummaryCard
-                  title="Monthly Total"
+                  variant={isDark ? "dark" : "light"}
+                  title={isKhmer ? "សរុបខែនេះ" : "Monthly Total"}
                   khmerTitle="សរុបប្រចាំខែ"
                   value="$650.00"
-                  subtext="this month"
+                  subtext={isKhmer ? "ខែនេះ" : "this month"}
                 />
               </DemoTooltip>
             </div>
 
             {/* ── Category breakdown mini bars ── */}
-            <div className="bg-white border border-[#e8eaed] rounded-[14px] px-[26px] py-[22px]">
-              <div className="text-[14px] font-semibold text-[#111827] mb-0.5">Breakdown by Category</div>
-              <div className="text-[11px] text-[#6b7280] mb-5">ចំណាយតាមប្រភេទ</div>
+            <div className={`border rounded-[14px] px-[26px] py-[22px] transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/[0.06]" : "bg-white border-[#e8eaed]"}`}>
+              <div className={`text-[14px] font-semibold mb-0.5 transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
+                {isKhmer ? "ចំណាយតាមប្រភេទ" : "Breakdown by Category"}
+              </div>
+              <div className="text-[11px] text-[#6b7280] mb-5">
+                {isKhmer ? "ចំណាយតាមប្រភេទសរុប" : "Spending divided by category type"}
+              </div>
               <div className="flex flex-col gap-[14px]">
                 {CATEGORIES.map(cat => {
                   const catTotal = active.filter(e => e.category === cat.value).reduce((s, e) => s + e.amount, 0);
@@ -264,14 +318,16 @@ export default function ExpensesDemoDashboard() {
                   return (
                     <div key={cat.value} className="flex items-center gap-4">
                       <div className="w-[100px] shrink-0">
-                        <div className="text-[12.5px] font-medium text-[#111827]">{cat.label}</div>
-                        <div className="text-[10.5px] text-[#9ca3af]">{cat.khmer}</div>
+                        <div className={`text-[12.5px] font-medium transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
+                          {isKhmer ? cat.khmer : cat.label}
+                        </div>
+                        <div className={`text-[10.5px] transition-colors duration-500 ${isDark ? "text-[#7d8590]" : "text-[#9ca3af]"}`}>{isKhmer ? cat.label : cat.khmer}</div>
                       </div>
-                      <div className="flex-1 h-[6px] bg-[#f0f2f5] rounded-full overflow-hidden">
+                      <div className={`flex-1 h-[6px] rounded-full overflow-hidden transition-colors duration-500 ${isDark ? "bg-white/[0.05]" : "bg-[#f0f2f5]"}`}>
                         <div className="h-full rounded-full transition-[width] duration-700 ease-out" style={{ width: `${pct}%`, background: cat.color }} />
                       </div>
                       <div className="w-[60px] text-right">
-                        <span className="text-[12.5px] font-bold text-[#111827]">{pct > 0 ? `$${catTotal.toFixed(2)}` : "—"}</span>
+                        <span className={`text-[12.5px] font-bold transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>{pct > 0 ? `$${catTotal.toFixed(2)}` : "—"}</span>
                       </div>
                       <div className="w-[34px] text-right text-[11.5px] text-[#6b7280] shrink-0">{pct}%</div>
                     </div>
@@ -281,21 +337,26 @@ export default function ExpensesDemoDashboard() {
             </div>
 
             {/* ── Expense History table ── */}
-            <DemoTooltip title="Expense Ledger" desc="Full history of your logged expenses. Searchable by category or note. (Edits disabled in Demo)">
-              <div className="bg-white border border-[#e8eaed] rounded-[14px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-                <div className="px-[22px] py-4 border-b border-[#f0f2f5] flex items-center justify-between gap-3 flex-wrap">
+             <DemoTooltip 
+              title={isKhmer ? "សៀវភៅបញ្ជីចំណាយ" : "Expense Ledger"} 
+              desc={isKhmer ? "ប្រវត្តិនៃការចំណាយពេញលេញរបស់អ្នក។ (ការកែសម្រួលត្រូវបានដាក់កម្រិតក្នុងការសាកល្បង)" : "Full history of your logged expenses. Searchable by category or note. (Edits disabled in Demo)"}
+            >
+              <div className={`border rounded-[14px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)] transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/[0.06]" : "bg-white border-[#e8eaed]"}`}>
+                <div className={`px-[22px] py-4 border-b flex items-center justify-between gap-3 flex-wrap transition-colors duration-500 ${isDark ? "border-white/[0.07]" : "border-[#f0f2f5]"}`}>
                   <div>
-                    <div className="text-[14px] font-semibold text-[#111827]">Expense History</div>
-                    <div className="text-[11px] text-[#6b7280] mt-0.5">{active.length} record{active.length !== 1 ? "s" : ""} · Click row to edit</div>
+                    <div className={`text-[14px] font-semibold transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
+                      {isKhmer ? "ប្រវត្តិនៃការចំណាយ" : "Expense History"}
+                    </div>
+                    <div className="text-[11px] text-[#6b7280] mt-0.5">{active.length} {isKhmer ? "កំណត់ត្រា" : "record"}{active.length !== 1 ? (isKhmer ? "" : "s") : ""} · {isKhmer ? "ចុចលើជួរដើម្បីកែសម្រួល" : "Click row to edit"}</div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="relative">
                       <Search size={13} className="absolute left-[11px] top-1/2 -translate-y-1/2 text-[#6b7280] pointer-events-none" />
-                      <input type="text" placeholder="Search expenses..." value={search} onChange={e => setSearch(e.target.value)}
-                        className="pl-[33px] pr-4 py-[9px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[9px] text-[13px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors w-[200px]"
+                      <input type="text" placeholder={isKhmer ? "ស្វែងរក..." : "Search expenses..."} value={search} onChange={e => setSearch(e.target.value)}
+                        className={`pl-[33px] pr-4 py-[9px] border rounded-[9px] text-[13px] outline-none transition-colors w-[200px] ${isDark ? "bg-white/5 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-[#f7f8fa] border-[#e8eaed] text-[#111827] focus:border-[#3ecf8e]"}`}
                         style={{ fontFamily: "inherit" }} />
                     </div>
-                    <button className="w-[38px] h-[38px] flex items-center justify-center border border-[#e8eaed] rounded-[9px] bg-[#f7f8fa] text-[#6b7280] hover:bg-[#eff0f2] cursor-pointer">
+                    <button className={`w-[38px] h-[38px] flex items-center justify-center border rounded-[9px] transition-colors ${isDark ? "bg-white/5 border-white/10 text-[#7d8590] hover:text-white" : "bg-[#f7f8fa] border-[#e8eaed] text-[#6b7280] hover:bg-[#eff0f2]"} cursor-pointer`}>
                       <Filter size={14} />
                     </button>
                   </div>
@@ -303,38 +364,38 @@ export default function ExpensesDemoDashboard() {
 
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="border-b border-[#f0f2f5]">
-                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">Time</th>
-                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">Category</th>
-                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">Note</th>
-                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">Amount</th>
-                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">Actions</th>
+                    <tr className={`border-b text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] transition-colors duration-500 ${isDark ? "bg-white/[0.02] border-white/[0.07]" : "bg-slate-50/50 border-slate-100"}`}>
+                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">{isKhmer ? "ម៉ោង" : "Time"}</th>
+                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">{isKhmer ? "ប្រភេទ" : "Category"}</th>
+                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">{isKhmer ? "សម្គាល់" : "Note"}</th>
+                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">{isKhmer ? "ទឹកប្រាក់" : "Amount"}</th>
+                      <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">{isKhmer ? "សកម្មភាព" : "Actions"}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filtered.length ? filtered.map((e, i) => {
                       const cat = CAT_MAP[e.category];
                       return (
-                        <tr key={e.id} className={`group transition-colors hover:bg-[#f7f8fa] cursor-pointer ${i < filtered.length - 1 ? "border-b border-[#f0f2f5]" : ""}`} onClick={triggerDemoLock}>
+                        <tr key={e.id} className={`group transition-colors cursor-pointer border-b transition-colors duration-500 ${isDark ? "hover:bg-white/5 border-white/[0.07]" : "hover:bg-[#f7f8fa] border-[#f0f2f5]"}`} onClick={triggerDemoLock}>
                           <td className="px-[22px] py-[14px] text-[13px] text-[#6b7280] whitespace-nowrap">
                             <div className="flex items-center gap-1.5"><Clock size={12} className="text-[#9ca3af]" />{e.time}</div>
                           </td>
                           <td className="px-[22px] py-[14px]">
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[11.5px] font-semibold border" style={{ background: `${cat.color}14`, color: cat.color, borderColor: `${cat.color}30` }}>
-                              {e.category}
+                              {isKhmer ? cat.khmer : cat.label}
                             </span>
                           </td>
                           <td className="px-[22px] py-[14px]">
                             <div className="flex items-center gap-2">
-                              <span className="text-[13px] font-medium text-[#111827] truncate max-w-[220px]">{e.note || "—"}</span>
+                              <span className={`text-[13px] font-medium truncate max-w-[220px] transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>{e.note || "—"}</span>
                               {e.hasReceipt && <Camera size={13} className="text-[#3ecf8e] shrink-0" />}
                             </div>
                           </td>
                           <td className="px-[22px] py-[14px] text-[13.5px] font-bold text-[#ef4444] text-right whitespace-nowrap">-${e.amount.toFixed(2)}</td>
                           <td className="px-[22px] py-[14px] text-right" onClick={ev => ev.stopPropagation()}>
                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button onClick={triggerDemoLock} className="w-8 h-8 rounded-[8px] bg-transparent hover:bg-[#f0f2f5] border-0 flex items-center justify-center cursor-pointer text-[#6b7280] hover:text-[#111827] transition-colors"><Pencil size={13} /></button>
-                              <button onClick={triggerDemoLock} className="w-8 h-8 rounded-[8px] bg-transparent hover:bg-[rgba(239,68,68,0.08)] border-0 flex items-center justify-center cursor-pointer text-[#6b7280] hover:text-[#ef4444] transition-colors"><Trash2 size={13} /></button>
+                              <button onClick={triggerDemoLock} className={`w-8 h-8 rounded-[8px] border-0 flex items-center justify-center cursor-pointer transition-colors ${isDark ? "bg-transparent hover:bg-white/5 text-[#7d8590] hover:text-[#e6edf3]" : "bg-transparent hover:bg-[#f0f2f5] text-[#6b7280] hover:text-[#111827]"}`}><Pencil size={13} /></button>
+                              <button onClick={triggerDemoLock} className={`w-8 h-8 rounded-[8px] border-0 flex items-center justify-center cursor-pointer transition-colors ${isDark ? "bg-transparent hover:bg-red-500/10 text-red-400" : "bg-transparent hover:bg-[rgba(239,68,68,0.08)] text-[#6b7280] hover:text-[#ef4444]"}`}><Trash2 size={13} /></button>
                             </div>
                           </td>
                         </tr>
@@ -342,8 +403,8 @@ export default function ExpensesDemoDashboard() {
                     }) : (
                       <tr>
                         <td colSpan={5} className="px-[22px] py-14 text-center">
-                          <div className="text-[13px] text-[#9ca3af]">{search ? "No expenses match your search" : "No expenses yet — log your first one!"}</div>
-                          {!search && <button onClick={triggerDemoLock} className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3ecf8e] bg-transparent border-0 cursor-pointer hover:underline"><Plus size={14} /> Add first expense</button>}
+                           <div className="text-[13px] text-[#9ca3af]">{search ? (isKhmer ? "មិនមានចំណាយដែលត្រូវនឹងការស្វែងរករបស់អ្នកទេ" : "No expenses match your search") : (isKhmer ? "មិនទាន់មានចំណាយនៅឡើយទេ — កត់ត្រាចំណាយដំបូងរបស់អ្នក!" : "No expenses yet — log your first one!")}</div>
+                          {!search && <button onClick={triggerDemoLock} className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3ecf8e] bg-transparent border-0 cursor-pointer hover:underline"><Plus size={14} /> {isKhmer ? "បន្ថែមចំណាយដំបូង" : "Add first expense"}</button>}
                         </td>
                       </tr>
                     )}
@@ -351,22 +412,31 @@ export default function ExpensesDemoDashboard() {
                 </table>
 
                 {active.length > 0 && (
-                  <div className="px-[22px] py-3 border-t border-[#f0f2f5] flex items-center justify-between">
-                    <span className="text-[12px] text-[#9ca3af]">{filtered.length} of {active.length} records</span>
-                    <span className="text-[13px] font-bold text-[#111827]">Total: <span className="text-[#ef4444]">${filtered.reduce((s, e) => s + e.amount, 0).toFixed(2)}</span></span>
+                  <div className={`px-[22px] py-3 border-t flex items-center justify-between transition-colors duration-500 ${isDark ? "border-white/[0.07]" : "border-[#f0f2f5]"}`}>
+                     <span className="text-[12px] text-[#9ca3af]">
+                      {filtered.length} {isKhmer ? "ក្នុងចំណោម" : "of"} {active.length} {isKhmer ? "កំណត់ត្រា" : "records"}
+                    </span>
+                    <span className={`text-[13px] font-bold transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
+                      {isKhmer ? "សរុប" : "Total"}: <span className="text-[#ef4444]">${filtered.reduce((s, e) => s + e.amount, 0).toFixed(2)}</span>
+                    </span>
                   </div>
                 )}
               </div>
             </DemoTooltip>
 
-            <div className="flex items-center gap-2 px-1">
-              <RotateCcw size={12} className="text-[#9ca3af]" />
-              <span className="text-[11.5px] text-[#9ca3af]">Deleted records can be undone within 5 seconds · Click any row to edit</span>
-            </div>
+             <div className="flex items-center gap-2 px-1">
+               <RotateCcw size={12} className="text-[#9ca3af]" />
+               <span className="text-[11.5px] text-[#9ca3af]">
+                 {isKhmer 
+                  ? "កំណត់ត្រាដែលបានលុបអាចទាញយកមកវិញក្នុងរយៈពេល ៥ វិនាទី · ចុចលើជួរណាមួយដើម្បីកែសម្រួល"
+                  : "Deleted records can be undone within 5 seconds · Click any row to edit"}
+               </span>
+             </div>
             <div className="h-4" />
           </div>
         </div>
       </main>
+      </div>
     </div>
   );
 }

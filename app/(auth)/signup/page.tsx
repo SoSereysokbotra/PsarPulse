@@ -3,9 +3,17 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { User, Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { AuthLayout, LeftPanelContent, FormInput } from "@/components/auth";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 export default function SignupPageAlt() {
+  const { language, t } = useLanguage();
+  const { resolvedTheme } = useTheme();
+  const router = useRouter();
+  const isKhmer = language === "km";
+  const isDark = resolvedTheme === "dark";
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -24,6 +32,7 @@ export default function SignupPageAlt() {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     console.log("Alt signup:", formData);
     setIsLoading(false);
+    router.push("/vendor");
   };
 
   return (
@@ -31,35 +40,33 @@ export default function SignupPageAlt() {
       leftContent={
         <LeftPanelContent
           icon={<User className="w-8 h-8" />}
-          title="Grow your market stall with confidence."
+          title={t("auth.signup.growTitle")}
           subtitle=""
           features={[
             {
-              title: "Real-time Tracking",
-              desc: "Monitor sales as they happen at your stall.",
+              title: t("auth.signup.feature1Title"),
+              desc: t("auth.signup.feature1Desc"),
             },
             {
-              title: "Inventory Alerts",
-              desc: "Get notified before you run out of stock.",
+              title: t("auth.signup.feature2Title"),
+              desc: t("auth.signup.feature2Desc"),
             },
             {
-              title: "Offline Mode",
-              desc: "Works even when the market signal is weak.",
+              title: t("auth.signup.feature3Title"),
+              desc: t("auth.signup.feature3Desc"),
             },
           ]}
           footerText="© 2026 PsarPulse KH • Developed at Kirirom Institute of Technology"
         />
       }
-      showLangToggle
       backHref="/"
     >
       <header className="mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
-          Get Started
+        <h1 className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+          {t("auth.signup.title")}
         </h1>
-        <p className="text-slate-500 font-medium">
-          Create your free account to start managing your daily sales and
-          inventory.
+        <p className={`font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+          {t("auth.signup.subtitle")}
         </p>
       </header>
 
@@ -68,10 +75,9 @@ export default function SignupPageAlt() {
           id="fullName"
           name="fullName"
           type="text"
-          label="Full Name"
-          khmerLabel="ឈ្មោះ​ពេញ"
+          label={t("auth.signup.fullNameLabel")}
           icon={User}
-          placeholder="e.g. Sokha Meas"
+          placeholder={t("auth.register.fullNamePlaceholder")}
           value={formData.fullName}
           onChange={handleInputChange}
           required
@@ -82,10 +88,9 @@ export default function SignupPageAlt() {
           id="email"
           name="email"
           type="email"
-          label="Email Address"
-          khmerLabel="អ៊ីមែល"
+          label={t("auth.signup.emailLabel")}
           icon={Mail}
-          placeholder="vendor@market.com"
+          placeholder={t("auth.register.emailPlaceholder")}
           value={formData.email}
           onChange={handleInputChange}
           required
@@ -96,10 +101,9 @@ export default function SignupPageAlt() {
           id="password"
           name="password"
           type="password"
-          label="Password"
-          khmerLabel="ពាក្យសម្ងាត់"
+          label={t("auth.signup.passwordLabel")}
           icon={Lock}
-          placeholder="Create a strong password"
+          placeholder={t("auth.register.passwordPlaceholder")}
           value={formData.password}
           onChange={handleInputChange}
           required
@@ -110,15 +114,15 @@ export default function SignupPageAlt() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-[0_8px_20px_-6px_rgba(41,178,141,0.5)] hover:bg-[#239979] hover:-translate-y-1 hover:shadow-[0_12px_24px_-8px_rgba(41,178,141,0.6)] active:translate-y-0 transition-all duration-300 disabled:opacity-70"
+          className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-[0_8px_20px_-6px_rgba(41,178,141,0.5)] hover:bg-[#239979] hover:-translate-y-1 hover:shadow-[0_12px_24px_-8px_rgba(41,178,141,0.6)] active:translate-y-0 transition-all duration-300 disabled:opacity-70 ${isKhmer ? "font-suwannaphum" : ""}`}
         >
           {isLoading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              Creating Account...
+              {isKhmer ? "កំពុងបង្កើតគណនី..." : "Creating Account..."}
             </>
           ) : (
-            "Create Account"
+            t("auth.signup.createAccount")
           )}
         </button>
       </form>
@@ -126,11 +130,11 @@ export default function SignupPageAlt() {
       {/* Social login section */}
       <div className="relative my-8">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200"></div>
+          <div className={`w-full border-t ${isDark ? "border-white/10" : "border-slate-200"}`}></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-4 bg-white text-slate-400 font-medium">
-            Or continue with
+          <span className={`px-4 font-medium ${isDark ? "bg-dark-bg text-[#8A8F98]" : "bg-white text-slate-400"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            {t("auth.login.orContinueWith")}
           </span>
         </div>
       </div>
@@ -141,7 +145,11 @@ export default function SignupPageAlt() {
           type="button"
           onClick={() => console.log("Google login")}
           disabled={isLoading}
-          className="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 transition-all disabled:opacity-50"
+          className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl transition-all disabled:opacity-50 ${
+            isDark
+              ? "border-dark-border bg-dark-surface hover:bg-dark-surface-hover hover:border-white/20 text-white"
+              : "border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 text-slate-700"
+          }`}
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -161,7 +169,7 @@ export default function SignupPageAlt() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          <span className="text-sm font-medium text-slate-700">Google</span>
+          <span className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-suwannaphum text-xs" : ""}`}>Google</span>
         </button>
 
         {/* Facebook */}
@@ -169,12 +177,16 @@ export default function SignupPageAlt() {
           type="button"
           onClick={() => console.log("Facebook login")}
           disabled={isLoading}
-          className="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 transition-all disabled:opacity-50"
+          className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl transition-all disabled:opacity-50 ${
+            isDark
+              ? "border-dark-border bg-dark-surface hover:bg-dark-surface-hover hover:border-white/20 text-white"
+              : "border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 text-slate-700"
+          }`}
         >
           <svg className="w-5 h-5" fill="#1877F2" viewBox="0 0 24 24">
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
           </svg>
-          <span className="text-sm font-medium text-slate-700">Facebook</span>
+          <span className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-suwannaphum text-xs" : ""}`}>Facebook</span>
         </button>
 
         {/* TikTok */}
@@ -182,7 +194,11 @@ export default function SignupPageAlt() {
           type="button"
           onClick={() => console.log("TikTok login")}
           disabled={isLoading}
-          className="flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 transition-all disabled:opacity-50"
+          className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl transition-all disabled:opacity-50 ${
+            isDark
+              ? "border-dark-border bg-dark-surface hover:bg-dark-surface-hover hover:border-white/20 text-white"
+              : "border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 text-slate-700"
+          }`}
         >
           <svg className="w-5 h-5" viewBox="0 0 448 512">
             <path
@@ -198,17 +214,17 @@ export default function SignupPageAlt() {
               d="M443 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 180 188.31v89.89a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 376 102.39a121.43 121.43 0 0 0 67 20.14Z"
             />
           </svg>
-          <span className="text-sm font-medium text-slate-700">TikTok</span>
+          <span className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-suwannaphum text-xs" : ""}`}>TikTok</span>
         </button>
       </div>
 
-      <p className="mt-8 text-center text-slate-500 font-medium">
-        Already a member?{" "}
+      <p className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+        {t("auth.signup.alreadyMember")}{" "}
         <Link
           href="/login"
-          className="text-slate-900 font-extrabold hover:text-psar-primary transition-colors underline decoration-slate-300 underline-offset-4 hover:decoration-psar-primary"
+          className={`font-extrabold hover:text-psar-primary transition-colors underline decoration-slate-300 underline-offset-4 hover:decoration-psar-primary ${isDark ? "text-psar-primary decoration-white/20" : "text-slate-900"}`}
         >
-          Sign in to your account
+          {t("auth.signup.signInAccount")}
         </Link>
       </p>
     </AuthLayout>

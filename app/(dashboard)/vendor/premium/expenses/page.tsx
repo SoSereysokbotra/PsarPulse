@@ -22,7 +22,6 @@ const PREMIUM_NAV = [
   { icon: Users,            title: "Customers",  khmerTitle: "អតិថិជន",          href: "/vendor/premium/customer" },
   { icon: Package,          title: "Inventory",  khmerTitle: "ស្តុក",            href: "/vendor/premium/inventory" },
   { icon: FileBarChart,     title: "Reports",    khmerTitle: "របាយការណ៍",        href: "/vendor/premium/reports" },
-  { icon: Megaphone,        title: "Marketing",  khmerTitle: "ទីផ្សារ",          href: "/vendor/premium/marketing" },
 ];
 
 // ─── Types ────────────────────────────────────────────────────────────────────

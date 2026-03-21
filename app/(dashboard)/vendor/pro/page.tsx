@@ -94,7 +94,7 @@ const PRO_NAV = [
     icon: FileBarChart,
     title: "Reports",
     khmerTitle: "របាយការណ៍",
-    href: "/vendor/reports",
+    href: "/vendor/premium/reports",
   },
 ];
 
@@ -297,6 +297,7 @@ export default function ProDashboard() {
       plan="pro"
       navLinks={PRO_NAV}
       currentPath="/vendor/pro"
+      settingsHref="/vendor/pro/settings"
       title="Pro Dashboard"
       planBadge={{ label: "PRO", icon: Crown }}
       rightActions={

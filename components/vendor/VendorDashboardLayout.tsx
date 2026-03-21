@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import VendorSidebar from "./VendorSidebar";
 import VendorTopbar from "./VendorTopbar";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface NavLink {
   icon: React.ElementType;
@@ -39,6 +41,10 @@ export default function VendorDashboardLayout({
   userInitials,
   userEmail,
 }: VendorDashboardLayoutProps) {
+  const { resolvedTheme } = useTheme();
+  const { language } = useLanguage();
+  const isDark = resolvedTheme === "dark";
+  const isKhmer = language === "km";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
@@ -52,7 +58,7 @@ export default function VendorDashboardLayout({
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] flex font-sans text-slate-900 selection:bg-[#29B28D] selection:text-white">
+    <div className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white ${isDark ? "bg-dark-bg text-white" : "bg-[#f0f2f5] text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}>
       {/* Mobile sidebar backdrop */}
       {isSidebarOpen && (
         <div

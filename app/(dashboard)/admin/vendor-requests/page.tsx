@@ -14,6 +14,8 @@ import {
   FileText,
   AlertCircle
 } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 // Mock data for pending vendor requests
 const mockRequests = [
@@ -53,6 +55,11 @@ const mockRequests = [
 ];
 
 export default function VendorRequestsPage() {
+  const { language } = useLanguage();
+  const { resolvedTheme } = useTheme();
+  const isKhmer = language === "km";
+  const isDark = resolvedTheme === "dark";
+
   const [requests, setRequests] = useState(mockRequests);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -86,52 +93,54 @@ export default function VendorRequestsPage() {
   };
 
   return (
-    <div className="space-y-6 font-sans text-slate-900 pb-10">
+    <div className={`space-y-6 font-sans pb-10 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Vendor Requests
+          <h1 className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
+            {isKhmer ? "សំណើសុំចុះឈ្មោះអាជីវករ" : "Vendor Requests"}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Review and approve new Free Plan vendor registrations.
+            {isKhmer ? "ពិនិត្យ និងអនុម័តការចុះឈ្មោះអាជីវករថ្មីសម្រាប់គម្រោងឥតគិតថ្លៃ។" : "Review and approve new Free Plan vendor registrations."}
           </p>
         </div>
       </div>
 
       {/* Control Bar */}
-      <div className="bg-white p-2 rounded-xl border border-slate-200/60 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className={`p-2 rounded-xl border shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200/60"}`}>
         <div className="relative w-full md:max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search pending requests..."
+            placeholder={isKhmer ? "ស្វែងរកសំណើដែលកំពុងរង់ចាំ..." : "Search pending requests..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"
+            className={`w-full pl-9 pr-4 py-2 border rounded-lg text-sm transition-all outline-none focus:ring-2 focus:ring-emerald-500/20 ${
+              isDark ? "bg-white/5 border-white/10 text-white placeholder:text-slate-500" : "bg-slate-50/50 border-slate-200 text-slate-900 placeholder:text-slate-400"
+            }`}
           />
         </div>
         
         <div className="flex items-center gap-2 px-3">
-          <span className="text-sm font-medium text-slate-600">
-            <span className="text-emerald-600 font-bold">{requests.length}</span> Pending
+          <span className="text-sm font-medium text-slate-500">
+            <span className="text-emerald-500 font-bold">{requests.length}</span> {isKhmer ? "កំពុងរង់ចាំ" : "Pending"}
           </span>
         </div>
       </div>
 
       {/* Requests List */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className={`rounded-xl border shadow-sm overflow-hidden ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
         {filteredRequests.length > 0 ? (
-          <div className="divide-y divide-slate-100">
+          <div className={`divide-y ${isDark ? "divide-white/5" : "divide-slate-100"}`}>
             {filteredRequests.map((req) => (
-              <div key={req.id} className="p-5 hover:bg-slate-50 transition-colors flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
+              <div key={req.id} className={`p-5 transition-colors flex flex-col md:flex-row gap-6 justify-between items-start md:items-center ${isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50"}`}>
                 
                 {/* Info Section */}
                 <div className="flex-1 space-y-3">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                        <Store className="h-4 w-4 text-emerald-600" />
+                      <h3 className={`text-base font-bold flex items-center gap-2 ${isDark ? "text-white" : "text-slate-900"}`}>
+                        <Store className="h-4 w-4 text-emerald-500" />
                         {req.storeName}
                       </h3>
                       <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-slate-500">
@@ -147,40 +156,46 @@ export default function VendorRequestsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-6 text-sm">
                     <div className="flex items-start gap-2">
-                      <Mail className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
-                      <span className="text-slate-600 truncate">{req.email}</span>
+                      <Mail className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
+                      <span className="text-slate-500 truncate">{req.email}</span>
                     </div>
                     <div className="flex items-start gap-2">
-                      <Phone className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
-                      <span className="text-slate-600 truncate">{req.phone}</span>
+                      <Phone className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
+                      <span className="text-slate-500 truncate">{req.phone}</span>
                     </div>
                     <div className="flex items-start gap-2 md:col-span-2">
-                      <MapPin className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
-                      <span className="text-slate-600">{req.businessAddress}</span>
+                      <MapPin className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
+                      <span className="text-slate-500">{req.businessAddress}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Actions Section */}
-                <div className="flex flex-row md:flex-col lg:flex-row gap-2 w-full md:w-auto shrink-0 border-t border-slate-100 pt-4 md:border-t-0 md:pt-0">
+                <div className={`flex flex-row md:flex-col lg:flex-row gap-2 w-full md:w-auto shrink-0 border-t pt-4 md:border-t-0 md:pt-0 ${isDark ? "border-white/5" : "border-slate-100"}`}>
                   <button 
                     onClick={() => openModal(req, "approve")}
-                    className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg text-sm font-medium transition-colors"
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                      isDark ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200"
+                    }`}
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    Approve
+                    {isKhmer ? "អនុម័ត" : "Approve"}
                   </button>
                   <button 
                     onClick={() => openModal(req, "reject")}
-                    className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 rounded-lg text-sm font-medium transition-colors"
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                      isDark ? "bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20" : "bg-red-50 text-red-700 hover:bg-red-100 border-red-200"
+                    }`}
                   >
                     <XCircle className="h-4 w-4" />
-                    Reject
+                    {isKhmer ? "បដិសេធ" : "Reject"}
                   </button>
                   <button 
                     onClick={() => setSelectedRequest({...req, viewOnly: true})}
-                    className="flex-none flex items-center justify-center p-2 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
-                    title="View Details"
+                    className={`flex-none flex items-center justify-center p-2 rounded-lg transition-colors border ${
+                      isDark ? "bg-white/5 text-slate-400 hover:bg-white/10 border-white/10" : "bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200"
+                    }`}
+                    title={isKhmer ? "មើលព័ត៌មានលម្អិត" : "View Details"}
                   >
                     <Eye className="h-4 w-4" />
                   </button>
@@ -190,82 +205,86 @@ export default function VendorRequestsPage() {
           </div>
         ) : (
           <div className="p-12 text-center text-slate-500">
-            <Store className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-            <p className="text-lg font-medium text-slate-900">No pending requests</p>
-            <p className="text-sm mt-1">Check back later for new vendor registrations.</p>
+            <Store className="h-12 w-12 mx-auto text-slate-600 mb-3" />
+            <p className={`text-lg font-medium ${isDark ? "text-slate-300" : "text-slate-900"}`}>{isKhmer ? "មិនមានសំណើដែលកំពុងរង់ចាំទេ" : "No pending requests"}</p>
+            <p className="text-sm mt-1">{isKhmer ? "សូមពិនិត្យមើលឡើងវិញនៅពេលក្រោយសម្រាប់ការចុះឈ្មោះអាជីវករថ្មី។" : "Check back later for new vendor registrations."}</p>
           </div>
         )}
       </div>
 
       {/* Action / Detail Modal */}
       {selectedRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className={`rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border animate-in zoom-in-95 duration-200 ${
+            isDark ? "bg-[#0d1117] border-white/10" : "bg-white border-slate-200"
+          }`}>
             {/* Modal Header */}
             <div className={`p-5 border-b flex items-center gap-3 ${
-              selectedRequest.viewOnly ? 'bg-slate-50 mb-0' : 
-              modalAction === 'approve' ? 'bg-emerald-50 border-emerald-100' : 'bg-red-50 border-red-100'
+              selectedRequest.viewOnly ? (isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100') : 
+              modalAction === 'approve' ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-red-500/10 border-red-500/20'
             }`}>
               {selectedRequest.viewOnly ? (
-                <Eye className="h-5 w-5 text-slate-600" />
+                <Eye className={`h-5 w-5 ${isDark ? "text-slate-400" : "text-slate-600"}`} />
               ) : modalAction === 'approve' ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
               ) : (
-                <AlertCircle className="h-5 w-5 text-red-600" />
+                <AlertCircle className="h-5 w-5 text-red-500" />
               )}
               <h2 className={`font-bold text-lg ${
-                selectedRequest.viewOnly ? 'text-slate-900' :
-                modalAction === 'approve' ? 'text-emerald-900' : 'text-red-900'
+                selectedRequest.viewOnly ? (isDark ? 'text-white' : 'text-slate-900') :
+                modalAction === 'approve' ? 'text-emerald-500' : 'text-red-500'
               }`}>
-                {selectedRequest.viewOnly ? 'Vendor Details' : 
-                 modalAction === 'approve' ? 'Approve Registration' : 'Reject Registration'}
+                {selectedRequest.viewOnly ? (isKhmer ? 'ព័ត៌មានលម្អិតអំពីអាជីវករ' : 'Vendor Details') : 
+                 modalAction === 'approve' ? (isKhmer ? 'អនុម័តការចុះឈ្មោះ' : 'Approve Registration') : (isKhmer ? 'បដិសេធការចុះឈ្មោះ' : 'Reject Registration')}
               </h2>
             </div>
 
             {/* Modal Content */}
             <div className="p-6 space-y-4">
               {!selectedRequest.viewOnly && (
-                <p className="text-sm text-slate-600 mb-4">
+                <p className="text-sm text-slate-500 mb-4">
                   {modalAction === 'approve' 
-                    ? "Carefully review the vendor details before approving. This will generate a login link and send it via email." 
-                    : "Are you sure you want to reject this vendor application? This action cannot be undone."}
+                    ? (isKhmer ? "សូមពិនិត្យព័ត៌មានលម្អិតរបស់អាជីវករឱ្យបានហ្មត់ចត់មុននឹងអនុម័ត។ វានឹងបង្កើតតំណភ្ជាប់សម្រាប់ចូលប្រព័ន្ធ ហើយផ្ញើវាទៅកាន់អ៊ីមែល។" : "Carefully review the vendor details before approving. This will generate a login link and send it via email.")
+                    : (isKhmer ? "តើអ្នកប្រាកដថាចង់បដិសេធសំណើសុំរបស់អាជីវករនេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយវិញបានទេ។" : "Are you sure you want to reject this vendor application? This action cannot be undone.")}
                 </p>
               )}
 
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+              <div className={`p-4 rounded-xl border ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100"} space-y-3`}>
                 <div className="grid grid-cols-[100px_1fr] gap-2 text-sm">
-                  <span className="text-slate-500 font-medium">Store:</span>
-                  <span className="font-semibold text-slate-900">{selectedRequest.storeName}</span>
+                  <span className="text-slate-500 font-medium">{isKhmer ? "ហាង:" : "Store:"}</span>
+                  <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{selectedRequest.storeName}</span>
                   
-                  <span className="text-slate-500 font-medium">Owner:</span>
-                  <span className="text-slate-800">{selectedRequest.fullName}</span>
+                  <span className="text-slate-500 font-medium">{isKhmer ? "ម្ចាស់:" : "Owner:"}</span>
+                  <span className={isDark ? "text-slate-300" : "text-slate-800"}>{selectedRequest.fullName}</span>
                   
-                  <span className="text-slate-500 font-medium">Email:</span>
-                  <span className="text-slate-800">{selectedRequest.email}</span>
+                  <span className="text-slate-500 font-medium">{isKhmer ? "អ៊ីមែល:" : "Email:"}</span>
+                  <span className={isDark ? "text-slate-300" : "text-slate-800"}>{selectedRequest.email}</span>
                   
-                  <span className="text-slate-500 font-medium">Phone:</span>
-                  <span className="text-slate-800">{selectedRequest.phone}</span>
+                  <span className="text-slate-500 font-medium">{isKhmer ? "ទូរស័ព្ទ:" : "Phone:"}</span>
+                  <span className={isDark ? "text-slate-300" : "text-slate-800"}>{selectedRequest.phone}</span>
                   
-                  <span className="text-slate-500 font-medium">Location:</span>
-                  <span className="text-slate-800">{selectedRequest.businessAddress}</span>
+                  <span className="text-slate-500 font-medium">{isKhmer ? "ទីតាំង:" : "Location:"}</span>
+                  <span className={isDark ? "text-slate-300" : "text-slate-800"}>{selectedRequest.businessAddress}</span>
                   
-                  <span className="text-slate-500 font-medium">Description:</span>
-                  <span className="text-slate-800 italic">"{selectedRequest.description}"</span>
+                  <span className="text-slate-500 font-medium">{isKhmer ? "ការពិពណ៌នា:" : "Description:"}</span>
+                  <span className={`italic ${isDark ? "text-slate-400" : "text-slate-800"}`}>"{selectedRequest.description}"</span>
                 </div>
               </div>
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+            <div className={`p-4 border-t flex justify-end gap-3 ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100"}`}>
               <button 
                 onClick={() => {
                   setSelectedRequest(null);
                   setModalAction(null);
                 }}
                 disabled={isLoading}
-                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 rounded-lg transition-colors border border-transparent disabled:opacity-50"
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors border border-transparent disabled:opacity-50 ${
+                  isDark ? "text-slate-400 hover:text-white hover:bg-white/5" : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                }`}
               >
-                {selectedRequest.viewOnly ? 'Close' : 'Cancel'}
+                {selectedRequest.viewOnly ? (isKhmer ? "បិទ" : "Close") : (isKhmer ? "បោះបង់" : "Cancel")}
               </button>
               
               {!selectedRequest.viewOnly && (
@@ -277,7 +296,7 @@ export default function VendorRequestsPage() {
                 >
                   {isLoading ? (
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  ) : modalAction === 'approve' ? 'Confirm Approval' : 'Confirm Reject'}
+                  ) : modalAction === 'approve' ? (isKhmer ? "បញ្ជាក់ការអនុម័ត" : "Confirm Approval") : (isKhmer ? "បញ្ជាក់ការបដិសេធ" : "Confirm Reject")}
                 </button>
               )}
             </div>

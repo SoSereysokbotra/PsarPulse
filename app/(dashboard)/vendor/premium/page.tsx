@@ -68,7 +68,6 @@ const PREMIUM_NAV = [
   { icon: Users,            title: "Customers",  khmerTitle: "អតិថិជន",          href: "/vendor/premium/customer" },
   { icon: Package,          title: "Inventory",  khmerTitle: "ស្តុក",            href: "/vendor/premium/inventory" },
   { icon: FileBarChart,     title: "Reports",    khmerTitle: "របាយការណ៍",        href: "/vendor/premium/reports" },
-  { icon: Megaphone,        title: "Marketing",  khmerTitle: "ទីផ្សារ",          href: "/vendor/premium/marketing" },
 ];
 
 export default function PremiumDashboard() {
@@ -167,8 +166,7 @@ export default function PremiumDashboard() {
     { label: "ពលកម្ម",    value: 15, color: "#f59e0b" },
     { label: "ដឹកជញ្ជូន", value: 12, color: "#ef4444" },
     { label: "អគ្គិសនី",  value:  5, color: "#8b5cf6" },
-    { label: "ទីផ្សារ",   value:  5, color: "#ec4899", custom: true },
-    { label: "ផ្សេងៗ",    value:  3, color: "#94a3b8" },
+    { label: "ផ្សេងៗ",    value:  8, color: "#94a3b8" },
   ];
 
   const inventoryItems = [
@@ -186,7 +184,7 @@ export default function PremiumDashboard() {
 
   const chatMessages = [
     { role: "assistant", text: "សួស្តី! I'm your AI assistant. How can I help you today?" },
-    { role: "assistant", text: "I can help with sales analysis, inventory advice, marketing tips, and more. Just ask!" },
+    { role: "assistant", text: "I can help with sales analysis, inventory advice, and more. Just ask!" },
   ];
 
   return (
@@ -194,6 +192,7 @@ export default function PremiumDashboard() {
       plan="premium"
       navLinks={PREMIUM_NAV}
       currentPath="/vendor/premium"
+      settingsHref="/vendor/premium/settings"
       title="Premium Dashboard"
       planBadge={{ label: "PREMIUM", icon: Sparkles }}
       rightActions={

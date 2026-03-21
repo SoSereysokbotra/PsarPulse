@@ -12,6 +12,8 @@ import {
   Camera,
   Eye
 } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 // Mock Data
 const vendors = [
@@ -23,76 +25,95 @@ const vendors = [
 ];
 
 export default function VendorDirectoryPage() {
+  const { language } = useLanguage();
+  const { resolvedTheme } = useTheme();
+  const isKhmer = language === "km";
+  const isDark = resolvedTheme === "dark";
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDocs, setSelectedDocs] = useState<any>(null); // For verification modal
   
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Vendor Directory</h1>
-          <p className="text-slate-500 mt-1">Manage vendor accounts, approve new registrations, and view performance.</p>
+          <h1 className={`text-3xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
+            {isKhmer ? "បញ្ជីអាជីវករ" : "Vendor Directory"}
+          </h1>
+          <p className="text-slate-500 mt-1">
+            {isKhmer ? "គ្រប់គ្រងគណនីអាជីវករ ពិនិត្យការចុះឈ្មោះថ្មី និងមើលលទ្ធផលការងារ។" : "Manage vendor accounts, approve new registrations, and view performance."}
+          </p>
         </div>
         <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-          Export Directory
+          {isKhmer ? "នាំចេញបញ្ជី" : "Export Directory"}
         </button>
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className={`p-4 rounded-xl border shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
         <div className="relative w-full max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <input 
             type="text" 
-            placeholder="Search stall, owner, or phone..." 
+            placeholder={isKhmer ? "ស្វែងរកតូប ម្ចាស់ ឬទូរស័ព្ទ..." : "Search stall, owner, or phone..."} 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            className={`w-full pl-10 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+              isDark ? "bg-white/5 border-white/10 text-white" : "bg-white border-slate-200 text-slate-900"
+            }`}
           />
         </div>
         <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-          <select className="px-3 py-2 border border-slate-200 text-sm rounded-lg text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 bg-white">
-            <option>All Roles</option>
-            <option>Vendor</option>
-            <option>Admin</option>
+          <select className={`px-3 py-2 border text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+            isDark ? "bg-[#161b22] border-white/10 text-slate-300" : "bg-white border-slate-200 text-slate-600"
+          }`}>
+            <option>{isKhmer ? "គ្រប់តួនាទី" : "All Roles"}</option>
+            <option>{isKhmer ? "អាជីវករ" : "Vendor"}</option>
+            <option>{isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin"}</option>
           </select>
-          <select className="px-3 py-2 border border-slate-200 text-sm rounded-lg text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 bg-white">
-            <option>All Tiers</option>
-            <option>Starter</option>
-            <option>Smart (Pro)</option>
-            <option>AI Assistant (Premium)</option>
+          <select className={`px-3 py-2 border text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+            isDark ? "bg-[#161b22] border-white/10 text-slate-300" : "bg-white border-slate-200 text-slate-600"
+          }`}>
+            <option>{isKhmer ? "គ្រប់កម្រិត" : "All Tiers"}</option>
+            <option>{isKhmer ? "កម្រិតចាប់ផ្តើម" : "Starter"}</option>
+            <option>{isKhmer ? "កម្រិតឈ្លាសវៃ (Pro)" : "Smart (Pro)"}</option>
+            <option>{isKhmer ? "កម្រិតបញ្ញាសិប្បនិម្មិត (Premium)" : "AI Assistant (Premium)"}</option>
           </select>
-          <select className="px-3 py-2 border border-slate-200 text-sm rounded-lg text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 bg-white">
-            <option>All Statuses</option>
-            <option>Active</option>
-            <option>Pending</option>
-            <option>Suspended</option>
+          <select className={`px-3 py-2 border text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
+            isDark ? "bg-[#161b22] border-white/10 text-slate-300" : "bg-white border-slate-200 text-slate-600"
+          }`}>
+            <option>{isKhmer ? "គ្រប់ស្ថានភាព" : "All Statuses"}</option>
+            <option>{isKhmer ? "សកម្ម" : "Active"}</option>
+            <option>{isKhmer ? "កំពុងរង់ចាំ" : "Pending"}</option>
+            <option>{isKhmer ? "ត្រូវបានផ្អាក" : "Suspended"}</option>
           </select>
-          <button className="p-2 border border-slate-200 rounded-lg text-slate-500 hover:bg-slate-50 transition-colors">
+          <button className={`p-2 border rounded-lg transition-colors ${
+            isDark ? "border-white/10 text-slate-500 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"
+          }`}>
             <Filter className="h-5 w-5" />
           </button>
         </div>
       </div>
 
       {/* Vendor Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className={`rounded-xl border shadow-sm overflow-hidden ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                <th className="px-6 py-4">Stall / Owner</th>
-                <th className="px-6 py-4">Role/Tier</th>
-                <th className="px-6 py-4">Contact</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Joined</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+              <tr className={`border-b text-xs uppercase tracking-wider font-semibold ${isDark ? "bg-white/5 border-white/10 text-slate-400" : "bg-slate-50 border-slate-200 text-slate-500"}`}>
+                <th className="px-6 py-4">{isKhmer ? "តូប / ម្ចាស់" : "Stall / Owner"}</th>
+                <th className="px-6 py-4">{isKhmer ? "តួនាទី / កម្រិត" : "Role/Tier"}</th>
+                <th className="px-6 py-4">{isKhmer ? "ទំនាក់ទំនង" : "Contact"}</th>
+                <th className="px-6 py-4">{isKhmer ? "ស្ថានភាព" : "Status"}</th>
+                <th className="px-6 py-4">{isKhmer ? "បានចូលរួម" : "Joined"}</th>
+                <th className="px-6 py-4 text-right">{isKhmer ? "សកម្មភាព" : "Actions"}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {vendors.map((vendor) => (
-                <tr key={vendor.id} className="hover:bg-slate-50 transition-colors">
+                <tr key={vendor.id} className={`transition-colors ${isDark ? "hover:bg-white/5 border-b border-white/5 last:border-0" : "hover:bg-slate-50 border-b border-slate-100 last:border-0"}`}>
                   <td className="px-6 py-4">
-                    <div className="font-medium text-slate-900">{vendor.name}</div>
+                    <div className={`font-medium ${isDark ? "text-white" : "text-slate-900"}`}>{vendor.name}</div>
                     <div className="text-sm text-slate-500">{vendor.owner}</div>
                   </td>
                   <td className="px-6 py-4">
@@ -127,19 +148,19 @@ export default function VendorDirectoryPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2 text-slate-400">
-                      <button className="p-1 hover:text-blue-600 transition-colors" title="View Details">
+                      <button className="p-1 hover:text-blue-600 transition-colors" title={isKhmer ? "មើលព័ត៌មានលម្អិត" : "View Details"}>
                         <Eye className="h-5 w-5" />
                       </button>
                       {vendor.status === 'Pending' ? (
-                        <button className="p-1 hover:text-emerald-600 transition-colors" title="Approve">
+                        <button className="p-1 hover:text-emerald-600 transition-colors" title={isKhmer ? "អនុម័ត" : "Approve"}>
                           <CheckCircle2 className="h-5 w-5" />
                         </button>
                       ) : (
-                        <button className="p-1 hover:text-red-600 transition-colors" title="Suspend">
+                        <button className="p-1 hover:text-red-600 transition-colors" title={isKhmer ? "ផ្អាក" : "Suspend"}>
                           <ShieldAlert className="h-5 w-5" />
                         </button>
                       )}
-                      <button className="p-1 hover:text-slate-900 transition-colors flex items-center">
+                      <button className={`p-1 transition-colors flex items-center ${isDark ? "hover:text-white" : "hover:text-slate-900"}`}>
                         <MoreVertical className="h-5 w-5" />
                       </button>
                     </div>
@@ -153,34 +174,40 @@ export default function VendorDirectoryPage() {
 
       {/* Verification Modal overlay mockup */}
       {selectedDocs && (
-        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-4xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className={`rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col md:flex-row border ${isDark ? "bg-[#0d1117] border-white/10" : "bg-white border-slate-200"}`}>
             {/* Image Preview Area */}
-            <div className="bg-slate-100 w-full md:w-1/2 p-6 flex flex-col items-center justify-center border-r border-slate-200">
-              <div className="w-full aspect-video bg-slate-300 rounded-lg flex items-center justify-center mb-4 overflow-hidden border border-slate-400">
+            <div className={`w-full md:w-1/2 p-6 flex flex-col items-center justify-center border-r ${isDark ? "bg-white/5 border-white/10" : "bg-slate-100 border-slate-200"}`}>
+              <div className={`w-full aspect-video rounded-lg flex items-center justify-center mb-4 overflow-hidden border ${isDark ? "bg-white/5 border-white/10" : "bg-slate-300 border-slate-400"}`}>
                  <MapPin className="h-10 w-10 text-slate-500" />
-                 <span className="ml-2 font-medium text-slate-600">Storefront Photo</span>
+                 <span className="ml-2 font-medium text-slate-600">{isKhmer ? "រូបថតមុខហាង" : "Storefront Photo"}</span>
               </div>
-              <div className="w-full aspect-[1.58] bg-slate-300 rounded-lg flex items-center justify-center overflow-hidden border border-slate-400">
-                 <span className="font-medium text-slate-600">Local ID Photo</span>
+              <div className={`w-full aspect-[1.58] rounded-lg flex items-center justify-center overflow-hidden border ${isDark ? "bg-white/5 border-white/10" : "bg-slate-300 border-slate-400"}`}>
+                 <span className="font-medium text-slate-600">{isKhmer ? "រូបថតអត្តសញ្ញាណប័ណ្ណ" : "Local ID Photo"}</span>
               </div>
             </div>
             {/* Validation Tools */}
-            <div className="w-full md:w-1/2 p-6 flex flex-col bg-white">
+            <div className="w-full md:w-1/2 p-6 flex flex-col">
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-xl font-bold text-slate-900">Document Verification</h3>
+                  <h3 className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                    {isKhmer ? "ការផ្ទៀងផ្ទាត់ឯកសារ" : "Document Verification"}
+                  </h3>
                   <p className="text-sm text-slate-500">{selectedDocs.name} ({selectedDocs.owner})</p>
                 </div>
-                <button onClick={() => setSelectedDocs(null)} className="text-slate-400 hover:text-slate-600">
+                <button onClick={() => setSelectedDocs(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
                   <XCircle className="h-6 w-6" />
                 </button>
               </div>
 
               <div className="space-y-4 flex-1">
-                <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-                  <p className="text-sm font-semibold text-amber-800 break-words mb-1">Warning</p>
-                  <p className="text-xs text-amber-700">Please match the stall name and physical location with the provided photos to prevent fraudulent/duplicate entries.</p>
+                <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                  <p className="text-sm font-semibold text-amber-500 break-words mb-1">
+                    {isKhmer ? "ការព្រមាន" : "Warning"}
+                  </p>
+                  <p className="text-xs text-amber-600/80">
+                    {isKhmer ? "សូមផ្ទៀងផ្ទាត់ឈ្មោះតូប និងទីតាំងជាក់ស្តែងជាមួយរូបថតដែលបានផ្តល់ឱ្យ ដើម្បីការពារការបញ្ចូលព័ត៌មានមិនពិត ឬស្ទួន។" : "Please match the stall name and physical location with the provided photos to prevent fraudulent/duplicate entries."}
+                  </p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 text-sm">

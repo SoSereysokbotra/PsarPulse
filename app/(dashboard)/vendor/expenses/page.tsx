@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import {
   Menu,
   X,
@@ -21,6 +23,8 @@ import {
   Camera,
   Filter,
   MoreVertical,
+  CreditCard,
+  PieChart,
 } from "lucide-react";
 
 // Import unified reusable components
@@ -149,6 +153,11 @@ const STATS: Record<
 
 // ═════════════════════════════════════════════════════════════════
 export default function ExpensesPage() {
+  const { language, t } = useLanguage();
+  const { resolvedTheme } = useTheme();
+  const isKhmer = language === "km";
+  const isDark = resolvedTheme === "dark";
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [period, setPeriod] = useState<Period>("Day");
@@ -318,7 +327,7 @@ export default function ExpensesPage() {
     : "None";
 
   return (
-    <div className="min-h-screen bg-slate-100 flex font-sans text-slate-900 selection:bg-[#29B28D] selection:text-white">
+    <div className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white transition-colors duration-300 ${isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"}`}>
       {/* ── Toasts ── */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
         {toasts.map((t) => (
@@ -534,7 +543,7 @@ export default function ExpensesPage() {
       <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
         {/* ── Topbar (Matched with Sales) ── */}
         <VendorTopbar
-          title="Expenses"
+          title={t("expenses.title")}
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
           setIsMobileSidebarOpen={setIsSidebarOpen}
@@ -569,16 +578,41 @@ export default function ExpensesPage() {
         <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px]">
           <div className="max-w-[1400px] mx-auto flex flex-col gap-5">
             <div className="pt-1 pb-2">
-              <h1 className="text-[26px] font-bold text-slate-900">
-                My Expenses
+              <h1 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                {t("expenses.title") || "My Expenses"}
               </h1>
-              <p className="text-slate-500 text-sm mt-0.5">
-                Track and manage your spending · តាមដាន និងគ្រប់គ្រងចំណាយ
+              <p className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>
+                {t("expenses.subtitle") || "Track and manage your spending"} · តាមដាន និងគ្រប់គ្រងចំណាយ
               </p>
             </div>
 
             {/* Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <VendorSummaryCard
+                title={t("dashboard.metrics.totalExpenses")}
+                khmerTitle="ចំណាយសរុប"
+                value="$3,840.00"
+                icon={Receipt}
+                trend="+8.2%"
+                isPositive={false}
+                variant={isDark ? "dark" : "light"}
+              />
+              <VendorSummaryCard
+                title={t("dashboard.metrics.breakdown")}
+                khmerTitle="ការបែងចែកចំណាយ"
+                value="6 Categories"
+                icon={PieChart}
+                variant={isDark ? "dark" : "light"}
+              />
+              <VendorSummaryCard
+                title={t("dashboard.metrics.dailyGoal")}
+                khmerTitle="គោលដៅប្រចាំថ្ងៃ"
+                value="$128.00"
+                icon={TrendingDown}
+                subtext="Under budget by $22"
+                highlight
+                variant={isDark ? "dark" : "light"}
+              />
               <VendorSummaryCard
                 title="Today's Expenses"
                 khmerTitle="ចំណាយថ្ងៃនេះ"
@@ -587,35 +621,18 @@ export default function ExpensesPage() {
                 trend={`${activeTxns.length} Transactions`}
                 isPositive={false}
                 highlight
-              />
-              <VendorSummaryCard
-                title="Top Category"
-                khmerTitle="ប្រភេទចំណាយច្រើនជាងគេ"
-                value={topCategoryName}
-                icon={Tag}
-              />
-              <VendorSummaryCard
-                title="Weekly Expenses"
-                khmerTitle="ចំណាយប្រចាំសប្តាហ៍"
-                value={`$${avgExpense.toFixed(2)}`}
-                icon={TrendingDown}
-                trend="+5% vs last week"
-                isPositive={false}
-              />
-              <VendorSummaryCard
-                title="Monthly Total"
-                khmerTitle="សរុបប្រចាំខែ"
-                value="$650.00"
-                icon={CircleDollarSign}
+                variant={isDark ? "dark" : "light"}
               />
             </div>
 
             {/* ── Category Breakdown (Specific to Expenses but styled to match) ── */}
-            <div className="bg-white border border-[#e8eaed] rounded-[14px] px-[26px] py-[22px] shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-              <div className="text-[14px] font-semibold text-[#111827] mb-0.5">
+            <div className={`border rounded-[14px] px-[26px] py-[22px] shadow-sm ${
+              isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"
+            }`}>
+              <div className={`text-[14px] font-semibold mb-0.5 ${isDark ? "text-white" : "text-[#111827]"}`}>
                 Breakdown by Category
               </div>
-              <div className="text-[11px] text-[#6b7280] mb-5">
+              <div className={`text-[11px] mb-5 ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
                 ចំណាយតាមប្រភេទ
               </div>
               <div className="flex flex-col gap-[14px]">
@@ -630,25 +647,25 @@ export default function ExpensesPage() {
                   return (
                     <div key={cat.value} className="flex items-center gap-4">
                       <div className="w-[100px] shrink-0">
-                        <div className="text-[12.5px] font-medium text-[#111827]">
+                        <div className={`text-[12.5px] font-medium ${isDark ? "text-white" : "text-[#111827]"}`}>
                           {cat.label}
                         </div>
                         <div className="text-[10.5px] text-[#9ca3af]">
                           {cat.khmer}
                         </div>
                       </div>
-                      <div className="flex-1 h-[6px] bg-[#f0f2f5] rounded-full overflow-hidden">
+                      <div className={`flex-1 h-[6px] rounded-full overflow-hidden ${isDark ? "bg-white/10" : "bg-[#f0f2f5]"}`}>
                         <div
                           className="h-full rounded-full transition-[width] duration-700 ease-out"
                           style={{ width: `${pct}%`, background: cat.color }}
                         />
                       </div>
-                      <div className="w-[60px] text-right">
-                        <span className="text-[12.5px] font-bold text-[#111827]">
+                      <div className="w-[80px] text-right">
+                        <span className={`text-[12.5px] font-bold ${isDark ? "text-white" : "text-[#111827]"}`}>
                           {pct > 0 ? `$${catTotal.toFixed(2)}` : "—"}
                         </span>
                       </div>
-                      <div className="w-[34px] text-right text-[11.5px] text-[#6b7280] shrink-0">
+                      <div className={`w-[34px] text-right text-[11.5px] shrink-0 ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
                         {pct}%
                       </div>
                     </div>
@@ -658,14 +675,14 @@ export default function ExpensesPage() {
             </div>
 
             {/* Expense History Log */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-              <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className={`${isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"} rounded-[16px] shadow-sm p-6`}>
+              <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h3 className="font-bold text-[17px] text-slate-900">
-                    Expense History
+                  <h3 className={`font-semibold text-[16px] ${isDark ? "text-white" : "text-[#111827]"}`}>
+                    Spending Trends
                   </h3>
-                  <p className="text-sm font-khmer text-slate-500 mt-0.5">
-                    ប្រវត្តិការចំណាយ
+                  <p className={`text-[12px] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                    និន្នាការចំណាយ
                   </p>
                 </div>
 
@@ -687,7 +704,7 @@ export default function ExpensesPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-[600px]">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-100 text-[13px] text-slate-500 uppercase tracking-wider font-semibold">
+                    <tr className={`border-b text-[13px] uppercase tracking-wider font-semibold ${isDark ? "bg-white/5 border-white/5 text-[#7d8590]" : "bg-slate-50 border-slate-100 text-slate-500"}`}>
                       <th className="px-6 py-4">Time</th>
                       <th className="px-6 py-4">Category</th>
                       <th className="px-6 py-4">Note / Receipt</th>
@@ -695,14 +712,14 @@ export default function ExpensesPage() {
                       <th className="px-6 py-4 text-center">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className={`divide-y ${isDark ? "divide-white/5" : "divide-slate-100"}`}>
                     {filtered.map((exp) => (
                       <tr
                         key={exp.id}
-                        className="hover:bg-psar-primary/10/30 transition-colors group"
+                        className={`transition-colors group ${isDark ? "hover:bg-white/5" : "hover:bg-psar-primary/10/30"}`}
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900">
+                          <div className={`flex items-center gap-2 text-[15px] font-medium ${isDark ? "text-white" : "text-slate-900"}`}>
                             <Clock className="w-4 h-4 text-slate-400" />
                             {exp.time}
                           </div>
@@ -710,7 +727,7 @@ export default function ExpensesPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <span
-                              className="inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-bold border bg-slate-100 text-slate-700 border-slate-200"
+                              className={`inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-bold border ${isDark ? "bg-white/5 text-white border-white/10" : "bg-slate-100 text-slate-700 border-slate-200"}`}
                             >
                               {exp.category}
                             </span>
@@ -718,7 +735,7 @@ export default function ExpensesPage() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <span className="text-[14px] text-slate-600">
+                            <span className={`text-[14px] ${isDark ? "text-[#7d8590]" : "text-slate-600"}`}>
                               {exp.note}
                             </span>
                             {exp.hasReceipt && (
@@ -737,7 +754,7 @@ export default function ExpensesPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <button className="p-2 text-slate-400 hover:text-psar-primary rounded-lg hover:bg-psar-primary/10 transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 bg-transparent cursor-pointer">
+                          <button className={`p-2 rounded-lg transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 bg-transparent cursor-pointer ${isDark ? "text-[#7d8590] hover:text-[#3ecf8e]" : "text-slate-400 hover:text-psar-primary hover:bg-psar-primary/10"}`}>
                             <MoreVertical className="w-5 h-5 mx-auto" />
                           </button>
                         </td>
@@ -747,8 +764,9 @@ export default function ExpensesPage() {
                 </table>
               </div>
 
-              <div className="p-4 border-t border-slate-100 bg-slate-50 text-center">
-                <button className="text-[14px] font-semibold text-psar-primary hover:text-psar-primary hover:underline min-h-[40px] px-4 border-0 bg-transparent cursor-pointer">
+
+              <div className={`p-4 border-t text-center ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100"}`}>
+                <button className={`text-[14px] font-semibold hover:underline min-h-[40px] px-4 border-0 bg-transparent cursor-pointer ${isDark ? "text-[#3ecf8e]" : "text-psar-primary"}`}>
                   View All Pro Expenses
                 </button>
               </div>

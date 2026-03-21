@@ -17,9 +17,12 @@ import {
   Users,
   ShoppingCart,
   BarChart3,
+  CreditCard,
+  TrendingUp,
 } from "lucide-react";
 
-// Import unified reusable components
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
@@ -116,6 +119,11 @@ const METHOD_BADGE: Record<Method, string> = {
 
 // ═════════════════════════════════════════════════════════════════
 export default function SalesDashboard() {
+  const { language, t } = useLanguage();
+  const { resolvedTheme, setTheme } = useTheme();
+  const isKhmer = language === "km";
+  const isDark = resolvedTheme === "dark";
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [period, setPeriod] = useState<Period>("Day");
@@ -273,7 +281,9 @@ export default function SalesDashboard() {
   const statChange = STATS[period];
 
   return (
-    <div className="min-h-screen bg-slate-100 flex font-sans text-slate-900 selection:bg-[#29B28D] selection:text-white">
+    <div className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white transition-colors duration-200 ${
+      isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"
+    }`}>
       {/* ── Toasts ── */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
         {toasts.map((t) => (
@@ -320,9 +330,9 @@ export default function SalesDashboard() {
         plan="free"
         navLinks={[
           { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
-          { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/sales" },
-          { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/expenses" },
-          { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/customer" },
+          { icon: CircleDollarSign, title: "Sales",      khmerTitle: "ការលក់",      href: "/vendor/sales" },
+          { icon: Receipt,          title: "Expenses",   khmerTitle: "ចំណាយ",       href: "/vendor/expenses" },
+          { icon: Users,            title: "Customers",  khmerTitle: "អតិថិជន",     href: "/vendor/customer" },
         ]}
         currentPath="/vendor/sales"
         collapsed={isSidebarCollapsed}
@@ -352,13 +362,15 @@ export default function SalesDashboard() {
             if (e.target === e.currentTarget) closeModal();
           }}
         >
-          <div className="bg-white w-full max-w-md rounded-[20px] shadow-[0_32px_80px_rgba(0,0,0,0.2)] overflow-hidden">
-            <div className="bg-[#0d1117] px-7 py-5 flex items-center justify-between">
+          <div className={`w-full max-w-md rounded-[20px] shadow-[0_32px_80px_rgba(0,0,0,0.2)] overflow-hidden ${
+            isDark ? "bg-dark-surface border border-white/5" : "bg-white"
+          }`}>
+            <div className={`${isDark ? "bg-[#0d1117]" : "bg-[#0d1117]"} px-7 py-5 flex items-center justify-between`}>
               <div>
                 <div className="text-[18px] font-bold text-[#e6edf3]">
-                  {editTarget ? "Edit Sale" : "Log New Sale"}
+                  {editTarget ? t("sales.editSale") || "Edit Sale" : t("sales.newSale") || "Log New Sale"}
                 </div>
-                <div className="text-[12px] text-[#7d8590] mt-0.5">
+                <div className={`text-[12px] text-[#7d8590] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""}`}>
                   {editTarget ? "កែប្រែការលក់" : "កត់ត្រាការលក់រហ័ស"}
                 </div>
               </div>
@@ -474,7 +486,7 @@ export default function SalesDashboard() {
       <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
         {/* ── Topbar ── */}
         <VendorTopbar
-          title="Sales"
+          title={t("sales.title") || "Sales"}
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
           setIsMobileSidebarOpen={setIsSidebarOpen}
@@ -510,9 +522,9 @@ export default function SalesDashboard() {
           <div className="max-w-[1400px] mx-auto flex flex-col gap-5">
             {/* ══ SALES HEADER ══════════════════════════════════════ */}
             <div className="pt-1 pb-2">
-              <h1 className="text-[26px] font-bold text-slate-900">My Sales</h1>
-              <p className="text-slate-500 text-sm mt-0.5">
-                Track and manage your daily sales · តាមដាន និងគ្រប់គ្រងការលក់
+              <h1 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{t("sales.title") || "My Sales"}</h1>
+              <p className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>
+                {t("sales.subtitle") || "Track and manage your daily sales"} · តាមដាន និងគ្រប់គ្រងការលក់
               </p>
             </div>
 
@@ -529,21 +541,27 @@ export default function SalesDashboard() {
                 khmerTitle="ចំនួនការលក់"
                 value={activeTxns.length}
                 subtext="sales today"
+                variant={isDark ? "dark" : "light"}
               />
               <VendorSummaryCard
                 title="Avg. Sale"
                 khmerTitle="មធ្យមតម្លៃ"
                 value={`$${avgSale.toFixed(2)}`}
                 subtext="per txn"
+                variant={isDark ? "dark" : "light"}
               />
             </div>
 
             {/* ── Transactions table (Still Inline) ── */}
-            <div className="bg-white border border-[#e8eaed] rounded-[14px] overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-              <div className="px-[22px] py-4 border-b border-[#f0f2f5] flex items-center justify-between gap-3 flex-wrap">
+            <div className={`border rounded-[14px] overflow-hidden shadow-sm ${
+              isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"
+            }`}>
+              <div className={`px-[22px] py-4 border-b flex items-center justify-between gap-3 flex-wrap ${
+                isDark ? "border-white/5" : "border-[#f0f2f5]"
+              }`}>
                 <div>
-                  <div className="text-[14px] font-semibold text-[#111827]">
-                    Transaction History
+                  <div className={`text-[14px] font-semibold ${isDark ? "text-white" : "text-[#111827]"}`}>
+                    {t("sales.history") || "Transaction History"}
                   </div>
                   <div className="text-[11px] text-[#6b7280] mt-0.5">
                     {activeTxns.length} record
@@ -557,10 +575,12 @@ export default function SalesDashboard() {
                   />
                   <input
                     type="text"
-                    placeholder="Search transactions..."
+                    placeholder={t("common.search") || "Search transactions..."}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-[33px] pr-4 py-[9px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[9px] text-[13px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors w-[200px]"
+                    className={`pl-[33px] pr-4 py-[9px] border rounded-[9px] text-[13px] outline-none transition-colors w-[200px] ${
+                      isDark ? "bg-[#0d1117] border-white/5 text-white focus:border-[#3ecf8e]" : "bg-[#f7f8fa] border-[#e8eaed] text-[#111827] focus:border-[#3ecf8e]"
+                    }`}
                     style={{ fontFamily: "inherit" }}
                   />
                 </div>
@@ -594,10 +614,10 @@ export default function SalesDashboard() {
                         className={`group transition-colors hover:bg-[#f7f8fa] cursor-pointer ${i < filtered.length - 1 ? "border-b border-[#f0f2f5]" : ""}`}
                         onClick={() => openEdit(t)}
                       >
-                        <td className="px-[22px] py-[14px] text-[13px] text-[#6b7280] whitespace-nowrap">
+                        <td className={`px-[22px] py-[14px] text-[13px] whitespace-nowrap ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
                           {t.time}
                         </td>
-                        <td className="px-[22px] py-[14px] text-[13px] font-medium text-[#111827] max-w-[280px] truncate">
+                        <td className={`px-[22px] py-[14px] text-[13px] font-medium max-w-[280px] truncate ${isDark ? "text-white" : "text-[#111827]"}`}>
                           {t.items || "—"}
                         </td>
                         <td className="px-[22px] py-[14px]">

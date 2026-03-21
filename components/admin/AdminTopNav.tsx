@@ -16,20 +16,23 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
-
-const navItems = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Vendors", href: "/admin/vendors", icon: Store },
-  { name: "Requests", href: "/admin/vendor-requests", icon: ClipboardList },
-  { name: "Stall Map", href: "/admin/map", icon: Map },
-  { name: "Invitations", href: "/admin/invites", icon: MailOpen },
-  { name: "Billing", href: "/admin/billing", icon: CreditCard },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
-];
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function AdminTopNav() {
   const pathname = usePathname();
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
   const [profileOpen, setProfileOpen] = useState(false);
+
+  const navItems = [
+    { name: isKhmer ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { name: isKhmer ? "អាជីវករ" : "Vendors", href: "/admin/vendors", icon: Store },
+    { name: isKhmer ? "សំណើសុំ" : "Requests", href: "/admin/vendor-requests", icon: ClipboardList },
+    { name: isKhmer ? "ផែនទីតូប" : "Stall Map", href: "/admin/map", icon: Map },
+    { name: isKhmer ? "ការអញ្ជើញ" : "Invitations", href: "/admin/invites", icon: MailOpen },
+    { name: isKhmer ? "ការបង់ប្រាក់" : "Billing", href: "/admin/billing", icon: CreditCard },
+    { name: isKhmer ? "ការកំណត់" : "Settings", href: "/admin/settings", icon: Settings },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-slate-900 shadow-lg shadow-slate-900/20">
@@ -51,7 +54,7 @@ export function AdminTopNav() {
         <div className="hidden md:block h-6 w-px bg-slate-700 mx-1" />
 
         {/* Nav Items */}
-        <nav className="flex items-center gap-0.5 overflow-x-auto flex-1 scrollbar-none">
+        <nav className={`flex items-center gap-0.5 overflow-x-auto flex-1 scrollbar-none ${isKhmer ? "font-suwannaphum" : ""}`}>
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -88,7 +91,7 @@ export function AdminTopNav() {
         </nav>
 
         {/* Right side: Notifications + Profile */}
-        <div className="flex items-center gap-2 ml-auto shrink-0">
+        <div className={`flex items-center gap-2 ml-auto shrink-0 ${isKhmer ? "font-suwannaphum" : ""}`}>
           {/* Notification Bell */}
           <button className="relative p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
             <Bell className="h-4 w-4" />
@@ -106,11 +109,11 @@ export function AdminTopNav() {
               </div>
               <div className="hidden md:flex flex-col items-start leading-tight">
                 <span className="text-xs font-semibold text-white">
-                  Admin User
+                  {isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin User"}
                 </span>
                 <span className="text-[10px] text-slate-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                  Market Manager
+                  {isKhmer ? "អ្នកគ្រប់គ្រងទីផ្សារ" : "Market Manager"}
                 </span>
               </div>
               <ChevronDown
@@ -129,12 +132,12 @@ export function AdminTopNav() {
                   className="flex items-center gap-2 px-3 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
                 >
                   <Settings className="h-4 w-4 text-slate-400" />
-                  Settings
+                  {isKhmer ? "ការកំណត់" : "Settings"}
                 </Link>
                 <div className="my-1 border-t border-slate-700" />
                 <button className="w-full flex items-center gap-2 px-3 py-2 text-red-400 hover:bg-slate-700 hover:text-red-300 transition-colors">
                   <LogOut className="h-4 w-4" />
-                  Sign out
+                  {isKhmer ? "ចាកចេញ" : "Sign out"}
                 </button>
               </div>
             )}

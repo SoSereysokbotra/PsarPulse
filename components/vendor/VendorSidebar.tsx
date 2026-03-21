@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Settings, ChevronRight, X, Crown, Sparkles } from "lucide-react";
+import { Settings, ChevronRight, X, Crown, Sparkles, LogOut, User, CreditCard as BillingIcon } from "lucide-react";
 import VendorNavItem from "./VendorNavItem";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface NavLink {
   icon: React.ElementType;
@@ -17,6 +19,8 @@ interface VendorSidebarProps {
   plan: "free" | "pro" | "premium";
   navLinks: NavLink[];
   settingsHref?: string;
+  isGuest?: boolean;
+  onLockedClick?: () => void;
   collapsed?: boolean;
   isOpen?: boolean;
   onClose?: () => void;
@@ -57,6 +61,8 @@ export default function VendorSidebar({
   plan,
   navLinks,
   settingsHref = "/vendor/settings",
+  isGuest = false,
+  onLockedClick,
   collapsed = false,
   isOpen = false,
   onClose,
@@ -65,12 +71,16 @@ export default function VendorSidebar({
   userInitials = "SM",
   userEmail = "sokmaly@gmail.com",
 }: VendorSidebarProps) {
+  const { resolvedTheme } = useTheme();
+  const { language, t } = useLanguage();
+  const isDark = resolvedTheme === "dark";
+  const isKhmer = language === "km";
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const config = PLAN_CONFIG[plan];
   const PlanIcon = config.icon;
 
   // Determine active state: explicit `active` prop takes priority, otherwise match currentPath
-  const resolvedLinks = navLinks.map((link) => ({
+  const resolvedLinks = navLinks.map((link: NavLink) => ({
     ...link,
     active: link.active !== undefined ? link.active : currentPath === link.href,
   }));
@@ -80,8 +90,8 @@ export default function VendorSidebar({
       className={`
         fixed lg:static inset-y-0 left-0 z-50
         flex flex-col h-screen shrink-0
-        bg-[#0E1319]
         transition-all duration-300 ease-in-out
+        ${isDark ? "bg-[#0B0F14] border-r border-white/5" : "bg-[#0E1319]"}
         ${collapsed ? "w-[68px]" : "w-64"}
         ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}
@@ -121,7 +131,7 @@ export default function VendorSidebar({
 
       {/* Nav */}
       <nav className={`flex-1 pt-3 overflow-y-auto ${collapsed ? "px-2" : "px-3"}`}>
-        {resolvedLinks.map((item) => (
+        {resolvedLinks.map((item: any) => (
           <VendorNavItem
             key={item.title}
             icon={item.icon}
@@ -139,10 +149,11 @@ export default function VendorSidebar({
         <VendorNavItem
           icon={Settings}
           title="Settings"
-          khmerTitle="ការកំណត់"
-          href={settingsHref}
+          khmerTitle={t("settings.title")}
+          href={isGuest ? "#" : settingsHref}
           active={currentPath === settingsHref}
           collapsed={collapsed}
+          onClick={isGuest ? onLockedClick : undefined}
         />
 
         {!collapsed && (
@@ -165,16 +176,20 @@ export default function VendorSidebar({
               )}
               <Link
                 href={config.ctaHref}
-                className="block text-center text-[13px] font-bold text-[#29B28D] bg-[rgba(41,178,141,0.12)] py-2 rounded-[8px] no-underline hover:bg-[rgba(41,178,141,0.18)] transition-colors"
+                className={`block text-center text-[13px] font-bold py-2 rounded-[8px] no-underline transition-colors ${
+                  isDark 
+                    ? "text-[#3ecf8e] bg-[#3ecf8e]/10 hover:bg-[#3ecf8e]/20" 
+                    : "text-[#29B28D] bg-[rgba(41,178,141,0.12)] hover:bg-[rgba(41,178,141,0.18)]"
+                }`}
               >
-                {config.cta}
+                {t("settings.subscribe")}
               </Link>
             </div>
 
             {/* User menu */}
             <div className="relative">
               <button
-                onClick={() => setUserMenuOpen((o) => !o)}
+                onClick={isGuest ? onLockedClick : () => setUserMenuOpen((o) => !o)}
                 className="w-full flex items-center gap-3 px-3 pt-4 pb-2 cursor-pointer bg-transparent border-0 text-left"
               >
                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#29B28D] to-[#1a9c65] flex items-center justify-center text-[13px] font-bold text-white shrink-0">
@@ -209,16 +224,16 @@ export default function VendorSidebar({
                     <div className="border-t border-[#f0f2f5]" />
                     <div className="py-1">
                       <Link href={settingsHref} onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] no-underline hover:bg-[#f7f8fa] transition-colors">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                        Account
+                        <User size={16} className="text-[#6b7280]" />
+                        {t("settings.profile")}
                       </Link>
                       <Link href="/vendor/pricing" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] no-underline hover:bg-[#f7f8fa] transition-colors">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-                        Plans &amp; Pricing
+                        <BillingIcon size={16} className="text-[#6b7280]" />
+                        {t("settings.subscriptions")}
                       </Link>
                       <button className="w-full flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] bg-transparent border-0 cursor-pointer hover:bg-[#f7f8fa] transition-colors text-left">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                        Log out
+                        <LogOut size={16} className="text-[#6b7280]" />
+                        Logout
                       </button>
                     </div>
                   </div>

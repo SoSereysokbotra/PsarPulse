@@ -21,9 +21,12 @@ import {
   FileBarChart,
   Zap,
   FileText,
+  CreditCard,
   FileSpreadsheet,
 } from "lucide-react";
 
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
@@ -35,6 +38,11 @@ const TABS = [
 ];
 
 export default function CustomersPage() {
+  const { language, t } = useLanguage();
+  const { resolvedTheme } = useTheme();
+  const isKhmer = language === "km";
+  const isDark = resolvedTheme === "dark";
+
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -73,7 +81,9 @@ export default function CustomersPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-100 flex font-sans text-slate-900 selection:bg-[#29B28D] selection:text-white">
+    <div className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white transition-colors duration-200 ${
+      isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"
+    }`}>
       <VendorSidebar
         plan="free"
         navLinks={[
@@ -91,7 +101,7 @@ export default function CustomersPage() {
       {/* ── MAIN ── */}
       <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
         <VendorTopbar
-          title="Customers"
+          title={t("customers.title") || "Customers"}
           isSidebarCollapsed={isCollapsed}
           setIsSidebarCollapsed={setIsCollapsed}
           setIsMobileSidebarOpen={setIsMobileOpen}
@@ -111,8 +121,8 @@ export default function CustomersPage() {
           {/* Page title + search */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
-              <h1 className="text-[26px] font-bold text-slate-900">My Customers</h1>
-              <p className="text-slate-500 text-sm mt-0.5">Tracker and Log your daily foot traffic</p>
+              <h1 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{t("customers.title") || "My Customers"}</h1>
+              <p className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>Tracker and Log your daily foot traffic</p>
             </div>
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -125,15 +135,19 @@ export default function CustomersPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-6 border-b border-slate-200">
+          <div className={`flex gap-6 border-b transition-colors ${isDark ? "border-white/5" : "border-slate-200"}`}>
             {TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`pb-3 flex flex-col items-start transition-colors ${activeTab === tab.id ? "border-b-2 border-slate-900 text-slate-900" : "text-slate-400 hover:text-slate-600"}`}
+                className={`pb-3 flex flex-col items-start transition-colors ${
+                  activeTab === tab.id 
+                    ? (isDark ? "border-b-2 border-white text-white" : "border-b-2 border-slate-900 text-slate-900") 
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
               >
                 <span className="font-semibold text-sm">{tab.label}</span>
-                <span className="text-[10px] font-khmer mt-0.5">{tab.khmer}</span>
+                <span className={`text-[10px] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""}`}>{tab.khmer}</span>
               </button>
             ))}
           </div>
@@ -141,10 +155,10 @@ export default function CustomersPage() {
           {/* 5 Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <VendorSummaryCard variant="dark" title="Today Customer" khmerTitle="អតិថិជនថ្ងៃនេះ" value={summaryData.todayCount} subtext={`${summaryData.todayLogs} logs`} />
-            <VendorSummaryCard title="Avg.Spend" khmerTitle="កាន់ឈ្នួលការចាយ" value={summaryData.avgSpend} subtext="per customer" />
+            <VendorSummaryCard title="Avg.Spend" khmerTitle="កាន់ឈ្នួលការចាយ" value={summaryData.avgSpend} subtext="per customer" variant={isDark ? "dark" : "light"} />
             <VendorSummaryCard variant="green" title="Weekly Customer" khmerTitle="អតិថិជនច្រើនជាងក្នុងរូប" value={summaryData.weeklyCount} subtext={summaryData.weeklyChange} />
-            <VendorSummaryCard title="Peak Time" khmerTitle="ណែនាំការប្រា" value={summaryData.peakTime} subtext={summaryData.weeklyCustomers} />
-            <VendorSummaryCard title="Avg.LTV" khmerTitle="ភ្លេចអតិថិជន" value={summaryData.avgLTV} subtext="Per Customer" />
+            <VendorSummaryCard title="Peak Time" khmerTitle="ណែនាំការប្រា" value={summaryData.peakTime} subtext={summaryData.weeklyCustomers} variant={isDark ? "dark" : "light"} />
+            <VendorSummaryCard title="Avg.LTV" khmerTitle="ភ្លេចអតិថិជន" value={summaryData.avgLTV} subtext="Per Customer" variant={isDark ? "dark" : "light"} />
           </div>
 
           {/* Log Customers Bar */}
@@ -182,41 +196,49 @@ export default function CustomersPage() {
           </div>
 
           {/* Log History Table */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <h3 className="font-bold text-[17px] text-slate-900">Expense History</h3>
+          <div className={`border rounded-2xl shadow-sm overflow-hidden ${
+            isDark ? "bg-dark-surface border-white/5" : "bg-white border-slate-200"
+          }`}>
+            <div className={`p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+              isDark ? "border-white/5" : "border-slate-100"
+            }`}>
+              <h3 className={`font-bold text-[17px] ${isDark ? "text-white" : "text-slate-900"}`}>Expense History</h3>
               <div className="relative w-full sm:w-auto">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Search Class..."
+                  placeholder={t("common.search") || "Search Class..."}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#29B28D] focus:ring-1 focus:ring-[#29B28D] min-h-11"
+                  className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#29B28D] min-h-11 ${
+                    isDark ? "bg-[#0d1117] border-white/5 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"
+                  }`}
                 />
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/50 border-b border-slate-100 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                  <tr className={`border-b text-xs uppercase tracking-wider font-semibold ${
+                    isDark ? "bg-white/5 border-white/5 text-[#7d8590]" : "bg-slate-50/50 border-slate-100 text-slate-500"
+                  }`}>
                     <th className="px-6 py-4">Time Logged</th>
                     <th className="px-6 py-4">Count</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className={`divide-y ${isDark ? "divide-white/5" : "divide-slate-100"}`}>
                   {filtered.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={log.id} className={`transition-colors ${isDark ? "hover:bg-white/5" : "hover:bg-slate-50/50"}`}>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2 text-slate-600 text-[15px]">
+                        <div className={`flex items-center gap-2 text-[15px] ${isDark ? "text-white" : "text-slate-600"}`}>
                           <Clock className="w-4 h-4 text-slate-400" />{log.time}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-[15px] font-bold text-slate-900">+{log.count}</span>
+                          <span className={`text-[15px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}>+{log.count}</span>
                           <Users className="w-3.5 h-3.5 text-slate-400" />
                         </div>
                       </td>
@@ -224,7 +246,9 @@ export default function CustomersPage() {
                         {log.status === "Peak Traffic" ? (
                           <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold">Peak Traffic</span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">Regular</span>
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                            isDark ? "bg-white/5 text-white" : "bg-slate-100 text-slate-600"
+                          }`}>Regular</span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">

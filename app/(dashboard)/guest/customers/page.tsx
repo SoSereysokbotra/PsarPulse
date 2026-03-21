@@ -38,6 +38,8 @@ import {
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface Product {
@@ -72,6 +74,11 @@ const PRODUCT_LIBRARY: Product[] = [
 
 // ═══════════════════════════════════════════════════════════════════
 export default function CustomersPage() {
+  const { resolvedTheme } = useTheme();
+  const { language, t } = useLanguage();
+  const isDark = resolvedTheme === "dark";
+  const isKhmer = language === "km";
+
   const [mounted, setMounted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -116,6 +123,20 @@ export default function CustomersPage() {
     setTimeout(() => setToast(null), 4000);
   }, []);
 
+  const triggerDemoLock = (e?: any) => {
+    if (e && typeof e === 'object' && 'stopPropagation' in e) e.stopPropagation();
+    // Assuming 'toast' here refers to a toast library function, not the state setter
+    // For this to work, a toast library like 'react-hot-toast' would need to be imported and configured.
+    // For now, we'll use the existing showToast for the message part.
+    // The icon and className options would require a more advanced toast system.
+    showToast(isKhmer ? "ទិដ្ឋភាពភ្ញៀវ៖ ការកែសម្រួលត្រូវបានដាក់កម្រិត" : "Guest View: Editing is restricted");
+    // If a toast library like react-hot-toast is used, it would look like this:
+    // toast(isKhmer ? "ទិដ្ឋភាពភ្ញៀវ៖ ការកែសម្រួលត្រូវបានដាក់កម្រិត" : "Guest View: Editing is restricted", {
+    //   icon: <Lock className="text-[#3ecf8e]" size={16} />,
+    //   className: "rounded-xl font-medium",
+    // });
+  };
+
   const handleLog = (amount: number) => {
     const now = new Date();
     const timeStr = now.toLocaleTimeString("en-US", {
@@ -131,7 +152,9 @@ export default function CustomersPage() {
       },
       ...prev,
     ]);
-    showToast(`Logged +${amount} customers! Sign up to save permanently.`);
+    showToast(isKhmer 
+      ? `បានកត់ត្រាអតិថិជន +${amount}! ចុះឈ្មោះដើម្បីរក្សាទុកជាអចិន្ត្រៃយ៍។` 
+      : `Logged +${amount} customers! Sign up to save permanently.`);
   };
 
   const filteredLogs = logHistory.filter(
@@ -213,15 +236,15 @@ export default function CustomersPage() {
   return (
     <TooltipContext.Provider value={setTooltip}>
       {/* ── Guest Mode Strip ── */}
-      <div className="fixed top-0 left-0 right-0 z-[100] bg-[#0d1117] border-b border-[#3ecf8e]/20 py-2 text-center flex items-center justify-center h-[36px]">
+      <div className={`fixed top-0 left-0 right-0 z-[100] border-b py-2 text-center flex items-center justify-center h-[36px] transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/10" : "bg-[#111827] border-[#3ecf8e]/20"}`}>
         <span className="text-xs text-[#e6edf3]">
-          You are in Guest Mode — data will not be saved
+          {isKhmer ? "អ្នកកំពុងស្ថិតក្នុង Guest Mode — ទិន្នន័យនឹងមិនត្រូវបានរក្សាទុកទេ" : "You are in Guest Mode — data will not be saved"}
         </span>
         <button
-          onClick={() => (window.location.href = "/auth")}
+          onClick={() => (window.location.href = "/signup")}
           className="ml-3 text-[#3ecf8e] text-xs font-semibold bg-transparent border-0 cursor-pointer hover:underline"
         >
-          Create account →
+          {isKhmer ? "បង្កើតគណនី →" : "Create account →"}
         </button>
       </div>
 
@@ -245,16 +268,18 @@ export default function CustomersPage() {
       >
         <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-full w-0 h-0 border-l-[6px] border-r-[6px] border-l-transparent border-r-transparent border-b-[6px] border-b-[#0d1117]" />
         <p className="font-medium text-white mb-1.5 flex items-center gap-1.5">
-          <Info size={12} /> Guest Insight
+          <Info size={12} /> {isKhmer ? "ការណែនាំពីការប្រើប្រាស់" : "Guest Insight"}
         </p>
         <p>{tooltip.content}</p>
       </div>
 
       {/* Main layout with top padding for guest strip */}
-      <div className="flex h-screen w-full overflow-hidden bg-slate-100 pt-[36px]">
+      <div className={`flex h-screen w-full overflow-hidden transition-colors duration-500 pt-[36px] ${isDark ? "bg-[#0b0f14] text-[#e6edf3]" : "bg-[#f0f2f5] text-[#111827]"} ${isKhmer ? "font-suwannaphum" : ""}`}>
         {/* Reusable Sidebar */}
         <VendorSidebar
           plan="free"
+          isGuest={true}
+          onLockedClick={() => triggerDemoLock("settings")}
           navLinks={[
             { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/guest" },
             { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/guest/sales" },
@@ -271,7 +296,7 @@ export default function CustomersPage() {
         <main className="flex-1 flex flex-col w-full min-w-0 h-full overflow-hidden">
           {/* Reusable Topbar with custom right actions */}
           <VendorTopbar
-            title="Customers"
+            title={isKhmer ? "អតិថិជន" : "Customers"}
             isSidebarCollapsed={isSidebarCollapsed}
             setIsSidebarCollapsed={setIsSidebarCollapsed}
             setIsMobileSidebarOpen={setIsSidebarOpen}
@@ -279,10 +304,10 @@ export default function CustomersPage() {
               <>
                 {/* Create Account button (visible on sm+) */}
                 <button
-                  onClick={() => (window.location.href = "/auth")}
+                  onClick={() => (window.location.href = "/signup")}
                   className="hidden sm:block px-4 py-[9px] rounded-[10px] bg-[#3ecf8e] text-[#0d1117] text-[13px] font-bold hover:bg-[#4dd49a] transition-colors shadow-[0_2px_14px_rgba(62,207,142,0.28)] border-0 cursor-pointer"
                 >
-                  Create Account
+                  {isKhmer ? "បង្កើតគណនី" : "Create Account"}
                 </button>
 
                 {/* Quick Sale button with dropdown */}
@@ -291,8 +316,9 @@ export default function CustomersPage() {
                     onClick={() => setQuickSaleOpen((o) => !o)}
                     onMouseEnter={(e) =>
                       setTooltip({
-                        content:
-                          "Simplified sales logging. Add products to cart and complete sales instantly.",
+                        content: isKhmer 
+                          ? "ការកត់ត្រាការលក់សាមញ្ញ។ បន្ថែមផលិតផលទៅក្នុងកន្ត្រក និងបញ្ចប់ការលក់ភ្លាមៗ។"
+                          : "Simplified sales logging. Add products to cart and complete sales instantly.",
                         x: e.clientX,
                         y: e.clientY,
                       })
@@ -304,11 +330,11 @@ export default function CustomersPage() {
                   >
                     {quickSaleOpen ? (
                       <>
-                        <X size={14} /> Close
+                        <X size={14} /> {isKhmer ? "បិទ" : "Close"}
                       </>
                     ) : (
                       <>
-                        <Zap size={14} className="text-[#3ecf8e]" /> Quick Sale
+                        <Zap size={14} className="text-[#3ecf8e]" /> {isKhmer ? "លក់រហ័ស" : "Quick Sale"}
                       </>
                     )}
                     {cartItems > 0 && !quickSaleOpen && (
@@ -328,7 +354,7 @@ export default function CustomersPage() {
                       <div className="flex items-center gap-2 px-[18px] py-[14px] border-b border-[#e8eaed]">
                         <ShoppingCart size={14} className="text-[#3ecf8e]" />
                         <span className="font-bold text-sm text-[#111827]">
-                          Quick Sale
+                          {isKhmer ? "ការលក់រហ័ស" : "Quick Sale"}
                         </span>
                       </div>
                       <div className="p-[14px_18px]">
@@ -343,7 +369,7 @@ export default function CustomersPage() {
                             onChange={(e) =>
                               setQuickSearchQuery(e.target.value)
                             }
-                            placeholder="Search product..."
+                            placeholder={isKhmer ? "ស្វែងរកផលិតផល..." : "Search product..."}
                             className="w-full pl-[33px] pr-[11px] py-[9px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[9px] text-[13px] outline-none focus:border-[#3ecf8e] transition-colors"
                           />
                         </div>
@@ -432,7 +458,9 @@ export default function CustomersPage() {
                             e.preventDefault();
                             if (cart.length) {
                               showToast(
-                                "Sale recorded! Create an account to save.",
+                                isKhmer 
+                                  ? "ការលក់ត្រូវបានកត់ត្រា! បង្កើតគណនីដើម្បីរក្សាទុក។"
+                                  : "Sale recorded! Create an account to save.",
                               );
                               closeQuickSale();
                             }
@@ -449,7 +477,7 @@ export default function CustomersPage() {
                 {/* User avatar */}
                 <div
                   className="w-[34px] h-[34px] rounded-full bg-[rgba(156,163,175,0.12)] border-[1.5px] border-[#9ca3af] flex items-center justify-center text-[11px] font-bold text-[#9ca3af] cursor-pointer hover:bg-[rgba(156,163,175,0.2)] transition-colors"
-                  onClick={() => (window.location.href = "/auth")}
+                  onClick={() => (window.location.href = "/signup")}
                 >
                   GU
                 </div>
@@ -463,40 +491,40 @@ export default function CustomersPage() {
               {/* Page Title & Actions */}
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div>
-                  <h1 className="text-[24px] font-bold text-slate-900">
-                    My Customers
+                  <h1 className={`text-[24px] font-bold transition-colors duration-500 ${isDark ? "text-white" : "text-slate-900"}`}>
+                    {isKhmer ? "អតិថិជនរបស់ខ្ញុំ" : "My Customers"}
                   </h1>
                   <p className="text-slate-500 text-sm mt-1">
-                    Track and log your daily foot traffic.
+                    {isKhmer ? "តាមដាន និងកត់ត្រាចំនួនអតិថិជនចូលប្រចាំថ្ងៃ" : "Track and log your daily foot traffic."}
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button className="flex items-center gap-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-[13px] font-semibold px-4 py-2 rounded-[10px] transition-colors cursor-pointer">
-                    <FileText className="w-4 h-4 text-slate-400" />
-                    Export PDF
+                  <button className={`flex items-center gap-1.5 border hover:bg-opacity-80 transition-colors cursor-pointer text-[13px] font-semibold px-4 py-2 rounded-[10px] ${isDark ? "bg-white/5 border-white/10 text-[#e6edf3]" : "bg-white border-slate-200 text-slate-700"}`}>
+                    <FileText className={`w-4 h-4 ${isDark ? "text-[#7d8590]" : "text-slate-400"}`} />
+                    {isKhmer ? "ទាញយកជា PDF" : "Export PDF"}
                   </button>
-                  <button className="flex items-center gap-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-[13px] font-semibold px-4 py-2 rounded-[10px] transition-colors cursor-pointer">
-                    <FileSpreadsheet className="w-4 h-4 text-slate-400" />
-                    Export CSV
+                  <button className={`flex items-center gap-1.5 border hover:bg-opacity-80 transition-colors cursor-pointer text-[13px] font-semibold px-4 py-2 rounded-[10px] ${isDark ? "bg-white/5 border-white/10 text-[#e6edf3]" : "bg-white border-slate-200 text-slate-700"}`}>
+                    <FileSpreadsheet className={`w-4 h-4 ${isDark ? "text-[#7d8590]" : "text-slate-400"}`} />
+                    {isKhmer ? "ទាញយកជា CSV" : "Export CSV"}
                   </button>
                 </div>
               </div>
 
               {/* Tabs */}
-              <div className="flex gap-6 border-b border-slate-200">
+              <div className={`flex gap-6 border-b transition-colors duration-500 ${isDark ? "border-white/[0.07]" : "border-slate-200"}`}>
                 {TABS.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`pb-3 flex flex-col items-start transition-colors bg-transparent border-0 border-b-2 cursor-pointer ${
                       activeTab === tab.id
-                        ? "border-[#3ecf8e] text-slate-900"
-                        : "border-transparent text-slate-400 hover:text-slate-600"
+                        ? (isDark ? "border-[#3ecf8e] text-white" : "border-[#3ecf8e] text-slate-900")
+                        : (isDark ? "border-transparent text-[#7d8590] hover:text-[#e6edf3]" : "border-transparent text-slate-400 hover:text-slate-600")
                     }`}
                   >
-                    <span className="font-semibold text-sm">{tab.label}</span>
+                    <span className="font-semibold text-sm">{isKhmer ? tab.khmer : tab.label}</span>
                     <span className="text-[10px] opacity-70 mt-0.5">
-                      {tab.khmer}
+                      {isKhmer ? tab.label : tab.khmer}
                     </span>
                   </button>
                 ))}
@@ -505,46 +533,50 @@ export default function CustomersPage() {
               {/* 5 Summary Cards using FreeStatCard */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <VendorSummaryCard
-                  variant="dark"
-                  title="Today Customer"
+                  variant={isDark ? "dark" : "light"}
+                  title={isKhmer ? "អតិថិជនថ្ងៃនេះ" : "Today Customer"}
                   khmerTitle="អតិថិជនថ្ងៃនេះ"
                   value={summaryData.todayCount}
-                  subtext={`${summaryData.todayLogs} logs recorded`}
+                  subtext={isKhmer ? `បានកត់ត្រា ${summaryData.todayLogs} ដង` : `${summaryData.todayLogs} logs recorded`}
                 />
                 <VendorSummaryCard
-                  title="Avg.Spend"
+                  variant={isDark ? "dark" : "light"}
+                  title={isKhmer ? "ចំណាយមធ្យម" : "Avg.Spend"}
                   khmerTitle="ការចំណាយជាមធ្យម"
                   value={summaryData.avgSpend}
-                  subtext="per customer"
+                  subtext={isKhmer ? "ក្នុងម្នាក់" : "per customer"}
                 />
                 <VendorSummaryCard
                   variant="green"
-                  title="Weekly Customer"
+                  title={isKhmer ? "អតិថិជនសប្តាហ៍នេះ" : "Weekly Customer"}
                   khmerTitle="អតិថិជនសប្តាហ៍នេះ"
                   value={summaryData.weeklyCount}
-                  subtext={summaryData.weeklyChange}
+                  subtext={isKhmer ? "+២៧% លើសពីសប្តាហ៍មុន" : summaryData.weeklyChange}
                 />
                 <VendorSummaryCard
-                  title="Peak Time"
+                  variant={isDark ? "dark" : "light"}
+                  title={isKhmer ? "ម៉ោងមមាញឹក" : "Peak Time"}
                   khmerTitle="ម៉ោងមមាញឹក"
                   value={summaryData.peakTime}
-                  subtext={summaryData.weeklyCustomers}
+                  subtext={isKhmer ? "១៥ អតិថិជន" : summaryData.weeklyCustomers}
                 />
-                <VendorSummaryCard
-                  title="Avg.LTV"
+                 <VendorSummaryCard
+                  variant={isDark ? "dark" : "light"}
+                  title={isKhmer ? "តម្លៃអតិថិជនមធ្យម" : "Avg.LTV"}
                   khmerTitle="តម្លៃអតិថិជនមធ្យម"
                   value={summaryData.avgLTV}
-                  subtext="Lifetime Value"
+                  subtext={isKhmer ? "តម្លៃអាយុជីវិត" : "Lifetime Value"}
                 />
               </div>
 
               {/* Log Customers Bar (custom, not reusable) */}
               <div
                 className="bg-[#0d1117] border border-white/[0.06] rounded-[14px] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 cursor-help"
-                onMouseEnter={(e) =>
+                 onMouseEnter={(e) =>
                   setTooltip({
-                    content:
-                      "Log walk-ins or large groups quickly. Real accounts build predictive traffic models with this data.",
+                    content: isKhmer 
+                      ? "កត់ត្រាអតិថិជនថ្មី ឬក្រុមធំៗបានយ៉ាងឆាប់រហ័ស។ គណនីពិតប្រាកដនឹងបង្កើតគំរូព្យាករណ៍ចរាចរណ៍ជាមួយទិន្នន័យនេះ។"
+                      : "Log walk-ins or large groups quickly. Real accounts build predictive traffic models with this data.",
                     x: e.clientX,
                     y: e.clientY,
                   })
@@ -553,10 +585,10 @@ export default function CustomersPage() {
               >
                 <div>
                   <p className="font-bold text-white text-[15px]">
-                    Log Customers
+                    {isKhmer ? "កត់ត្រាអតិថិជន" : "Log Customers"}
                   </p>
                   <p className="text-[11px] text-[#7d8590] mt-0.5">
-                    កត់ត្រាអតិថិជន
+                    {isKhmer ? "Log Customers" : "កត់ត្រាអតិថិជន"}
                   </p>
                 </div>
 
@@ -591,35 +623,35 @@ export default function CustomersPage() {
                     </button>
                   </div>
 
-                  <button
+                   <button
                     onClick={() => handleLog(customCount)}
                     className="px-5 py-2 bg-[#3ecf8e] hover:bg-[#4dd49a] text-[#0d1117] border-0 font-bold rounded-[10px] transition-colors text-sm flex items-center gap-1.5 min-h-[42px] cursor-pointer shadow-[0_2px_10px_rgba(62,207,142,0.2)]"
                   >
                     <Plus className="w-4 h-4" />
-                    Log {customCount}
+                    {isKhmer ? `កត់ត្រា ${customCount}` : `Log ${customCount}`}
                   </button>
                 </div>
               </div>
 
               {/* Log History Table (custom) */}
-              <div className="bg-white border border-slate-200 rounded-[14px] shadow-sm overflow-hidden">
-                <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className={`border rounded-[14px] shadow-sm overflow-hidden transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/[0.06]" : "bg-white border-slate-200"}`}>
+                <div className={`p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors duration-500 ${isDark ? "border-white/[0.07]" : "border-slate-100"}`}>
                   <div>
-                    <h3 className="font-bold text-[16px] text-slate-900">
-                      Traffic History
+                    <h3 className={`font-bold text-[16px] transition-colors duration-500 ${isDark ? "text-white" : "text-slate-900"}`}>
+                      {isKhmer ? "ប្រវត្តិនៃការចូល" : "Traffic History"}
                     </h3>
                     <p className="text-[11px] text-slate-500 mt-0.5">
-                      ប្រវត្តិនៃការចូលរបស់អតិថិជន
+                      {isKhmer ? "ប្រវត្តិនៃការចូលរបស់អតិថិជន" : "Customer entry log history"}
                     </p>
                   </div>
                   <div className="relative w-full sm:w-auto">
                     <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
-                      placeholder="Search logs..."
+                      placeholder={isKhmer ? "ស្វែងរក..." : "Search logs..."}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full sm:w-[240px] pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[10px] text-[13px] focus:outline-none focus:border-[#3ecf8e] transition-colors min-h-[40px] text-slate-900"
+                      className={`w-full sm:w-[240px] pl-9 pr-4 py-2.5 border rounded-[10px] text-[13px] outline-none transition-colors min-h-[40px] ${isDark ? "bg-white/5 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`}
                     />
                   </div>
                 </div>
@@ -627,46 +659,46 @@ export default function CustomersPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
-                        <th className="px-6 py-3.5">Time Logged</th>
-                        <th className="px-6 py-3.5">Customer Count</th>
-                        <th className="px-6 py-3.5">Status</th>
-                        <th className="px-6 py-3.5 text-right">Actions</th>
+                      <tr className={`border-b text-[11px] uppercase tracking-wider font-semibold transition-colors duration-500 ${isDark ? "bg-white/[0.02] border-white/[0.07] text-[#7d8590]" : "bg-slate-50/50 border-slate-100 text-slate-500"}`}>
+                        <th className="px-6 py-3.5">{isKhmer ? "ម៉ោងកត់ត្រា" : "Time Logged"}</th>
+                        <th className="px-6 py-3.5">{isKhmer ? "ចំនួនអតិថិជន" : "Customer Count"}</th>
+                        <th className="px-6 py-3.5">{isKhmer ? "ស្ថានភាព" : "Status"}</th>
+                        <th className="px-6 py-3.5 text-right">{isKhmer ? "សកម្មភាព" : "Actions"}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className={`divide-y transition-colors duration-500 ${isDark ? "divide-white/[0.07]" : "divide-slate-100"}`}>
                       {filteredLogs.map((log) => (
                         <tr
                           key={log.id}
-                          className="hover:bg-slate-50/50 transition-colors"
+                          className={`border-b transition-colors duration-500 ${isDark ? "hover:bg-white/5 border-white/[0.07]" : "hover:bg-slate-50/50 border-slate-100"}`}
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2 text-slate-600 text-[14px] font-medium">
-                              <Clock className="w-4 h-4 text-slate-400" />
+                            <div className={`flex items-center gap-2 text-[14px] font-medium transition-colors duration-500 ${isDark ? "text-[#7d8590]" : "text-slate-600"}`}>
+                              <Clock className={`w-4 h-4 ${isDark ? "text-[#7d8590]" : "text-slate-400"}`} />
                               {log.time}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2">
-                              <span className="text-[14px] font-extrabold text-slate-900">
+                              <span className={`text-[14px] font-extrabold transition-colors duration-500 ${isDark ? "text-white" : "text-slate-900"}`}>
                                 +{log.count}
                               </span>
-                              <Users className="w-3.5 h-3.5 text-slate-400" />
+                              <Users className={`w-3.5 h-3.5 ${isDark ? "text-[#7d8590]" : "text-slate-400"}`} />
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {log.status === "Peak Traffic" ? (
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[11px] font-bold uppercase tracking-wider">
-                                Peak Traffic
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${isDark ? "bg-orange-500/10 text-orange-400 border border-orange-500/20" : "bg-orange-100 text-orange-700"}`}>
+                                {isKhmer ? "មមាញឹកខ្លាំង" : "Peak Traffic"}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-bold uppercase tracking-wider">
-                                Regular
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${isDark ? "bg-white/5 text-[#7d8590] border border-white/10" : "bg-slate-100 text-slate-600 border border-slate-200"}`}>
+                                {isKhmer ? "ធម្មតា" : "Regular"}
                               </span>
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right">
-                            <button className="text-slate-300 hover:text-slate-600 text-xl tracking-widest transition-colors bg-transparent border-0 cursor-pointer">
+                            <button className={`tracking-widest transition-colors bg-transparent border-0 cursor-pointer text-xl ${isDark ? "text-[#7d8590] hover:text-[#e6edf3]" : "text-slate-300 hover:text-slate-600"}`}>
                               ···
                             </button>
                           </td>
@@ -678,16 +710,18 @@ export default function CustomersPage() {
                             colSpan={4}
                             className="px-6 py-8 text-center text-slate-500 text-[13px]"
                           >
-                            No customer logs found matching "{searchTerm}"
+                            {isKhmer 
+                              ? `រកមិនឃើញកំណត់ត្រាដែលត្រូវនឹង "${searchTerm}" ទេ`
+                              : `No customer logs found matching "${searchTerm}"`}
                           </td>
                         </tr>
                       )}
                     </tbody>
                   </table>
                 </div>
-                <div className="px-6 py-3.5 border-t border-slate-100 text-center bg-slate-50/50">
+                 <div className={`px-6 py-3.5 border-t text-center transition-colors duration-500 ${isDark ? "bg-white/[0.02] border-white/[0.07]" : "bg-slate-50/50 border-slate-100"}`}>
                   <button className="text-[#3ecf8e] text-[13px] font-bold hover:underline bg-transparent border-0 cursor-pointer">
-                    View Full History →
+                    {isKhmer ? "មើលប្រវត្តិពេញលេញ →" : "View Full History →"}
                   </button>
                 </div>
               </div>

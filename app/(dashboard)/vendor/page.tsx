@@ -2,6 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import {
   LayoutDashboard,
   CircleDollarSign,
@@ -23,6 +25,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Clock,
+  CreditCard,
 } from "lucide-react";
 
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
@@ -105,6 +108,11 @@ const GOAL = {
 
 // ═══════════════════════════════════════════════════════════════════
 export default function VendorDashboard() {
+  const { language, t } = useLanguage();
+  const { resolvedTheme } = useTheme();
+  const isKhmer = language === "km";
+  const isDark = resolvedTheme === "dark";
+
   const [isDayLocked, setIsDayLocked] = useState(false);
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -277,11 +285,11 @@ export default function VendorDashboard() {
             >
               {quickSaleOpen ? (
                 <>
-                  <X size={14} /> Cancel
+                  <X size={14} /> {t("dashboard.actions.cancel")}
                 </>
               ) : (
                 <>
-                  <Zap size={14} /> Quick Sale
+                  <Zap size={14} /> {t("dashboard.actions.quickSale")}
                 </>
               )}
               {cartItems > 0 && !quickSaleOpen && (
@@ -302,9 +310,9 @@ export default function VendorDashboard() {
                 <div className="flex items-center gap-2 px-[18px] py-[14px] border-b border-[#e8eaed]">
                   <ShoppingCart size={14} className="text-[#3ecf8e]" />
                   <span className="font-bold text-sm text-[#111827]">
-                    Quick Sale
+                    {t("dashboard.actions.quickSale")}
                   </span>
-                  <span className="text-[11px] text-[#6b7280] ml-auto">
+                  <span className={`text-[11px] ml-auto ${isKhmer ? "font-suwannaphum" : ""}`}>
                     ការលក់រហ័ស
                   </span>
                 </div>
@@ -320,7 +328,7 @@ export default function VendorDashboard() {
                       ref={searchRef}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search product..."
+                      placeholder={t("dashboard.placeholders.searchProduct")}
                       className="w-full pl-[33px] pr-[11px] py-[9px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[9px] text-[13px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
                       style={{ fontFamily: "inherit" }}
                     />
@@ -445,8 +453,8 @@ export default function VendorDashboard() {
 
                   {/* Customers */}
                   <div className="flex items-center justify-between py-2 border-t border-[#f0f2f5] mb-3">
-                    <span className="text-xs text-[#6b7280] font-medium">
-                      Customers · អតិថិជន
+                    <span className={`text-xs text-[#6b7280] font-medium ${isKhmer ? "font-suwannaphum" : ""}`}>
+                      {t("dashboard.customers")} · អតិថិជន
                     </span>
                     <div className="flex items-center bg-[#f7f8fa] border border-[#e8eaed] rounded-[8px] overflow-hidden">
                       <button
@@ -496,7 +504,7 @@ export default function VendorDashboard() {
                         : "bg-[#f0f2f5] text-[#6b7280] cursor-not-allowed"
                     }`}
                   >
-                    <CheckCircle2 size={15} /> Complete Sale
+                    <CheckCircle2 size={15} /> {t("dashboard.actions.complete")}
                   </button>
                 </div>
               </div>
@@ -509,7 +517,7 @@ export default function VendorDashboard() {
       <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px]">
         <div className="max-w-[1400px] mx-auto flex flex-col gap-5">
           {/* ══ WELCOME BANNER ══════════════════════════════════ */}
-          <div className="bg-[#0d1117] rounded-[14px] border border-white/[0.06] px-[26px] py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+          <div className={`${isDark ? "bg-[#161B22]" : "bg-[#0d1117]"} rounded-[14px] border border-white/[0.06] px-[26px] py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5`}>
             {/* Left — greeting */}
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[17px] font-extrabold text-white shrink-0 shadow-[0_0_0_3px_rgba(62,207,142,0.2)]">
@@ -592,14 +600,14 @@ export default function VendorDashboard() {
           </div>
 
           {/* ── Usage bar ── */}
-          <div className="bg-white border border-[#e8eaed] rounded-[14px] px-[22px] py-4">
+          <div className={`${isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"} rounded-[14px] px-[22px] py-4`}>
             <div className="flex items-center justify-between mb-[10px]">
               <div>
-                <div className="text-[13.5px] font-semibold text-[#111827]">
+                <div className={`text-[13.5px] font-semibold ${isDark ? "text-white" : "text-[#111827]"}`}>
                   Monthly Sales Logs
                 </div>
-                <div className="text-[11px] text-[#6b7280] mt-px">
-                  កំណត់ត្រាលក់ប្រចាំខែ
+                <div className={`text-[11px] mt-px ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                  {t("dashboard.customers.subtitle")}
                 </div>
               </div>
               <span className="text-sm font-bold text-[#111827]">
@@ -632,23 +640,25 @@ export default function VendorDashboard() {
           {/* ── Metric cards ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <VendorSummaryCard
-              title="Total Sales"
+              title={t("dashboard.metrics.totalSales")}
               khmerTitle="ការលក់សរុប"
               value={summary.sales}
               icon={CircleDollarSign}
               trend="+12%"
               isPositive
+              variant={isDark ? "dark" : "light"}
             />
             <VendorSummaryCard
-              title="Total Expenses"
+              title={t("dashboard.metrics.totalExpenses")}
               khmerTitle="ចំណាយសរុប"
               value={summary.expenses}
               icon={Receipt}
               trend="-5%"
               isPositive={false}
+              variant={isDark ? "dark" : "light"}
             />
             <VendorSummaryCard
-              title="Net Profit"
+              title={t("dashboard.metrics.netProfit")}
               khmerTitle="ប្រាក់ចំណេញ"
               value={summary.profit}
               icon={TrendingUp}
@@ -657,21 +667,22 @@ export default function VendorDashboard() {
               highlight
             />
             <VendorSummaryCard
-              title="Customers"
-              khmerTitle="អតិថិជនសរុប"
+              title={t("dashboard.metrics.customers")}
+              khmerTitle={t("dashboard.customers.title")}
               value={summary.customers}
               icon={Users}
               subtext={`Avg ${summary.avgCustomer}`}
+              variant={isDark ? "dark" : "light"}
             />
           </div>
 
           {/* ── Charts ── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-white border border-[#e8eaed] rounded-[14px] p-6 shadow-sm">
-              <h3 className="font-semibold text-[15px] text-[#111827] mb-1">
-                Monthly Revenue
+            <div className={`${isDark ? "bg-dark-surface border-white/5 shadow-none" : "bg-white border-[#e8eaed] shadow-sm"} rounded-[14px] p-6`}>
+              <h3 className={`font-semibold text-[15px] mb-1 ${isDark ? "text-white" : "text-[#111827]"}`}>
+                {t("dashboard.metrics.monthlyRevenue")}
               </h3>
-              <p className="text-[12px] text-[#6b7280] mb-5">ចំណូលប្រចាំខែ</p>
+              <p className={`text-[12px] mb-5 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>ចំណូលប្រចាំខែ</p>
               <div className="h-40 flex items-end gap-2">
                 {monthlyData.map((val, i) => (
                   <div
@@ -699,11 +710,11 @@ export default function VendorDashboard() {
             </div>
 
             {/* Weekly Revenue */}
-            <div className="bg-white border border-[#e8eaed] rounded-[14px] p-6 shadow-sm">
-              <h3 className="font-semibold text-[15px] text-[#111827] mb-1">
-                Weekly Revenue
+            <div className={`${isDark ? "bg-dark-surface border-white/5 shadow-none" : "bg-white border-[#e8eaed] shadow-sm"} rounded-[14px] p-6`}>
+              <h3 className={`font-semibold text-[15px] mb-1 ${isDark ? "text-white" : "text-[#111827]"}`}>
+                {t("dashboard.metrics.weeklyRevenue")}
               </h3>
-              <p className="text-[12px] text-[#6b7280] mb-5">
+              <p className={`text-[12px] mb-5 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
                 ចំណូលប្រចាំសប្តាហ៍
               </p>
               <div className="h-40 flex items-end gap-1.5">
@@ -730,18 +741,18 @@ export default function VendorDashboard() {
             </div>
 
             {/* Expenses */}
-            <div className="bg-white border border-[#e8eaed] rounded-[14px] p-6 shadow-sm col-span-1 lg:col-span-2">
+            <div className={`${isDark ? "bg-dark-surface border-white/5 shadow-none" : "bg-white border-[#e8eaed] shadow-sm"} rounded-[14px] p-6 col-span-1 lg:col-span-2`}>
               <div className="flex items-center justify-between mb-1">
-                <h3 className="font-semibold text-[15px] text-[#111827]">
-                  Expenses
+                <h3 className={`font-semibold text-[15px] ${isDark ? "text-white" : "text-[#111827]"}`}>
+                  {t("dashboard.metrics.totalExpenses")}
                 </h3>
                 {expLogged && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[10px] font-bold border border-[rgba(41,178,141,0.2)] uppercase tracking-wider">
-                    <CheckCircle2 className="w-3 h-3" /> Logged!
+                    <CheckCircle2 className="w-3 h-3" /> {t("dashboard.status.logged")}
                   </span>
                 )}
               </div>
-              <p className="text-[12px] text-[#6b7280] mb-4">ការចំណាយ</p>
+              <p className={`text-[12px] mb-4 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>ការចំណាយ</p>
               <div className="space-y-3">
                 {expenseCategories.map((item, i) => (
                   <div key={i}>
@@ -780,11 +791,11 @@ export default function VendorDashboard() {
             {/* Header */}
             <div className="flex items-center justify-between mb-[20px]">
               <div>
-                <div className="text-sm font-semibold text-[#111827]">
-                  Expenses
+                <div className={`text-sm font-semibold ${isDark ? "text-white" : "text-[#111827]"}`}>
+                  {t("dashboard.metrics.totalExpenses")}
                 </div>
-                <div className="text-[11px] text-[#6b7280] mt-0.5">
-                  ចំណាយតាមប្រភេទ
+                <div className={`text-[11px] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                  {t("dashboard.customers.subtitle")}
                 </div>
               </div>
               {expLogged && (
@@ -861,7 +872,7 @@ export default function VendorDashboard() {
           </div>
 
           {/* ── End of Day ── */}
-          <div className="bg-[#0d1117] rounded-[14px] border border-white/[0.06] overflow-hidden">
+          <div className={`${isDark ? "bg-[#161B22] border-white/5" : "bg-[#0d1117] border-transparent"} rounded-[14px] border overflow-hidden`}>
             <div className="px-[26px] py-[18px] border-b border-white/[0.07] flex items-center justify-between">
               <div>
                 <div className="text-[15px] font-bold text-[#e6edf3]">

@@ -42,6 +42,8 @@ import {
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface Product {
@@ -106,6 +108,11 @@ const GOAL = {
 
 // ═══════════════════════════════════════════════════════════════════
 export default function DemoDashboard() {
+  const { resolvedTheme } = useTheme();
+  const { language, t } = useLanguage();
+  const isDark = resolvedTheme === "dark";
+  const isKhmer = language === "km";
+  
   const [mounted, setMounted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -129,6 +136,11 @@ export default function DemoDashboard() {
     setTimeout(() => setToast(null), 4000);
   }, []);
 
+  const triggerDemoLock = (val?: any) => {
+    const msg = isKhmer ? "ទិដ្ឋភាពភ្ញៀវ៖ ការកែសម្រួលត្រូវបានដាក់កម្រិត" : "Guest View: Editing is restricted";
+    showToast(msg);
+  };
+
   // ─── DEMO STATIC DATA ───
   const demoSummary = {
     sales: "$124.50",
@@ -142,7 +154,9 @@ export default function DemoDashboard() {
 
   // ─── Demo Static Charts Data ───
   const weeklyData = [40, 70, 45, 90, 65, 120, 85];
-  const weeklyLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const weeklyLabels = isKhmer 
+    ? ["ច័ន្ទ", "អង្គារ", "ពុធ", "ព្រហ", "សុក្រ", "សៅរ៍", "អាទិត្យ"]
+    : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const monthlyData = [320, 480, 410, 540];
 
   const goalPct = Math.min((GOAL.current / GOAL.target) * 100, 100);
@@ -249,15 +263,15 @@ export default function DemoDashboard() {
   return (
     <TooltipContext.Provider value={setTooltip}>
       {/* ── Guest Mode Strip ── */}
-      <div className="fixed top-0 left-0 right-0 z-[100] bg-[#0d1117] border-b border-[#3ecf8e]/20 py-2 text-center flex items-center justify-center h-[36px]">
+      <div className={`fixed top-0 left-0 right-0 z-[100] border-b py-2 text-center flex items-center justify-center h-[36px] transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/10" : "bg-[#111827] border-[#3ecf8e]/20"}`}>
         <span className="text-xs text-[#e6edf3]">
-          You are in Guest Mode — data will not be saved
+          {isKhmer ? "អ្នកកំពុងស្ថិតក្នុង Guest Mode — ទិន្នន័យនឹងមិនត្រូវបានរក្សាទុកទេ" : "You are in Guest Mode — data will not be saved"}
         </span>
         <button
-          onClick={() => (window.location.href = "/auth")}
+          onClick={() => (window.location.href = "/signup")}
           className="ml-3 text-[#3ecf8e] text-xs font-semibold bg-transparent border-0 cursor-pointer hover:underline"
         >
-          Create account →
+          {isKhmer ? "បង្កើតគណនី →" : "Create account →"}
         </button>
       </div>
 
@@ -270,7 +284,7 @@ export default function DemoDashboard() {
         </div>
       </div>
 
-      <div className="flex h-screen w-full overflow-hidden bg-slate-100 text-[#111827] pt-[36px]">
+      <div className={`flex h-screen w-full overflow-hidden transition-colors duration-500 pt-[36px] ${isDark ? "bg-[#0b0f14] text-[#e6edf3]" : "bg-[#f0f2f5] text-[#111827]"} ${isKhmer ? "font-suwannaphum" : "font-sans"}`}>
         {/* ── Custom Floating Tooltip ── */}
         <div
           className={`fixed z-[9999] bg-[#0d1117] text-[#e6edf3] p-3 rounded-lg text-xs shadow-xl w-[250px] pointer-events-none transition-opacity duration-150 ease-out ${tooltip.content ? "opacity-100" : "opacity-0"}`}
@@ -282,7 +296,7 @@ export default function DemoDashboard() {
         >
           <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-full w-0 h-0 border-l-[6px] border-r-[6px] border-l-transparent border-r-transparent border-b-[6px] border-b-[#0d1117]" />
           <p className="font-medium text-white mb-1.5 flex items-center gap-1.5">
-            <Info size={12} /> Demo Insight
+            <Info size={12} /> {isKhmer ? "ការណែនាំពីការប្រើប្រាស់" : "Demo Insight"}
           </p>
           <p>{tooltip.content}</p>
         </div>
@@ -290,6 +304,8 @@ export default function DemoDashboard() {
         {/* ══ SIDEBAR (Reusable) ═══════════════════════════════════ */}
         <VendorSidebar
           plan="free"
+          isGuest={true}
+          onLockedClick={() => triggerDemoLock("settings")}
           navLinks={[
             { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/guest" },
             { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/guest/sales" },
@@ -314,10 +330,10 @@ export default function DemoDashboard() {
               <>
                 {/* Create Account button (visible on sm+) */}
                 <button
-                  onClick={() => (window.location.href = "/auth")}
+                  onClick={() => (window.location.href = "/signup")}
                   className="hidden sm:block px-4 py-[9px] rounded-[10px] bg-[#3ecf8e] text-[#0d1117] text-[13px] font-bold hover:bg-[#4dd49a] transition-colors shadow-[0_2px_14px_rgba(62,207,142,0.28)] border-0 cursor-pointer"
                 >
-                  Create Account
+                  {isKhmer ? "បង្កើតគណនី" : "Create Account"}
                 </button>
 
                 {/* Quick Sale button with dropdown */}
@@ -326,8 +342,9 @@ export default function DemoDashboard() {
                     onClick={() => setQuickSaleOpen((o) => !o)}
                     onMouseEnter={(e) =>
                       setTooltip({
-                        content:
-                          "Simplified sales logging. Add products to cart and complete sales instantly.",
+                        content: isKhmer 
+                          ? "ការកត់ត្រាការលក់សាមញ្ញ។ បន្ថែមផលិតផលទៅក្នុងកន្ត្រក និងបញ្ចប់ការលក់ភ្លាមៗ។"
+                          : "Simplified sales logging. Add products to cart and complete sales instantly.",
                         x: e.clientX,
                         y: e.clientY,
                       })
@@ -343,11 +360,11 @@ export default function DemoDashboard() {
                   >
                     {quickSaleOpen ? (
                       <>
-                        <X size={14} /> Close Sales
+                        <X size={14} /> {isKhmer ? "បិទការលក់" : "Close Sales"}
                       </>
                     ) : (
                       <>
-                        <Zap size={14} className="text-[#3ecf8e]" /> Quick Sale
+                        <Zap size={14} className="text-[#3ecf8e]" /> {isKhmer ? "លក់រហ័ស" : "Quick Sale"}
                       </>
                     )}
                     {cartItems > 0 && !quickSaleOpen && (
@@ -368,10 +385,10 @@ export default function DemoDashboard() {
                       <div className="flex items-center gap-2 px-[18px] py-[14px] border-b border-[#e8eaed]">
                         <ShoppingCart size={14} className="text-[#3ecf8e]" />
                         <span className="font-bold text-sm text-[#111827]">
-                          Quick Sale
+                          {isKhmer ? "ការលក់រហ័ស" : "Quick Sale"}
                         </span>
                         <span className="text-[11px] text-[#6b7280] ml-auto">
-                          ការលក់រហ័ស
+                          {isKhmer ? "Quick Sale" : "ការលក់រហ័ស"}
                         </span>
                       </div>
                       <div className="p-[14px_18px]">
@@ -385,7 +402,7 @@ export default function DemoDashboard() {
                             ref={searchRef}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search product..."
+                            placeholder={isKhmer ? "ស្វែងរកផលិតផល..." : "Search product..."}
                             className="w-full pl-[33px] pr-[11px] py-[9px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[9px] text-[13px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
                           />
                           {searchQuery && (
@@ -422,7 +439,7 @@ export default function DemoDashboard() {
                         {!searchQuery && (
                           <div className="mb-[14px]">
                             <div className="text-[10px] font-bold text-[#6b7280] uppercase tracking-[0.07em] mb-2">
-                              Tap to add
+                              {isKhmer ? "ចុចដើម្បីបន្ថែម" : "Tap to add"}
                             </div>
                             <div className="grid grid-cols-2 gap-1.5">
                               {PRODUCT_LIBRARY.map((p) => {
@@ -509,7 +526,7 @@ export default function DemoDashboard() {
                         {/* Customers */}
                         <div className="flex items-center justify-between py-2 border-t border-[#f0f2f5] mb-3">
                           <span className="text-xs text-[#6b7280] font-medium">
-                            Customers · អតិថិជន
+                            {isKhmer ? "អតិថិជន" : "Customers"} · {isKhmer ? "Customers" : "អតិថិជន"}
                           </span>
                           <div className="flex items-center bg-[#f7f8fa] border border-[#e8eaed] rounded-[8px] overflow-hidden">
                             <button
@@ -538,7 +555,7 @@ export default function DemoDashboard() {
 
                         <div className="flex items-center justify-between mb-3">
                           <span className="text-xs text-[#6b7280]">
-                            {cartItems} item{cartItems !== 1 ? "s" : ""}
+                            {cartItems} {isKhmer ? "មុខ" : "item"}{cartItems !== 1 ? (isKhmer ? "" : "s") : ""}
                           </span>
                           <span className="font-extrabold text-xl text-[#3ecf8e]">
                             ${cartTotal.toFixed(2)}
@@ -562,7 +579,7 @@ export default function DemoDashboard() {
                               : "bg-[#f0f2f5] text-[#6b7280] cursor-not-allowed"
                           }`}
                         >
-                          <CheckCircle2 size={15} /> Confirm Sale
+                          <CheckCircle2 size={15} /> {isKhmer ? "យល់ព្រមលក់" : "Confirm Sale"}
                         </button>
                       </div>
                     </div>
@@ -572,7 +589,7 @@ export default function DemoDashboard() {
                 {/* User avatar */}
                 <div
                   className="w-[34px] h-[34px] rounded-full bg-[rgba(156,163,175,0.12)] border-[1.5px] border-[#9ca3af] flex items-center justify-center text-[11px] font-bold text-[#9ca3af] cursor-pointer hover:bg-[rgba(156,163,175,0.2)] transition-colors"
-                  onClick={() => (window.location.href = "/auth")}
+                  onClick={() => (window.location.href = "/signup")}
                 >
                   GU
                 </div>
@@ -592,11 +609,11 @@ export default function DemoDashboard() {
                   <div>
                     <div className="flex items-baseline gap-2">
                       <span className="text-[18px] font-extrabold text-[#e6edf3]">
-                        {timeData.greeting}, Guest User!
+                        {isKhmer ? timeData.greetingKh : timeData.greeting}, {isKhmer ? "អ្នកប្រើប្រាស់ជាភ្ញៀវ" : "Guest User"}!
                       </span>
                     </div>
                     <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2">
-                      <span>{timeData.greetingKh}</span>
+                      <span>{isKhmer ? "សូមស្វាគមន៍" : "Welcome"}</span>
                       <span className="w-[3px] h-[3px] rounded-full bg-[#4d5562] inline-block" />
                       <Clock size={10} className="inline-block" />
                       <span>{timeData.dateStr}</span>
@@ -632,7 +649,7 @@ export default function DemoDashboard() {
                         {Math.round(goalPct)}%
                       </span>
                       <span className="text-[9px] text-[#7d8590] mt-0.5">
-                        of goal
+                        {isKhmer ? "នៃគោលដៅ" : "of goal"}
                       </span>
                     </div>
                   </div>
@@ -640,14 +657,14 @@ export default function DemoDashboard() {
                     <div className="flex items-center gap-1.5 mb-1">
                       <Target size={12} className="text-[#3ecf8e]" />
                       <span className="text-[11px] font-bold text-[#3ecf8e] uppercase tracking-[0.06em]">
-                        Daily Goal
+                        {isKhmer ? "គោលដៅប្រចាំថ្ងៃ" : "Daily Goal"}
                       </span>
                     </div>
                     <div className="text-[22px] font-extrabold text-[#e6edf3] leading-none">
                       ${GOAL.current.toFixed(2)}
                     </div>
                     <div className="text-[11px] text-[#7d8590] mt-1">
-                      of ${GOAL.target.toFixed(2)} target
+                      {isKhmer ? "នៃ" : "of"} ${GOAL.target.toFixed(2)} {isKhmer ? "គោលដៅ" : "target"}
                     </div>
                     <div className="mt-2 w-[120px] h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                       <div
@@ -664,11 +681,12 @@ export default function DemoDashboard() {
 
               {/* ── Usage bar ── */}
               <div
-                className="bg-white border border-[#e8eaed] rounded-[14px] px-[22px] py-4 cursor-help"
+                className={`border rounded-[14px] px-[22px] py-4 cursor-help transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/[0.06]" : "bg-white border-[#e8eaed]"}`}
                 onMouseEnter={(e) =>
                   setTooltip({
-                    content:
-                      "Simplified usage tracker. Real accounts get unlimited daily logs.",
+                    content: isKhmer
+                      ? "ការតាមដានការប្រើប្រាស់គំរូ។ គណនីពិតប្រាកដទទួលបានការកត់ត្រាប្រចាំថ្ងៃគ្មានដែនកំណត់។"
+                      : "Simplified usage tracker. Real accounts get unlimited daily logs.",
                     x: e.clientX,
                     y: e.clientY,
                   })
@@ -678,10 +696,10 @@ export default function DemoDashboard() {
                 <div className="flex items-center justify-between mb-[10px]">
                   <div>
                     <div className="text-[13.5px] font-semibold text-[#111827]">
-                      Demo Sales Logs
+                      {isKhmer ? "កំណត់ត្រាលក់សាកល្បង" : "Demo Sales Logs"}
                     </div>
-                    <div className="text-[11px] text-[#6b7280] mt-px">
-                      គំរូនៃកំណត់ត្រាលក់ប្រចាំខែ
+                    <div className={`text-[11px] mt-px transition-colors duration-500 ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                      {isKhmer ? "គំរូនៃកំណត់ត្រាលក់ប្រចាំខែ" : "Sample monthly sales logs"}
                     </div>
                   </div>
                   <span className="text-sm font-bold text-[#111827]">
@@ -701,12 +719,12 @@ export default function DemoDashboard() {
                   />
                 </div>
                 <div className="text-[12px] text-[#6b7280] mt-2">
-                  373 logs remaining · Resets monthly ·{" "}
+                  {isKhmer ? "នៅសល់ ៣៧៣ កំណត់ត្រា · កំណត់ឡើងវិញរៀងរាល់ខែ · " : "373 logs remaining · Resets monthly · "}
                   <button
-                    onClick={() => (window.location.href = "/auth")}
+                    onClick={() => (window.location.href = "/signup")}
                     className="bg-transparent border-0 p-0 text-[#3ecf8e] cursor-pointer no-underline hover:underline"
                   >
-                    Upgrade for unlimited
+                    {isKhmer ? "ធ្វើឱ្យប្រសើរឡើងសម្រាប់គ្មានដែនកំណត់" : "Upgrade for unlimited"}
                   </button>
                 </div>
               </div>
@@ -716,8 +734,9 @@ export default function DemoDashboard() {
                 <div
                   onMouseEnter={(e) =>
                     setTooltip({
-                      content:
-                        "Track real-time income from processed sales orders. Unlock this tracking with an account.",
+                      content: isKhmer
+                        ? "តាមដានចំណូលជាក់ស្តែងពីការបញ្ជាទិញលក់ដែលបានដំណើរការ។ បើកការតាមដាននេះជាមួយគណនី។"
+                        : "Track real-time income from processed sales orders. Unlock this tracking with an account.",
                       x: e.clientX,
                       y: e.clientY,
                     })
@@ -725,6 +744,7 @@ export default function DemoDashboard() {
                   onMouseLeave={() => setTooltip({ content: null, x: 0, y: 0 })}
                 >
                   <VendorSummaryCard
+                    variant={isDark ? "dark" : "light"}
                     title="Total Sales"
                     khmerTitle="ការលក់សរុប"
                     value={demoSummary.sales}
@@ -733,8 +753,9 @@ export default function DemoDashboard() {
                 <div
                   onMouseEnter={(e) =>
                     setTooltip({
-                      content:
-                        "Track all operational costs automatically. Create an account to start logging.",
+                      content: isKhmer
+                        ? "តាមដានរាល់ការចំណាយប្រតិបត្តិការដោយស្វ័យប្រវត្តិ។ បង្កើតគណនីដើម្បីចាប់ផ្តើមការកត់ត្រា។"
+                        : "Track all operational costs automatically. Create an account to start logging.",
                       x: e.clientX,
                       y: e.clientY,
                     })
@@ -742,6 +763,7 @@ export default function DemoDashboard() {
                   onMouseLeave={() => setTooltip({ content: null, x: 0, y: 0 })}
                 >
                   <VendorSummaryCard
+                    variant={isDark ? "dark" : "light"}
                     title="Total Expenses"
                     khmerTitle="ចំណាយសរុប"
                     value={demoSummary.expenses}
@@ -750,8 +772,9 @@ export default function DemoDashboard() {
                 <div
                   onMouseEnter={(e) =>
                     setTooltip({
-                      content:
-                        "Net Profit auto-calculated. Unlock accurate historical profit trends by signing up.",
+                      content: isKhmer
+                        ? "ប្រាក់ចំណេញសុទ្ធត្រូវបានគណនាដោយស្វ័យប្រវត្តិ។ បើកនិន្នាការប្រាក់ចំណេញប្រវត្តិសាស្ត្រត្រឹមត្រូវដោយការចុះឈ្មោះ។"
+                        : "Net Profit auto-calculated. Unlock accurate historical profit trends by signing up.",
                       x: e.clientX,
                       y: e.clientY,
                     })
@@ -768,8 +791,9 @@ export default function DemoDashboard() {
                 <div
                   onMouseEnter={(e) =>
                     setTooltip({
-                      content:
-                        "Customer transaction volume. Build customer loyalty programs when you upgrade.",
+                      content: isKhmer
+                        ? "បរិមាណប្រតិបត្តិការរបស់អតិថិជន។ បង្កើតកម្មវិធីភាពស្មោះត្រង់របស់អតិថិជននៅពេលអ្នកធ្វើឱ្យប្រសើរឡើង។"
+                        : "Customer transaction volume. Build customer loyalty programs when you upgrade.",
                       x: e.clientX,
                       y: e.clientY,
                     })
@@ -777,6 +801,7 @@ export default function DemoDashboard() {
                   onMouseLeave={() => setTooltip({ content: null, x: 0, y: 0 })}
                 >
                   <VendorSummaryCard
+                    variant={isDark ? "dark" : "light"}
                     title="Customers"
                     khmerTitle="អតិថិជនសរុប"
                     value={demoSummary.customers}
@@ -789,9 +814,11 @@ export default function DemoDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {/* 1. Weekly Revenue */}
                 <ChartCard
-                  title="Weekly Revenue"
+                  title={isKhmer ? "ចំណូលប្រចាំសប្តាហ៍" : "Weekly Revenue"}
                   khmer="ចំណូលប្រចាំសប្តាហ៍"
-                  tooltipText="Demo Weekly Sales Performance. Export real reports with a pro account."
+                  tooltipText={isKhmer 
+                    ? "ការបង្ហាញពីចំណូលលក់ប្រចាំសប្តាហ៍។ ទាញយករបាយការណ៍ពិតប្រាកដជាមួយគណនីគាំទ្រ។" 
+                    : "Demo Weekly Sales Performance. Export real reports with a pro account."}
                 >
                   <div className="h-[180px] flex items-end gap-[7px]">
                     {weeklyData.map((v, i) => (
@@ -815,9 +842,11 @@ export default function DemoDashboard() {
 
                 {/* 2. Monthly Revenue */}
                 <ChartCard
-                  title="Monthly Revenue"
+                  title={isKhmer ? "ចំណូលប្រចាំខែ" : "Monthly Revenue"}
                   khmer="ចំណូលប្រចាំខែ"
-                  tooltipText="Monthly Sales Performance overview."
+                  tooltipText={isKhmer 
+                    ? "ទិដ្ឋភាពទូទៅនៃចំណូលលក់ប្រចាំខែ។" 
+                    : "Monthly Sales Performance overview."}
                 >
                   <div className="h-[180px] flex items-end gap-[7px]">
                     {monthlyData.map((v, i) => (
@@ -832,7 +861,7 @@ export default function DemoDashboard() {
                           />
                         </div>
                         <span className="text-[10px] text-[#6b7280]">
-                          Week {i + 1}
+                          {isKhmer ? `សប្តាហ៍ទី ${i + 1}` : `Week ${i + 1}`}
                         </span>
                       </div>
                     ))}
@@ -841,11 +870,11 @@ export default function DemoDashboard() {
               </div>
 
               {/* ── Expenses Breakdown ── */}
-              <div className="bg-white border border-[#e8eaed] rounded-[14px] px-[26px] py-[22px]">
+              <div className={`border rounded-[14px] px-[26px] py-[22px] transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/[0.06]" : "bg-white border-[#e8eaed]"}`}>
                 <div className="flex items-center justify-between mb-[20px]">
                   <div>
-                    <div className="text-sm font-semibold text-[#111827]">
-                      Expenses
+                    <div className={`text-sm font-semibold transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
+                      {isKhmer ? "ចំណាយ" : "Expenses"}
                     </div>
                     <div className="text-[11px] text-[#6b7280] mt-0.5">
                       ចំណាយតាមប្រភេទ
@@ -870,11 +899,11 @@ export default function DemoDashboard() {
                       }
                     >
                       <div className="w-[90px] shrink-0">
-                        <div className="text-[12.5px] font-medium text-[#111827] leading-tight">
+                        <div className={`text-[12.5px] font-medium leading-tight transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
                           {item.label}
                         </div>
                       </div>
-                      <div className="flex-1 h-[6px] bg-[#f0f2f5] rounded-full overflow-hidden">
+                      <div className={`flex-1 h-[6px] rounded-full overflow-hidden transition-colors duration-500 ${isDark ? "bg-white/5" : "bg-[#f0f2f5]"}`}>
                         <div
                           className="h-full rounded-full transition-[width] duration-700 ease-out"
                           style={{
@@ -893,7 +922,7 @@ export default function DemoDashboard() {
                 {/* Quick log form */}
                 <div className="pt-[18px] border-t border-[#f0f2f5]">
                   <div className="text-[10.5px] font-bold text-[#6b7280] uppercase tracking-[0.06em] mb-3 flex items-center gap-1.5">
-                    Quick Log · ចំណាយ (Demo)
+                    {isKhmer ? "កត់ត្រារហ័ស · ចំណាយ (Demo)" : "Quick Log · Expenses (Demo)"}
                   </div>
                   <div className="flex flex-wrap gap-3 items-end">
                     <div className="relative w-[140px]">
@@ -903,7 +932,7 @@ export default function DemoDashboard() {
                       <input
                         type="number"
                         placeholder="0.00"
-                        className="w-full pl-7 pr-3 py-[10px] bg-white border border-[#e8eaed] rounded-[10px] text-[15px] font-bold outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
+                        className={`w-full pl-7 pr-3 py-[10px] border rounded-[10px] text-[15px] font-bold outline-none transition-colors duration-500 ${isDark ? "bg-white/5 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-white border-[#e8eaed] text-[#111827] focus:border-[#3ecf8e]"}`}
                         style={{ fontFamily: "inherit" }}
                       />
                     </div>
@@ -911,7 +940,7 @@ export default function DemoDashboard() {
                       {EXP_BREAKDOWN.slice(0, 3).map((cat) => (
                         <button
                           key={cat.key}
-                          className="px-3 py-[7px] rounded-[8px] text-[12px] font-semibold border border-[#e8eaed] bg-white text-[#6b7280] cursor-pointer hover:bg-[#f0f2f5] hover:text-[#111827] transition-colors focus:border-[#3ecf8e] focus:text-[#3ecf8e] focus:bg-[rgba(62,207,142,0.05)]"
+                          className={`px-3 py-[7px] rounded-[8px] text-[12px] font-semibold border cursor-pointer transition-colors duration-500 ${isDark ? "bg-white/5 border-white/10 text-[#7d8590] hover:bg-white/10 hover:text-white" : "bg-white border-[#e8eaed] text-[#6b7280] hover:bg-[#f0f2f5] hover:text-[#111827]"} focus:border-[#3ecf8e] focus:text-[#3ecf8e] focus:bg-[rgba(62,207,142,0.05)]`}
                         >
                           {cat.labelEn}
                         </button>
@@ -919,19 +948,20 @@ export default function DemoDashboard() {
                     </div>
                     <input
                       type="text"
-                      placeholder="Add note..."
-                      className="flex-1 min-w-[160px] px-[14px] py-[10px] bg-white border border-[#e8eaed] rounded-[10px] text-[13px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
+                      placeholder={isKhmer ? "បន្ថែមចំណាំ..." : "Add note..."}
+                      className={`flex-1 min-w-[160px] px-[14px] py-[10px] border rounded-[10px] text-[13px] outline-none transition-colors duration-500 ${isDark ? "bg-white/5 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-white border-[#e8eaed] text-[#111827] focus:border-[#3ecf8e]"}`}
                       style={{ fontFamily: "inherit" }}
                     />
                     <button
                       onClick={() =>
-                        showToast(
-                          "Expense logged! Create an account to permanently save to your records.",
+                        showToast(isKhmer 
+                          ? "បានកត់ត្រាចំណាយ! បង្កើតគណនីដើម្បីរក្សាទុកក្នុងកំណត់ត្រារបស់អ្នកជាអចិន្ត្រៃយ៍។"
+                          : "Expense logged! Create an account to permanently save to your records.",
                         )
                       }
                       className="px-6 py-[10px] rounded-[10px] text-[13px] font-bold border-0 bg-[#111827] text-white cursor-pointer shadow-[0_4px_14px_rgba(0,0,0,0.06)] hover:bg-[#1f2937] transition-colors"
                     >
-                      Log Expense
+                      {isKhmer ? "កត់ត្រាចំណាយ" : "Log Expense"}
                     </button>
                   </div>
                 </div>
@@ -942,7 +972,7 @@ export default function DemoDashboard() {
                 <div className="px-[26px] py-[18px] border-b border-white/[0.07] flex items-center justify-between">
                   <div>
                     <div className="text-[15px] font-bold text-[#e6edf3]">
-                      End-of-Day Summary
+                      {isKhmer ? "សេចក្តីសង្ខេបចុងថ្ងៃ" : "End-of-Day Summary"}
                     </div>
                     <div className="text-[11px] text-[#7d8590] mt-0.5">
                       សង្ខេបចុងថ្ងៃ
@@ -953,9 +983,9 @@ export default function DemoDashboard() {
                 <div className="px-[26px] py-[22px]">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-[18px]">
                     <div className="px-5 py-[18px] bg-white/[0.05] rounded-xl text-center border border-white/[0.07]">
-                      <div className="text-[11px] font-semibold text-[#7d8590] mb-0.5">
-                        Total Sales
-                      </div>
+                        <div className="text-[11px] font-semibold text-[#7d8590] mb-0.5">
+                          {isKhmer ? "ការលក់សរុប" : "Total Sales"}
+                        </div>
                       <div className="text-[10px] text-[#4d5562] mb-[10px]">
                         ការលក់សរុប
                       </div>
@@ -964,9 +994,9 @@ export default function DemoDashboard() {
                       </div>
                     </div>
                     <div className="px-5 py-[18px] bg-[rgba(239,68,68,0.08)] rounded-xl text-center border border-[rgba(239,68,68,0.15)]">
-                      <div className="text-[11px] font-semibold text-[rgba(239,68,68,0.85)] mb-0.5">
-                        Total Expenses
-                      </div>
+                        <div className="text-[11px] font-semibold text-[rgba(239,68,68,0.85)] mb-0.5">
+                          {isKhmer ? "ចំណាយសរុប" : "Total Expenses"}
+                        </div>
                       <div className="text-[10px] text-[#4d5562] mb-[10px]">
                         ចំណាយសរុប
                       </div>
@@ -975,9 +1005,9 @@ export default function DemoDashboard() {
                       </div>
                     </div>
                     <div className="px-5 py-[18px] bg-[rgba(62,207,142,0.10)] rounded-xl text-center border border-[rgba(62,207,142,0.20)]">
-                      <div className="text-[11px] font-semibold text-[#3ecf8e] mb-0.5">
-                        Net Profit
-                      </div>
+                        <div className="text-[11px] font-semibold text-[#3ecf8e] mb-0.5">
+                          {isKhmer ? "ប្រាក់ចំណេញ" : "Net Profit"}
+                        </div>
                       <div className="text-[10px] text-[#4d5562] mb-[10px]">
                         ប្រាក់ចំណេញ
                       </div>
@@ -988,8 +1018,9 @@ export default function DemoDashboard() {
                   </div>
 
                   <div className="text-[12.5px] text-[#7d8590] mb-[18px]">
-                    Auto-calculated (Demo data): {demoSummary.sales} −{" "}
-                    {demoSummary.expenses} ={" "}
+                    {isKhmer 
+                      ? `គណនាដោយស្វ័យប្រវត្តិ (ទិន្នន័យសាកល្បង)៖ ${demoSummary.sales} − ${demoSummary.expenses} = `
+                      : `Auto-calculated (Demo data): ${demoSummary.sales} − ${demoSummary.expenses} = `}
                     <strong className="text-[#e6edf3]">
                       {demoSummary.profit}
                     </strong>
@@ -997,17 +1028,15 @@ export default function DemoDashboard() {
 
                   <button
                     onClick={() =>
-                      showToast(
-                        "Day confirmed! Sign up to generate your final accounting report.",
+                      showToast(isKhmer
+                        ? "បានបញ្ជាក់ថ្ងៃនេះ! ចុះឈ្មោះដើម្បីបង្កើតរបាយការណ៍គណនេយ្យចុងក្រោយរបស់អ្នក។"
+                        : "Day confirmed! Sign up to generate your final accounting report.",
                       )
                     }
                     className="w-full flex items-center justify-center gap-[9px] bg-[#3ecf8e] text-[#0d1117] font-bold text-[15px] py-4 rounded-[11px] border-0 cursor-pointer hover:bg-[#4dd49a] transition-colors shadow-[0_2px_14px_rgba(62,207,142,0.2)]"
                   >
                     <CheckCircle2 size={18} />
-                    Confirm & Lock Day
-                    <span className="text-[11px] opacity-75 ml-1">
-                      បញ្ជាក់ និងចាក់សោ
-                    </span>
+                    {isKhmer ? "បញ្ជាក់ និងចាក់សោថ្ងៃ" : "Confirm & Lock Day"}
                   </button>
                 </div>
               </div>
@@ -1033,18 +1062,20 @@ function ChartCard({
   children: React.ReactNode;
   tooltipText?: string;
 }) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const setTooltip = useContext(TooltipContext);
 
   return (
     <div
-      className="bg-white border border-[#e8eaed] rounded-[14px] px-[26px] py-[22px] shadow-[0_1px_4px_rgba(0,0,0,0.06)] cursor-help flex flex-col h-full"
+      className={`border rounded-[14px] px-[26px] py-[22px] shadow-[0_1px_4px_rgba(0,0,0,0.06)] cursor-help flex flex-col h-full transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/[0.06]" : "bg-white border-[#e8eaed]"}`}
       onMouseEnter={(e: MouseEvent<HTMLDivElement>) => {
         if (tooltipText)
           setTooltip({ content: tooltipText, x: e.clientX, y: e.clientY });
       }}
       onMouseLeave={() => setTooltip({ content: null, x: 0, y: 0 })}
     >
-      <div className="text-sm font-semibold text-[#111827] mb-0.5">{title}</div>
+      <div className={`text-sm font-semibold mb-0.5 transition-colors duration-500 ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>{title}</div>
       <div className="text-[11px] text-[#6b7280] mb-5">{khmer}</div>
       {children}
     </div>

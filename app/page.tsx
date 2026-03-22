@@ -339,7 +339,7 @@ export default function LandingPage() {
                 {signupOpen && (
                   <div className="absolute right-0 top-[calc(100%+10px)] w-[210px] bg-[#111] border border-white/10 rounded-xl p-1.5 shadow-xl shadow-black/50 z-50">
                     {/* Vendor */}
-                    <Link href="/signup" className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left">
+                    <Link href="/vendor/register" className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left">
                       <div className="w-7 h-7 rounded-md bg-brand-primary/10 flex items-center justify-center text-sm shrink-0">
                         🏪
                       </div>
@@ -404,9 +404,8 @@ export default function LandingPage() {
           {t[lang].heroDesc}
         </p>
 
-        {/* CTA Buttons */}
         <div className="fade-in-3 flex flex-col sm:flex-row items-center gap-4 mb-6 relative z-10">
-          <Link href="/signup" className="px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-all duration-200 text-white font-semibold text-sm shadow-lg shadow-brand-primary/20 hover:-translate-y-[1px]" style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}}>
+          <Link href="/vendor/register" className="px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-all duration-200 text-white font-semibold text-sm shadow-lg shadow-brand-primary/20 hover:-translate-y-[1px]" style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}}>
             {t[lang].btnVendor}
           </Link>
           <Link href="/login" className="px-6 py-3 rounded-xl border border-blue-400/40 text-blue-400 hover:border-blue-400/70 hover:text-blue-300 transition-all duration-200 font-medium text-sm" style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}}>

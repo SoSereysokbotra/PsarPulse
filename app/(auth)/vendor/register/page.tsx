@@ -15,6 +15,12 @@ import {
 import { AuthLayout, LeftPanelContent, FormInput } from "@/components/auth";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { authClient } from "@/lib/auth/utils/client-auth";
+
+type SignupResponse = {
+  success: boolean;
+  message?: string;
+};
 
 export default function VendorRegisterPage() {
   const { language, t } = useLanguage();
@@ -32,6 +38,7 @@ export default function VendorRegisterPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState("");
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -43,9 +50,32 @@ export default function VendorRegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSuccess(true);
-    setIsLoading(false);
+    setError("");
+
+    try {
+      const result = (await authClient.signup({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        role: "vendor",
+        businessName: formData.storeName,
+        businessEmail: formData.email,
+        phone: formData.phone,
+        businessAddress: formData.businessAddress,
+        description: formData.description,
+      })) as SignupResponse;
+
+      if (!result.success) {
+        setError(result.message || "Registration failed. Please try again.");
+        return;
+      }
+
+      setIsSuccess(true);
+    } catch {
+      setError("Unable to connect to server. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isSuccess) {
@@ -202,6 +232,14 @@ export default function VendorRegisterPage() {
           minLength={8}
           disabled={isLoading}
         />
+
+        {error && (
+          <p
+            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-suwannaphum" : ""}`}
+          >
+            {error}
+          </p>
+        )}
 
         <button
           type="submit"

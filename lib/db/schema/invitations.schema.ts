@@ -7,7 +7,7 @@ export const invitations = pgTable("invitations", {
   email: varchar("email", { length: 255 }).notNull(),
   token: varchar("token", { length: 255 }).notNull().unique(),
   role: varchar("role", { length: 50 })
-    .$type<"student" | "teacher" | "admin">()
+    .$type<"vendor" | "admin">()
     .notNull(),
   status: varchar("status", { length: 50 })
     .$type<"pending" | "accepted" | "expired">()

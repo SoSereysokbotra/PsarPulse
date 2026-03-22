@@ -1,33 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema/users.schema";
-import { desc } from "drizzle-orm";
-import { requireAdmin } from "@/lib/auth/middleware/rbac.middleware";
+import { TokenService } from "@/lib/auth/services/token.service";
+import { CookieUtil } from "@/lib/auth/utils/cookie.util";
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    // Check admin authorization
-    const authError = requireAdmin(request);
-    if (authError) return authError;
+    // Get refresh token from cookie
+    const refreshToken = await CookieUtil.getRefreshTokenCookie();
 
-    const allUsers = await db
-      .select({
-        id: users.id,
-        fullName: users.fullName,
-        email: users.email,
-        role: users.role,
-        status: users.status,
-        createdAt: users.createdAt,
-      })
-      .from(users)
-      .orderBy(desc(users.createdAt));
+    if (refreshToken) {
+      // Revoke the refresh token in DB
+      await TokenService.logout(refreshToken);
+    }
 
-    return NextResponse.json({ success: true, data: allUsers });
-  } catch (error) {
-    console.error("Failed to fetch users:", error);
+    // Clear all auth cookies
+    await CookieUtil.clearAllAuthCookies();
+
     return NextResponse.json(
-      { success: false, message: "Internal server error" },
-      { status: 500 },
+      { success: true, message: "Successfully logged out." },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error("Logout error:", error);
+    // Even if token revocation fails, clear cookies
+    await CookieUtil.clearAllAuthCookies();
+    return NextResponse.json(
+      { success: true, message: "Logged out." },
+      { status: 200 },
     );
   }
 }

@@ -98,13 +98,13 @@ export const getVerificationEmailTemplate = (code: string): string => `
   <div class="wrapper">
     <div class="container">
       <div class="header">
-        <span class="logo-text">Watmean</span>
+        <span class="logo-text">PsarPulse</span>
       </div>
       
       <div class="content">
         <h1>Verify your email</h1>
         <p class="description">
-          Thanks for joining Watmean! Please use the verification code below to secure your account.
+          Thanks for joining PsarPulse! Please use the verification code below to secure your account.
         </p>
         
         <div class="code-container">
@@ -123,7 +123,7 @@ export const getVerificationEmailTemplate = (code: string): string => `
       
       <div class="footer">
         <p class="footer-text">
-          &copy; ${new Date().getFullYear()} Watmean Attendance Tracker<br>
+          &copy; ${new Date().getFullYear()} PsarPulse<br>
           Phnom Penh, Cambodia
         </p>
       </div>

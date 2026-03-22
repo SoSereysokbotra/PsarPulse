@@ -98,7 +98,7 @@ export const getPasswordResetEmailTemplate = (code: string): string => `
   <div class="wrapper">
     <div class="container">
       <div class="header">
-        <span class="logo-text">Watmean</span>
+        <span class="logo-text">PsarPulse</span>
       </div>
       
       <div class="content">
@@ -126,7 +126,7 @@ export const getPasswordResetEmailTemplate = (code: string): string => `
       
       <div class="footer">
         <p class="footer-text">
-          &copy; ${new Date().getFullYear()} Watmean Attendance Tracker<br>
+          &copy; ${new Date().getFullYear()} PsarPulse<br>
           Phnom Penh, Cambodia
         </p>
       </div>

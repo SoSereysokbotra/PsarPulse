@@ -4,8 +4,13 @@ export const signupSchema = z.object({
   email: z.string().email("Invalid email address"),
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  role: z.enum(["student", "teacher", "admin"]).optional(),
+  role: z.enum(["vendor", "customer", "admin"]).optional(),
   token: z.string().optional(),
+  businessName: z.string().optional(),
+  businessEmail: z.string().email("Invalid business email").optional(),
+  phone: z.string().optional(),
+  businessAddress: z.string().optional(),
+  description: z.string().optional(),
 });
 
 export const loginSchema = z.object({

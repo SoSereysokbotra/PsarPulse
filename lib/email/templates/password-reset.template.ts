@@ -1,4 +1,4 @@
-export const getPasswordResetEmailTemplate = (resetLink: string): string => `
+export const getPasswordResetEmailTemplate = (code: string): string => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -53,28 +53,30 @@ export const getPasswordResetEmailTemplate = (resetLink: string): string => `
       color: #64748b;
       margin-bottom: 32px;
     }
-    .button {
+    .code-container {
+      background-color: #fff9f8;
+      border: 2px solid #FF5A36;
+      border-radius: 12px;
+      padding: 24px;
       display: inline-block;
-      padding: 12px 32px;
-      background-color: #FF5A36;
-      color: #ffffff;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      margin: 24px 0;
-      transition: background-color 0.3s;
+      min-width: 220px;
     }
-    .button:hover {
-      background-color: #e84e2a;
+    .code {
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 36px;
+      font-weight: 800;
+      color: #FF5A36;
+      letter-spacing: 8px;
+      margin: 0;
     }
     .expiry-tag {
       display: inline-block;
       margin-top: 24px;
-      padding: 6px 12px;
-      background-color: #f1f5f9;
-      color: #475569;
+      padding: 6px 14px;
+      background-color: #fef2f2;
+      color: #991b1b;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       border-radius: 6px;
     }
     .footer {
@@ -96,29 +98,34 @@ export const getPasswordResetEmailTemplate = (resetLink: string): string => `
   <div class="wrapper">
     <div class="container">
       <div class="header">
-        <span class="logo-text">Watmean</span>
+        <span class="logo-text">PsarPulse</span>
       </div>
       
       <div class="content">
         <h1>Reset your password</h1>
         <p class="description">
-          We received a request to reset your password. Click the button below to create a new password.
+          Need to reset your password? No problem. Use the secret code below to continue.
         </p>
-        
-        <a href="${resetLink}" class="button">Reset Password</a>
-        
-        <div class="expiry-tag">
-          This link expires in 1 hour
+
+        <div class="code-container">
+          <div class="code">${code}</div>
         </div>
         
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 40px;">
-          If you didn't request a password reset, you can safely ignore this message.
-        </p>
+        <div class="expiry-tag">
+          Expires in 5 minutes
+        </div>
+
+        <div style="margin-top: 40px; padding: 16px; background-color: #f8fafc; border-radius: 8px;">
+          <p style="font-size: 13px; color: #64748b; margin: 0;">
+            <strong>Didn't request this?</strong><br>
+            You can safely ignore this email. Your password will not change until you use this code.
+          </p>
+        </div>
       </div>
       
       <div class="footer">
         <p class="footer-text">
-          &copy; ${new Date().getFullYear()} Watmean Attendance Tracker<br>
+          &copy; ${new Date().getFullYear()} PsarPulse<br>
           Phnom Penh, Cambodia
         </p>
       </div>

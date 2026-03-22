@@ -60,6 +60,6 @@ export function getAuthUser(request: NextRequest) {
   return {
     id: userId,
     email: userEmail,
-    role: userRole as "student" | "teacher" | "admin",
+    role: userRole as "vendor" | "admin",
   };
 }

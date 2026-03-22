@@ -6,7 +6,7 @@ export class InvitationRepository {
   static async create(data: {
     email: string;
     token: string;
-    role: "student" | "teacher" | "admin";
+    role: "vendor" | "admin";
     expiresAt: Date;
   }) {
     const result = await db.insert(invitations).values(data).returning();

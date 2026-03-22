@@ -1,5 +1,7 @@
-import { RefreshTokenRepository } from "../repositories/refreshToken.repository";
-import { UserRepository } from "../repositories/user.repository";
+import {
+  RefreshTokenRepository,
+  UserRepository,
+} from "@/lib/db/repositories/example.repository";
 import { HashUtil } from "../utils/hash.util";
 import { TokenUtil } from "../utils/token.util";
 import { JwtPayload, AuthResponse } from "../types";
@@ -37,14 +39,14 @@ export class TokenService {
     }
 
     // Verify token is not revoked or expired
-    if (storedToken.revoked_at) {
+    if (storedToken.revokedAt) {
       return {
         success: false,
         message: "Refresh token has been revoked.",
       };
     }
 
-    if (new Date(storedToken.expires_at) < new Date()) {
+    if (new Date(storedToken.expiresAt) < new Date()) {
       return {
         success: false,
         message: "Refresh token has expired.",
@@ -85,16 +87,15 @@ export class TokenService {
       role: user.role as any,
     });
 
-    // Hash and store new refresh token with same family_id
+    // Hash and store new refresh token with same familyId
     const newTokenHash = HashUtil.hashToken(newRefreshToken);
     await RefreshTokenRepository.create({
-      user_id: user.id,
-      token_hash: newTokenHash,
-      family_id: storedToken.family_id,
-      device_info: storedToken.device_info,
-      user_agent: storedToken.user_agent,
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      revoked_at: null,
+      userId: user.id,
+      tokenHash: newTokenHash,
+      familyId: storedToken.familyId,
+      deviceInfo: storedToken.deviceInfo,
+      userAgent: storedToken.userAgent,
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     });
 
     return {
@@ -105,7 +106,7 @@ export class TokenService {
         user: {
           id: user.id,
           email: user.email,
-          fullName: user.full_name || "",
+          fullName: user.fullName,
           role: user.role as any,
         },
       },

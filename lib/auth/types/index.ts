@@ -1,6 +1,6 @@
 import { User, RefreshToken, VerificationCode } from "@/lib/db/types";
 
-export type UserRole = "student" | "teacher" | "admin";
+export type UserRole = "vendor" | "admin" | "super_admin" | "customer";
 
 export interface JwtPayload {
   id: string;
@@ -20,6 +20,11 @@ export interface SignupRequest {
   password: string;
   role?: UserRole;
   token?: string;
+  businessName?: string;
+  businessEmail?: string;
+  phone?: string;
+  businessAddress?: string;
+  description?: string;
 }
 
 export interface LoginRequest {

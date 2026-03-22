@@ -37,18 +37,19 @@ export class CookieUtil {
   }
 
   static async setAccessTokenCookie(token: string) {
-    // Parse "7d" to milliseconds
-    const expiresIn = 7 * 24 * 60 * 60 * 1000;
+    // Access token expires in 15 minutes (matching JWT expiry)
+    const expiresIn = 15 * 60 * 1000; // 15 minutes
     const expires = new Date(Date.now() + expiresIn);
     await this.setCookie(authConfig.cookies.accessToken, token, expires);
   }
 
   static async setRefreshTokenCookie(token: string) {
-    // Parse "30d" to milliseconds
+    // Refresh token expires in 30 days
     const expiresIn = 30 * 24 * 60 * 60 * 1000;
     const expires = new Date(Date.now() + expiresIn);
     await this.setCookie(authConfig.cookies.refreshToken, token, expires);
   }
+
   static async getVerificationSessionCookie(): Promise<string | undefined> {
     return await this.getCookie(authConfig.cookies.verificationSession);
   }
@@ -68,6 +69,7 @@ export class CookieUtil {
   static async getRefreshTokenCookie(): Promise<string | undefined> {
     return await this.getCookie(authConfig.cookies.refreshToken);
   }
+
   static async clearVerificationSessionCookie() {
     await this.deleteCookie(authConfig.cookies.verificationSession);
   }

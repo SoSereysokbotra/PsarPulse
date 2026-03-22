@@ -1,106 +1,114 @@
 class AuthClient {
   private baseUrl = "/api/auth";
 
+  private async jsonRequest<T>(
+    path: string,
+    options: RequestInit = {},
+  ): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      },
+      ...options,
+    });
+
+    return response.json();
+  }
+
   async signup(data: {
     email: string;
     fullName: string;
     password: string;
     role?: string;
+    businessName?: string;
+    businessEmail?: string;
+    phone?: string;
+    businessAddress?: string;
+    description?: string;
+    token?: string;
   }) {
-    const response = await fetch(`${this.baseUrl}/signup`, {
+    return this.jsonRequest("/signup", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    return response.json();
   }
 
   async login(data: { email: string; password: string }) {
-    const response = await fetch(`${this.baseUrl}/login`, {
+    return this.jsonRequest("/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
-    return response.json();
   }
 
   async verifyEmail(code: string) {
-    const response = await fetch(`${this.baseUrl}/verify/email`, {
+    return this.jsonRequest("/verify/email", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code }),
     });
-    return response.json();
+  }
+
+  async resendVerificationCode() {
+    return this.jsonRequest("/verify/resend", {
+      method: "POST",
+    });
   }
 
   async refreshToken() {
-    const response = await fetch(`${this.baseUrl}/tokens/refresh`, {
+    return this.jsonRequest("/tokens/refresh", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
     });
-    return response.json();
   }
 
   async requestPasswordReset(email: string) {
-    const response = await fetch(`${this.baseUrl}/password/forgot`, {
+    return this.jsonRequest("/password/forgot", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email }),
     });
-    return response.json();
   }
 
   async verifyResetCode(code: string) {
-    const response = await fetch(`${this.baseUrl}/password/verify-code`, {
+    return this.jsonRequest("/password/verify-code", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code }),
     });
-    return response.json();
   }
 
   async resetPassword(newPassword: string, confirmPassword: string) {
-    const response = await fetch(`${this.baseUrl}/password/reset`, {
+    return this.jsonRequest("/password/reset", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ newPassword, confirmPassword }),
     });
-    return response.json();
   }
   async logout() {
-    const response = await fetch(`${this.baseUrl}/logout`, {
+    return this.jsonRequest("/logout", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
     });
-    return response.json();
   }
 
   async getProfile() {
-    const response = await fetch(`${this.baseUrl}/profile`, {
+    return this.jsonRequest("/profile", {
       method: "GET",
     });
-    return response.json();
   }
 
   async getSessions() {
-    const response = await fetch(`${this.baseUrl}/sessions/list`, {
+    return this.jsonRequest("/sessions/list", {
       method: "GET",
     });
-    return response.json();
   }
 
   async logoutAllSessions() {
-    const response = await fetch(`${this.baseUrl}/sessions/logout`, {
+    return this.jsonRequest("/sessions/logout", {
       method: "POST",
     });
-    return response.json();
   }
 
   async revokeSession(sessionId: string) {
-    const response = await fetch(`${this.baseUrl}/sessions/${sessionId}`, {
+    return this.jsonRequest(`/sessions/${sessionId}`, {
       method: "DELETE",
     });
-    return response.json();
   }
 }
 

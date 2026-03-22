@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TokenService } from "@/lib/auth/services/token.service";
+import { CookieUtil } from "@/lib/auth/utils/cookie.util";
 import {
   authenticate,
   getAuthUser,
@@ -19,6 +20,9 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await TokenService.logoutAllSessions(user.id);
+
+    // Clear auth cookies for current session
+    await CookieUtil.clearAllAuthCookies();
 
     return NextResponse.json(result, {
       status: result.success ? 200 : 400,

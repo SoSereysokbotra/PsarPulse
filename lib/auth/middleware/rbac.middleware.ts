@@ -71,7 +71,7 @@ export function requireAdmin(request: NextRequest): NextResponse | null {
  * Returns a middleware function that checks if user has one of the allowed roles
  */
 export function requireRole(
-  allowedRoles: Array<"student" | "teacher" | "admin">,
+  allowedRoles: Array<"vendor" | "admin">,
 ): (request: NextRequest) => NextResponse | null {
   return (request: NextRequest) => {
     const payload = extractAndVerifyToken(request);
@@ -104,7 +104,7 @@ export function requireRole(
 export function getAuthenticatedUser(request: NextRequest): {
   id: string;
   email: string;
-  role: "student" | "teacher" | "admin";
+  role: "vendor" | "admin";
 } | null {
   const payload = extractAndVerifyToken(request);
 
@@ -115,6 +115,6 @@ export function getAuthenticatedUser(request: NextRequest): {
   return {
     id: payload.id,
     email: payload.email,
-    role: payload.role as "student" | "teacher" | "admin",
+    role: payload.role as "vendor" | "admin",
   };
 }

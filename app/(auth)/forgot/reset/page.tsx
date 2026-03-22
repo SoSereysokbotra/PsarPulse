@@ -9,6 +9,12 @@ import {
   SuccessCard,
 } from "@/components/auth";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { authClient } from "@/lib/auth/utils/client-auth";
+
+type ResetPasswordResponse = {
+  success: boolean;
+  message?: string;
+};
 
 export default function ResetPasswordPage() {
   const { resolvedTheme } = useTheme();
@@ -19,6 +25,8 @@ export default function ResetPasswordPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const isLengthValid = formData.password.length >= 8;
   const hasNumber = /\d/.test(formData.password);
@@ -35,13 +43,31 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      setError("Passwords do not match!");
       return;
     }
+
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSuccess(true);
-    setIsLoading(false);
+    setError("");
+
+    try {
+      const result = (await authClient.resetPassword(
+        formData.password,
+        formData.confirmPassword,
+      )) as ResetPasswordResponse;
+
+      if (!result.success) {
+        setError(result.message || "Password reset failed. Please try again.");
+        return;
+      }
+
+      setSuccessMessage(result.message || "Password reset successfully.");
+      setIsSuccess(true);
+    } catch {
+      setError("Unable to connect to server. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -134,6 +160,14 @@ export default function ResetPasswordPage() {
               </div>
             </div>
 
+            {error && (
+              <p
+                className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"}`}
+              >
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={isLoading}
@@ -150,7 +184,10 @@ export default function ResetPasswordPage() {
       ) : (
         <SuccessCard
           title="Success!"
-          message="Your password has been reset successfully. You can now use your new password to sign in."
+          message={
+            successMessage ||
+            "Your password has been reset successfully. You can now use your new password to sign in."
+          }
           buttonText="Go to Sign In"
           buttonHref="/login"
         />
@@ -172,7 +209,7 @@ function ValidationItem({
   return (
     <div className="flex items-center gap-2">
       <div
-        className={`flex-shrink-0 h-4 w-4 rounded-full flex items-center justify-center transition-colors ${
+        className={`shrink-0 h-4 w-4 rounded-full flex items-center justify-center transition-colors ${
           isValid
             ? "bg-green-500/20"
             : isDark

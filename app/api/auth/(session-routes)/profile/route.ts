@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Return user data without sensitive information
-    const { password, ...safeUserData } = userData;
+    const { passwordHash, ...safeUserData } = userData;
 
     return NextResponse.json({
       success: true,

@@ -41,7 +41,7 @@ export class UserRepository {
    * Find users by role
    */
   static async findByRole(
-    role: "student" | "teacher" | "admin",
+    role: "vendor" | "admin",
   ): Promise<User[]> {
     const userList = await db.select().from(users).where(eq(users.role, role));
     return userList;
@@ -106,14 +106,24 @@ export class RefreshTokenRepository {
   }
 
   /**
-   * Find token by value
+   * Find token by hash
    */
-  static async findByToken(token: string) {
-    const [refreshToken] = await db
+  static async findByTokenHash(tokenHash: string) {
+    const [token] = await db
       .select()
       .from(refreshTokens)
-      .where(eq(refreshTokens.token, token));
-    return refreshToken;
+      .where(eq(refreshTokens.tokenHash, tokenHash));
+    return token;
+  }
+
+  /**
+   * Find tokens by family ID
+   */
+  static async findByFamilyId(familyId: string) {
+    return await db
+      .select()
+      .from(refreshTokens)
+      .where(eq(refreshTokens.familyId, familyId));
   }
 
   /**
@@ -130,7 +140,17 @@ export class RefreshTokenRepository {
   }
 
   /**
-   * Revoke token
+   * Revoke token by hash
+   */
+  static async revokeToken(tokenHash: string): Promise<void> {
+    await db
+      .update(refreshTokens)
+      .set({ revokedAt: new Date(), updatedAt: new Date() })
+      .where(eq(refreshTokens.tokenHash, tokenHash));
+  }
+
+  /**
+   * Revoke token by ID
    */
   static async revoke(id: string): Promise<void> {
     await db
@@ -146,7 +166,32 @@ export class RefreshTokenRepository {
     await db
       .update(refreshTokens)
       .set({ revokedAt: new Date(), updatedAt: new Date() })
-      .where(eq(refreshTokens.userId, userId));
+      .where(
+        and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)),
+      );
+  }
+
+  /**
+   * Alias for revokeAllByUserId
+   */
+  static async revokeAllTokensForUser(userId: string): Promise<void> {
+    return this.revokeAllByUserId(userId);
+  }
+
+  /**
+   * Get active sessions for a user
+   */
+  static async getActiveSessions(userId: string) {
+    return await db
+      .select()
+      .from(refreshTokens)
+      .where(
+        and(
+          eq(refreshTokens.userId, userId),
+          isNull(refreshTokens.revokedAt),
+        ),
+      )
+      .orderBy(desc(refreshTokens.createdAt));
   }
 
   /**
@@ -190,6 +235,16 @@ export class VerificationCodeRepository {
       .orderBy(desc(verificationCodes.createdAt))
       .limit(1);
     return code;
+  }
+
+  /**
+   * Alias for findActiveByUserIdAndPurpose
+   */
+  static async findByUserIdAndPurpose(
+    userId: string,
+    purpose: "email_verification" | "password_reset",
+  ) {
+    return this.findActiveByUserIdAndPurpose(userId, purpose);
   }
 
   /**

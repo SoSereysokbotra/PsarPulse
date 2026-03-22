@@ -1,4 +1,7 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
@@ -10,7 +13,7 @@ interface FormInputProps extends React.InputHTMLAttributes<
   icon: React.ElementType;
   multiline?: boolean;
   rows?: number;
-  rightLabelElement?: React.ReactNode; // Added this prop
+  rightLabelElement?: React.ReactNode;
 }
 
 export const FormInput = ({
@@ -28,8 +31,19 @@ export const FormInput = ({
   const { resolvedTheme } = useTheme();
   const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
+  const [showPassword, setShowPassword] = useState(false);
 
-  const sharedClasses = `block w-full pl-11 pr-4 py-3 border transition-all duration-200 ${
+  const isPasswordField = props.type === "password";
+
+  const inputType = isPasswordField
+    ? showPassword
+      ? "text"
+      : "password"
+    : props.type;
+
+  const sharedClasses = `block w-full pl-11 py-3 border transition-all duration-200 ${
+    isPasswordField ? "pr-12" : "pr-4"
+  } ${
     isDark
       ? "bg-dark-surface border-dark-border text-white placeholder-slate-500 focus:border-psar-primary focus:ring-psar-primary/20"
       : "bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white hover:border-slate-300 focus:border-psar-primary focus:ring-psar-primary/20"
@@ -39,11 +53,10 @@ export const FormInput = ({
         ? "opacity-60 cursor-not-allowed bg-dark-bg"
         : "opacity-70 cursor-not-allowed bg-slate-100"
       : ""
-  }`;
+  } ${className}`;
 
   return (
     <div>
-      {/* Wrapped label and right element in a flex container */}
       <div className="flex items-center justify-between mb-2">
         <label
           htmlFor={id}
@@ -52,7 +65,6 @@ export const FormInput = ({
           {label}
         </label>
 
-        {/* Render the right element if it exists */}
         {rightLabelElement && (
           <div className={isKhmer ? "font-suwannaphum" : ""}>
             {rightLabelElement}
@@ -66,6 +78,7 @@ export const FormInput = ({
         >
           <Icon className={`h-5 w-5 ${isDark ? "text-slate-500" : "text-slate-400"} group-focus-within:text-psar-primary transition-colors duration-200`} />
         </div>
+        
         {multiline ? (
           <textarea
             id={id}
@@ -74,9 +87,30 @@ export const FormInput = ({
             {...(props as any)}
           />
         ) : (
-          <input id={id} className={sharedClasses} {...(props as any)} />
+          <input
+            id={id}
+            className={sharedClasses}
+            {...(props as any)}
+            type={inputType}
+          />
+        )}
+
+        {isPasswordField && !multiline && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className={`absolute right-0 pr-4 inset-y-0 flex items-center ${isDark ? "text-slate-500 hover:text-white" : "text-slate-400 hover:text-slate-600"} transition-colors outline-none focus:text-psar-primary`}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
+          </button>
         )}
       </div>
     </div>
   );
 };
+

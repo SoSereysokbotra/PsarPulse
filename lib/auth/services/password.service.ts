@@ -1,5 +1,7 @@
-import { UserRepository } from "../repositories/user.repository";
-import { VerificationCodeRepository } from "../repositories/verificationCode.repository";
+import {
+  UserRepository,
+  VerificationCodeRepository,
+} from "@/lib/db/repositories/example.repository";
 import { HashUtil } from "../utils/hash.util";
 import { TokenUtil } from "../utils/token.util";
 import { CookieUtil } from "../utils/cookie.util";
@@ -25,7 +27,7 @@ export class PasswordService {
       const dummyToken = TokenUtil.generatePasswordResetToken({
         id: "00000000-0000-0000-0000-000000000000", // Dummy user ID
         email: request.email,
-        role: "student" as any,
+        role: "vendor" as any,
       });
 
       const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
@@ -59,15 +61,15 @@ export class PasswordService {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const codeHash = HashUtil.hashVerificationCode(code);
 
-    // Store verification code
+    // Store verification code (hashed)
     await VerificationCodeRepository.create({
-      user_id: user.id,
-      code_hash: codeHash,
+      userId: user.id,
+      codeHash: codeHash,
       purpose: "password_reset",
-      expires_at: new Date(
+      expiresAt: new Date(
         Date.now() + authConfig.verificationCode.expiresInMinutes * 60 * 1000,
-      ).toISOString(),
-      last_sent_at: new Date().toISOString(),
+      ),
+      lastSentAt: new Date(),
     });
 
     // Send reset email
@@ -117,7 +119,9 @@ export class PasswordService {
       );
 
     if (existingCode) {
-      const lastSent = new Date(existingCode.last_sent_at).getTime();
+      const lastSent = existingCode.lastSentAt
+        ? new Date(existingCode.lastSentAt).getTime()
+        : new Date(existingCode.createdAt).getTime();
       const now = Date.now();
       const waitTime = authConfig.verificationCode.resendWaitTime * 1000;
 
@@ -142,15 +146,15 @@ export class PasswordService {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const codeHash = HashUtil.hashVerificationCode(code);
 
-    // Store verification code
+    // Store verification code (hashed)
     await VerificationCodeRepository.create({
-      user_id: payload.id,
-      code_hash: codeHash,
+      userId: payload.id,
+      codeHash: codeHash,
       purpose: "password_reset",
-      expires_at: new Date(
+      expiresAt: new Date(
         Date.now() + authConfig.verificationCode.expiresInMinutes * 60 * 1000,
-      ).toISOString(),
-      last_sent_at: new Date().toISOString(),
+      ),
+      lastSentAt: new Date(),
     });
 
     // Send reset email
@@ -193,6 +197,7 @@ export class PasswordService {
         message: "Verification code not found. Please request a new one.",
       };
     }
+
     // Get verification code
     const verificationCode =
       await VerificationCodeRepository.findByUserIdAndPurpose(
@@ -207,7 +212,7 @@ export class PasswordService {
     }
 
     // Check expiry
-    if (new Date(verificationCode.expires_at) < new Date()) {
+    if (new Date(verificationCode.expiresAt) < new Date()) {
       await VerificationCodeRepository.deleteByUserIdAndPurpose(
         payload.id,
         "password_reset",
@@ -218,9 +223,9 @@ export class PasswordService {
       };
     }
 
-    // Verify code
-    const codeHash = HashUtil.hashVerificationCode(request.code);
-    if (codeHash !== verificationCode.code_hash) {
+    // Verify code — hash submitted code and compare
+    const submittedHash = HashUtil.hashVerificationCode(request.code);
+    if (submittedHash !== verificationCode.codeHash) {
       return {
         success: false,
         message: "Invalid verification code.",
@@ -300,8 +305,8 @@ export class PasswordService {
 
     // Update user password
     await UserRepository.update(payload.id, {
-      password: passwordHash,
-      updated_at: new Date().toISOString(),
+      passwordHash: passwordHash,
+      updatedAt: new Date(),
     });
 
     // Delete verification code

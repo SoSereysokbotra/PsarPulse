@@ -167,6 +167,30 @@ export const auditLogs = pgTable("audit_logs", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Support Notes (internal admin notes per user)
+export const supportNotes = pgTable("support_notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  adminId: uuid("admin_id")
+    .references(() => admins.id)
+    .notNull(),
+  note: text("note").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Platform Settings
+export const platformSettings = pgTable("platform_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  key: varchar("key", { length: 100 }).notNull().unique(),
+  value: text("value").notNull(),
+  label: varchar("label", { length: 200 }),
+  updatedById: uuid("updated_by_id").references(() => admins.id),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const vendorPlansRelations = relations(vendorPlans, ({ many }) => ({
   vendors: many(vendors),

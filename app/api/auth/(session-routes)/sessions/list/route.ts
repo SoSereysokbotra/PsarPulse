@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { RefreshTokenRepository } from "@/lib/auth/repositories/refreshToken.repository";
+import { RefreshTokenRepository } from "@/lib/db/repositories/example.repository";
 import {
   authenticate,
   getAuthUser,
@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
 
     const formattedSessions = sessions.map((session) => ({
       id: session.id,
-      deviceInfo: session.device_info,
-      userAgent: session.user_agent,
-      createdAt: session.created_at,
-      expiresAt: session.expires_at,
-      revokedAt: session.revoked_at,
+      deviceInfo: session.deviceInfo,
+      userAgent: session.userAgent,
+      createdAt: session.createdAt,
+      expiresAt: session.expiresAt,
+      revokedAt: session.revokedAt,
     }));
 
     return NextResponse.json({

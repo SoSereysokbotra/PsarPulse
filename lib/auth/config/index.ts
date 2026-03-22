@@ -38,7 +38,7 @@ export const authConfig = {
     port: parseInt(process.env.EMAIL_PORT || "587"),
     user: process.env.EMAIL_USER!,
     pass: process.env.EMAIL_PASS!,
-    from: process.env.SMTP_FROM || '"WatMean Support" <noreply@watmean.com>',
+    from: process.env.SMTP_FROM || '"PsarPulse Support" <noreply@psarpulse.com>',
   },
 };
 
@@ -47,8 +47,6 @@ const requiredEnvVars = [
   "JWT_ACCESS_SECRET",
   "JWT_REFRESH_SECRET",
   "DATABASE_URL",
-  "SUPABASE_URL",
-  "SUPABASE_ANON_KEY",
   "EMAIL_HOST",
   "EMAIL_USER",
   "EMAIL_PASS",

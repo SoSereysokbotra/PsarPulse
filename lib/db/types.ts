@@ -17,7 +17,7 @@ export type NewVerificationCode = InferInsertModel<typeof verificationCodes>;
 export type VerificationCodeUpdate = Partial<NewVerificationCode>;
 
 // User role enum
-export type UserRole = "student" | "teacher" | "admin";
+export type UserRole = "vendor" | "admin" | "customer";
 
 // User status enum
 export type UserStatus = "active" | "pending" | "blocked" | "deleted";

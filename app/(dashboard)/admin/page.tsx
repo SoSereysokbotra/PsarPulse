@@ -18,7 +18,9 @@ import {
   XCircle, 
   User,
   Store,
+  Loader2,
 } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
@@ -27,6 +29,80 @@ export default function AdminDashboardPage() {
   const { resolvedTheme } = useTheme();
   const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
+
+  const [vendorRequests, setVendorRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [isInviting, setIsInviting] = useState(false);
+
+  const handleInviteAdmin = async () => {
+    if (!inviteEmail) return;
+    setIsInviting(true);
+    try {
+      const response = await fetch("/api/admin/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: inviteEmail }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert("Invitation sent successfully!");
+        setShowInviteModal(false);
+        setInviteEmail("");
+      } else {
+        alert("Failed to send invitation: " + data.message);
+      }
+    } catch (e) {
+      alert("Error sending invitation.");
+    } finally {
+      setIsInviting(false);
+    }
+  };
+
+  useEffect(() => {
+    async function fetchRequests() {
+      try {
+        const response = await fetch("/api/admin/vendor-requests");
+        if (response.ok) {
+          const json = await response.json();
+          if (json.success) {
+            setVendorRequests(json.data);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch pending requests", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRequests();
+  }, []);
+
+  const handleAction = async (id: string, status: "approved" | "rejected") => {
+    if (!confirm(`Are you sure you want to ${status === "approved" ? "approve" : "reject"} this vendor?`)) return;
+
+    try {
+      const response = await fetch(`/api/admin/vendor-requests/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
+      if (response.ok) {
+        const json = await response.json();
+        if (json.success) {
+          setVendorRequests((prev) => prev.filter((req) => req.id !== id));
+        } else {
+          alert('Error: ' + json.message);
+        }
+      } else {
+        alert('Server error while performing action.');
+      }
+    } catch (e) {
+      alert('Failed to connect to the server.');
+    }
+  };
 
   return (
     <div className={`space-y-8 font-sans ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}>
@@ -83,6 +159,13 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 px-2 md:px-0">
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg text-sm font-medium transition-all shadow-sm whitespace-nowrap"
+            >
+              <Users className="h-4 w-4" />
+              {isKhmer ? "អញ្ជើញរដ្ឋបាល" : "Invite Admin"}
+            </button>
             <button className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg text-sm font-medium transition-all shadow-sm whitespace-nowrap">
               <UserPlus className="h-4 w-4" />
               {isKhmer ? "ចុះឈ្មោះអាជីវករ" : "Onboard Vendor"}
@@ -101,6 +184,42 @@ export default function AdminDashboardPage() {
             </button>
           </div>
         </div>
+
+        {/* Invite Admin Modal */}
+        {showInviteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className={`w-full max-w-sm rounded-xl p-6 shadow-xl ${isDark ? "bg-[#161b22] border border-white/10" : "bg-white"}`}>
+              <h2 className={`text-lg font-bold mb-2 ${isDark ? "text-white" : "text-black"}`}>Invite New Admin</h2>
+              <p className="text-sm text-slate-500 mb-4">Send an email invitation allowing a new user to securely register as an Administrator.</p>
+              
+              <input 
+                type="email" 
+                placeholder="admin@example.com" 
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                className={`w-full p-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500/30 outline-none mb-4 ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200"}`}
+              />
+              
+              <div className="flex gap-2 justify-end">
+                <button 
+                  onClick={() => setShowInviteModal(false)}
+                  disabled={isInviting}
+                  className={`px-4 py-2 text-sm rounded-lg ${isDark ? "text-slate-300 hover:bg-white/5" : "text-slate-600 hover:bg-slate-100"}`}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleInviteAdmin}
+                  disabled={isInviting || !inviteEmail}
+                  className="px-4 py-2 text-sm rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isInviting && <Loader2 className="w-4 h-4 animate-spin" />}
+                  Send Invite
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Quick Statistics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -160,7 +279,7 @@ export default function AdminDashboardPage() {
           />
           <StatCard
             title={isKhmer ? "ការអនុម័តដែលកំពុងរង់ចាំ" : "Pending Approvals"}
-            value="34"
+            value={vendorRequests.length.toString()}
             subtext={isKhmer ? "តូបត្រូវការការផ្ទៀងផ្ទាត់" : "Stalls need verification"}
             trend={isKhmer ? "ត្រូវការសកម្មភាព" : "Action needed"}
             trendUp={null}
@@ -211,37 +330,45 @@ export default function AdminDashboardPage() {
                 {isKhmer ? "ការអនុម័តដែលកំពុងរង់ចាំ" : "Pending Approvals"}
               </h2>
               <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">
-                34
+                {vendorRequests.length}
               </span>
             </div>
             <div className="flex-1 overflow-y-auto p-2">
-              {/* Mock Pending Items */}
-              {[1, 2, 3, 4].map((item) => (
-                <div
-                  key={item}
-                  className="p-3 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-100 mb-1 group"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">
-                        Sokha`s Fresh Veggies {item}
-                      </p>
-                      <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
-                        <MapPin className="h-3 w-3" /> Zone B, Stall{" "}
-                        {100 + item}
-                      </p>
-                    </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button className={`p-1.5 rounded-md transition-colors ${isDark ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"}`}>
-                        <CheckCircle2 className="h-4 w-4" />
-                      </button>
-                      <button className={`p-1.5 rounded-md transition-colors ${isDark ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" : "bg-red-50 text-red-600 hover:bg-red-100"}`}>
-                        <XCircle className="h-4 w-4" />
-                      </button>
+              {loading ? (
+                <div className="flex items-center justify-center h-full p-6 text-slate-400">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : vendorRequests.length === 0 ? (
+                <div className="flex items-center justify-center h-full p-6 text-slate-400 text-sm">
+                  {isKhmer ? "មិនមានការអនុម័តដែលកំពុងរង់ចាំទេ" : "No pending approvals"}
+                </div>
+              ) : (
+                vendorRequests.map((req) => (
+                  <div
+                    key={req.id}
+                    className="p-3 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-100 mb-1 group"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className={`text-sm font-semibold ${isDark ? "text-slate-300" : "text-slate-900"}`}>
+                          {req.businessName}
+                        </p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                          <MapPin className="h-3 w-3" /> {req.businessEmail}
+                        </p>
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleAction(req.id, "approved")} title="Approve" className={`p-1.5 rounded-md transition-colors ${isDark ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"}`}>
+                          <CheckCircle2 className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleAction(req.id, "rejected")} title="Reject" className={`p-1.5 rounded-md transition-colors ${isDark ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" : "bg-red-50 text-red-600 hover:bg-red-100"}`}>
+                          <XCircle className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
             <div className={`p-4 border-t rounded-b-xl ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50/50 border-slate-100"}`}>
               <button className="w-full text-sm font-medium text-slate-500 hover:text-indigo-400 transition-colors">

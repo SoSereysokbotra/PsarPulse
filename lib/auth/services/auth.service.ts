@@ -20,6 +20,13 @@ export class AuthService {
     // Check if user already exists
     const existingUser = await UserRepository.findByEmail(request.email);
 
+    if (request.role === "admin" && !request.token) {
+      return {
+        success: false,
+        message: "Admin registration requires a valid invitation token.",
+      };
+    }
+
     // Handle Invitation Token
     let invitation = null as Awaited<
       ReturnType<
@@ -108,17 +115,12 @@ export class AuthService {
       user = await UserRepository.update(existingUser.id, {
         fullName: request.fullName,
         passwordHash: passwordHash,
-        role: request.role || "student",
+        role: request.role || "customer",
         updatedAt: new Date(),
       });
     } else {
-      // Generate unique ID based on role
-      const role = request.role || "student";
-      const year = new Date().getFullYear();
-      const random = Math.floor(1000 + Math.random() * 9000); // 4 digit random
-      const uniqueId = `${role === "student" ? "STU" : "TEA"}-${year}-${random}`;
-
       // Create new user
+      const role = request.role || "customer";
       user = await UserRepository.create({
         fullName: request.fullName,
         email: request.email,
@@ -136,6 +138,28 @@ export class AuthService {
       };
     }
 
+    // Role-specific record creation
+    if (user.role === "vendor" && !existingUser) {
+      const { db } = await import("@/lib/db");
+      const { vendorRequests } = await import("@/lib/db/schema");
+      
+      await db.insert(vendorRequests).values({
+        userId: user.id,
+        businessName: request.businessName || request.fullName,
+        businessEmail: request.businessEmail || request.email,
+        status: "pending",
+        requiredPlan: "free",
+      });
+    } else if (user.role === "admin" && !existingUser) {
+      const { db } = await import("@/lib/db");
+      const { admins } = await import("@/lib/db/schema");
+
+      await db.insert(admins).values({
+        userId: user.id,
+        role: "admin",
+      });
+    }
+
     // Generate verification token
     const verificationToken = TokenUtil.generateVerificationToken({
       id: user.id,
@@ -149,11 +173,12 @@ export class AuthService {
 
     // Generate verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const codeHash = HashUtil.hashVerificationCode(code);
 
-    // Store verification code
+    // Store verification code (hashed)
     await VerificationCodeRepository.create({
       userId: user.id,
-      code: code,
+      codeHash: codeHash,
       purpose: "email_verification",
       expiresAt: new Date(
         Date.now() + authConfig.verificationCode.expiresInMinutes * 60 * 1000,
@@ -162,6 +187,12 @@ export class AuthService {
 
     // Send verification email
     await EmailService.sendVerificationEmail(user.email, code);
+
+    // If an invitation was successfully used, mark it as accepted
+    if (invitation) {
+      const { InvitationRepository } = await import("@/lib/db/repositories/invitations.repository");
+      await InvitationRepository.markAsAccepted(invitation.id);
+    }
 
     return {
       success: true,
@@ -229,8 +260,9 @@ export class AuthService {
       };
     }
 
-    // Verify code
-    if (request.code !== verificationCode.code) {
+    // Hash submitted code and compare against stored hash
+    const submittedHash = HashUtil.hashVerificationCode(request.code);
+    if (submittedHash !== verificationCode.codeHash) {
       return {
         success: false,
         message: "Invalid verification code.",
@@ -303,7 +335,9 @@ export class AuthService {
       );
 
     if (existingCode) {
-      const lastSent = new Date(existingCode.createdAt).getTime();
+      const lastSent = existingCode.lastSentAt
+        ? new Date(existingCode.lastSentAt).getTime()
+        : new Date(existingCode.createdAt).getTime();
       const now = Date.now();
       const waitTime = authConfig.verificationCode.resendWaitTime * 1000;
 
@@ -326,15 +360,17 @@ export class AuthService {
 
     // Generate new verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const codeHash = HashUtil.hashVerificationCode(code);
 
-    // Store verification code
+    // Store verification code (hashed)
     await VerificationCodeRepository.create({
       userId: user.id,
-      code: code,
+      codeHash: codeHash,
       purpose: "email_verification",
       expiresAt: new Date(
         Date.now() + authConfig.verificationCode.expiresInMinutes * 60 * 1000,
       ),
+      lastSentAt: new Date(),
     });
 
     // Send verification email
@@ -410,12 +446,13 @@ export class AuthService {
       role: user.role as any,
     });
 
-    // Store refresh token
+    // Hash and store refresh token with familyId
+    const tokenHash = HashUtil.hashToken(refreshToken);
     await RefreshTokenRepository.create({
       userId: user.id,
-      token: refreshToken,
+      tokenHash: tokenHash,
       deviceInfo: "Web", // TODO: Extract from User-Agent
-      userAgent: "Unknown", // TODO: Extract from request
+      userAgent: "Unknown", // TODO: Extract from request headers
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
     });
 

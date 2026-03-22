@@ -7,7 +7,7 @@ import { EmailService } from "@/lib/auth/services/email.service";
 
 const inviteSchema = z.object({
   email: z.string().email(),
-  role: z.enum(["teacher", "admin"]), // Only allow inviting teachers or admins
+  role: z.enum(["vendor"]),
   name: z.string().min(1).optional(), // Optional display name for the invite
 });
 

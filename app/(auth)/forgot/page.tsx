@@ -10,6 +10,12 @@ import {
 } from "@/components/auth";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { authClient } from "@/lib/auth/utils/client-auth";
+
+type ForgotResponse = {
+  success: boolean;
+  message?: string;
+};
 
 export default function ForgotPasswordPage() {
   const { language, t } = useLanguage();
@@ -19,14 +25,29 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSubmitted(true);
-    setIsLoading(false);
+    setError("");
+
+    try {
+      const result = (await authClient.requestPasswordReset(
+        email,
+      )) as ForgotResponse;
+
+      if (!result.success) {
+        setError(result.message || "Failed to send reset code.");
+        return;
+      }
+
+      setIsSubmitted(true);
+    } catch {
+      setError("Unable to connect to server. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -34,8 +55,16 @@ export default function ForgotPasswordPage() {
       leftContent={
         <LeftPanelContent
           icon={<KeyRound className="w-8 h-8" />}
-          title={isKhmer ? "រក្សាសុវត្ថិភាពគណនីអ្នកលក់របស់អ្នក។" : "Secure your vendor account."}
-          subtitle={isKhmer ? "កុំបារម្ភ! វាអាចកើតឡើងចំពោះយើងទាំងអស់គ្នា។ យើងនឹងជួយអ្នកឱ្យត្រឡប់ទៅគ្រប់គ្រងស្តង់របស់អ្នកវិញ។" : "Don't worry! It happens to the best of us. We'll help you get back to managing your stall."}
+          title={
+            isKhmer
+              ? "រក្សាសុវត្ថិភាពគណនីអ្នកលក់របស់អ្នក។"
+              : "Secure your vendor account."
+          }
+          subtitle={
+            isKhmer
+              ? "កុំបារម្ភ! វាអាចកើតឡើងចំពោះយើងទាំងអស់គ្នា។ យើងនឹងជួយអ្នកឱ្យត្រឡប់ទៅគ្រប់គ្រងស្តង់របស់អ្នកវិញ។"
+              : "Don't worry! It happens to the best of us. We'll help you get back to managing your stall."
+          }
           footerText="© 2026 PsarPulse KH • Developed at Kirirom Institute of Technology"
         />
       }
@@ -44,11 +73,17 @@ export default function ForgotPasswordPage() {
       {!isSubmitted ? (
         <>
           <header className="mb-10">
-            <h1 className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum text-3xl" : ""}`}>
+            <h1
+              className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum text-3xl" : ""}`}
+            >
               {isKhmer ? "ភ្លេចពាក្យសម្ងាត់?" : "Forgot Password?"}
             </h1>
-            <p className={`font-medium text-lg ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}>
-              {isKhmer ? "បញ្ចូលអ៊ីមែលរបស់អ្នកដើម្បីបន្ត។" : "Enter your email to continue."}
+            <p
+              className={`font-medium text-lg ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+            >
+              {isKhmer
+                ? "បញ្ចូលអ៊ីមែលរបស់អ្នកដើម្បីបន្ត។"
+                : "Enter your email to continue."}
             </p>
           </header>
 
@@ -66,6 +101,14 @@ export default function ForgotPasswordPage() {
               disabled={isLoading}
             />
 
+            {error && (
+              <p
+                className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-suwannaphum" : ""}`}
+              >
+                {error}
+              </p>
+            )}
+
             <button
               type="submit"
               disabled={isLoading}
@@ -73,8 +116,10 @@ export default function ForgotPasswordPage() {
             >
               {isLoading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
+              ) : isKhmer ? (
+                "ផ្ញើតំណភ្ជាប់ដើម្បីកំណត់ឡើងវិញ"
               ) : (
-                isKhmer ? "ផ្ញើតំណភ្ជាប់ដើម្បីកំណត់ឡើងវិញ" : "Send Reset Link"
+                "Send Reset Link"
               )}
             </button>
           </form>
@@ -82,9 +127,15 @@ export default function ForgotPasswordPage() {
       ) : (
         <SuccessCard
           title={isKhmer ? "ពិនិត្យមើលអ៊ីមែលរបស់អ្នក" : "Check your email"}
-          message={isKhmer ? `យើងបានផ្ញើតំណភ្ជាប់ដើម្បីកំណត់ពាក្យសម្ងាត់ឡើងវិញទៅកាន់ ${email}` : `We've sent a password reset link to ${email}`}
-          buttonText={isKhmer ? "ត្រឡប់ទៅចូលគណនី" : "Back to Sign In"}
-          buttonHref="/login"
+          message={
+            isKhmer
+              ? `យើងបានផ្ញើលេខកូដកំណត់ពាក្យសម្ងាត់ឡើងវិញទៅកាន់ ${email}`
+              : `We've sent a password reset code to ${email}`
+          }
+          buttonText={
+            isKhmer ? "បញ្ចូលលេខកូដបញ្ជាក់" : "Enter Verification Code"
+          }
+          buttonHref={`/forgot/verify?email=${encodeURIComponent(email)}`}
         />
       )}
     </AuthLayout>

@@ -3,8 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { ShieldCheck, RefreshCcw, Loader2 } from "lucide-react";
 import { AuthLayout, LeftPanelContent, OTPInput } from "@/components/auth";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 export default function VerifyCodePage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [timer, setTimer] = useState(60);
@@ -38,10 +41,14 @@ export default function VerifyCodePage() {
       backHref="/forgot-password"
     >
       <header className="mb-10">
-        <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
+        <h1
+          className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"}`}
+        >
           Verify Code
         </h1>
-        <p className="text-slate-500 font-medium font-khmer text-lg">
+        <p
+          className={`font-medium text-lg ${isDark ? "text-[#8A8F98]" : "text-slate-500"} font-khmer`}
+        >
           សូមបញ្ចូលលេខកូដផ្ទៀងផ្ទាត់ ៦ ខ្ទង់
         </p>
       </header>
@@ -63,7 +70,9 @@ export default function VerifyCodePage() {
       </form>
 
       <div className="mt-10 text-center">
-        <p className="text-slate-500 font-medium mb-4">
+        <p
+          className={`font-medium mb-4 ${isDark ? "text-[#8A8F98]" : "text-slate-500"}`}
+        >
           Didn't receive the code?
         </p>
         <button

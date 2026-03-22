@@ -31,6 +31,7 @@ import {
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 const PRO_NAV = [
   {
@@ -73,6 +74,8 @@ const PRO_NAV = [
 ];
 
 export default function ProCustomerPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [customCount, setCustomCount] = useState(1);
   const [isCRMModalOpen, setIsCRMModalOpen] = useState(false);
@@ -159,7 +162,7 @@ export default function ProCustomerPage() {
             <FileText className="w-3.5 h-3.5" />
             Export PDF
           </button>
-          <button className="hidden sm:flex items-center gap-1.5 border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium px-4 py-2 rounded-xl transition-colors">
+          <button className="hidden sm:flex items-center gap-1.5 border border-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117] text-slate-700 dark:text-[#c9d1d9] text-sm font-medium px-4 py-2 rounded-xl transition-colors">
             <FileSpreadsheet className="w-3.5 h-3.5" />
             Export Excel
           </button>
@@ -169,10 +172,10 @@ export default function ProCustomerPage() {
       <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7">
         {/* ── Page header ── */}
         <div className="pt-1 pb-2">
-          <h2 className="text-[32px] font-extrabold text-[#111827] leading-tight">
+          <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
             My Customers
           </h2>
-          <p className="text-[14px] text-[#6b7280] mt-1">
+          <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
             Track and log your daily foot traffic ·{" "}
             <span className="text-[#9ca3af]">តាមដាន និងកត់ត្រាអតិថិជន</span>
           </p>
@@ -185,10 +188,10 @@ export default function ProCustomerPage() {
               className="absolute inset-0"
               onClick={() => setIsCRMModalOpen(false)}
             ></div>
-            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-md p-6 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
               <button
                 onClick={() => setIsCRMModalOpen(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -197,10 +200,10 @@ export default function ProCustomerPage() {
                   <UserCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[19px] text-slate-900">
+                  <h3 className="font-bold text-[19px] text-slate-900 dark:text-white">
                     Add Customer Profile
                   </h3>
-                  <p className="text-[12px] text-slate-500">
+                  <p className="text-[12px] text-slate-500 dark:text-[#7d8590]">
                     Save details for loyalty tracking.
                   </p>
                 </div>
@@ -208,7 +211,7 @@ export default function ProCustomerPage() {
 
               <form onSubmit={handleCRMSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-[12px] font-bold text-slate-500 mb-1.5 ml-1">
+                  <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
                     Name (ឈ្មោះ)
                   </label>
                   <input
@@ -216,12 +219,12 @@ export default function ProCustomerPage() {
                     placeholder="Customer Name"
                     value={crmName}
                     onChange={(e) => setCrmName(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[15px] focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-[15px] focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-[12px] font-bold text-slate-500 mb-1.5 ml-1">
+                  <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
                     Phone Number (ទូរស័ព្ទ)
                   </label>
                   <input
@@ -229,11 +232,11 @@ export default function ProCustomerPage() {
                     placeholder="012 345 678"
                     value={crmPhone}
                     onChange={(e) => setCrmPhone(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[15px] focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-[15px] focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-[12px] font-bold text-slate-500 mb-1.5 ml-1">
+                  <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
                     Notes / Preferences
                   </label>
                   <input
@@ -241,7 +244,7 @@ export default function ProCustomerPage() {
                     placeholder="e.g., Prefers less sugar"
                     value={crmNotes}
                     onChange={(e) => setCrmNotes(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[15px] focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-[15px] focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none"
                   />
                 </div>
                 <button
@@ -270,6 +273,7 @@ export default function ProCustomerPage() {
             khmerTitle="កាន់ឈ្នួលការចាយ"
             value={summaryData.avgSpend}
             subtext="per customer"
+            variant={isDark ? "dark" : "light"}
           />
           <VendorSummaryCard
             variant="green"
@@ -283,12 +287,14 @@ export default function ProCustomerPage() {
             khmerTitle="ណែនាំការប្រា"
             value={summaryData.peakTime}
             subtext={summaryData.weeklyCustomers}
+            variant={isDark ? "dark" : "light"}
           />
           <VendorSummaryCard
             title="Avg.LTV"
             khmerTitle="ភ្លេចអតិថិជន"
             value={summaryData.avgLTV}
             subtext="Per Customer"
+            variant={isDark ? "dark" : "light"}
           />
         </div>
 
@@ -345,13 +351,13 @@ export default function ProCustomerPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Pro Feature: CRM Database View */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-[17px] text-slate-900">
+                <h3 className="font-semibold text-[17px] text-slate-900 dark:text-white">
                   CRM Profiles
                 </h3>
-                <p className="text-[13px] text-slate-500 mt-0.5">
+                <p className="text-[13px] text-slate-500 dark:text-[#7d8590] mt-0.5">
                   Known customer database
                 </p>
               </div>
@@ -361,28 +367,28 @@ export default function ProCustomerPage() {
             <div className="overflow-x-auto flex-1">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
+                  <tr className="bg-slate-50 dark:bg-[#0d1117]/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 text-[11px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
                     <th className="px-5 py-3">Customer</th>
                     <th className="px-5 py-3">Visits</th>
                     <th className="px-5 py-3">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                   {crmDatabase.map((customer) => (
                     <tr
                       key={customer.id}
                       className="hover:bg-psar-primary/10/30 transition-colors"
                     >
                       <td className="px-5 py-3">
-                        <div className="text-[14px] font-bold text-slate-900">
+                        <div className="text-[14px] font-bold text-slate-900 dark:text-white">
                           {customer.name}
                         </div>
-                        <div className="text-[12px] text-slate-500">
+                        <div className="text-[12px] text-slate-500 dark:text-[#7d8590]">
                           {customer.phone}
                         </div>
                       </td>
                       <td className="px-5 py-3">
-                        <span className="font-bold text-slate-700">
+                        <span className="font-bold text-slate-700 dark:text-[#c9d1d9]">
                           {customer.visits}
                         </span>
                       </td>
@@ -393,7 +399,7 @@ export default function ProCustomerPage() {
                               ? "bg-amber-100 text-amber-700"
                               : customer.status === "Regular"
                                 ? "bg-psar-primary/10 text-psar-primary"
-                                : "bg-slate-100 text-slate-600"
+                                : "bg-slate-100 text-slate-600 dark:text-[#9aa4b2]"
                           }`}
                         >
                           {customer.status}
@@ -404,7 +410,7 @@ export default function ProCustomerPage() {
                 </tbody>
               </table>
             </div>
-            <div className="p-3 border-t border-slate-100 bg-slate-50 text-center">
+            <div className="p-3 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center">
               <button className="text-[13px] font-semibold text-psar-primary hover:underline">
                 View All CRM Data
               </button>
@@ -412,13 +418,13 @@ export default function ProCustomerPage() {
           </div>
 
           {/* Foot Traffic Log */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-[17px] text-slate-900">
+                <h3 className="font-semibold text-[17px] text-slate-900 dark:text-white">
                   Foot Traffic Logs
                 </h3>
-                <p className="text-[13px] text-slate-500 mt-0.5">
+                <p className="text-[13px] text-slate-500 dark:text-[#7d8590] mt-0.5">
                   Today&apos;s raw store visits
                 </p>
               </div>
@@ -428,26 +434,26 @@ export default function ProCustomerPage() {
             <div className="overflow-x-auto flex-1">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
+                  <tr className="bg-slate-50 dark:bg-[#0d1117]/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 text-[11px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
                     <th className="px-5 py-3">Time</th>
                     <th className="px-5 py-3">Count</th>
                     <th className="px-5 py-3">Type</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                   {recentLogs.map((log) => (
                     <tr
                       key={log.id}
-                      className="hover:bg-slate-50/50 transition-colors"
+                      className="hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117]/50 dark:bg-white/5 transition-colors"
                     >
                       <td className="px-5 py-3 whitespace-nowrap">
-                        <div className="flex items-center gap-2 text-[13px] font-medium text-slate-600">
+                        <div className="flex items-center gap-2 text-[13px] font-medium text-slate-600 dark:text-[#9aa4b2]">
                           <Clock className="w-3.5 h-3.5" />
                           {log.time}
                         </div>
                       </td>
                       <td className="px-5 py-3 whitespace-nowrap">
-                        <span className="text-[15px] font-bold text-slate-900">
+                        <span className="text-[15px] font-bold text-slate-900 dark:text-white">
                           +{log.count}
                         </span>
                       </td>
@@ -457,7 +463,7 @@ export default function ProCustomerPage() {
                             <Flame className="w-3 h-3" /> Peak
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[11px] font-bold">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 text-slate-600 dark:text-[#9aa4b2] text-[11px] font-bold">
                             {log.loggedBy}
                           </span>
                         )}
@@ -467,7 +473,7 @@ export default function ProCustomerPage() {
                 </tbody>
               </table>
             </div>
-            <div className="p-3 border-t border-slate-100 bg-slate-50 text-center">
+            <div className="p-3 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center">
               <button className="text-[13px] font-semibold text-[#29B28D] hover:underline">
                 View All Log History
               </button>

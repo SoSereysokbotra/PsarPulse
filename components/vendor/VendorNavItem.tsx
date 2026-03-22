@@ -3,7 +3,6 @@
 import Link from "next/link";
 import React from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
-import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface VendorNavItemProps {
   icon: React.ElementType;
@@ -25,8 +24,6 @@ export default function VendorNavItem({
   onClick,
 }: VendorNavItemProps) {
   const { language } = useLanguage();
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
   const displayTitle = language === "km" ? khmerTitle : title;
 
   return (
@@ -45,8 +42,8 @@ export default function VendorNavItem({
           : "justify-between px-4 py-3"
       } ${
         active
-          ? (isDark ? "bg-[#3ecf8e]/10 text-[#3ecf8e]" : "bg-[rgba(41,178,141,0.12)] text-[#29B28D]")
-          : (isDark ? "bg-transparent text-[#7d8590] hover:bg-white/[0.05] hover:text-white" : "bg-transparent text-[#7d8590] hover:bg-white/[0.05] hover:text-[#e6edf3]")
+          ? "bg-[rgba(41,178,141,0.12)] text-[#29B28D] dark:bg-[#3ecf8e]/10 dark:text-[#3ecf8e]"
+          : "bg-transparent text-[#7d8590] hover:bg-white/[0.05] hover:text-[#e6edf3] dark:hover:text-white"
       }`}
     >
       <div className={`flex items-center ${collapsed ? "" : "gap-3"}`}>

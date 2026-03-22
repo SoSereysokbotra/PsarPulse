@@ -137,15 +137,15 @@ export default function ProSalesPage() {
       rightActions={
         <>
           {/* 1. Period Toggle (Day / Week / Month) */}
-          <div className="hidden sm:flex items-center bg-[#f0f2f5] border border-[#e8eaed] rounded-[10px] p-[3px]">
+          <div className="hidden sm:flex items-center bg-[#f0f2f5] border border-[#e8eaed] dark:border-white/5 rounded-[10px] p-[3px]">
             {(["Day", "Week", "Month"] as Period[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
                 className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${
                   period === p
-                    ? "bg-white text-[#111827] shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
-                    : "bg-transparent text-[#6b7280] hover:text-[#111827]"
+                    ? "bg-white dark:bg-dark-surface text-[#111827] dark:text-white shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
+                    : "bg-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:text-white"
                 }`}
               >
                 {p}
@@ -171,20 +171,20 @@ export default function ProSalesPage() {
       <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7 max-w-5xl">
         {/* ══ SALES HEADER ══════════════════════════════════════ */}
         <div className="pt-1 pb-2">
-          <h2 className="text-[32px] font-extrabold text-[#111827] leading-tight">
+          <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
             My Sales
           </h2>
-          <p className="text-[14px] text-[#6b7280] mt-1">
+          <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
             Track and manage your daily sales ·{" "}
             <span className="text-[#9ca3af]">តាមដាន និងគ្រប់គ្រងការលក់</span>
           </p>
         </div>
 
         {/* QUICK LOGGING SECTION - TRIGGER BUTTON */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="font-bold text-[19px]">Quick Log Sale</h2>
-            <p className="text-sm font-khmer text-slate-500 mt-0.5">
+            <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
               កត់ត្រាការលក់រហ័ស
             </p>
           </div>
@@ -205,10 +205,10 @@ export default function ProSalesPage() {
               onClick={() => setIsQuickLogModalOpen(false)}
             ></div>
 
-            <div className="bg-white rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
               <button
                 onClick={() => setIsQuickLogModalOpen(false)}
-                className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
+                className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -218,10 +218,10 @@ export default function ProSalesPage() {
                   <CircleDollarSign className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-[22px] text-slate-900">
+                  <h2 className="font-bold text-[22px] text-slate-900 dark:text-white">
                     Log New Sale
                   </h2>
-                  <p className="text-sm font-khmer text-slate-500">
+                  <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590]">
                     កត់ត្រាការលក់រហ័ស
                   </p>
                 </div>
@@ -239,9 +239,9 @@ export default function ProSalesPage() {
                     value={quickAmount}
                     onChange={(e) => setQuickAmount(e.target.value)}
                     required
-                    className="block w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xl font-bold placeholder-slate-400 focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                    className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-xl font-bold placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
                   />
-                  <div className="absolute top-[-10px] left-4 bg-white px-1 text-[11px] font-bold text-slate-500">
+                  <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">
                     Amount (ចំនួនទឹកប្រាក់){" "}
                     <span className="text-red-500">*</span>
                   </div>
@@ -257,9 +257,9 @@ export default function ProSalesPage() {
                     placeholder="e.g., 2x Iced Coffee (Select from inventory)"
                     value={quickItem}
                     onChange={(e) => setQuickItem(e.target.value)}
-                    className="block w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-[15px] placeholder-slate-400 focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                    className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
                   />
-                  <div className="absolute top-[-10px] left-4 bg-white px-1 text-[11px] font-bold text-slate-500 mt-1">
+                  <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] mt-1">
                     Item / Track Inventory Stock (ទំនិញ)
                   </div>
                 </div>
@@ -268,7 +268,7 @@ export default function ProSalesPage() {
                   <button
                     type="button"
                     onClick={() => setIsQuickLogModalOpen(false)}
-                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[16px] py-4 rounded-xl transition-all min-h-[56px]"
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:text-[#c9d1d9] font-bold text-[16px] py-4 rounded-xl transition-all min-h-[56px]"
                   >
                     Cancel
                   </button>
@@ -306,13 +306,13 @@ export default function ProSalesPage() {
           />
         </div>
         {/* TRANSACTION HISTORY */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div className="p-5 md:p-6 border-b border-slate-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="font-bold text-[17px] text-slate-900">
+              <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">
                 Unlimited Recent Transactions
               </h3>
-              <p className="text-sm font-khmer text-slate-500 mt-0.5">
+              <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
                 ប្រវត្តិប្រតិបត្តិការ
               </p>
             </div>
@@ -323,10 +323,10 @@ export default function ProSalesPage() {
                 <input
                   type="text"
                   placeholder="Search all logs..."
-                  className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[40px]"
+                  className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[40px]"
                 />
               </div>
-              <button className="p-2 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors min-h-[40px]">
+              <button className="p-2 border border-slate-200 rounded-xl text-slate-500 dark:text-[#7d8590] hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117] transition-colors min-h-[40px]">
                 <Filter className="w-4 h-4" />
               </button>
             </div>
@@ -335,27 +335,27 @@ export default function ProSalesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-[13px] text-slate-500 uppercase tracking-wider font-semibold">
+                <tr className="bg-slate-50 dark:bg-[#0d1117] border-b border-slate-100 dark:border-white/5 text-[13px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
                   <th className="px-6 py-4">Time</th>
                   <th className="px-6 py-4">Item Breakdown</th>
                   <th className="px-6 py-4">Amount</th>
                   <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                 {transactions.map((txn) => (
                   <tr
                     key={txn.id}
                     className="hover:bg-psar-primary/10/30 transition-colors group"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900">
+                      <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900 dark:text-white">
                         <Clock className="w-4 h-4 text-slate-400" />
                         {txn.time}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-[14px] font-medium text-slate-700">
+                      <span className="text-[14px] font-medium text-slate-700 dark:text-[#c9d1d9]">
                         {txn.item}
                       </span>
                     </td>
@@ -375,7 +375,7 @@ export default function ProSalesPage() {
                   <tr>
                     <td
                       colSpan={4}
-                      className="px-6 py-12 text-center text-slate-500"
+                      className="px-6 py-12 text-center text-slate-500 dark:text-[#7d8590]"
                     >
                       No transactions logged today yet.
                     </td>
@@ -385,7 +385,7 @@ export default function ProSalesPage() {
             </table>
           </div>
 
-          <div className="p-4 border-t border-slate-100 bg-slate-50 text-center">
+          <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center">
             <button className="text-[14px] font-semibold text-psar-primary hover:text-psar-primary hover:underline">
               View All Required History
             </button>
@@ -400,10 +400,10 @@ export default function ProSalesPage() {
               onClick={() => setIsQuickLogModalOpen(false)}
             ></div>
 
-            <div className="bg-white rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
               <button
                 onClick={() => setIsQuickLogModalOpen(false)}
-                className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
+                className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -413,10 +413,10 @@ export default function ProSalesPage() {
                   <CircleDollarSign className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-[22px] text-slate-900">
+                  <h2 className="font-bold text-[22px] text-slate-900 dark:text-white">
                     Log New Sale
                   </h2>
-                  <p className="text-sm font-khmer text-slate-500">
+                  <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590]">
                     កត់ត្រាការលក់រហ័ស
                   </p>
                 </div>
@@ -434,7 +434,7 @@ export default function ProSalesPage() {
                     value={quickAmount}
                     onChange={(e) => setQuickAmount(e.target.value)}
                     required
-                    className="block w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xl font-bold placeholder-slate-400 focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                    className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-xl font-bold placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
                   />
                 </div>
 
@@ -447,7 +447,7 @@ export default function ProSalesPage() {
                     placeholder="Items (Optional, e.g. 2x Coffee)"
                     value={quickItem}
                     onChange={(e) => setQuickItem(e.target.value)}
-                    className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-[15px] font-medium placeholder-slate-400 focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[50px]"
+                    className="block w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] font-medium placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[50px]"
                   />
                 </div>
 

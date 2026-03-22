@@ -329,33 +329,33 @@ export default function ProDashboard() {
 
             {quickSaleOpen && (
               <div
-                className="absolute top-[calc(100%+10px)] right-0 w-[330px] bg-white border border-[#e8eaed] rounded-[14px] shadow-[0_20px_56px_rgba(0,0,0,0.18)] overflow-hidden"
+                className="absolute top-[calc(100%+10px)] right-0 w-[330px] bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 rounded-[14px] shadow-[0_20px_56px_rgba(0,0,0,0.18)] overflow-hidden"
                 style={{ zIndex: 9999 }}
                 onMouseDown={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center gap-2 px-[18px] py-[14px] border-b border-[#e8eaed]">
+                <div className="flex items-center gap-2 px-[18px] py-[14px] border-b border-[#e8eaed] dark:border-white/5">
                   <ShoppingCart className="w-4 h-4 text-[#29B28D]" />
-                  <span className="font-bold text-sm text-[#111827]">
+                  <span className="font-bold text-sm text-[#111827] dark:text-white">
                     Quick Sale
                   </span>
-                  <span className="text-[11px] text-[#6b7280] ml-auto">
+                  <span className="text-[11px] text-[#6b7280] dark:text-[#7d8590] ml-auto">
                     ការលក់រហ័ស
                   </span>
                 </div>
                 <div className="p-[14px_18px] max-h-[60vh] overflow-y-auto">
                   <div className="relative mb-[14px]">
-                    <Search className="w-3.5 h-3.5 absolute left-[11px] top-1/2 -translate-y-1/2 text-[#6b7280] pointer-events-none" />
+                    <Search className="w-3.5 h-3.5 absolute left-[11px] top-1/2 -translate-y-1/2 text-[#6b7280] dark:text-[#7d8590] pointer-events-none" />
                     <input
                       ref={searchRef}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search product..."
-                      className="w-full pl-[33px] pr-[11px] py-[9px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[9px] text-[13px] outline-none text-[#111827] focus:border-[#29B28D] transition-colors"
+                      className="w-full pl-[33px] pr-[11px] py-[9px] bg-[#f7f8fa] dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/5 rounded-[9px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#29B28D] transition-colors"
                       style={{ fontFamily: "inherit" }}
                     />
                     {searchQuery && (
                       <div
-                        className="absolute top-full left-0 right-0 bg-white border border-[#e8eaed] border-t-0 rounded-b-[9px] overflow-hidden shadow-lg"
+                        className="absolute top-full left-0 right-0 bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 border-t-0 rounded-b-[9px] overflow-hidden shadow-lg"
                         style={{ zIndex: 10 }}
                       >
                         {filteredProducts.length ? (
@@ -366,7 +366,7 @@ export default function ProDashboard() {
                                 e.preventDefault();
                                 addToCart(p);
                               }}
-                              className="w-full flex justify-between items-center px-[13px] py-[9px] bg-transparent border-0 cursor-pointer text-[13px] text-[#111827] text-left hover:bg-[#f7f8fa]"
+                              className="w-full flex justify-between items-center px-[13px] py-[9px] bg-transparent border-0 cursor-pointer text-[13px] text-[#111827] dark:text-white text-left hover:bg-[#f7f8fa] dark:hover:bg-white/5 dark:bg-[#0d1117]"
                               style={{ fontFamily: "inherit" }}
                             >
                               <span>{p.name}</span>
@@ -376,7 +376,7 @@ export default function ProDashboard() {
                             </button>
                           ))
                         ) : (
-                          <div className="px-[13px] py-[10px] text-[12.5px] text-[#6b7280]">
+                          <div className="px-[13px] py-[10px] text-[12.5px] text-[#6b7280] dark:text-[#7d8590]">
                             No products found
                           </div>
                         )}
@@ -386,7 +386,7 @@ export default function ProDashboard() {
 
                   {!searchQuery && (
                     <div className="mb-[14px]">
-                      <div className="text-[10px] font-bold text-[#6b7280] uppercase tracking-[0.07em] mb-2">
+                      <div className="text-[10px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-[0.07em] mb-2">
                         Tap to add
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
@@ -404,16 +404,16 @@ export default function ProDashboard() {
                               className={`px-3 py-[9px] rounded-[9px] text-left cursor-pointer transition-all duration-[120ms] relative border ${
                                 inCart
                                   ? "bg-[rgba(41,178,141,0.12)] border-[#29B28D]"
-                                  : "bg-[#f7f8fa] border-[#e8eaed] hover:bg-[#eff0f2]"
+                                  : "bg-[#f7f8fa] dark:bg-[#0d1117] border-[#e8eaed] dark:border-white/5 hover:bg-[#eff0f2]"
                               }`}
                             >
                               <div
-                                className={`text-xs font-semibold truncate mb-0.5 ${inCart ? "text-[#29B28D]" : "text-[#111827]"}`}
+                                className={`text-xs font-semibold truncate mb-0.5 ${inCart ? "text-[#29B28D]" : "text-[#111827] dark:text-white"}`}
                               >
                                 {p.name}
                               </div>
                               <div
-                                className={`text-[11px] font-bold ${inCart ? "text-[#29B28D]" : "text-[#6b7280]"}`}
+                                className={`text-[11px] font-bold ${inCart ? "text-[#29B28D]" : "text-[#6b7280] dark:text-[#7d8590]"}`}
                               >
                                 ${p.price.toFixed(2)}
                               </div>
@@ -436,16 +436,16 @@ export default function ProDashboard() {
                           key={item.product.id}
                           className="flex items-center gap-2 py-[7px] border-b border-[#f0f2f5]"
                         >
-                          <span className="text-[12.5px] flex-1 text-[#111827]">
+                          <span className="text-[12.5px] flex-1 text-[#111827] dark:text-white">
                             {item.product.name}
                           </span>
-                          <div className="flex items-center bg-[#f7f8fa] border border-[#e8eaed] rounded-[7px] overflow-hidden shrink-0">
+                          <div className="flex items-center bg-[#f7f8fa] dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/5 rounded-[7px] overflow-hidden shrink-0">
                             <button
                               onMouseDown={(e) => {
                                 e.preventDefault();
                                 changeQty(item.product.id, -1);
                               }}
-                              className="w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center text-[#6b7280] hover:bg-[#e8eaed]"
+                              className="w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center text-[#6b7280] dark:text-[#7d8590] hover:bg-[#e8eaed]"
                             >
                               <Minus className="w-3 h-3" />
                             </button>
@@ -457,7 +457,7 @@ export default function ProDashboard() {
                                 e.preventDefault();
                                 changeQty(item.product.id, 1);
                               }}
-                              className="w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center text-[#6b7280] hover:bg-[#e8eaed]"
+                              className="w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center text-[#6b7280] dark:text-[#7d8590] hover:bg-[#e8eaed]"
                             >
                               <Plus className="w-3 h-3" />
                             </button>
@@ -471,16 +471,16 @@ export default function ProDashboard() {
                   )}
 
                   <div className="flex items-center justify-between py-2 border-t border-[#f0f2f5] mb-3 mt-1">
-                    <span className="text-xs text-[#6b7280] font-medium">
+                    <span className="text-xs text-[#6b7280] dark:text-[#7d8590] font-medium">
                       Customers · អតិថិជន
                     </span>
-                    <div className="flex items-center bg-[#f7f8fa] border border-[#e8eaed] rounded-[8px] overflow-hidden">
+                    <div className="flex items-center bg-[#f7f8fa] dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/5 rounded-[8px] overflow-hidden">
                       <button
                         onMouseDown={(e) => {
                           e.preventDefault();
                           setCustomers((c) => Math.max(1, c - 1));
                         }}
-                        className="w-7 h-7 bg-transparent border-0 cursor-pointer text-[#6b7280] flex items-center justify-center hover:bg-[#e8eaed]"
+                        className="w-7 h-7 bg-transparent border-0 cursor-pointer text-[#6b7280] dark:text-[#7d8590] flex items-center justify-center hover:bg-[#e8eaed]"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
@@ -492,7 +492,7 @@ export default function ProDashboard() {
                           e.preventDefault();
                           setCustomers((c) => c + 1);
                         }}
-                        className="w-7 h-7 bg-transparent border-0 cursor-pointer text-[#6b7280] flex items-center justify-center hover:bg-[#e8eaed]"
+                        className="w-7 h-7 bg-transparent border-0 cursor-pointer text-[#6b7280] dark:text-[#7d8590] flex items-center justify-center hover:bg-[#e8eaed]"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
@@ -500,7 +500,7 @@ export default function ProDashboard() {
                   </div>
 
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-[#6b7280]">
+                    <span className="text-xs text-[#6b7280] dark:text-[#7d8590]">
                       {cartItems} item{cartItems !== 1 ? "s" : ""}
                     </span>
                     <span className="font-extrabold text-xl text-[#29B28D]">
@@ -517,7 +517,7 @@ export default function ProDashboard() {
                     className={`w-full py-3 font-bold text-[13.5px] border-0 rounded-[10px] flex items-center justify-center gap-[7px] transition-all ${
                       cart.length
                         ? "bg-[#29B28D] text-[#0E1319] cursor-pointer shadow-[0_4px_14px_rgba(41,178,141,0.28)] hover:opacity-90"
-                        : "bg-[#f0f2f5] text-[#6b7280] cursor-not-allowed"
+                        : "bg-[#f0f2f5] text-[#6b7280] dark:text-[#7d8590] cursor-not-allowed"
                     }`}
                   >
                     <CheckCircle2 className="w-4 h-4" /> Complete Sale
@@ -531,7 +531,7 @@ export default function ProDashboard() {
           <button className="hidden lg:flex items-center gap-2 bg-[#0E1319] hover:opacity-90 text-white font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer border-0">
             <FileText className="w-4 h-4" /> Export PDF
           </button>
-          <button className="hidden lg:flex items-center gap-2 bg-white border border-[#e8eaed] hover:bg-[#f7f8fa] text-[#111827] font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer">
+          <button className="hidden lg:flex items-center gap-2 bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 hover:bg-[#f7f8fa] dark:hover:bg-white/5 dark:bg-[#0d1117] text-[#111827] dark:text-white font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer">
             <FileSpreadsheet className="w-4 h-4" /> Export Excel
           </button>
         </>
@@ -661,11 +661,11 @@ export default function ProDashboard() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Weekly Revenue */}
-          <div className="bg-white border border-[#e8eaed] rounded-[14px] p-6 shadow-sm">
-            <h3 className="font-semibold text-[15px] text-[#111827] mb-1">
+          <div className="bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 rounded-[14px] p-6 shadow-sm">
+            <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white mb-1">
               Weekly Revenue
             </h3>
-            <p className="text-[12px] text-[#6b7280] mb-5">
+            <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-5">
               ចំណូលប្រចាំសប្តាហ៍
             </p>
             <div className="h-40 flex items-end gap-1.5">
@@ -683,7 +683,7 @@ export default function ProDashboard() {
                       style={{ height: `${height}%` }}
                     />
                   </div>
-                  <span className="text-[10px] text-[#6b7280]">
+                  <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
                     {weeklyLabels[i]}
                   </span>
                 </div>
@@ -692,18 +692,18 @@ export default function ProDashboard() {
           </div>
 
           {/* Monthly Revenue */}
-          <div className="bg-white border border-[#e8eaed] rounded-[14px] p-6 shadow-sm">
-            <h3 className="font-semibold text-[15px] text-[#111827] mb-1">
+          <div className="bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 rounded-[14px] p-6 shadow-sm">
+            <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white mb-1">
               Monthly Revenue
             </h3>
-            <p className="text-[12px] text-[#6b7280] mb-5">ចំណូលប្រចាំខែ</p>
+            <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-5">ចំណូលប្រចាំខែ</p>
             <div className="h-40 flex items-end gap-2">
               {monthlyData.map((val, i) => (
                 <div
                   key={i}
                   className="flex-1 flex flex-col items-center gap-1"
                 >
-                  <span className="text-[11px] font-bold text-[#6b7280]">
+                  <span className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590]">
                     ${val}
                   </span>
                   <div
@@ -715,7 +715,7 @@ export default function ProDashboard() {
                       style={{ height: `${(val / 800) * 100}%` }}
                     />
                   </div>
-                  <span className="text-[10px] text-[#6b7280]">
+                  <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
                     {monthlyLabels[i]}
                   </span>
                 </div>
@@ -724,9 +724,9 @@ export default function ProDashboard() {
           </div>
 
           {/* Expenses */}
-          <div className="bg-white border border-[#e8eaed] rounded-[14px] p-6 shadow-sm col-span-1 lg:col-span-2">
+          <div className="bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 rounded-[14px] p-6 shadow-sm col-span-1 lg:col-span-2">
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-semibold text-[15px] text-[#111827]">
+              <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white">
                 Expenses
               </h3>
               {expLogged && (
@@ -735,13 +735,13 @@ export default function ProDashboard() {
                 </span>
               )}
             </div>
-            <p className="text-[12px] text-[#6b7280] mb-4">ការចំណាយ</p>
+            <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-4">ការចំណាយ</p>
             <div className="space-y-3">
               {expenseCategories.map((item, i) => (
                 <div key={i}>
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-medium text-[#111827]">
+                      <span className="text-[13px] font-medium text-[#111827] dark:text-white">
                         {item.label}
                       </span>
                       {(item as any).custom && (
@@ -750,7 +750,7 @@ export default function ProDashboard() {
                         </span>
                       )}
                     </div>
-                    <span className="text-[13px] font-bold text-[#6b7280]">
+                    <span className="text-[13px] font-bold text-[#6b7280] dark:text-[#7d8590]">
                       {item.value}%
                     </span>
                   </div>
@@ -770,13 +770,13 @@ export default function ProDashboard() {
         </div>
 
         {/* Best Selling Products */}
-        <div className="bg-white border border-[#e8eaed] rounded-[14px] shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 rounded-[14px] shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-[#f0f2f5] flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-[17px] text-[#111827]">
+              <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
                 Best Selling Products
               </h3>
-              <p className="text-[12px] text-[#6b7280] mt-0.5">
+              <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
                 ផលិតផលលក់ដាច់ជាងគេ
               </p>
             </div>
@@ -793,10 +793,10 @@ export default function ProDashboard() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1.5">
                     <div>
-                      <span className="text-[14px] font-semibold text-[#111827]">
+                      <span className="text-[14px] font-semibold text-[#111827] dark:text-white">
                         {item.name}
                       </span>
-                      <span className="text-[11px] text-[#6b7280] ml-2">
+                      <span className="text-[11px] text-[#6b7280] dark:text-[#7d8590] ml-2">
                         {item.khmer}
                       </span>
                     </div>
@@ -804,7 +804,7 @@ export default function ProDashboard() {
                       <span className="text-[14px] font-bold text-[#29B28D]">
                         {item.revenue}
                       </span>
-                      <span className="text-[12px] text-[#6b7280] ml-2">
+                      <span className="text-[12px] text-[#6b7280] dark:text-[#7d8590] ml-2">
                         ({item.qty} sold)
                       </span>
                     </div>
@@ -836,9 +836,9 @@ export default function ProDashboard() {
                 .map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between py-2 px-3 bg-white rounded-[10px] border border-orange-100"
+                    className="flex items-center justify-between py-2 px-3 bg-white dark:bg-dark-surface rounded-[10px] border border-orange-100"
                   >
-                    <span className="text-[13px] font-medium text-[#111827]">
+                    <span className="text-[13px] font-medium text-[#111827] dark:text-white">
                       {item.name}
                     </span>
                     <span
@@ -853,13 +853,13 @@ export default function ProDashboard() {
         )}
 
         {/* End-of-Day Summary */}
-        <div className="bg-white border border-[#e8eaed] rounded-[14px] shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 rounded-[14px] shadow-sm overflow-hidden">
           <div className="px-6 py-5 border-b border-[#f0f2f5] flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-[17px] text-[#111827]">
+              <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
                 End-of-Day Summary
               </h3>
-              <p className="text-[12px] text-[#6b7280] mt-0.5">សង្ខេបចុងថ្ងៃ</p>
+              <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">សង្ខេបចុងថ្ងៃ</p>
             </div>
             {isDayLocked && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[12px] font-bold border border-[rgba(41,178,141,0.2)]">
@@ -869,17 +869,17 @@ export default function ProDashboard() {
           </div>
           <div className="p-6">
             <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="p-4 bg-[#f7f8fa] rounded-[11px] text-center">
-                <p className="text-[12px] font-semibold text-[#6b7280] mb-1">
+              <div className="p-4 bg-[#f7f8fa] dark:bg-[#0d1117] rounded-[11px] text-center">
+                <p className="text-[12px] font-semibold text-[#6b7280] dark:text-[#7d8590] mb-1">
                   Total Sales
                 </p>
                 <p className="text-[12px] text-[#9ca3af] mb-2">ការលក់សរុប</p>
-                <p className="text-[22px] font-bold text-[#111827]">
+                <p className="text-[22px] font-bold text-[#111827] dark:text-white">
                   {summaryData.sales}
                 </p>
               </div>
-              <div className="p-4 bg-[#f7f8fa] rounded-[11px] text-center">
-                <p className="text-[12px] font-semibold text-[#6b7280] mb-1">
+              <div className="p-4 bg-[#f7f8fa] dark:bg-[#0d1117] rounded-[11px] text-center">
+                <p className="text-[12px] font-semibold text-[#6b7280] dark:text-[#7d8590] mb-1">
                   Total Expenses
                 </p>
                 <p className="text-[12px] text-[#9ca3af] mb-2">ចំណាយសរុប</p>
@@ -904,14 +904,14 @@ export default function ProDashboard() {
             <div className="bg-[rgba(41,178,141,0.06)] rounded-[11px] p-5 mb-6 border border-[rgba(41,178,141,0.15)]">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-5 h-5 text-[#29B28D]" />
-                <h4 className="font-bold text-[14px] text-[#111827]">
+                <h4 className="font-bold text-[14px] text-[#111827] dark:text-white">
                   AI Daily Summary
                 </h4>
                 <span className="text-[10px] font-bold text-[#29B28D] bg-[rgba(41,178,141,0.12)] px-2 py-0.5 rounded-full">
                   PRO
                 </span>
               </div>
-              <p className="text-[14px] text-[#111827] leading-relaxed">
+              <p className="text-[14px] text-[#111827] dark:text-white leading-relaxed">
                 📊 <strong>Great day!</strong> Revenue increased by 18% vs.
                 yesterday. Iced Coffee continues to dominate with 52 units sold.
                 Your profit margin improved to 70.7%. Consider restocking Hot
@@ -919,9 +919,9 @@ export default function ProDashboard() {
               </p>
             </div>
 
-            <div className="text-[13px] text-[#6b7280] mb-5">
+            <div className="text-[13px] text-[#6b7280] dark:text-[#7d8590] mb-5">
               Auto-calculated: {summaryData.sales} − {summaryData.expenses} ={" "}
-              <strong className="text-[#111827]">{summaryData.profit}</strong>
+              <strong className="text-[#111827] dark:text-white">{summaryData.profit}</strong>
             </div>
 
             {!isDayLocked ? (
@@ -933,7 +933,7 @@ export default function ProDashboard() {
                 <span>Confirm &amp; Lock Day (បញ្ជាក់ និងចាក់សោ)</span>
               </button>
             ) : (
-              <div className="w-full flex items-center justify-center gap-2.5 bg-[#f7f8fa] text-[#6b7280] font-bold text-[16px] py-4 rounded-[11px] border border-[#e8eaed] min-h-[56px]">
+              <div className="w-full flex items-center justify-center gap-2.5 bg-[#f7f8fa] dark:bg-[#0d1117] text-[#6b7280] dark:text-[#7d8590] font-bold text-[16px] py-4 rounded-[11px] border border-[#e8eaed] dark:border-white/5 min-h-[56px]">
                 <CheckCircle2 className="w-5 h-5 text-[#29B28D]" />
                 <span>Day Locked — Records Finalized</span>
               </div>
@@ -949,25 +949,25 @@ export default function ProDashboard() {
             className="absolute inset-0"
             onClick={() => setShowCustomCategoryModal(false)}
           />
-          <div className="bg-white rounded-[14px] w-full max-w-md p-6 shadow-2xl relative z-10">
+          <div className="bg-white dark:bg-dark-surface rounded-[14px] w-full max-w-md p-6 shadow-2xl relative z-10">
             <button
               onClick={() => setShowCustomCategoryModal(false)}
-              className="absolute top-4 right-4 text-[#6b7280] hover:text-[#111827] p-1.5 rounded-[8px] hover:bg-[#f7f8fa] transition-colors bg-transparent border-0 cursor-pointer"
+              className="absolute top-4 right-4 text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:text-white p-1.5 rounded-[8px] hover:bg-[#f7f8fa] dark:hover:bg-white/5 dark:bg-[#0d1117] transition-colors bg-transparent border-0 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
             <div className="flex items-center gap-2 mb-5">
               <Tag className="w-5 h-5 text-[#29B28D]" />
-              <h3 className="font-bold text-[19px] text-[#111827]">
+              <h3 className="font-bold text-[19px] text-[#111827] dark:text-white">
                 Add Custom Category
               </h3>
             </div>
-            <p className="text-[13px] text-[#6b7280] mb-5">
+            <p className="text-[13px] text-[#6b7280] dark:text-[#7d8590] mb-5">
               Create your own expense categories beyond the default presets.
             </p>
             <div className="space-y-4">
               <div>
-                <label className="block text-[12px] font-bold text-[#6b7280] uppercase tracking-wider mb-1.5">
+                <label className="block text-[12px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-wider mb-1.5">
                   Category Name
                 </label>
                 <input
@@ -975,7 +975,7 @@ export default function ProDashboard() {
                   placeholder="e.g., Marketing (ទីផ្សារ)"
                   value={customCategoryName}
                   onChange={(e) => setCustomCategoryName(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#f7f8fa] border border-[#e8eaed] rounded-[10px] text-[15px] font-medium focus:bg-white focus:border-[#29B28D] outline-none transition-all min-h-[48px]"
+                  className="w-full px-4 py-3 bg-[#f7f8fa] dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/5 rounded-[10px] text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-[#29B28D] outline-none transition-all min-h-[48px]"
                   style={{ fontFamily: "inherit" }}
                 />
               </div>

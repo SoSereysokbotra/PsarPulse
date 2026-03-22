@@ -1,620 +1,459 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import {
   LayoutDashboard,
   CircleDollarSign,
   Receipt,
   Users,
   Package,
-  FileBarChart,
-  Megaphone,
+  Settings,
+  TrendingUp,
+  Menu,
+  X,
+  Bell,
   Sparkles,
+  Search,
+  Clock,
+  Plus,
+  Minus,
+  FileBarChart,
   Zap,
   FileText,
+  CreditCard,
   FileSpreadsheet,
-  Plus,
-  Clock,
-  Flame,
-  Star,
-  AlertTriangle,
-  Users2,
-  Brain,
-  Activity,
-  MessageSquare,
-  Send,
-  X,
-  Search,
-  History,
-  LucideIcon,
 } from "lucide-react";
 
-import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
+import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
+import VendorSidebar from "@/components/vendor/VendorSidebar";
+import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
-// ─── Nav ──────────────────────────────────────────────────────────────────────
-
-const PREMIUM_NAV = [
-  { icon: LayoutDashboard,  title: "Dashboard",  khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor/premium" },
-  { icon: CircleDollarSign, title: "Sales",      khmerTitle: "ការលក់",           href: "/vendor/premium/sales" },
-  { icon: Receipt,          title: "Expenses",   khmerTitle: "ចំណាយ",            href: "/vendor/premium/expenses" },
-  { icon: Users,            title: "Customers",  khmerTitle: "អតិថិជន",          href: "/vendor/premium/customer", active: true },
-  { icon: Package,          title: "Inventory",  khmerTitle: "ស្តុក",            href: "/vendor/premium/inventory" },
-  { icon: FileBarChart,     title: "Reports",    khmerTitle: "របាយការណ៍",        href: "/vendor/premium/reports" },
+const TABS = [
+  { id: "analysis", label: "Customers Analysis", khmer: "វិភាគអតិថិជន" },
+  {
+    id: "forecast",
+    label: "Forecast Analytics Widget",
+    khmer: "ការព្យាករណ៍វិភាគទិន្នន័យ",
+  },
+  { id: "log", label: "Customers Log", khmer: "កំណត់ហេតុអតិថិជន" },
 ];
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+export default function CustomersPage() {
+  const { language, t } = useLanguage();
+  const { resolvedTheme } = useTheme();
+  const isKhmer = language === "km";
+  const isDark = resolvedTheme === "dark";
 
-type AlertColor   = "purple" | "orange" | "red" | "green" | "emerald";
-type SegmentType  = "vip" | "at-risk" | "new" | "dormant";
-type TrafficStatus = "Regular" | "Peak Traffic";
-type TabId        = "analysis" | "forecast" | "log";
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("analysis");
+  const [customCount, setCustomCount] = useState(1);
+  const [logHistory, setLogHistory] = useState([
+    { id: 1, time: "2:15 PM", count: 2, status: "Regular" },
+    { id: 2, time: "10:00 AM", count: 2, status: "Peak Traffic" },
+    { id: 3, time: "11:00 AM", count: 12, status: "Peak Traffic" },
+  ]);
 
-interface PushAlert {
-  title: string; message: string; time: string;
-  icon: LucideIcon; color: AlertColor;
-}
-interface CustomerSegment {
-  type: SegmentType; label: string; khmer: string;
-  count: number; description: string; action: string;
-}
-interface CRMProfile {
-  name: string; khmer: string; phone: string;
-  visits: number; lastVisit: string; totalSpend: string;
-  ltv: string; loyaltyScore: number; loyaltyLabel: string;
-  loyaltyBarWidth: string; segment: SegmentType; note: string;
-}
-interface PeakHour {
-  hour: string; predicted: number; actual: number | null;
-  barClass: string; isPredicted: boolean;
-}
-interface CustomerLog {
-  time: string; count: number; status: TrafficStatus;
-}
-interface ChatMsg { role: "assistant" | "user"; text: string; }
-
-// ─── Color Maps ───────────────────────────────────────────────────────────────
-
-const alertColorMap: Record<AlertColor, {
-  bg: string; border: string; iconBg: string; iconText: string; titleText: string;
-}> = {
-  purple:  { bg: "bg-gray-50",    border: "border-gray-200",    iconBg: "bg-gray-100",    iconText: "text-gray-600",    titleText: "text-gray-700"    },
-  orange:  { bg: "bg-gray-50",    border: "border-gray-200",    iconBg: "bg-gray-100",    iconText: "text-gray-600",    titleText: "text-gray-700"    },
-  red:     { bg: "bg-red-50",     border: "border-red-200",     iconBg: "bg-red-100",     iconText: "text-red-600",     titleText: "text-red-700"     },
-  green:   { bg: "bg-emerald-50", border: "border-emerald-200", iconBg: "bg-emerald-100", iconText: "text-emerald-600", titleText: "text-emerald-700" },
-  emerald: { bg: "bg-emerald-50", border: "border-emerald-200", iconBg: "bg-emerald-100", iconText: "text-emerald-600", titleText: "text-emerald-700" },
-};
-
-const segmentColorMap: Record<SegmentType, {
-  bg: string; border: string; iconBg: string; iconText: string;
-  badge: string; countText: string;
-}> = {
-  "vip":     { bg: "bg-gray-900",   border: "border-gray-700",    iconBg: "bg-gray-700",    iconText: "text-white",       badge: "bg-gray-800 text-white",          countText: "text-white"       },
-  "at-risk": { bg: "bg-red-50",     border: "border-red-200",     iconBg: "bg-red-100",     iconText: "text-red-600",     badge: "bg-red-100 text-red-700",         countText: "text-red-600"     },
-  "new":     { bg: "bg-emerald-50", border: "border-emerald-200", iconBg: "bg-emerald-100", iconText: "text-emerald-600", badge: "bg-emerald-100 text-emerald-700", countText: "text-emerald-600" },
-  "dormant": { bg: "bg-slate-50",   border: "border-slate-200",   iconBg: "bg-slate-100",   iconText: "text-slate-500",   badge: "bg-slate-100 text-slate-600",     countText: "text-slate-500"   },
-};
-
-const loyaltyColorMap: Record<string, { badge: string; bar: string }> = {
-  Platinum: { badge: "text-violet-700 bg-violet-50 border-violet-200", bar: "bg-violet-500" },
-  Gold:     { badge: "text-amber-700 bg-amber-50 border-amber-200",    bar: "bg-amber-400"  },
-  Silver:   { badge: "text-blue-600 bg-blue-50 border-blue-200",       bar: "bg-blue-400"   },
-  Bronze:   { badge: "text-orange-600 bg-orange-50 border-orange-200", bar: "bg-orange-400" },
-};
-
-// ─── Static Data ──────────────────────────────────────────────────────────────
-
-const summaryData = {
-  todayCount:    "48",
-  todayLogs:     "4 logs",
-  avgSpend:      "$5.45",
-  weeklyCount:   "315",
-  weeklyChange:  "+27% vs last week",
-  peakTime:      "12:10 PM",
-  peakCustomers: "15 Customer",
-  avgLTV:        "$102.02",
-};
-
-const pushAlerts: PushAlert[] = [
-  { title: "VIP Customer Alert",          message: "Sophea (VIP) hasn't visited in 5 days — she usually comes every 2 days. Consider sending a special offer.",                       time: "1 hour ago",    icon: Star,          color: "purple"  },
-  { title: "At-Risk Customers",           message: "3 customers who visited regularly last month haven't returned in 2+ weeks. They may be at risk of churning.",                     time: "This morning",  icon: AlertTriangle, color: "orange"  },
-  { title: "Best Seller This Week",       message: "Iced Coffee Combo is your top item — 87 orders this week, making up 34% of total sales. Stock up on ingredients.",               time: "Updated today", icon: Star,          color: "green"   },
-];
-
-const customerSegments: CustomerSegment[] = [
-  { type: "vip",     label: "VIP",     khmer: "អតិថិជន VIP", count: 12, description: "3+ visits/week · avg $8+ spend · loyal for 3+ months", action: "Send Reward"   },
-  { type: "at-risk", label: "At-Risk", khmer: "ហានិភ័យ",      count: 8,  description: "Were regulars but haven't visited in 10+ days",        action: "Re-engage now" },
-  { type: "new",     label: "New",     khmer: "អតិថិជនថ្មី",  count: 6,  description: "First visit in last 7 days — needs nurturing",          action: "Welcome Offer" },
-  { type: "dormant", label: "Dormant", khmer: "អសកម្ម",        count: 20, description: "No visit in 30+ days — may have churned",              action: "Win Back"      },
-];
-
-const crmProfiles: CRMProfile[] = [
-  { name: "So So", khmer: "សូ សូ", phone: "123456789", visits: 42, lastVisit: "5 days ago",  totalSpend: "$210", ltv: "$620", loyaltyScore: 94, loyaltyLabel: "Platinum", loyaltyBarWidth: "w-[94%]", segment: "vip",     note: "Loves Iced Coffee combo"   },
-  { name: "Sa Sa", khmer: "សា សា", phone: "12345678",  visits: 28, lastVisit: "2 days ago",  totalSpend: "$145", ltv: "$390", loyaltyScore: 81, loyaltyLabel: "Gold",     loyaltyBarWidth: "w-[81%]", segment: "vip",     note: "Weekday lunch regular"     },
-  { name: "KaKa",  khmer: "កា កា", phone: "123456789", visits: 8,  lastVisit: "3 days ago",  totalSpend: "$38",  ltv: "$96",  loyaltyScore: 52, loyaltyLabel: "Silver",   loyaltyBarWidth: "w-[52%]", segment: "new",     note: "Tourist, buys Mango Rice"  },
-  { name: "NaNa",  khmer: "នា នា", phone: "123456789", visits: 19, lastVisit: "12 days ago", totalSpend: "$88",  ltv: "$210", loyaltyScore: 38, loyaltyLabel: "Bronze",   loyaltyBarWidth: "w-[38%]", segment: "at-risk", note: "Used to come every Monday" },
-  { name: "NeNe",  khmer: "នេ នេ", phone: "123456789", visits: 3,  lastVisit: "45 days ago", totalSpend: "$12",  ltv: "$25",  loyaltyScore: 12, loyaltyLabel: "Bronze",   loyaltyBarWidth: "w-[12%]", segment: "dormant", note: "Only bought water bottles" },
-];
-
-const peakHours: PeakHour[] = [
-  { hour: "8 AM",  predicted: 3,  actual: 3,    barClass: "w-[15%] bg-emerald-500",                                     isPredicted: false },
-  { hour: "10 AM", predicted: 5,  actual: 5,    barClass: "w-1/4 bg-emerald-500",                                        isPredicted: false },
-  { hour: "12 PM", predicted: 15, actual: 12,   barClass: "w-3/5 bg-emerald-500",                                        isPredicted: false },
-  { hour: "2 PM",  predicted: 8,  actual: 7,    barClass: "w-[35%] bg-emerald-500",                                     isPredicted: false },
-  { hour: "4 PM",  predicted: 12, actual: null, barClass: "w-3/5 bg-blue-100 border-2 border-dashed border-blue-300",   isPredicted: true  },
-  { hour: "6 PM",  predicted: 18, actual: null, barClass: "w-[90%] bg-blue-100 border-2 border-dashed border-blue-300", isPredicted: true  },
-  { hour: "8 PM",  predicted: 14, actual: null, barClass: "w-[70%] bg-blue-100 border-2 border-dashed border-blue-300", isPredicted: true  },
-];
-
-const recentLogs: CustomerLog[] = [
-  { time: "2:15 PM",  count: 2,  status: "Regular"      },
-  { time: "10:00 AM", count: 2,  status: "Peak Traffic" },
-  { time: "11:00 AM", count: 12, status: "Peak Traffic" },
-];
-
-const initChat: ChatMsg[] = [
-  { role: "assistant", text: "សួស្តី! I'm your AI Customer Assistant. Ask me about your VIP customers, retention, or foot traffic patterns!" },
-  { role: "assistant", text: "Try: 'Who are my VIP customers?' or 'How do I re-engage at-risk customers?'" },
-];
-
-const weeklyBarHeights = ["h-14", "h-[72px]", "h-12", "h-20", "h-16", "h-28", "h-24"] as const;
-const trendLabels      = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
-
-const tabs: { id: TabId; label: string; khmer: string }[] = [
-  { id: "analysis", label: "Customers Analysis",        khmer: "ការវិភាគអតិថិជន"          },
-  { id: "forecast", label: "Forecast Analytics Widget", khmer: "ការព្យាករណ៍វិភាគទិន្នន័យ" },
-  { id: "log",      label: "Customers Log",             khmer: "កំណត់ហេតុអតិថិជន"          },
-];
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-export default function PremiumCustomerPage() {
-  const [activeTab, setActiveTab]       = useState<TabId>("analysis");
-  const [logCount, setLogCount]         = useState(1);
-  const [customCount, setCustomCount]   = useState(1);
-  const [isChatOpen, setIsChatOpen]     = useState(false);
-  const [isNotifOpen, setIsNotifOpen]   = useState(false);
-  const [chatMessage, setChatMessage]   = useState("");
-  const [chatMsgs, setChatMsgs]         = useState<ChatMsg[]>(initChat);
-  const [dismissed, setDismissed]       = useState<number[]>([]);
-  const [searchQuery, setSearchQuery]   = useState("");
-
-  const visibleAlerts = pushAlerts.filter((_, i) => !dismissed.includes(i));
-
-  const handleSend = () => {
-    if (!chatMessage.trim()) return;
-    setChatMsgs((prev) => [...prev, { role: "user", text: chatMessage }]);
-    setChatMessage("");
+  const summaryData = {
+    todayCount: 48,
+    todayLogs: 4,
+    avgSpend: "$5.45",
+    weeklyCount: 315,
+    weeklyChange: "+27% then last week",
+    weeklyCustomers: "15 Customer",
+    peakTime: "12:10 PM",
+    avgLTV: "$102.02",
   };
 
+  const handleLog = (amount: number) => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    setLogHistory((prev) => [
+      {
+        id: Date.now(),
+        time: timeStr,
+        count: amount,
+        status: amount >= 10 ? "Peak Traffic" : "Regular",
+      },
+      ...prev,
+    ]);
+  };
+
+  const filtered = logHistory.filter(
+    (l) =>
+      l.time.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      l.status.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
+
   return (
-    <VendorDashboardLayout
-      plan="premium"
-      navLinks={PREMIUM_NAV}
-      currentPath="/vendor/premium/customer"
-      settingsHref="/vendor/premium/settings"
-      title="Customers"
-      planBadge={{ label: "PREMIUM", icon: Sparkles }}
-      rightActions={
-        <>
-          <button className="flex items-center gap-1.5 bg-[#29B28D] hover:bg-[#239979] text-white font-semibold px-3.5 py-2 rounded-xl text-sm transition-colors">
-            <Zap className="w-3.5 h-3.5" /> Quick sale
-          </button>
-          <button className="hidden sm:flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-medium px-3.5 py-2 rounded-xl text-sm transition-colors">
-            <FileText className="w-3.5 h-3.5" /> Export PDF
-          </button>
-          <button className="hidden sm:flex items-center gap-1.5 border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium px-3.5 py-2 rounded-xl text-sm transition-colors">
-            <FileSpreadsheet className="w-3.5 h-3.5" /> Export Excel
-          </button>
-        </>
-      }
+    <div
+      className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white transition-colors duration-200 ${
+        isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"
+      }`}
     >
-      <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
+      <VendorSidebar
+        plan="free"
+        navLinks={[
+          {
+            icon: LayoutDashboard,
+            title: "Dashboard",
+            khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
+            href: "/vendor",
+          },
+          {
+            icon: CircleDollarSign,
+            title: "Sales",
+            khmerTitle: "ការលក់",
+            href: "/vendor/sales",
+          },
+          {
+            icon: Receipt,
+            title: "Expenses",
+            khmerTitle: "ចំណាយ",
+            href: "/vendor/expenses",
+          },
+          {
+            icon: Users,
+            title: "Customers",
+            khmerTitle: "អតិថិជន",
+            href: "/vendor/customer",
+            active: true,
+          },
+        ]}
+        currentPath="/vendor/customer"
+        collapsed={isCollapsed}
+        isOpen={isMobileOpen}
+        onClose={() => setIsMobileOpen(false)}
+      />
 
-        {/* ── Page header ── */}
-        <div className="pt-1 pb-1">
-          <h2 className="text-[32px] font-extrabold text-[#111827] leading-tight">My Customers</h2>
-          <p className="text-[14px] text-[#6b7280] mt-1">
-            Track and log your daily foot traffic ·{" "}
-            <span className="text-[#9ca3af]">តាមដាន និងកត់ត្រាអតិថិជន</span>
-          </p>
-        </div>
+      {/* ── MAIN ── */}
+      <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
+        <VendorTopbar
+          title={t("customers.title") || "Customers"}
+          isSidebarCollapsed={isCollapsed}
+          setIsSidebarCollapsed={setIsCollapsed}
+          setIsMobileSidebarOpen={setIsMobileOpen}
+          rightActions={
+            <>
+              {/* FIXED: Adaptive Quick Sale button */}
+              <button
+                className={`hidden sm:flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-colors ${
+                  isDark
+                    ? "bg-white text-slate-900 hover:bg-slate-100"
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5 text-[#29B28D]" />
+                Quick sale
+              </button>
+            </>
+          }
+        />
 
-        {/* ── Summary Cards (VendorSummaryCard) ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          <VendorSummaryCard
-            variant="dark"
-            title="Today Customer"
-            khmerTitle="អតិថិជនថ្ងៃនេះ"
-            value={summaryData.todayCount}
-            subtext={summaryData.todayLogs}
-          />
-          <VendorSummaryCard
-            title="Avg. Spend"
-            khmerTitle="ការចំណាយជាមធ្យម"
-            value={summaryData.avgSpend}
-            subtext="per customer"
-          />
-          <VendorSummaryCard
-            variant="green"
-            title="Weekly Customer"
-            khmerTitle="អតិថិជនប្រចាំសប្តាហ៍"
-            value={summaryData.weeklyCount}
-            subtext={summaryData.weeklyChange}
-          />
-          <VendorSummaryCard
-            title="Peak Time"
-            khmerTitle="វេលាមមានម្ចាស់"
-            value={summaryData.peakTime}
-            subtext={summaryData.peakCustomers}
-          />
-          <VendorSummaryCard
-            title="Avg. LTV"
-            khmerTitle="តម្លៃអតិថិជន"
-            value={summaryData.avgLTV}
-            subtext="Per Customer"
-          />
-        </div>
-
-        {/* ── Log Customers Bar ── */}
-        <div className="bg-slate-900 text-white rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="font-bold text-base">Log Customers</h3>
-            <p className="text-slate-300 text-sm font-khmer">កត់ត្រាអតិថិជន</p>
+        {/* Page content */}
+        <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px] space-y-6">
+          {/* Page title + search */}
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div>
+              <h1
+                className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}
+              >
+                {t("customers.title") || "My Customers"}
+              </h1>
+              <p
+                className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
+              >
+                Tracker and Log your daily foot traffic
+              </p>
+            </div>
+            <div className="relative">
+              <Search
+                className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? "text-[#7d8590]" : "text-slate-400"}`}
+              />
+              <input
+                type="text"
+                placeholder="Search Class..."
+                className={`pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-[#29B28D] focus:ring-1 focus:ring-[#29B28D] w-56 transition-colors ${
+                  isDark
+                    ? "bg-[#0d1117] border border-white/5 text-white"
+                    : "bg-white border border-slate-200 text-slate-900"
+                }`}
+              />
+            </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {([1, 5, 10] as const).map((n) => (
-              <button key={n} onClick={() => setLogCount(n)}
-                className={`w-11 h-11 rounded-xl font-bold text-sm transition-all ${logCount === n ? "bg-[#29B28D] text-white scale-105" : "bg-white/10 hover:bg-white/20"}`}>
-                +{n}
+
+          {/* Tabs */}
+          <div
+            className={`flex gap-6 border-b transition-colors ${isDark ? "border-white/5" : "border-slate-200"}`}
+          >
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`pb-3 flex flex-col items-start transition-colors ${
+                  activeTab === tab.id
+                    ? isDark
+                      ? "border-b-2 border-white text-white"
+                      : "border-b-2 border-slate-900 text-slate-900"
+                    : isDark
+                      ? "border-b-2 border-transparent text-[#7d8590] hover:text-white"
+                      : "border-b-2 border-transparent text-slate-500 hover:text-slate-900"
+                }`}
+              >
+                <span className="font-semibold text-sm">{tab.label}</span>
+                <span
+                  className={`text-[10px] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""}`}
+                >
+                  {tab.khmer}
+                </span>
               </button>
             ))}
-            <div className="flex items-center bg-white/10 rounded-xl overflow-hidden">
-              <button onClick={() => setCustomCount((c) => Math.max(1, c - 1))} className="px-2.5 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 transition-colors text-sm">−</button>
-              <span className="px-2 text-sm font-bold min-w-8 text-center">{customCount}</span>
-              <button onClick={() => setCustomCount((c) => c + 1)} className="px-2.5 py-2.5 text-slate-300 hover:text-white hover:bg-white/10 transition-colors text-sm">+</button>
-            </div>
-            <button className="px-3 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition-colors">Custom...</button>
-            <button className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-xl transition-colors flex items-center justify-center">
-              <Plus className="w-4 h-4" />
-            </button>
-            <button className="flex items-center gap-2 bg-[#29B28D] hover:bg-[#239979] text-white font-bold px-5 py-2.5 rounded-xl transition-colors text-sm">
-              <Plus className="w-4 h-4" /> Log {logCount}
-            </button>
           </div>
-        </div>
 
-        {/* ── Tabs ── */}
-        <div className="flex items-end gap-0 border-b border-slate-200">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px flex flex-col items-start gap-0.5 ${
-                activeTab === tab.id
-                  ? "border-slate-900 text-slate-900"
-                  : "border-transparent text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span className="text-[10px] font-khmer text-slate-400">{tab.khmer}</span>
-            </button>
-          ))}
-        </div>
+          {/* FIXED: 5 Summary Cards (Dynamic dark/light mapping) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <VendorSummaryCard
+              variant={isDark ? "dark" : "light"}
+              title="Today Customer"
+              khmerTitle="អតិថិជនថ្ងៃនេះ"
+              value={summaryData.todayCount}
+              subtext={`${summaryData.todayLogs} logs`}
+            />
+            <VendorSummaryCard
+              variant={isDark ? "dark" : "light"}
+              title="Avg.Spend"
+              khmerTitle="ការចំណាយមធ្យម"
+              value={summaryData.avgSpend}
+              subtext="per customer"
+            />
+            <VendorSummaryCard
+              variant="green"
+              title="Weekly Customer"
+              khmerTitle="អតិថិជនប្រចាំសប្តាហ៍"
+              value={summaryData.weeklyCount}
+              subtext={summaryData.weeklyChange}
+            />
+            <VendorSummaryCard
+              variant={isDark ? "dark" : "light"}
+              title="Peak Time"
+              khmerTitle="ម៉ោងមមាញឹក"
+              value={summaryData.peakTime}
+              subtext={summaryData.weeklyCustomers}
+            />
+            <VendorSummaryCard
+              variant={isDark ? "dark" : "light"}
+              title="Avg.LTV"
+              khmerTitle="តម្លៃអតិថិជន"
+              value={summaryData.avgLTV}
+              subtext="Per Customer"
+            />
+          </div>
 
-        {/* ── Tab: Customers Analysis ── */}
-        {activeTab === "analysis" && (
-          <div className="space-y-5">
-
-            {/* AI Customer Segments */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-base text-slate-900">AI Customer Segment</h3>
-                  <p className="text-[11px] font-khmer text-slate-500 mt-0.5">ការចាត់ក្រុមអតិថិជន · Auto Classified by Gemini AI</p>
-                </div>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full">
-                  <Brain className="w-3 h-3" /> AI
+          {/* FIXED: Log Customers Bar */}
+          <div
+            className={`rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border transition-colors ${
+              isDark
+                ? "bg-[#0d1117] border-white/5"
+                : "bg-white border-slate-200 shadow-sm"
+            }`}
+          >
+            <div>
+              <p
+                className={`font-bold text-[15px] ${isDark ? "text-white" : "text-slate-900"}`}
+              >
+                Log Customers
+              </p>
+              <p
+                className={`text-[11px] font-khmer mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
+              >
+                កត់ត្រាអតិថិជន
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {[1, 5, 10].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => handleLog(n)}
+                  className="px-4 py-2 bg-[#29B28D] hover:bg-[#239979] text-white text-sm font-bold rounded-xl transition-colors min-h-11 shadow-sm"
+                >
+                  +{n}
+                </button>
+              ))}
+              <div
+                className={`flex items-center rounded-xl overflow-hidden border transition-colors ${
+                  isDark
+                    ? "bg-[#161B22] border-white/5"
+                    : "bg-slate-50 border-slate-200"
+                }`}
+              >
+                <button
+                  onClick={() => setCustomCount((c) => Math.max(1, c - 1))}
+                  className={`px-3 py-2 transition-colors min-h-11 ${
+                    isDark
+                      ? "text-white hover:bg-white/5"
+                      : "text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <span
+                  className={`font-bold text-sm w-6 text-center ${isDark ? "text-white" : "text-slate-900"}`}
+                >
+                  {customCount}
                 </span>
-              </div>
-              <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {customerSegments.map((seg, i) => {
-                  const c = segmentColorMap[seg.type];
-                  const icons: Record<SegmentType, LucideIcon> = {
-                    vip: Star, "at-risk": AlertTriangle, new: Users2, dormant: Clock,
-                  };
-                  const SegIcon = icons[seg.type];
-                  return (
-                    <div key={i} className={`p-5 rounded-xl border ${c.bg} ${c.border}`}>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className={`p-2 rounded-lg ${c.iconBg}`}>
-                          <SegIcon className={`w-4 h-4 ${c.iconText}`} />
-                        </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${c.badge}`}>
-                          {seg.label}
-                        </span>
-                      </div>
-                      <p className={`text-[32px] font-bold ${c.countText}`}>{seg.count}</p>
-                      <p className={`text-sm font-semibold mt-0.5 ${seg.type === "vip" ? "text-white" : "text-slate-700"}`}>{seg.label} Customers</p>
-                      <p className={`text-[11px] font-khmer mt-0.5 ${seg.type === "vip" ? "text-gray-300" : "text-slate-500"}`}>{seg.khmer}</p>
-                      <p className={`text-[11px] mt-2 leading-relaxed ${seg.type === "vip" ? "text-gray-400" : "text-slate-500"}`}>{seg.description}</p>
-                      <button className={`mt-3 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors w-full ${c.iconBg} ${c.iconText} hover:opacity-80`}>
-                        {seg.action} →
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Push Alerts */}
-            {visibleAlerts.length > 0 && (
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-100">
-                  <h3 className="font-bold text-base text-slate-900">Smart Alerts</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">{visibleAlerts.length} active alerts</p>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {visibleAlerts.map((alert, i) => {
-                    const Icon = alert.icon;
-                    const c    = alertColorMap[alert.color];
-                    const orig = pushAlerts.indexOf(alert);
-                    return (
-                      <div key={i} className={`flex items-start gap-3 px-5 py-4 ${c.bg}`}>
-                        <div className={`p-2 rounded-lg shrink-0 mt-0.5 ${c.iconBg}`}>
-                          <Icon className={`w-4 h-4 ${c.iconText}`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-[13px] font-bold ${c.titleText}`}>{alert.title}</p>
-                          <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{alert.message}</p>
-                          <p className="text-[11px] text-slate-400 mt-1">{alert.time}</p>
-                        </div>
-                        <button onClick={() => setDismissed((d) => [...d, orig])}
-                          className="text-[11px] font-semibold text-slate-400 hover:text-slate-700 px-2 py-1 rounded-lg hover:bg-white/60 transition-colors shrink-0 mt-0.5">
-                          Dismiss
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Tab: Forecast Analytics Widget ── */}
-        {activeTab === "forecast" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-            {/* Peak Hour Forecast */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="p-2 bg-gray-100 rounded-xl"><Activity className="w-5 h-5 text-gray-600" /></div>
-                <div>
-                  <h3 className="font-bold text-base text-slate-900">Peak Hour Forecast</h3>
-                  <p className="text-[11px] font-khmer text-slate-500 mt-0.5">ការព្យាករណ៍ម៉ោងមមានម្ចាស់</p>
-                </div>
-              </div>
-              <div className="space-y-3">
-                {peakHours.map((h, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <span className="text-xs font-semibold text-slate-500 w-14 shrink-0">{h.hour}</span>
-                    <div className="flex-1 h-8 bg-slate-100 rounded-lg overflow-hidden relative">
-                      <div className={`h-full rounded-lg ${h.barClass}`} />
-                      {h.isPredicted && (
-                        <span className="absolute inset-0 flex items-center pl-3 text-[10px] font-semibold text-blue-600">
-                          Prediction: {h.predicted}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-xs font-bold text-slate-700 w-8 text-right shrink-0">
-                      {h.actual !== null ? h.actual : `~${h.predicted}`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-4 mt-4 text-[11px] text-slate-500">
-                <div className="flex items-center gap-1.5"><div className="w-4 h-2 rounded-sm bg-emerald-500" />Actual</div>
-                <div className="flex items-center gap-1.5"><div className="w-4 h-2 rounded-sm bg-blue-100 border border-dashed border-blue-300" />AI Prediction</div>
-              </div>
-            </div>
-
-            {/* Weekly Customer Trend */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h3 className="font-bold text-base text-slate-900">Weekly Customer Trend</h3>
-                  <p className="text-[11px] font-khmer text-slate-500 mt-0.5">ចំនួនអតិថិជនប្រចាំសប្តាហ៍</p>
-                </div>
-                <span className="text-sm font-bold text-emerald-500">+ 12%</span>
-              </div>
-              <div className="flex items-end gap-2 h-36 mb-3">
-                {weeklyBarHeights.map((h, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center">
-                    <div className={`w-full rounded-t-lg transition-all ${i === 5 || i === 6 ? "bg-[#29B28D]" : "bg-slate-200 hover:bg-slate-300"} ${h}`} />
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-end justify-between gap-1 mb-4">
-                {trendLabels.map((label, i) => (
-                  <span key={i} className="flex-1 text-center text-[9px] text-slate-400 font-medium truncate">{label}</span>
-                ))}
-              </div>
-              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-                <p className="text-xs text-slate-700 leading-relaxed">
-                  <strong className="text-emerald-700">AI Insight:</strong> Weekend (Sat+Sun) accounts for 52% of weekly customers. Consider extending hours Friday evening to capture early weekend traffic.
-                </p>
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* ── Tab: Customers Log ── */}
-        {activeTab === "log" && (
-          <div className="space-y-5">
-
-            {/* CRM Profiles */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-base text-slate-900">CRM Profiles</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">5 Profiles · AI Loyalty Score · Purchase patterns</p>
-                </div>
-                <button className="flex items-center gap-2 bg-gray-900 hover:bg-gray-700 text-white font-medium px-4 py-2 rounded-xl text-sm transition-colors">
-                  <Plus className="w-4 h-4" /> Add Customer
+                <button
+                  onClick={() => setCustomCount((c) => c + 1)}
+                  className={`px-3 py-2 transition-colors min-h-11 ${
+                    isDark
+                      ? "text-white hover:bg-white/5"
+                      : "text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  <Plus className="w-4 h-4" />
                 </button>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50/50">
-                      <th className="text-left px-6 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Customer</th>
-                      <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Phone</th>
-                      <th className="text-center px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Visited</th>
-                      <th className="text-right px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Spend</th>
-                      <th className="text-right px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">LTV</th>
-                      <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">AI Loyalty Score</th>
-                      <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Segment</th>
-                      <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Note</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {crmProfiles.map((p, i) => {
-                      const seg      = segmentColorMap[p.segment];
-                      const loyEntry = loyaltyColorMap[p.loyaltyLabel] ?? { badge: "text-slate-500 bg-slate-100 border-slate-200", bar: "bg-slate-300" };
-                      return (
-                        <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/80 transition-colors">
-                          <td className="px-6 py-4">
-                            <p className="text-sm font-semibold text-slate-900">{p.name}</p>
-                            <p className="text-[11px] font-khmer text-slate-600">{p.khmer}</p>
-                          </td>
-                          <td className="px-4 py-4"><span className="text-[13px] text-slate-500">{p.phone}</span></td>
-                          <td className="px-4 py-4 text-center"><span className="text-sm font-bold text-slate-900">{p.visits}</span></td>
-                          <td className="px-4 py-4 text-right"><span className="text-sm font-semibold text-slate-700">{p.totalSpend}</span></td>
-                          <td className="px-4 py-4 text-right"><span className="text-sm font-bold text-emerald-600">{p.ltv}</span></td>
-                          <td className="px-4 py-4">
-                            <div className="flex items-center gap-2">
-                              <div className="w-20 h-2 bg-slate-100 rounded-full overflow-hidden">
-                                <div className={`h-full rounded-full ${loyEntry.bar} ${p.loyaltyBarWidth}`} />
-                              </div>
-                              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${loyEntry.badge}`}>
-                                {p.loyaltyLabel}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4">
-                            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${seg.badge}`}>
-                              {p.segment === "at-risk" ? "At-Risk" : p.segment.charAt(0).toUpperCase() + p.segment.slice(1)}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4"><p className="text-xs text-slate-500 max-w-32 truncate">{p.note}</p></td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <button
+                className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors min-h-11 border ${
+                  isDark
+                    ? "bg-[#161B22] border-white/5 text-white hover:bg-white/5"
+                    : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                Custom...
+              </button>
+              <button
+                onClick={() => handleLog(customCount)}
+                className="px-5 py-2 bg-[#29B28D] hover:bg-[#239979] text-white font-bold rounded-xl transition-colors text-sm flex items-center gap-1.5 min-h-11 shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                Log {customCount}
+              </button>
+            </div>
+          </div>
+
+          {/* Log History Table */}
+          <div
+            className={`border rounded-2xl shadow-sm overflow-hidden transition-colors ${
+              isDark
+                ? "bg-[#0d1117] border-white/5"
+                : "bg-white border-slate-200"
+            }`}
+          >
+            <div
+              className={`p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${
+                isDark ? "border-white/5" : "border-slate-100"
+              }`}
+            >
+              <h3
+                className={`font-bold text-[17px] ${isDark ? "text-white" : "text-slate-900"}`}
+              >
+                {/* FIXED: Replaced "Expense History" typo */}
+                Customers Log History
+              </h3>
+              <div className="relative w-full sm:w-auto">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder={t("common.search") || "Search Log..."}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#29B28D] min-h-11 transition-colors ${
+                    isDark
+                      ? "bg-[#161B22] border-white/5 text-white focus:border-[#29B28D]"
+                      : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"
+                  }`}
+                />
               </div>
             </div>
-
-            {/* Recent Customer Logs */}
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-base text-slate-900">Recent Customer Logs</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">Today&apos;s recorded foot traffic</p>
-                </div>
-                <span className="text-sm font-bold text-slate-700">Total: <span className="text-emerald-500">22</span></span>
-              </div>
-              <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/50">
-                    <th className="text-left px-6 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Time Logged</th>
-                    <th className="text-left px-16 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Count</th>
-                    <th className="text-left px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                  <tr
+                    className={`border-b text-xs uppercase tracking-wider font-semibold transition-colors ${
+                      isDark
+                        ? "bg-[#161B22] border-white/5 text-[#7d8590]"
+                        : "bg-slate-50/50 border-slate-100 text-slate-500"
+                    }`}
+                  >
+                    <th className="px-6 py-4">Time Logged</th>
+                    <th className="px-6 py-4">Count</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {recentLogs.map((log, i) => (
-                    <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/80 transition-colors">
-                      <td className="px-6 py-4"><span className="text-sm text-slate-600">{log.time}</span></td>
-                      <td className="px-16 py-4"><span className="text-base font-bold text-slate-900">+{log.count}</span></td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
-                          log.status === "Peak Traffic"
-                            ? "bg-amber-50 text-amber-600 border border-amber-200"
-                            : "bg-slate-100 text-slate-600"
-                        }`}>
-                          {log.status === "Peak Traffic" && <Flame className="w-3 h-3" />}
-                          {log.status}
-                        </span>
+                <tbody
+                  className={`divide-y transition-colors ${isDark ? "divide-white/5" : "divide-slate-100"}`}
+                >
+                  {filtered.map((log) => (
+                    <tr
+                      key={log.id}
+                      className={`transition-colors ${isDark ? "hover:bg-white/5" : "hover:bg-slate-50/50"}`}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div
+                          className={`flex items-center gap-2 text-[15px] ${isDark ? "text-white" : "text-slate-600"}`}
+                        >
+                          <Clock className="w-4 h-4 text-slate-400" />
+                          {log.time}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`text-[15px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}
+                          >
+                            +{log.count}
+                          </span>
+                          <Users className="w-3.5 h-3.5 text-slate-400" />
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {log.status === "Peak Traffic" ? (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold border border-orange-200">
+                            Peak Traffic
+                          </span>
+                        ) : (
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${
+                              isDark
+                                ? "bg-white/5 text-white border-white/10"
+                                : "bg-slate-100 text-slate-600 border-slate-200"
+                            }`}
+                          >
+                            Regular
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <button className="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl tracking-widest transition-colors">
+                          ···
+                        </button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <div className="px-6 py-4 border-t border-slate-100 text-center">
-                <button className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-1.5 mx-auto transition-colors">
-                  <History className="w-4 h-4" /> View Full History
-                </button>
-              </div>
             </div>
-
-          </div>
-        )}
-
-      </div>
-
-      {/* ── AI Chatbot FAB ── */}
-      {!isChatOpen && (
-        <button onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#29B28D] rounded-full shadow-xl shadow-[#29B28D]/30 flex items-center justify-center text-white hover:scale-110 transition-transform">
-          <MessageSquare className="w-6 h-6" />
-        </button>
-      )}
-
-      {isChatOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden" style={{ maxHeight: "520px" }}>
-          <div className="px-5 py-4 bg-[#0E1319] text-white flex items-center justify-between border-b border-gray-700">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
-                <Brain className="w-5 h-5 text-[#29B28D]" />
-              </div>
-              <div>
-                <p className="font-bold text-sm">AI Customer Assistant</p>
-                <p className="text-[11px] text-[#29B28D]">Powered by Gemini</p>
-              </div>
-            </div>
-            <button onClick={() => setIsChatOpen(false)} className="text-white/70 hover:text-white p-1">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 min-h-[280px]">
-            {chatMsgs.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-[13px] leading-relaxed ${
-                  msg.role === "user"
-                    ? "bg-[#29B28D] text-white rounded-br-md"
-                    : "bg-white border border-slate-200 text-slate-700 rounded-bl-md shadow-sm"
-                }`}>
-                  {msg.text}
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="p-3 border-t border-slate-200 bg-white">
-            <div className="flex items-center gap-2">
-              <input type="text" placeholder="Ask about your customers..." value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-[#29B28D] outline-none transition-all min-h-[44px]" />
-              <button onClick={handleSend} className="p-3 bg-[#0E1319] text-white rounded-xl hover:bg-gray-700 transition-colors min-h-[44px]">
-                <Send className="w-4 h-4" />
+            {/* FIXED: Adaptive bottom border color */}
+            <div
+              className={`px-6 py-4 border-t text-center transition-colors ${
+                isDark ? "border-white/5" : "border-slate-100"
+              }`}
+            >
+              <button className="text-[#29B28D] text-sm font-semibold hover:underline">
+                View Full History
               </button>
             </div>
           </div>
         </div>
-      )}
-    </VendorDashboardLayout>
+      </main>
+    </div>
   );
 }

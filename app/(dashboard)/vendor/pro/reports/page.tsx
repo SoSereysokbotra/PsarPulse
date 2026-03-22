@@ -150,7 +150,7 @@ export default function ProReportsPage() {
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
-              className="bg-slate-50 border border-slate-200 text-sm font-medium rounded-xl px-3.5 py-2.5 outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[40px] hidden md:block"
+              className="bg-slate-50 dark:bg-[#0d1117] border border-slate-200 text-sm font-medium rounded-xl px-3.5 py-2.5 outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[40px] hidden md:block"
             >
               <option>Today</option>
               <option>This Week</option>
@@ -171,15 +171,15 @@ export default function ProReportsPage() {
       <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
 
           {/* Tabs Navigation */}
-          <div className="flex items-end gap-0 border-b border-[#e8eaed] -mt-3 overflow-x-auto scrollbar-none">
+          <div className="flex items-end gap-0 border-b border-[#e8eaed] dark:border-white/5 -mt-3 overflow-x-auto scrollbar-none">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-5 py-3 text-[13.5px] font-medium border-b-2 -mb-px flex flex-col items-start gap-0.5 bg-transparent border-x-0 border-t-0 cursor-pointer transition-colors whitespace-nowrap ${
                   activeTab === tab.id
-                    ? "border-b-[#111827] text-[#111827] font-semibold"
-                    : "border-b-transparent text-[#6b7280] hover:text-[#111827]"
+                    ? "border-b-[#111827] text-[#111827] dark:text-white font-semibold"
+                    : "border-b-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:text-white"
                 }`}
               >
                 <span>{tab.label}</span>
@@ -193,7 +193,7 @@ export default function ProReportsPage() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <div className="w-1.5 h-6 bg-psar-primary rounded-full"></div>
-              <h2 className="font-bold text-[19px] text-slate-900">Profit & Loss</h2>
+              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">Profit & Loss</h2>
               <span className="text-[12px] font-khmer text-slate-400 ml-1">ចំណេញ និង ខាត</span>
             </div>
 
@@ -209,7 +209,7 @@ export default function ProReportsPage() {
                 title="Total Expenses" khmer="ចំណាយសរុប"
                 value={plData.expenses} trend={plData.expenseTrend} isPositive={true}
                 icon={<TrendingDown className="w-5 h-5" />}
-                accentColor="bg-slate-500"
+                accentColor="bg-slate-50 dark:bg-[#0d1117]"
               />
               <PLCard
                 title="Net Profit" khmer="ប្រាក់ចំណេញសុទ្ធ"
@@ -228,8 +228,8 @@ export default function ProReportsPage() {
             </div>
 
             {/* P&L Bar Chart */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <h3 className="font-semibold text-[15px] text-slate-900 mb-5">Revenue vs Expenses</h3>
+            <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl p-6 shadow-sm">
+              <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-5">Revenue vs Expenses</h3>
               <div className="h-52 flex items-end gap-3">
                 {plData.daily.map((d, i) => {
                   const maxVal = 550; // Dynamic based on data in real world
@@ -246,7 +246,7 @@ export default function ProReportsPage() {
                         {/* Expense bar */}
                         <div className="w-[45%] bg-slate-100 rounded-t-lg relative group">
                           <div
-                            className="absolute bottom-0 w-full bg-slate-400 rounded-t-lg transition-all duration-500 group-hover:bg-slate-500"
+                            className="absolute bottom-0 w-full bg-slate-400 rounded-t-lg transition-all duration-500 group-hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117]0"
                             style={{ height: `${(d.exp / maxVal) * 100}%` }}
                           ></div>
                         </div>
@@ -256,11 +256,11 @@ export default function ProReportsPage() {
                   );
                 })}
               </div>
-              <div className="flex items-center gap-6 mt-4 pt-4 border-t border-slate-100">
-                <div className="flex items-center gap-2 text-[13px] text-slate-500 font-medium">
+              <div className="flex items-center gap-6 mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
+                <div className="flex items-center gap-2 text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">
                   <div className="w-3 h-3 rounded-sm bg-psar-primary"></div> Revenue
                 </div>
-                <div className="flex items-center gap-2 text-[13px] text-slate-500 font-medium">
+                <div className="flex items-center gap-2 text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">
                   <div className="w-3 h-3 rounded-sm bg-slate-400"></div> Expenses
                 </div>
               </div>
@@ -273,27 +273,27 @@ export default function ProReportsPage() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <div className="w-1.5 h-6 bg-psar-primary rounded-full"></div>
-              <h2 className="font-bold text-[19px] text-slate-900">Sales Report</h2>
+              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">Sales Report</h2>
               <span className="text-[12px] font-khmer text-slate-400 ml-1">របាយការណ៍ការលក់</span>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Top Selling Items */}
-              <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-100">
-                  <h3 className="font-semibold text-[15px] text-slate-900">Top Selling Items</h3>
+              <div className="lg:col-span-2 bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5">
+                  <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white">Top Selling Items</h3>
                   <p className="text-[12px] font-khmer text-slate-400 mt-0.5">ទំនិញលក់ដាច់ជាងគេ</p>
                 </div>
                 <div className="p-5 space-y-4">
                   {salesData.topItems.map((item, i) => (
                     <div key={i} className="flex items-center gap-4">
-                      <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-[12px] font-bold flex items-center justify-center shrink-0">
+                      <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 dark:text-[#7d8590] text-[12px] font-bold flex items-center justify-center shrink-0">
                         {i + 1}
                       </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1.5">
                           <div>
-                            <span className="text-[14px] font-semibold text-slate-900">{item.name}</span>
+                            <span className="text-[14px] font-semibold text-slate-900 dark:text-white">{item.name}</span>
                             <span className="text-[11px] font-khmer text-slate-400 ml-2">{item.khmer}</span>
                           </div>
                           <div className="text-right">
@@ -316,19 +316,19 @@ export default function ProReportsPage() {
               {/* Sales Summary + Trend */}
               <div className="flex flex-col gap-6">
                 {/* Period Comparison */}
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex-1">
-                  <h3 className="font-semibold text-[15px] text-slate-900 mb-4">Period Comparison</h3>
+                <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm p-5 flex-1">
+                  <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-4">Period Comparison</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[13px] text-slate-500 font-medium">Current</span>
-                      <span className="text-[17px] font-bold text-slate-900">{salesData.comparison.current}</span>
+                      <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Current</span>
+                      <span className="text-[17px] font-bold text-slate-900 dark:text-white">{salesData.comparison.current}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[13px] text-slate-500 font-medium">Previous</span>
+                      <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Previous</span>
                       <span className="text-[17px] font-bold text-slate-400">{salesData.comparison.previous}</span>
                     </div>
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                      <span className="text-[13px] text-slate-500 font-medium">Change</span>
+                    <div className="pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+                      <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Change</span>
                       <span className="flex items-center gap-1 text-[15px] font-bold text-psar-primary">
                         <ArrowUpRight className="w-4 h-4" />
                         {salesData.comparison.change}
@@ -338,8 +338,8 @@ export default function ProReportsPage() {
                 </div>
 
                 {/* Sales Trend Mini Chart */}
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-5 flex-1">
-                  <h3 className="font-semibold text-[15px] text-slate-900 mb-4">Sales Trend</h3>
+                <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm p-5 flex-1">
+                  <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-4">Sales Trend</h3>
                   <div className="h-24 flex items-end gap-1.5">
                     {salesData.trend.map((h, i) => (
                       <div key={i} className="flex-1 bg-psar-primary/10 rounded-t-md relative group">
@@ -350,7 +350,7 @@ export default function ProReportsPage() {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-3 flex items-center gap-2 text-[13px] text-slate-500 font-medium">
+                  <div className="mt-3 flex items-center gap-2 text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">
                     <span>Total: {salesData.totalSales} sales</span>
                     <span>·</span>
                     <span>Avg: {salesData.avgOrderValue}/order</span>
@@ -366,14 +366,14 @@ export default function ProReportsPage() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <div className="w-1.5 h-6 bg-psar-primary rounded-full"></div>
-              <h2 className="font-bold text-[19px] text-slate-900">Expense Breakdown</h2>
+              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">Expense Breakdown</h2>
               <span className="text-[12px] font-khmer text-slate-400 ml-1">ការបែងចែកចំណាយ</span>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Donut-style visual */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-                <h3 className="font-semibold text-[15px] text-slate-900 mb-5">By Category</h3>
+              <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm p-6">
+                <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-5">By Category</h3>
                 {/* CSS Donut */}
                 <div className="flex items-center justify-center mb-6">
                   <div className="relative w-44 h-44">
@@ -401,7 +401,7 @@ export default function ProReportsPage() {
                       })()}
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-[22px] font-bold text-slate-900">$890</span>
+                      <span className="text-[22px] font-bold text-slate-900 dark:text-white">$890</span>
                       <span className="text-[11px] text-slate-400 font-medium">Total</span>
                     </div>
                   </div>
@@ -411,7 +411,7 @@ export default function ProReportsPage() {
                   {expenseData.categories.map((cat, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }}></div>
-                      <span className="text-[12px] text-slate-600 font-medium truncate">{cat.name}</span>
+                      <span className="text-[12px] text-slate-600 dark:text-[#9aa4b2] font-medium truncate">{cat.name}</span>
                       <span className="text-[12px] text-slate-400 font-semibold ml-auto">{cat.pct}%</span>
                     </div>
                   ))}
@@ -419,17 +419,17 @@ export default function ProReportsPage() {
               </div>
 
               {/* Category Bars */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-                <h3 className="font-semibold text-[15px] text-slate-900 mb-5">Category Details</h3>
+              <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm p-6">
+                <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-5">Category Details</h3>
                 <div className="space-y-4">
                   {expenseData.categories.map((cat, i) => (
                     <div key={i}>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-[14px] font-semibold text-slate-900">{cat.name}</span>
+                          <span className="text-[14px] font-semibold text-slate-900 dark:text-white">{cat.name}</span>
                           <span className="text-[11px] font-khmer text-slate-400">{cat.khmer}</span>
                         </div>
-                        <span className="text-[14px] font-bold text-slate-700">{cat.amount}</span>
+                        <span className="text-[14px] font-bold text-slate-700 dark:text-[#c9d1d9]">{cat.amount}</span>
                       </div>
                       <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
                         <div
@@ -450,7 +450,7 @@ export default function ProReportsPage() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <div className="w-1.5 h-6 bg-psar-primary rounded-full"></div>
-              <h2 className="font-bold text-[19px] text-slate-900">Customer Analytics</h2>
+              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">Customer Analytics</h2>
               <span className="text-[12px] font-khmer text-slate-400 ml-1">ការវិភាគអតិថិជន</span>
             </div>
 
@@ -463,8 +463,8 @@ export default function ProReportsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Hourly Traffic Chart */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-                <h3 className="font-semibold text-[15px] text-slate-900 mb-1">Hourly Traffic</h3>
+              <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm p-6">
+                <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-1">Hourly Traffic</h3>
                 <p className="text-[12px] text-slate-400 font-medium mb-5">Customer volume by hour of day</p>
                 <div className="h-40 flex items-end gap-1">
                   {customerData.hourlyTraffic.map((h, i) => {
@@ -482,19 +482,19 @@ export default function ProReportsPage() {
                     );
                   })}
                 </div>
-                <div className="flex items-center gap-5 mt-4 pt-3 border-t border-slate-100">
-                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
+                <div className="flex items-center gap-5 mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
+                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 dark:text-[#7d8590] font-medium">
                     <div className="w-2.5 h-2.5 rounded-sm bg-psar-primary"></div> Regular
                   </div>
-                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
+                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 dark:text-[#7d8590] font-medium">
                     <Flame className="w-3 h-3 text-orange-400" /> Peak Hours
                   </div>
                 </div>
               </div>
 
               {/* Daily Trend */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
-                <h3 className="font-semibold text-[15px] text-slate-900 mb-1">Daily Customer Trend</h3>
+              <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm p-6">
+                <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-1">Daily Customer Trend</h3>
                 <p className="text-[12px] text-slate-400 font-medium mb-5">Customers per day this week</p>
                 <div className="h-40 flex items-end gap-2">
                   {customerData.dailyTrend.map((val, i) => {
@@ -502,10 +502,10 @@ export default function ProReportsPage() {
                     const isWeekend = i >= 5;
                     return (
                       <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                        <span className="text-[11px] font-bold text-slate-500">{val}</span>
+                        <span className="text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">{val}</span>
                         <div className={`w-full ${isWeekend ? "bg-psar-primary/10" : "bg-slate-100"} rounded-t-lg relative group`} style={{ height: "110px" }}>
                           <div
-                            className={`absolute bottom-0 w-full rounded-t-lg transition-all duration-500 ${isWeekend ? "bg-psar-primary group-hover:bg-psar-primary" : "bg-slate-400 group-hover:bg-slate-500"}`}
+                            className={`absolute bottom-0 w-full rounded-t-lg transition-all duration-500 ${isWeekend ? "bg-psar-primary group-hover:bg-psar-primary" : "bg-slate-400 group-hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117]0"}`}
                             style={{ height: `${(val / 100) * 100}%` }}
                           ></div>
                         </div>
@@ -514,11 +514,11 @@ export default function ProReportsPage() {
                     );
                   })}
                 </div>
-                <div className="flex items-center gap-5 mt-4 pt-3 border-t border-slate-100">
-                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
+                <div className="flex items-center gap-5 mt-4 pt-3 border-t border-slate-100 dark:border-white/5">
+                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 dark:text-[#7d8590] font-medium">
                     <div className="w-2.5 h-2.5 rounded-sm bg-slate-400"></div> Weekday
                   </div>
-                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
+                  <div className="flex items-center gap-1.5 text-[12px] text-slate-500 dark:text-[#7d8590] font-medium">
                     <div className="w-2.5 h-2.5 rounded-sm bg-psar-primary"></div> Weekend
                   </div>
                 </div>
@@ -532,29 +532,29 @@ export default function ProReportsPage() {
           <section className="pb-4">
             <div className="flex items-center gap-2 mb-5">
               <div className="w-1.5 h-6 bg-psar-primary rounded-full"></div>
-              <h2 className="font-bold text-[19px] text-slate-900">Inventory Report</h2>
+              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">Inventory Report</h2>
               <span className="text-[12px] font-khmer text-slate-400 ml-1">របាយការណ៍ស្តុក</span>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Low Stock Alerts */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
+              <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 flex items-center gap-3">
                   <AlertTriangle className="w-5 h-5 text-orange-500" />
                   <div>
-                    <h3 className="font-semibold text-[15px] text-slate-900">Low Stock Alerts</h3>
+                    <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white">Low Stock Alerts</h3>
                     <p className="text-[12px] font-khmer text-slate-400 mt-0.5">ស្តុកជិតអស់</p>
                   </div>
                 </div>
                 <div className="p-5 space-y-4">
                   {inventoryData.lowStockItems.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117]/50 dark:bg-white/5">
                       <div>
-                        <p className="text-[14px] font-semibold text-slate-900">{item.name}</p>
+                        <p className="text-[14px] font-semibold text-slate-900 dark:text-white">{item.name}</p>
                         <p className="text-[11px] font-khmer text-slate-400">{item.khmer}</p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-[16px] font-bold text-slate-900">{item.stock}</span>
+                        <span className="text-[16px] font-bold text-slate-900 dark:text-white">{item.stock}</span>
                         {item.status === "out" ? (
                           <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-[11px] font-bold">
                             Out of Stock
@@ -571,7 +571,7 @@ export default function ProReportsPage() {
                     <p className="text-center text-slate-400 py-6 text-sm">All items are well stocked! ✓</p>
                   )}
                 </div>
-                <div className="px-6 py-4 border-t border-slate-100 bg-slate-50">
+                <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117]">
                   <button className="w-full bg-psar-primary/10 hover:bg-psar-primary/10 text-psar-primary font-bold py-2 rounded-xl transition-colors text-sm">
                     Generate Purchase Order
                   </button>
@@ -579,28 +579,28 @@ export default function ProReportsPage() {
               </div>
 
               {/* Stock Movement */}
-              <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-100 flex items-center gap-3">
+              <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 flex items-center gap-3">
                   <Package className="w-5 h-5 text-slate-400" />
                   <div>
-                    <h3 className="font-semibold text-[15px] text-slate-900">Stock Movement</h3>
+                    <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white">Stock Movement</h3>
                     <p className="text-[12px] font-khmer text-slate-400 mt-0.5">ចលនាស្តុក</p>
                   </div>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-100 text-[12px] text-slate-500 uppercase tracking-wider font-semibold">
+                      <tr className="bg-slate-50 dark:bg-[#0d1117] border-b border-slate-100 dark:border-white/5 text-[12px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
                         <th className="px-6 py-3">Product</th>
                         <th className="px-6 py-3 text-center">Sold</th>
                         <th className="px-6 py-3 text-center">Restocked</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                       {inventoryData.topMovers.map((item, i) => (
-                        <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                        <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117]/50 dark:bg-white/5 transition-colors">
                           <td className="px-6 py-4">
-                            <span className="text-[14px] font-semibold text-slate-900">{item.name}</span>
+                            <span className="text-[14px] font-semibold text-slate-900 dark:text-white">{item.name}</span>
                           </td>
                           <td className="px-6 py-4 text-center">
                             <span className="text-[14px] font-bold text-red-500 flex items-center justify-center gap-1">
@@ -617,9 +617,9 @@ export default function ProReportsPage() {
                     </tbody>
                   </table>
                 </div>
-                <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between text-[13px]">
-                  <span className="text-slate-500 font-medium">Total Products: <strong className="text-slate-900">{inventoryData.totalItems}</strong></span>
-                  <span className="text-slate-500 font-medium">Est. Value: <strong className="text-psar-primary">{inventoryData.totalValue}</strong></span>
+                <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] flex items-center justify-between text-[13px]">
+                  <span className="text-slate-500 dark:text-[#7d8590] font-medium">Total Products: <strong className="text-slate-900 dark:text-white">{inventoryData.totalItems}</strong></span>
+                  <span className="text-slate-500 dark:text-[#7d8590] font-medium">Est. Value: <strong className="text-psar-primary">{inventoryData.totalValue}</strong></span>
                 </div>
               </div>
             </div>
@@ -653,13 +653,13 @@ function PLCard({
   highlight?: boolean;
 }) {
   return (
-    <div className={`p-5 rounded-2xl border ${highlight ? "bg-psar-primary text-white border-transparent shadow-md" : "bg-white border-slate-200 shadow-sm"}`}>
+    <div className={`p-5 rounded-2xl border ${highlight ? "bg-psar-primary text-white border-transparent shadow-md" : "bg-white dark:bg-dark-surface border-slate-200 shadow-sm"}`}>
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h4 className={`text-sm font-semibold ${highlight ? "text-white/90" : "text-slate-500"}`}>{title}</h4>
+          <h4 className={`text-sm font-semibold ${highlight ? "text-white/90" : "text-slate-500 dark:text-[#7d8590]"}`}>{title}</h4>
           <p className={`text-[11px] font-khmer mt-0.5 ${highlight ? "text-white/70" : "text-slate-400"}`}>{khmer}</p>
         </div>
-        <div className={`p-2 rounded-xl ${highlight ? "bg-white/20" : `${accentColor}/10 text-psar-primary border border-slate-100`}`}>
+        <div className={`p-2 rounded-xl ${highlight ? "bg-white/20" : `${accentColor}/10 text-psar-primary border border-slate-100 dark:border-white/5`}`}>
           {icon}
         </div>
       </div>
@@ -685,10 +685,10 @@ function MiniCard({
   accent?: boolean;
 }) {
   return (
-    <div className={`p-4 rounded-2xl border ${accent ? "bg-psar-primary/10 border-psar-primary/20" : "bg-white border-slate-200 shadow-sm"}`}>
-      <p className="text-[12px] font-semibold text-slate-500 mb-0.5">{title}</p>
+    <div className={`p-4 rounded-2xl border ${accent ? "bg-psar-primary/10 border-psar-primary/20" : "bg-white dark:bg-dark-surface border-slate-200 shadow-sm"}`}>
+      <p className="text-[12px] font-semibold text-slate-500 dark:text-[#7d8590] mb-0.5">{title}</p>
       <p className="text-[10px] font-khmer text-slate-400">{khmer}</p>
-      <h3 className={`text-[22px] font-bold mt-2 ${accent ? "text-psar-primary" : "text-slate-900"}`}>{value}</h3>
+      <h3 className={`text-[22px] font-bold mt-2 ${accent ? "text-psar-primary" : "text-slate-900 dark:text-white"}`}>{value}</h3>
     </div>
   );
 }

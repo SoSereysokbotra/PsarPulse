@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Settings, ChevronRight, X, Crown, Sparkles, LogOut, User, CreditCard as BillingIcon } from "lucide-react";
 import VendorNavItem from "./VendorNavItem";
-import { useTheme } from "@/components/providers/ThemeProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
 interface NavLink {
@@ -71,9 +70,7 @@ export default function VendorSidebar({
   userInitials = "SM",
   userEmail = "sokmaly@gmail.com",
 }: VendorSidebarProps) {
-  const { resolvedTheme } = useTheme();
   const { language, t } = useLanguage();
-  const isDark = resolvedTheme === "dark";
   const isKhmer = language === "km";
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const config = PLAN_CONFIG[plan];
@@ -91,7 +88,7 @@ export default function VendorSidebar({
         fixed lg:static inset-y-0 left-0 z-50
         flex flex-col h-screen shrink-0
         transition-all duration-300 ease-in-out
-        ${isDark ? "bg-[#0B0F14] border-r border-white/5" : "bg-[#0E1319]"}
+        bg-[#0E1319] dark:bg-[#0B0F14] dark:border-r dark:border-white/5
         ${collapsed ? "w-[68px]" : "w-64"}
         ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}
@@ -176,11 +173,7 @@ export default function VendorSidebar({
               )}
               <Link
                 href={config.ctaHref}
-                className={`block text-center text-[13px] font-bold py-2 rounded-[8px] no-underline transition-colors ${
-                  isDark 
-                    ? "text-[#3ecf8e] bg-[#3ecf8e]/10 hover:bg-[#3ecf8e]/20" 
-                    : "text-[#29B28D] bg-[rgba(41,178,141,0.12)] hover:bg-[rgba(41,178,141,0.18)]"
-                }`}
+                className={`block text-center text-[13px] font-bold py-2 rounded-[8px] no-underline transition-colors text-[#29B28D] bg-[rgba(41,178,141,0.12)] hover:bg-[rgba(41,178,141,0.18)] dark:text-[#3ecf8e] dark:bg-[#3ecf8e]/10 dark:hover:bg-[#3ecf8e]/20`}
               >
                 {t("settings.subscribe")}
               </Link>

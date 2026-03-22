@@ -185,10 +185,10 @@ export default function ProExpensePage() {
       {/* Changed to w-full h-full to make it expand fully instead of limiting to max-w-5xl */}
       <div className="flex-1 w-full h-full overflow-y-auto p-6 md:p-8 space-y-7">
         {/* QUICK LOGGING SECTION */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="font-bold text-[19px]">Log New Expense</h2>
-            <p className="text-sm font-khmer text-slate-500 mt-0.5">
+            <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
               កត់ត្រាចំណាយថ្មី
             </p>
           </div>
@@ -217,10 +217,10 @@ export default function ProExpensePage() {
               className="absolute inset-0"
               onClick={() => setIsQuickLogModalOpen(false)}
             ></div>
-            <div className="bg-white rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
               <button
                 onClick={() => setIsQuickLogModalOpen(false)}
-                className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 p-1.5 rounded-lg transition-colors border-0 bg-transparent cursor-pointer"
+                className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] hover:bg-slate-100 p-1.5 rounded-lg transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -230,10 +230,10 @@ export default function ProExpensePage() {
                   <Receipt className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-[22px] text-slate-900">
+                  <h2 className="font-bold text-[22px] text-slate-900 dark:text-white">
                     Log New Expense
                   </h2>
-                  <p className="text-sm font-khmer text-slate-500 mt-1">
+                  <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-1">
                     កត់ត្រាចំណាយថ្មី
                   </p>
                 </div>
@@ -253,9 +253,9 @@ export default function ProExpensePage() {
                         value={expenseAmount}
                         onChange={(e) => setExpenseAmount(e.target.value)}
                         required
-                        className="block w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-xl font-bold placeholder-slate-400 focus:bg-white focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all min-h-[60px]"
+                        className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-xl font-bold placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all min-h-[60px]"
                       />
-                      <div className="absolute top-[-10px] left-4 bg-white px-1 text-[11px] font-bold text-slate-500">
+                      <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">
                         Amount <span className="text-red-500">*</span>
                       </div>
                     </div>
@@ -269,7 +269,7 @@ export default function ProExpensePage() {
                       <select
                         value={expenseCategory}
                         onChange={(e) => setExpenseCategory(e.target.value)}
-                        className="block w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-[15px] font-medium focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all h-full min-h-[60px] appearance-none cursor-pointer"
+                        className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all h-full min-h-[60px] appearance-none cursor-pointer"
                       >
                         {categories.map((cat, idx) => (
                           <option key={idx} value={cat.value}>
@@ -277,7 +277,7 @@ export default function ProExpensePage() {
                           </option>
                         ))}
                       </select>
-                      <div className="absolute top-[-10px] left-4 bg-white px-1 text-[11px] font-bold text-slate-500 flex items-center justify-between w-[calc(100%-32px)]">
+                      <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] flex items-center justify-between w-[calc(100%-32px)]">
                         <span>Category</span>
                         <button
                           type="button"
@@ -305,9 +305,9 @@ export default function ProExpensePage() {
                       placeholder="Supplier or Vendor Name"
                       value={expenseVendor}
                       onChange={(e) => setExpenseVendor(e.target.value)}
-                      className="block w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-[15px] placeholder-slate-400 focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                      className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
                     />
-                    <div className="absolute top-[-10px] left-4 bg-white px-1 text-[11px] font-bold text-slate-500">
+                    <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">
                       Vendor (អ្នកផ្គត់ផ្គង់)
                     </div>
                   </div>
@@ -318,14 +318,14 @@ export default function ProExpensePage() {
                       placeholder="What was this for? (Optional)"
                       value={expenseNote}
                       onChange={(e) => setExpenseNote(e.target.value)}
-                      className="block w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-[15px] placeholder-slate-400 focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                      className="block w-full px-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
                     />
                   </div>
 
                   <div className="flex gap-3 mt-4">
                     <button
                       type="button"
-                      className="flex-1 flex flex-col items-center justify-center gap-1 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 font-semibold py-3 rounded-xl transition-all min-h-[56px] cursor-pointer"
+                      className="flex-1 flex flex-col items-center justify-center gap-1 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 hover:bg-slate-100 text-slate-600 dark:text-[#9aa4b2] font-semibold py-3 rounded-xl transition-all min-h-[56px] cursor-pointer"
                       title="Upload Receipt"
                     >
                       <Camera className="w-5 h-5" />
@@ -353,10 +353,10 @@ export default function ProExpensePage() {
               className="absolute inset-0"
               onClick={() => setShowCustomCategoryModal(false)}
             ></div>
-            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-md p-6 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
               <button
                 onClick={() => setShowCustomCategoryModal(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-colors border-0 bg-transparent cursor-pointer"
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] p-1.5 rounded-lg hover:bg-slate-100 transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -365,10 +365,10 @@ export default function ProExpensePage() {
                   <Tag className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[19px] text-slate-900">
+                  <h3 className="font-bold text-[19px] text-slate-900 dark:text-white">
                     Add Custom Category
                   </h3>
-                  <p className="text-[12px] text-slate-500">
+                  <p className="text-[12px] text-slate-500 dark:text-[#7d8590]">
                     Create your own expense category tag.
                   </p>
                 </div>
@@ -380,7 +380,7 @@ export default function ProExpensePage() {
                     placeholder="e.g., Marketing Ads"
                     value={customCategoryName}
                     onChange={(e) => setCustomCategoryName(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-[15px] font-medium focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[48px]"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[48px]"
                     autoFocus
                   />
                 </div>
@@ -429,13 +429,13 @@ export default function ProExpensePage() {
         </div>
 
         {/* Expense History Log */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div className="p-5 md:p-6 border-b border-slate-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="font-bold text-[17px] text-slate-900">
+              <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">
                 Expense History
               </h3>
-              <p className="text-sm font-khmer text-slate-500 mt-0.5">
+              <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
                 ប្រវត្តិការចំណាយ
               </p>
             </div>
@@ -446,10 +446,10 @@ export default function ProExpensePage() {
                 <input
                   type="text"
                   placeholder="Search expenses..."
-                  className="w-full sm:w-auto pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 min-h-[40px]"
+                  className="w-full sm:w-auto pl-9 pr-4 py-2 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 min-h-[40px]"
                 />
               </div>
-              <button className="p-2 border border-slate-200 rounded-xl text-slate-500 hover:bg-slate-50 transition-colors min-h-[40px] cursor-pointer bg-white">
+              <button className="p-2 border border-slate-200 rounded-xl text-slate-500 dark:text-[#7d8590] hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117] transition-colors min-h-[40px] cursor-pointer bg-white dark:bg-dark-surface">
                 <Filter className="w-4 h-4" />
               </button>
             </div>
@@ -458,7 +458,7 @@ export default function ProExpensePage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-[13px] text-slate-500 uppercase tracking-wider font-semibold">
+                <tr className="bg-slate-50 dark:bg-[#0d1117] border-b border-slate-100 dark:border-white/5 text-[13px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
                   <th className="px-6 py-4">Time</th>
                   <th className="px-6 py-4">Category</th>
                   <th className="px-6 py-4">Note / Receipt</th>
@@ -466,14 +466,14 @@ export default function ProExpensePage() {
                   <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                 {recentExpenses.map((exp) => (
                   <tr
                     key={exp.id}
                     className="hover:bg-psar-primary/10/30 transition-colors group"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900">
+                      <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900 dark:text-white">
                         <Clock className="w-4 h-4 text-slate-400" />
                         {exp.time}
                       </div>
@@ -481,12 +481,12 @@ export default function ProExpensePage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-bold border ${exp.isCustom ? "bg-psar-primary/10 text-psar-primary border-psar-primary/20" : "bg-slate-100 text-slate-700 border-slate-200"}`}
+                          className={`inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-bold border ${exp.isCustom ? "bg-psar-primary/10 text-psar-primary border-psar-primary/20" : "bg-slate-100 text-slate-700 dark:text-[#c9d1d9] border-slate-200"}`}
                         >
                           {exp.category}
                         </span>
                         {exp.isCustom && (
-                          <span className="text-[9px] font-bold text-psar-primary uppercase tracking-wider bg-white px-1.5 py-0.5 rounded border border-psar-primary/20 shadow-sm">
+                          <span className="text-[9px] font-bold text-psar-primary uppercase tracking-wider bg-white dark:bg-dark-surface px-1.5 py-0.5 rounded border border-psar-primary/20 shadow-sm">
                             Custom
                           </span>
                         )}
@@ -494,7 +494,7 @@ export default function ProExpensePage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <span className="text-[14px] text-slate-600">
+                        <span className="text-[14px] text-slate-600 dark:text-[#9aa4b2]">
                           {exp.note}
                         </span>
                         {exp.hasReceipt && (
@@ -523,7 +523,7 @@ export default function ProExpensePage() {
             </table>
           </div>
 
-          <div className="p-4 border-t border-slate-100 bg-slate-50 text-center">
+          <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center">
             <button className="text-[14px] font-semibold text-psar-primary hover:text-psar-primary hover:underline min-h-[40px] px-4 border-0 bg-transparent cursor-pointer">
               View All Pro Expenses
             </button>

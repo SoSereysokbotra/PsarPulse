@@ -30,8 +30,8 @@ export default function VendorSummaryCard({
 }: VendorSummaryCardProps) {
   // Determine effective style: `highlight` overrides variant to "green"
   const effectiveVariant = highlight ? "green" : variant;
-  const isDark = effectiveVariant === "dark";
   const isGreen = effectiveVariant === "green";
+  const explicitDark = effectiveVariant === "dark";
 
   // Resolve trend positivity: explicit isPositive > trendDirection > default
   const resolvedPositive =
@@ -43,12 +43,12 @@ export default function VendorSummaryCard({
 
   return (
     <div
-      className={`px-[26px] py-6 rounded-[14px] shadow-[0_1px_4px_rgba(0,0,0,0.06)] border flex flex-col justify-between min-h-[130px] ${
+      className={`px-[26px] py-6 rounded-[14px] shadow-[0_1px_4px_rgba(0,0,0,0.06)] border flex flex-col justify-between min-h-[130px] transition-colors ${
         isGreen
           ? "bg-psar-primary border-psar-primary"
-          : isDark
+          : explicitDark
             ? "bg-psar-dark border-psar-white/[0.06]"
-            : "bg-psar-white border-[#e8eaed]"
+            : "bg-psar-white border-[#e8eaed] dark:bg-psar-dark dark:border-psar-white/[0.06]"
       }`}
     >
       {/* Header: title + icon */}
@@ -58,9 +58,9 @@ export default function VendorSummaryCard({
             className={`text-[10.5px] font-bold uppercase tracking-[0.07em] ${
               isGreen
                 ? "text-psar-white/80"
-                : isDark
+                : explicitDark
                   ? "text-[#7d8590]"
-                  : "text-[#6b7280]"
+                  : "text-[#6b7280] dark:text-[#7d8590]"
             }`}
           >
             {title}
@@ -69,9 +69,9 @@ export default function VendorSummaryCard({
             className={`text-[10px] mt-0.5 ${
               isGreen
                 ? "text-psar-white/60"
-                : isDark
-                  ? "text-[#4d5562]"
-                  : "text-[#9ca3af]"
+                : explicitDark
+                  ? "text-[#7d8590]"
+                  : "text-[#9ca3af] dark:text-[#7d8590]" // FIXED: Better dark mode contrast
             }`}
           >
             {khmerTitle}
@@ -79,23 +79,17 @@ export default function VendorSummaryCard({
         </div>
         {Icon && (
           <div
-            className={`w-[34px] h-[34px] rounded-[10px] flex items-center justify-center border ${
+            className={`w-[34px] h-[34px] rounded-[10px] flex items-center justify-center border transition-colors ${
               isGreen
                 ? "bg-psar-white/20 border-transparent"
-                : isDark
+                : explicitDark
                   ? "bg-psar-white/[0.06] border-psar-white/[0.08]"
-                  : "bg-[#f7f8fa] border-[#e8eaed]"
+                  : "bg-[#f7f8fa] border-[#e8eaed] dark:bg-psar-white/[0.06] dark:border-psar-white/[0.08]"
             }`}
           >
             <Icon
               size={15}
-              className={
-                isGreen
-                  ? "text-psar-white"
-                  : isDark
-                    ? "text-psar-primary"
-                    : "text-psar-primary"
-              }
+              className={isGreen ? "text-psar-white" : "text-psar-primary"}
             />
           </div>
         )}
@@ -107,9 +101,9 @@ export default function VendorSummaryCard({
           className={`font-bold text-[30px] leading-none ${
             isGreen
               ? "text-psar-white"
-              : isDark
+              : explicitDark
                 ? "text-[#e6edf3]"
-                : "text-psar-dark"
+                : "text-psar-dark dark:text-[#e6edf3]"
           }`}
         >
           {value}
@@ -121,7 +115,7 @@ export default function VendorSummaryCard({
                 ? "text-psar-white"
                 : resolvedPositive
                   ? "text-psar-primary"
-                  : "text-[#ef4444]"
+                  : "text-[#ef4444] dark:text-red-400"
             }`}
           >
             {trendDirection === "up" && <TrendingUp size={14} />}
@@ -134,9 +128,9 @@ export default function VendorSummaryCard({
             className={`text-[12.5px] font-medium mb-0.5 ${
               isGreen
                 ? "text-psar-white/80"
-                : isDark
+                : explicitDark
                   ? "text-[#7d8590]"
-                  : "text-[#6b7280]"
+                  : "text-[#6b7280] dark:text-[#7d8590]"
             }`}
           >
             {subtext}

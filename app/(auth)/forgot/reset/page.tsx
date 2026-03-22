@@ -8,8 +8,11 @@ import {
   FormInput,
   SuccessCard,
 } from "@/components/auth";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 export default function ResetPasswordPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
@@ -20,7 +23,9 @@ export default function ResetPasswordPage() {
   const isLengthValid = formData.password.length >= 8;
   const hasNumber = /\d/.test(formData.password);
   const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(formData.password);
-  const isMatch = formData.password.length > 0 && formData.password === formData.confirmPassword;
+  const isMatch =
+    formData.password.length > 0 &&
+    formData.password === formData.confirmPassword;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,10 +60,14 @@ export default function ResetPasswordPage() {
       {!isSuccess ? (
         <>
           <header className="mb-10">
-            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-2">
+            <h1
+              className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"}`}
+            >
               New Password
             </h1>
-            <p className="text-slate-500 font-medium font-khmer text-lg">
+            <p
+              className={`font-medium text-lg ${isDark ? "text-[#8A8F98]" : "text-slate-500"} font-khmer`}
+            >
               កំណត់ពាក្យសម្ងាត់ថ្មីរបស់អ្នក
             </p>
           </header>
@@ -93,21 +102,35 @@ export default function ResetPasswordPage() {
               disabled={isLoading}
             />
 
-            <div className="p-4 rounded-xl space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wider mb-5">
+            <div
+              className={`p-4 rounded-xl space-y-3 ${isDark ? "bg-dark-surface" : "bg-slate-50"}`}
+            >
+              <p
+                className={`text-xs font-semibold uppercase tracking-wider mb-5 ${isDark ? "text-[#8A8F98]" : "text-slate-600"}`}
+              >
                 Password Requirements
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <ValidationItem label="8+ characters" isValid={isLengthValid} />
+                <ValidationItem
+                  label="8+ characters"
+                  isValid={isLengthValid}
+                  isDark={isDark}
+                />
                 <ValidationItem
                   label="At least one number"
                   isValid={hasNumber}
+                  isDark={isDark}
                 />
                 <ValidationItem
                   label="One special character"
                   isValid={hasSpecial}
+                  isDark={isDark}
                 />
-                <ValidationItem label="Passwords match" isValid={isMatch} />
+                <ValidationItem
+                  label="Passwords match"
+                  isValid={isMatch}
+                  isDark={isDark}
+                />
               </div>
             </div>
 
@@ -140,21 +163,33 @@ export default function ResetPasswordPage() {
 function ValidationItem({
   label,
   isValid,
+  isDark = false,
 }: {
   label: string;
   isValid: boolean;
+  isDark?: boolean;
 }) {
   return (
     <div className="flex items-center gap-2">
       <div
         className={`flex-shrink-0 h-4 w-4 rounded-full flex items-center justify-center transition-colors ${
-          isValid ? "bg-green-500/20" : "bg-muted-foreground/10"
+          isValid
+            ? "bg-green-500/20"
+            : isDark
+              ? "bg-slate-600/20"
+              : "bg-slate-200/20"
         }`}
       >
         {isValid && <Check className="h-2.5 w-2.5 text-green-500" />}
       </div>
       <span
-        className={`text-xs ${isValid ? "text-foreground font-medium" : "text-muted-foreground"}`}
+        className={`text-xs ${
+          isValid
+            ? `font-medium ${isDark ? "text-green-400" : "text-green-600"}`
+            : isDark
+              ? "text-slate-500"
+              : "text-slate-500"
+        }`}
       >
         {label}
       </span>

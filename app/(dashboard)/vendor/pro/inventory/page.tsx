@@ -131,10 +131,10 @@ export default function ProInventoryPage() {
       <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7">
           {/* ══ INVENTORY HEADER ══════════════════════════════════════ */}
           <div className="pt-1 pb-2">
-            <h2 className="text-[32px] font-extrabold text-[#111827] leading-tight">
+            <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
               My Inventory
             </h2>
-            <p className="text-[14px] text-[#6b7280] mt-1">
+            <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
               Track and manage your product inventory ·{" "}
               <span className="text-[#9ca3af]">
                 តាមដាន និងគ្រប់គ្រងស្តុកទំនិញ
@@ -146,7 +146,7 @@ export default function ProInventoryPage() {
           <div className="bg-orange-50 rounded-2xl p-5 md:p-6 border border-orange-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
             <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-orange-100 pointer-events-none" />
             <div className="flex items-start gap-4 z-10">
-              <div className="p-3 bg-white border border-orange-200 rounded-xl shrink-0 shadow-sm">
+              <div className="p-3 bg-white dark:bg-dark-surface border border-orange-200 rounded-xl shrink-0 shadow-sm">
                 <AlertTriangle className="w-6 h-6 text-orange-600" />
               </div>
               <div>
@@ -211,13 +211,13 @@ export default function ProInventoryPage() {
           </div>
 
           {/* Inventory Table Area */}
-          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
-            <div className="p-5 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <div className="p-5 md:p-6 border-b border-slate-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="font-bold text-[17px] text-slate-900">
+                <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">
                   Master Product List
                 </h3>
-                <p className="text-[13px] font-khmer text-slate-500 mt-0.5">
+                <p className="text-[13px] font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
                   បញ្ជីផលិតផលមេ
                 </p>
               </div>
@@ -230,7 +230,7 @@ export default function ProInventoryPage() {
                     placeholder="Search items..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[44px]"
+                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[44px]"
                   />
                 </div>
                 <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-psar-primary text-white font-medium px-4 py-2.5 rounded-xl hover:bg-psar-primary transition-colors min-h-[44px]">
@@ -243,7 +243,7 @@ export default function ProInventoryPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100 text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
+                  <tr className="bg-slate-50 dark:bg-[#0d1117] border-b border-slate-100 dark:border-white/5 text-[11px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
                     <th className="px-6 py-4">Product Details</th>
                     <th className="px-6 py-4">Price / Cost</th>
                     <th className="px-6 py-4">Stock Level</th>
@@ -252,7 +252,7 @@ export default function ProInventoryPage() {
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                   {inventoryItems.map((item) => (
                     <tr
                       key={item.id}
@@ -260,16 +260,16 @@ export default function ProInventoryPage() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="text-[14px] font-bold text-slate-900">
+                          <span className="text-[14px] font-bold text-slate-900 dark:text-white">
                             {item.name}
                           </span>
-                          <span className="text-[12px] font-khmer text-slate-500">
+                          <span className="text-[12px] font-khmer text-slate-500 dark:text-[#7d8590]">
                             {item.khmerName}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-[15px] font-bold text-slate-700">
+                        <span className="text-[15px] font-bold text-slate-700 dark:text-[#c9d1d9]">
                           {item.price}
                         </span>
                         <div className="text-[11px] text-slate-400 mt-0.5">
@@ -278,7 +278,7 @@ export default function ProInventoryPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <span className="text-[15px] font-bold text-slate-900 w-6">
+                          <span className="text-[15px] font-bold text-slate-900 dark:text-white w-6">
                             {item.stock}
                           </span>
                           <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -291,7 +291,7 @@ export default function ProInventoryPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-[13px] font-medium text-slate-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-[13px] font-medium text-slate-600 dark:text-[#9aa4b2]">
                         {item.lastRestock}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -318,7 +318,7 @@ export default function ProInventoryPage() {
                             <PlusCircle className="w-4 h-4 mx-auto" />
                           </button>
                           <button
-                            className="p-2 text-slate-400 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors"
+                            className="p-2 text-slate-400 hover:text-slate-900 dark:text-white rounded-lg hover:bg-slate-100 transition-colors"
                             title="Edit Product"
                           >
                             <Edit2 className="w-4 h-4 mx-auto" />
@@ -330,7 +330,7 @@ export default function ProInventoryPage() {
                 </tbody>
               </table>
             </div>
-            <div className="p-4 border-t border-slate-100 bg-slate-50 text-center">
+            <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center">
               <button className="text-[13px] font-semibold text-psar-primary hover:underline">
                 View All {summaryData.totalItems} Items
               </button>

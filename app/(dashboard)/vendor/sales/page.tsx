@@ -281,9 +281,11 @@ export default function SalesDashboard() {
   const statChange = STATS[period];
 
   return (
-    <div className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white transition-colors duration-200 ${
-      isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"
-    }`}>
+    <div
+      className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white transition-colors duration-200 ${
+        isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"
+      }`}
+    >
       {/* ── Toasts ── */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
         {toasts.map((t) => (
@@ -329,10 +331,30 @@ export default function SalesDashboard() {
       <VendorSidebar
         plan="free"
         navLinks={[
-          { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
-          { icon: CircleDollarSign, title: "Sales",      khmerTitle: "ការលក់",      href: "/vendor/sales" },
-          { icon: Receipt,          title: "Expenses",   khmerTitle: "ចំណាយ",       href: "/vendor/expenses" },
-          { icon: Users,            title: "Customers",  khmerTitle: "អតិថិជន",     href: "/vendor/customer" },
+          {
+            icon: LayoutDashboard,
+            title: "Dashboard",
+            khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
+            href: "/vendor",
+          },
+          {
+            icon: CircleDollarSign,
+            title: "Sales",
+            khmerTitle: "ការលក់",
+            href: "/vendor/sales",
+          },
+          {
+            icon: Receipt,
+            title: "Expenses",
+            khmerTitle: "ចំណាយ",
+            href: "/vendor/expenses",
+          },
+          {
+            icon: Users,
+            title: "Customers",
+            khmerTitle: "អតិថិជន",
+            href: "/vendor/customer",
+          },
         ]}
         currentPath="/vendor/sales"
         collapsed={isSidebarCollapsed}
@@ -362,15 +384,23 @@ export default function SalesDashboard() {
             if (e.target === e.currentTarget) closeModal();
           }}
         >
-          <div className={`w-full max-w-md rounded-[20px] shadow-[0_32px_80px_rgba(0,0,0,0.2)] overflow-hidden ${
-            isDark ? "bg-dark-surface border border-white/5" : "bg-white"
-          }`}>
-            <div className={`${isDark ? "bg-[#0d1117]" : "bg-[#0d1117]"} px-7 py-5 flex items-center justify-between`}>
+          <div
+            className={`w-full max-w-md rounded-[20px] shadow-[0_32px_80px_rgba(0,0,0,0.2)] overflow-hidden ${
+              isDark ? "bg-dark-surface border border-white/5" : "bg-white"
+            }`}
+          >
+            <div
+              className={`${isDark ? "bg-[#0d1117]" : "bg-[#0d1117]"} px-7 py-5 flex items-center justify-between`}
+            >
               <div>
                 <div className="text-[18px] font-bold text-[#e6edf3]">
-                  {editTarget ? t("sales.editSale") || "Edit Sale" : t("sales.newSale") || "Log New Sale"}
+                  {editTarget
+                    ? t("sales.editSale") || "Edit Sale"
+                    : t("sales.newSale") || "Log New Sale"}
                 </div>
-                <div className={`text-[12px] text-[#7d8590] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""}`}>
+                <div
+                  className={`text-[12px] text-[#7d8590] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""}`}
+                >
                   {editTarget ? "កែប្រែការលក់" : "កត់ត្រាការលក់រហ័ស"}
                 </div>
               </div>
@@ -492,15 +522,25 @@ export default function SalesDashboard() {
           setIsMobileSidebarOpen={setIsSidebarOpen}
           rightActions={
             <>
-              <div className="hidden sm:flex items-center bg-[#f0f2f5] border border-[#e8eaed] rounded-[10px] p-[3px]">
+              <div
+                className={`hidden sm:flex items-center border rounded-[10px] p-[3px] ${
+                  isDark
+                    ? "bg-[#1a1a1a] border-white/10"
+                    : "bg-[#f0f2f5] border-[#e8eaed]"
+                }`}
+              >
                 {(["Day", "Week", "Month"] as Period[]).map((p) => (
                   <button
                     key={p}
                     onClick={() => setPeriod(p)}
                     className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${
                       period === p
-                        ? "bg-white text-[#111827] shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
-                        : "bg-transparent text-[#6b7280] hover:text-[#111827]"
+                        ? isDark
+                          ? "bg-dark-surface text-white shadow-[0_1px_4px_rgba(0,0,0,0.3)]"
+                          : "bg-white text-[#111827] shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
+                        : isDark
+                          ? "bg-transparent text-[#7d8590] hover:text-white"
+                          : "bg-transparent text-[#6b7280] hover:text-[#111827]"
                     }`}
                   >
                     {p}
@@ -522,9 +562,16 @@ export default function SalesDashboard() {
           <div className="max-w-[1400px] mx-auto flex flex-col gap-5">
             {/* ══ SALES HEADER ══════════════════════════════════════ */}
             <div className="pt-1 pb-2">
-              <h1 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{t("sales.title") || "My Sales"}</h1>
-              <p className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>
-                {t("sales.subtitle") || "Track and manage your daily sales"} · តាមដាន និងគ្រប់គ្រងការលក់
+              <h1
+                className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}
+              >
+                {t("sales.title") || "My Sales"}
+              </h1>
+              <p
+                className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
+              >
+                {t("sales.subtitle") || "Track and manage your daily sales"} ·
+                តាមដាន និងគ្រប់គ្រងការលក់
               </p>
             </div>
 
@@ -553,14 +600,22 @@ export default function SalesDashboard() {
             </div>
 
             {/* ── Transactions table (Still Inline) ── */}
-            <div className={`border rounded-[14px] overflow-hidden shadow-sm ${
-              isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"
-            }`}>
-              <div className={`px-[22px] py-4 border-b flex items-center justify-between gap-3 flex-wrap ${
-                isDark ? "border-white/5" : "border-[#f0f2f5]"
-              }`}>
+            <div
+              className={`border rounded-[14px] overflow-hidden shadow-sm ${
+                isDark
+                  ? "bg-dark-surface border-white/5"
+                  : "bg-white border-[#e8eaed]"
+              }`}
+            >
+              <div
+                className={`px-[22px] py-4 border-b flex items-center justify-between gap-3 flex-wrap ${
+                  isDark ? "border-white/5" : "border-[#f0f2f5]"
+                }`}
+              >
                 <div>
-                  <div className={`text-[14px] font-semibold ${isDark ? "text-white" : "text-[#111827]"}`}>
+                  <div
+                    className={`text-[14px] font-semibold ${isDark ? "text-white" : "text-[#111827]"}`}
+                  >
                     {t("sales.history") || "Transaction History"}
                   </div>
                   <div className="text-[11px] text-[#6b7280] mt-0.5">
@@ -579,7 +634,9 @@ export default function SalesDashboard() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className={`pl-[33px] pr-4 py-[9px] border rounded-[9px] text-[13px] outline-none transition-colors w-[200px] ${
-                      isDark ? "bg-[#0d1117] border-white/5 text-white focus:border-[#3ecf8e]" : "bg-[#f7f8fa] border-[#e8eaed] text-[#111827] focus:border-[#3ecf8e]"
+                      isDark
+                        ? "bg-[#0d1117] border-white/5 text-white focus:border-[#3ecf8e]"
+                        : "bg-[#f7f8fa] border-[#e8eaed] text-[#111827] focus:border-[#3ecf8e]"
                     }`}
                     style={{ fontFamily: "inherit" }}
                   />
@@ -611,13 +668,19 @@ export default function SalesDashboard() {
                     filtered.map((t, i) => (
                       <tr
                         key={t.id}
-                        className={`group transition-colors hover:bg-[#f7f8fa] cursor-pointer ${i < filtered.length - 1 ? "border-b border-[#f0f2f5]" : ""}`}
+                        className={`group transition-colors cursor-pointer ${
+                          isDark ? "hover:bg-[#1a1a1a]" : "hover:bg-[#f7f8fa]"
+                        } ${i < filtered.length - 1 ? (isDark ? "border-b border-white/5" : "border-b border-[#f0f2f5]") : ""}`}
                         onClick={() => openEdit(t)}
                       >
-                        <td className={`px-[22px] py-[14px] text-[13px] whitespace-nowrap ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                        <td
+                          className={`px-[22px] py-[14px] text-[13px] whitespace-nowrap ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                        >
                           {t.time}
                         </td>
-                        <td className={`px-[22px] py-[14px] text-[13px] font-medium max-w-[280px] truncate ${isDark ? "text-white" : "text-[#111827]"}`}>
+                        <td
+                          className={`px-[22px] py-[14px] text-[13px] font-medium max-w-[280px] truncate ${isDark ? "text-white" : "text-[#111827]"}`}
+                        >
                           {t.items || "—"}
                         </td>
                         <td className="px-[22px] py-[14px]">
@@ -676,11 +739,19 @@ export default function SalesDashboard() {
               </table>
 
               {activeTxns.length > 0 && (
-                <div className="px-[22px] py-3 border-t border-[#f0f2f5] flex items-center justify-between">
-                  <span className="text-[12px] text-[#9ca3af]">
+                <div
+                  className={`px-[22px] py-3 border-t flex items-center justify-between ${
+                    isDark ? "border-white/5" : "border-[#f0f2f5]"
+                  }`}
+                >
+                  <span
+                    className={`text-[12px] ${isDark ? "text-[#7d8590]" : "text-[#9ca3af]"}`}
+                  >
                     {filtered.length} of {activeTxns.length} records
                   </span>
-                  <span className="text-[13px] font-bold text-[#111827]">
+                  <span
+                    className={`text-[13px] font-bold ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}
+                  >
                     Total:{" "}
                     <span className="text-[#3ecf8e]">
                       ${filtered.reduce((s, t) => s + t.amount, 0).toFixed(2)}

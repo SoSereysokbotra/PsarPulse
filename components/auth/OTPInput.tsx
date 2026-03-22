@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface OTPInputProps {
   otp: string[];
@@ -7,6 +8,8 @@ interface OTPInputProps {
 }
 
 export const OTPInput = ({ otp, setOtp, disabled }: OTPInputProps) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = (index: number, value: string) => {
@@ -38,7 +41,11 @@ export const OTPInput = ({ otp, setOtp, disabled }: OTPInputProps) => {
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}
           disabled={disabled}
-          className="w-full h-14 sm:h-16 text-center text-2xl font-bold bg-white border border-slate-200 shadow-sm hover:border-slate-300 rounded-xl focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary/20 outline-none transition-all duration-200 disabled:opacity-50"
+          className={`w-full h-14 sm:h-16 text-center text-2xl font-bold rounded-xl shadow-sm outline-none transition-all duration-200 disabled:opacity-50 ${
+            isDark
+              ? "bg-dark-surface border border-dark-border text-white placeholder-slate-600 hover:border-white/20 focus:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary/20"
+              : "bg-white border border-slate-200 text-slate-900 hover:border-slate-300 focus:bg-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary/20"
+          }`}
           required
         />
       ))}

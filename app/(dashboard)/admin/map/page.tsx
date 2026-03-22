@@ -133,29 +133,37 @@ export default function VendorMapPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col pt-2 pb-6 px-4 sm:px-8 bg-slate-50/50">
+    <div className="h-[calc(100vh-6rem)] flex flex-col pt-2 pb-6 px-4 sm:px-8 bg-slate-50/50 dark:bg-slate-950 transition-colors duration-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 shrink-0">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <MapIcon className="w-6 h-6 text-indigo-600" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 transition-colors">
+            <MapIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
             Vendor Mapping
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 transition-colors">
             Manage vendor geolocations, zones & public visibility.
           </p>
         </div>
 
         {/* Toggle Mode */}
-        <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-sm relative z-20">
+        <div className="flex items-center bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm relative z-20 transition-colors">
           <button
             onClick={() => {
               setMapMode("internal");
               setSelectedPin(null);
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mapMode === "internal" ? "bg-slate-900 shadow text-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              mapMode === "internal"
+                ? "bg-slate-900 dark:bg-slate-100 shadow text-white dark:text-slate-900"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+            }`}
           >
             <ShieldAlert
-              className={`h-4 w-4 ${mapMode === "internal" ? "text-indigo-400" : ""}`}
+              className={`h-4 w-4 ${
+                mapMode === "internal"
+                  ? "text-indigo-400 dark:text-indigo-600"
+                  : ""
+              }`}
             />
             Internal Ops
           </button>
@@ -164,36 +172,44 @@ export default function VendorMapPage() {
               setMapMode("public");
               setSelectedPin(null);
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${mapMode === "public" ? "bg-indigo-600 shadow text-white" : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+              mapMode === "public"
+                ? "bg-indigo-600 dark:bg-indigo-500 shadow text-white"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+            }`}
           >
             <Navigation
-              className={`h-4 w-4 ${mapMode === "public" ? "text-indigo-200" : ""}`}
+              className={`h-4 w-4 ${
+                mapMode === "public"
+                  ? "text-indigo-200 dark:text-indigo-100"
+                  : ""
+              }`}
             />
             Public Map
           </button>
         </div>
       </div>
 
-      <div className="flex-1 relative rounded-2xl border border-slate-200/60 shadow-lg shadow-slate-200/40 overflow-hidden flex bg-slate-100/50">
+      <div className="flex-1 relative rounded-2xl border border-slate-200/60 dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-none overflow-hidden flex bg-slate-100/50 dark:bg-slate-900/50 transition-colors">
         {/* Map Sidebar Filters */}
-        <div className="absolute left-4 top-4 bottom-4 w-80 bg-white/95 backdrop-blur-xl border border-white/20 shadow-[-10px_0_30px_rgba(0,0,0,0.05)] rounded-xl flex flex-col shrink-0 z-20 overflow-hidden ring-1 ring-slate-900/5">
-          <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white">
-            <h2 className="font-semibold text-slate-800 flex items-center gap-2">
-              <Filter className="h-4 w-4 text-indigo-500" />
+        <div className="absolute left-4 top-4 bottom-4 w-80 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-slate-800 shadow-[-10px_0_30px_rgba(0,0,0,0.05)] dark:shadow-[-10px_0_30px_rgba(0,0,0,0.5)] rounded-xl flex flex-col shrink-0 z-20 overflow-hidden ring-1 ring-slate-900/5 dark:ring-white/5 transition-colors">
+          <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 transition-colors">
+            <h2 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+              <Filter className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
               Map Controls
             </h2>
           </div>
 
-          <div className="p-5 space-y-6 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200">
+          <div className="p-5 space-y-6 flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
             <div>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
                 <input
                   type="text"
                   placeholder="Search pins..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium text-slate-700 placeholder:text-slate-400"
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all font-medium text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
             </div>
@@ -201,12 +217,12 @@ export default function VendorMapPage() {
             {mapMode === "internal" ? (
               <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
                 <div>
-                  <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                     <Layers className="h-3 w-3" /> Status Layer
                   </label>
                   <div className="space-y-2.5">
-                    <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors">
-                      <div className="flex items-center gap-3 text-sm font-medium text-slate-700">
+                    <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
+                      <div className="flex items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
                         Verified (Active)
                       </div>
@@ -219,11 +235,11 @@ export default function VendorMapPage() {
                             active: e.target.checked,
                           })
                         }
-                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+                        className="rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-indigo-600 focus:ring-indigo-600 dark:focus:ring-indigo-500"
                       />
                     </label>
-                    <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors">
-                      <div className="flex items-center gap-3 text-sm font-medium text-slate-700">
+                    <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
+                      <div className="flex items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
                         Pending Verif.
                       </div>
@@ -236,11 +252,11 @@ export default function VendorMapPage() {
                             pending: e.target.checked,
                           })
                         }
-                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+                        className="rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-indigo-600 focus:ring-indigo-600 dark:focus:ring-indigo-500"
                       />
                     </label>
-                    <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-colors">
-                      <div className="flex items-center gap-3 text-sm font-medium text-slate-700">
+                    <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
+                      <div className="flex items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></span>
                         Suspended/Off
                       </div>
@@ -253,7 +269,7 @@ export default function VendorMapPage() {
                             suspended: e.target.checked,
                           })
                         }
-                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
+                        className="rounded border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-indigo-600 focus:ring-indigo-600 dark:focus:ring-indigo-500"
                       />
                     </label>
                   </div>
@@ -262,11 +278,11 @@ export default function VendorMapPage() {
             ) : (
               <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
                 <div>
-                  <label className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                  <label className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                     <Navigation className="h-3 w-3" /> Public Curation
                   </label>
-                  <div className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50/50 border border-indigo-100/60 rounded-xl shadow-sm">
-                    <p className="text-sm font-medium text-indigo-900 mb-3 leading-relaxed">
+                  <div className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50/50 dark:from-indigo-900/30 dark:to-blue-900/20 border border-indigo-100/60 dark:border-indigo-500/20 rounded-xl shadow-sm">
+                    <p className="text-sm font-medium text-indigo-900 dark:text-indigo-200 mb-3 leading-relaxed">
                       You are previewing exactly what users see within the
                       custom PsarPulse consumer app.
                     </p>
@@ -276,13 +292,13 @@ export default function VendorMapPage() {
             )}
           </div>
 
-          <div className="p-4 bg-slate-50 border-t border-slate-100 mt-auto">
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 mt-auto transition-colors">
             <div className="grid grid-cols-2 gap-3 text-center">
-              <div className="bg-white py-3 rounded-lg border border-slate-100 shadow-sm">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+              <div className="bg-white dark:bg-slate-800 py-3 rounded-lg border border-slate-100 dark:border-slate-700 shadow-sm transition-colors">
+                <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                   Total Mapped
                 </p>
-                <p className="text-xl font-black text-slate-800 tracking-tight">
+                <p className="text-xl font-black text-slate-800 dark:text-white tracking-tight">
                   {filteredPins.length}
                 </p>
               </div>
@@ -291,7 +307,7 @@ export default function VendorMapPage() {
         </div>
 
         {/* Real Free Map Area (Pigeon Maps + OpenStreetMap) */}
-        <div className="flex-1 relative w-full h-full bg-[#e5e7eb] overflow-hidden">
+        <div className="flex-1 relative w-full h-full bg-[#e5e7eb] dark:bg-slate-800 transition-colors overflow-hidden">
           <Map
             center={center}
             zoom={zoom}
@@ -327,7 +343,7 @@ export default function VendorMapPage() {
                       ${pin.status === "Active" ? "bg-gradient-to-tr from-emerald-600 to-emerald-400" : ""}
                       ${pin.status === "Pending" ? "bg-gradient-to-tr from-amber-500 to-amber-300" : ""}
                       ${pin.status === "Suspended" ? "bg-gradient-to-tr from-red-600 to-red-400" : ""}
-                      ${isSelected ? "ring-4 ring-white shadow-[0_8px_24px_0_rgba(0,0,0,0.25)] scale-110 !z-30" : "hover:scale-110"}
+                      ${isSelected ? "ring-4 ring-white dark:ring-slate-800 shadow-[0_8px_24px_0_rgba(0,0,0,0.25)] scale-110 !z-30" : "hover:scale-110"}
                     `}
                     >
                       {pin.status === "Active" && <Store className="h-4 w-4" />}
@@ -340,7 +356,7 @@ export default function VendorMapPage() {
 
                       {/* Public App Indicator */}
                       {mapMode === "internal" && pin.publicVisible && (
-                        <div className="absolute -top-1 -right-1 bg-indigo-500 w-3.5 h-3.5 rounded-full border-2 border-white flex items-center justify-center"></div>
+                        <div className="absolute -top-1 -right-1 bg-indigo-500 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center"></div>
                       )}
                     </div>
                     {/* Pin Tail */}
@@ -370,42 +386,42 @@ export default function VendorMapPage() {
                 offset={[144, 260]} // Positioned beautifully above the custom pin
               >
                 <div
-                  className="bg-white rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] border border-slate-100/50 w-72 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                  className="bg-white dark:bg-slate-900 rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-slate-100/50 dark:border-slate-800 w-72 overflow-hidden animate-in fade-in zoom-in-95 duration-200 transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h3 className="font-bold text-slate-900 text-lg truncate pr-2 leading-tight">
+                        <h3 className="font-bold text-slate-900 dark:text-white text-lg truncate pr-2 leading-tight">
                           {selectedPin.name}
                         </h3>
-                        <p className="text-sm font-medium text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
                           <User className="w-3.5 h-3.5" /> {selectedPin.owner}
                         </p>
                       </div>
                       <button
                         onClick={() => setSelectedPin(null)}
-                        className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full p-1.5 transition-colors -mr-2"
+                        className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full p-1.5 transition-colors -mr-2"
                       >
                         <X className="h-4 w-4" />
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-sm mb-5 p-3 bg-slate-50/80 rounded-xl border border-slate-100">
+                    <div className="grid grid-cols-2 gap-2 text-sm mb-5 p-3 bg-slate-50/80 dark:bg-slate-800/80 rounded-xl border border-slate-100 dark:border-slate-700 transition-colors">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
                           Plan
                         </span>
-                        <span className="font-semibold text-slate-800 flex items-center gap-1">
-                          <CreditCard className="w-3.5 h-3.5 text-indigo-500" />{" "}
+                        <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                          <CreditCard className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />{" "}
                           {selectedPin.tier}
                         </span>
                       </div>
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
                           Metrics
                         </span>
-                        <span className="font-semibold text-emerald-600 flex items-center gap-1">
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                           <TrendingUp className="w-3.5 h-3.5" />{" "}
                           {selectedPin.visitors}
                         </span>
@@ -415,7 +431,7 @@ export default function VendorMapPage() {
                     <div className="space-y-2">
                       <Link
                         href={`/admin/vendors/${selectedPin.id}`}
-                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-semibold transition-all shadow-md shadow-slate-900/10"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-semibold transition-all shadow-md shadow-slate-900/10 dark:shadow-none"
                       >
                         Vendor Details <ChevronRight className="w-4 h-4" />
                       </Link>
@@ -425,8 +441,8 @@ export default function VendorMapPage() {
                           <button
                             className={`w-full text-center py-2.5 border rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                               selectedPin.publicVisible
-                                ? "border-indigo-100 bg-indigo-50/80 text-indigo-700 hover:bg-indigo-100/80"
-                                : "border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
+                                ? "border-indigo-100 dark:border-indigo-500/30 bg-indigo-50/80 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/80 dark:hover:bg-indigo-500/20"
+                                : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600"
                             }`}
                             onClick={() =>
                               togglePublicVisibility(selectedPin.id)

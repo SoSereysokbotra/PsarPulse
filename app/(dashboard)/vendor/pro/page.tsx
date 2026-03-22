@@ -70,31 +70,31 @@ const PRO_NAV = [
     icon: CircleDollarSign,
     title: "Sales",
     khmerTitle: "ការលក់",
-    href: "/vendor/sales",
+    href: "/vendor/pro/sales",
   },
   {
     icon: Receipt,
     title: "Expenses",
     khmerTitle: "ចំណាយ",
-    href: "/vendor/expenses",
+    href: "/vendor/pro/expenses",
   },
   {
     icon: Users,
     title: "Customers",
     khmerTitle: "អតិថិជន",
-    href: "/vendor/customer",
+    href: "/vendor/pro/customer",
   },
   {
     icon: Package,
     title: "Inventory",
     khmerTitle: "ស្តុក",
-    href: "/vendor/inventory",
+    href: "/vendor/pro/inventory",
   },
   {
     icon: FileBarChart,
     title: "Reports",
     khmerTitle: "របាយការណ៍",
-    href: "/vendor/premium/reports",
+    href: "/vendor/pro/reports",
   },
 ];
 

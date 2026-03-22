@@ -516,7 +516,7 @@ export default function SalesDashboard() {
       <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
         {/* ── Topbar ── */}
         <VendorTopbar
-          title={t("sales.title") || "Sales"}
+          title={"Sales"}
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
           setIsMobileSidebarOpen={setIsSidebarOpen}
@@ -565,7 +565,7 @@ export default function SalesDashboard() {
               <h1
                 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}
               >
-                {t("sales.title") || "My Sales"}
+                {"My Sales"}
               </h1>
               <p
                 className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}

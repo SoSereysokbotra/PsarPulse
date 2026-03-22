@@ -99,35 +99,47 @@ export default function CustomersPage() {
       }`}
     >
       <VendorSidebar
-        plan="free"
+        plan="premium"
         navLinks={[
           {
             icon: LayoutDashboard,
             title: "Dashboard",
             khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
-            href: "/vendor",
+            href: "/vendor/premium",
           },
           {
             icon: CircleDollarSign,
             title: "Sales",
             khmerTitle: "ការលក់",
-            href: "/vendor/sales",
+            href: "/vendor/premium/sales",
           },
           {
             icon: Receipt,
             title: "Expenses",
             khmerTitle: "ចំណាយ",
-            href: "/vendor/expenses",
+            href: "/vendor/premium/expenses",
+            active: true,
           },
           {
             icon: Users,
             title: "Customers",
             khmerTitle: "អតិថិជន",
-            href: "/vendor/customer",
-            active: true,
+            href: "/vendor/premium/customer",
+          },
+          {
+            icon: Package,
+            title: "Inventory",
+            khmerTitle: "ស្តុក",
+            href: "/vendor/premium/inventory",
+          },
+          {
+            icon: FileBarChart,
+            title: "Reports",
+            khmerTitle: "របាយការណ៍",
+            href: "/vendor/premium/reports",
           },
         ]}
-        currentPath="/vendor/customer"
+        currentPath="/vendor/premium/customer"
         collapsed={isCollapsed}
         isOpen={isMobileOpen}
         onClose={() => setIsMobileOpen(false)}
@@ -136,7 +148,7 @@ export default function CustomersPage() {
       {/* ── MAIN ── */}
       <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
         <VendorTopbar
-          title={t("customers.title") || "Customers"}
+          title={"Customers"}
           isSidebarCollapsed={isCollapsed}
           setIsSidebarCollapsed={setIsCollapsed}
           setIsMobileSidebarOpen={setIsMobileOpen}
@@ -165,7 +177,7 @@ export default function CustomersPage() {
               <h1
                 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}
               >
-                {t("customers.title") || "My Customers"}
+                {"My Customers"}
               </h1>
               <p
                 className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}

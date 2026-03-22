@@ -31,16 +31,6 @@ import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
-const TABS = [
-  { id: "analysis", label: "Customers Analysis", khmer: "វិភាគអតិថិជន" },
-  {
-    id: "forecast",
-    label: "Forecast Analytics Widget",
-    khmer: "ការព្យាករណ៍វិភាគទិន្នន័យ",
-  },
-  { id: "log", label: "Customers Log", khmer: "កំណត់ហេតុអតិថិជន" },
-];
-
 export default function CustomersPage() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
@@ -135,7 +125,7 @@ export default function CustomersPage() {
       {/* ── MAIN ── */}
       <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
         <VendorTopbar
-          title={t("customers.title") || "Customers"}
+          title={"Customers"}
           isSidebarCollapsed={isCollapsed}
           setIsSidebarCollapsed={setIsCollapsed}
           setIsMobileSidebarOpen={setIsMobileOpen}
@@ -157,7 +147,7 @@ export default function CustomersPage() {
               <h1
                 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}
               >
-                {t("customers.title") || "My Customers"}
+                {"My Customers"}
               </h1>
               <p
                 className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
@@ -181,34 +171,8 @@ export default function CustomersPage() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div
-            className={`flex gap-6 border-b transition-colors ${isDark ? "border-white/5" : "border-slate-200"}`}
-          >
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`pb-3 flex flex-col items-start transition-colors ${
-                  activeTab === tab.id
-                    ? isDark
-                      ? "border-b-2 border-white text-white"
-                      : "border-b-2 border-slate-900 text-slate-900"
-                    : "text-slate-400 hover:text-slate-600"
-                }`}
-              >
-                <span className="font-semibold text-sm">{tab.label}</span>
-                <span
-                  className={`text-[10px] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""}`}
-                >
-                  {tab.khmer}
-                </span>
-              </button>
-            ))}
-          </div>
-
           {/* 5 Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <VendorSummaryCard
               variant="dark"
               title="Today Customer"
@@ -229,13 +193,6 @@ export default function CustomersPage() {
               khmerTitle="អតិថិជនច្រើនជាងក្នុងរូប"
               value={summaryData.weeklyCount}
               subtext={summaryData.weeklyChange}
-            />
-            <VendorSummaryCard
-              title="Peak Time"
-              khmerTitle="ណែនាំការប្រា"
-              value={summaryData.peakTime}
-              subtext={summaryData.weeklyCustomers}
-              variant={isDark ? "dark" : "light"}
             />
             <VendorSummaryCard
               title="Avg.LTV"

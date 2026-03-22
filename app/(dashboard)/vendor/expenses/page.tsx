@@ -543,7 +543,7 @@ export default function ExpensesPage() {
       <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
         {/* ── Topbar (Matched with Sales) ── */}
         <VendorTopbar
-          title={t("expenses.title")}
+          title={t("My Expensese")}
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
           setIsMobileSidebarOpen={setIsSidebarOpen}
@@ -579,7 +579,7 @@ export default function ExpensesPage() {
           <div className="max-w-[1400px] mx-auto flex flex-col gap-5">
             <div className="pt-1 pb-2">
               <h1 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
-                {t("expenses.title") || "My Expenses"}
+                {"My Expenses"}
               </h1>
               <p className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>
                 {t("expenses.subtitle") || "Track and manage your spending"} · តាមដាន និងគ្រប់គ្រងចំណាយ

@@ -774,7 +774,7 @@ export default function VendorDashboard() {
           {/* ── Metric cards ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <VendorSummaryCard
-              title={t("dashboard.metrics.totalSales")}
+              title={t("TotalSales")}
               khmerTitle="ការលក់សរុប"
               value={summary.sales}
               icon={CircleDollarSign}
@@ -783,7 +783,7 @@ export default function VendorDashboard() {
               variant={isDark ? "dark" : "light"}
             />
             <VendorSummaryCard
-              title={t("dashboard.metrics.totalExpenses")}
+              title={t("TotalExpenses")}
               khmerTitle="ចំណាយសរុប"
               value={summary.expenses}
               icon={Receipt}
@@ -792,7 +792,7 @@ export default function VendorDashboard() {
               variant={isDark ? "dark" : "light"}
             />
             <VendorSummaryCard
-              title={t("dashboard.metrics.netProfit")}
+              title={t("NetProfit")}
               khmerTitle="ប្រាក់ចំណេញ"
               value={summary.profit}
               icon={TrendingUp}
@@ -801,8 +801,8 @@ export default function VendorDashboard() {
               highlight
             />
             <VendorSummaryCard
-              title={t("dashboard.metrics.customers")}
-              khmerTitle={t("dashboard.customers.title")}
+              title={t("Customers")}
+              khmerTitle={t("customers.title")}
               value={summary.customers}
               icon={Users}
               subtext={`Avg ${summary.avgCustomer}`}
@@ -1007,46 +1007,6 @@ export default function VendorDashboard() {
                   </div>
                 </div>
               ))}
-            </div>
-
-            {/* Quick log form */}
-            <div className="pt-[18px] border-t border-[#f0f2f5]">
-              <div className="text-[10.5px] font-bold text-[#6b7280] uppercase tracking-[0.06em] mb-3">
-                Quick Log · ចំណាយ
-              </div>
-              <div className="flex flex-wrap gap-3 items-end">
-                {/* Amount */}
-                <div className="relative w-[140px]">
-                  <span className="absolute left-[13px] top-1/2 -translate-y-1/2 text-[13px] font-bold text-[#6b7280]">
-                    $
-                  </span>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    className="w-full pl-7 pr-3 py-[10px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[10px] text-[15px] font-bold outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
-                    style={{ fontFamily: "inherit" }}
-                  />
-                </div>
-                {/* Category pills — clicking one logs */}
-                <div className="flex flex-wrap gap-[6px]">
-                  {EXP_BREAKDOWN.map((cat) => (
-                    <button
-                      key={cat.key}
-                      onClick={logExpense}
-                      className="px-3 py-[7px] rounded-[8px] text-[12px] font-semibold border border-[#e8eaed] bg-[#f7f8fa] text-[#6b7280] cursor-pointer hover:border-[#3ecf8e] hover:text-[#3ecf8e] hover:bg-[rgba(62,207,142,0.08)] transition-all duration-150"
-                    >
-                      {cat.labelEn}
-                    </button>
-                  ))}
-                </div>
-                {/* Note */}
-                <input
-                  type="text"
-                  placeholder="Note (optional)"
-                  className="flex-1 min-w-[160px] px-[14px] py-[10px] bg-[#f7f8fa] border border-[#e8eaed] rounded-[10px] text-[13px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
-                  style={{ fontFamily: "inherit" }}
-                />
-              </div>
             </div>
           </div>
 

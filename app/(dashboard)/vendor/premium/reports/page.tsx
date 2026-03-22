@@ -343,7 +343,7 @@ export default function PremiumReportsPage() {
         </div>
 
         {/* ── Tabs ── */}
-        <div className="flex items-end gap-0 border-b border-[#e8eaed] dark:border-white/10 -mt-3 overflow-x-auto scrollbar-none transition-colors">
+        <div className="flex items-end gap-0 border-b border-[#e8eaed] dark:border-white/10 -mt-3 transition-colors">
           {TABS.map((tab) => (
             <button
               key={tab.id}

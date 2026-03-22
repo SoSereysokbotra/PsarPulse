@@ -15,42 +15,49 @@ import {
   PlusCircle,
   Download,
   ArrowUpRight,
+  FileBarChart,
 } from "lucide-react";
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
-const FREE_NAV = [
+const PREMIUM_NAV = [
   {
     icon: LayoutDashboard,
     title: "Dashboard",
     khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
-    href: "/vendor",
+    href: "/vendor/premium",
+    active: true,
   },
   {
     icon: CircleDollarSign,
     title: "Sales",
     khmerTitle: "ការលក់",
-    href: "/vendor/sales",
+    href: "/vendor/premium/sales",
   },
   {
     icon: Receipt,
     title: "Expenses",
     khmerTitle: "ចំណាយ",
-    href: "/vendor/expenses",
+    href: "/vendor/premium/expenses",
   },
   {
     icon: Users,
     title: "Customers",
     khmerTitle: "អតិថិជន",
-    href: "/vendor/customer",
+    href: "/vendor/premium/customer",
   },
   {
     icon: Package,
     title: "Inventory",
     khmerTitle: "ស្តុក",
-    href: "/vendor/inventory",
-    active: true,
+    href: "/vendor/premium/inventory",
+  },
+  {
+    icon: FileBarChart,
+    title: "Reports",
+    khmerTitle: "របាយការណ៍",
+    href: "/vendor/premium/reports",
   },
 ];
 
@@ -121,9 +128,9 @@ export default function InventoryPage() {
 
   return (
     <VendorDashboardLayout
-      plan="free"
-      navLinks={FREE_NAV}
-      currentPath="/vendor/inventory"
+      plan="premium"
+      navLinks={PREMIUM_NAV}
+      currentPath="/vendor/premium/inventory"
       title="Inventory Management"
       rightActions={
         <>

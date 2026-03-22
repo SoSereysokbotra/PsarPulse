@@ -1,11 +1,11 @@
 import { NodemailerProvider } from "../../email/providers/nodemailer.provider";
-import { getVerificationEmailTemplate } from "../../email/templates/verification.template";
-import { getPasswordResetEmailTemplate } from "../../email/templates/password-reset.template";
+import { getVerificationEmailTemplate } from "@/lib/email/templates/verification.template";
+import { getPasswordResetEmailTemplate } from "@/lib/email/templates/password-reset.template";
 import {
   getClassInvitationEmailTemplate,
   ClassInvitationData,
-} from "../../email/templates/class-invitation.template";
-import { getTeacherInvitationEmailTemplate } from "../../email/templates/teacher-invitation.template";
+} from "@/lib/email/templates/class-invitation.template";
+import { getTeacherInvitationEmailTemplate } from "@/lib/email/templates/teacher-invitation.template";
 
 export class EmailService {
   private static provider = new NodemailerProvider();

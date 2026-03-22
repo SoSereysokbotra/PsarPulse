@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { invitations } from "@/lib/db/schema/invitations.schema";
+import { invitations } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export class InvitationRepository {

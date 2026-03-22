@@ -1,64 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
-import rateLimit from "express-rate-limit";
 import { authConfig } from "../config";
 
-const limiter = rateLimit({
-  windowMs: authConfig.rateLimiting.authWindowMs,
-  max: authConfig.rateLimiting.authMax,
-  message: "Too many requests. Please try again later.",
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req: any) => {
-    const forwardedFor =
-      req.headers?.get?.("x-forwarded-for") || req.headers?.["x-forwarded-for"];
-    if (typeof forwardedFor === "string") {
-      return forwardedFor.split(",")[0].trim();
-    }
-    return req.ip || req.socket?.remoteAddress || "unknown";
-  },
-});
+// Rate limiter middleware using in-memory storage
+const requestCounts = new Map<string, { count: number; resetTime: number }>();
+
+function getClientIP(request: NextRequest): string {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
+  }
+  return request.headers.get("x-real-ip") || "unknown";
+}
 
 export async function authLimiter(
   request: NextRequest,
 ): Promise<NextResponse | null> {
-  return new Promise((resolve) => {
-    const mockReq: any = {
-      headers: {
-        get: (key: string) => request.headers.get(key),
-        "x-forwarded-for": request.headers.get("x-forwarded-for"),
-      },
-      socket: {},
-    };
+  const clientIP = getClientIP(request);
+  const now = Date.now();
+  const windowMs = authConfig.rateLimiting.authWindowMs * 1000;
+  const maxRequests = authConfig.rateLimiting.authMax;
 
-    const mockRes: any = {
-      status: (code: number) => {
-        mockRes.statusCode = code;
-        return mockRes;
-      },
-      json: (data: any) => {
-        mockRes.jsonData = data;
-        return mockRes;
-      },
-      set: () => mockRes,
-      setHeader: () => mockRes,
-    };
+  const record = requestCounts.get(clientIP);
 
-    const next = (err?: any) => {
-      if (err || mockRes.statusCode === 429) {
-        // Rate limit exceeded
-        const message =
-          typeof mockRes.jsonData?.message === "string"
-            ? mockRes.jsonData.message
-            : "Too many requests. Please try again later.";
+  // Clean up old records
+  if (record && now > record.resetTime) {
+    requestCounts.delete(clientIP);
+  }
 
-        resolve(NextResponse.json({ message }, { status: 429 }));
-      } else {
-        // Rate limit not exceeded
-        resolve(null);
-      }
-    };
+  // Get or create record
+  const current = requestCounts.get(clientIP) || {
+    count: 0,
+    resetTime: now + windowMs,
+  };
 
-    // Call the rate limiter
-    limiter(mockReq, mockRes, next);
-  });
+  // Increment count
+  current.count++;
+  requestCounts.set(clientIP, current);
+
+  // Check if exceeded limit
+  if (current.count > maxRequests) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
+  }
+
+  return null;
 }

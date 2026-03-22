@@ -3,7 +3,6 @@ import { UserRepository } from "../repositories/user.repository";
 import { HashUtil } from "../utils/hash.util";
 import { TokenUtil } from "../utils/token.util";
 import { JwtPayload, AuthResponse } from "../types";
-import { v4 as uuidv4 } from "uuid";
 
 export class TokenService {
   static async refreshToken(refreshToken: string): Promise<AuthResponse> {

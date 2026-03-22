@@ -38,25 +38,13 @@ export class UserRepository {
   }
 
   /**
-   * Find user by student ID
+   * Find users by role
    */
-  static async findByStudentId(studentId: string): Promise<User | undefined> {
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.studentId, studentId));
-    return user;
-  }
-
-  /**
-   * Find user by teacher ID
-   */
-  static async findByTeacherId(teacherId: string): Promise<User | undefined> {
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.teacherId, teacherId));
-    return user;
+  static async findByRole(
+    role: "student" | "teacher" | "admin",
+  ): Promise<User[]> {
+    const userList = await db.select().from(users).where(eq(users.role, role));
+    return userList;
   }
 
   /**
@@ -118,14 +106,14 @@ export class RefreshTokenRepository {
   }
 
   /**
-   * Find token by hash
+   * Find token by value
    */
-  static async findByTokenHash(tokenHash: string) {
-    const [token] = await db
+  static async findByToken(token: string) {
+    const [refreshToken] = await db
       .select()
       .from(refreshTokens)
-      .where(eq(refreshTokens.tokenHash, tokenHash));
-    return token;
+      .where(eq(refreshTokens.token, token));
+    return refreshToken;
   }
 
   /**
@@ -149,16 +137,6 @@ export class RefreshTokenRepository {
       .update(refreshTokens)
       .set({ revokedAt: new Date(), updatedAt: new Date() })
       .where(eq(refreshTokens.id, id));
-  }
-
-  /**
-   * Revoke all tokens in a family
-   */
-  static async revokeFamily(familyId: string): Promise<void> {
-    await db
-      .update(refreshTokens)
-      .set({ revokedAt: new Date(), updatedAt: new Date() })
-      .where(eq(refreshTokens.familyId, familyId));
   }
 
   /**

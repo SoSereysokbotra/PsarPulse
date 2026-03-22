@@ -14,7 +14,6 @@ import {
   VerificationRequest,
   AuthResponse,
 } from "../types";
-import { v4 as uuidv4 } from "uuid";
 
 export class AuthService {
   static async signup(request: SignupRequest): Promise<AuthResponse> {
@@ -108,7 +107,7 @@ export class AuthService {
       // Update existing user with new password
       user = await UserRepository.update(existingUser.id, {
         fullName: request.fullName,
-        password: passwordHash,
+        passwordHash: passwordHash,
         role: request.role || "student",
         updatedAt: new Date(),
       });
@@ -123,10 +122,8 @@ export class AuthService {
       user = await UserRepository.create({
         fullName: request.fullName,
         email: request.email,
-        password: passwordHash,
+        passwordHash: passwordHash,
         role: role,
-        studentId: role === "student" ? uniqueId : null,
-        teacherId: role === "teacher" ? uniqueId : null,
         isVerified: false,
         status: "pending",
       });
@@ -152,28 +149,19 @@ export class AuthService {
 
     // Generate verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const codeHash = HashUtil.hashVerificationCode(code);
 
     // Store verification code
     await VerificationCodeRepository.create({
       userId: user.id,
-      codeHash: codeHash,
+      code: code,
       purpose: "email_verification",
       expiresAt: new Date(
         Date.now() + authConfig.verificationCode.expiresInMinutes * 60 * 1000,
       ),
-      lastSentAt: new Date(),
     });
 
     // Send verification email
     await EmailService.sendVerificationEmail(user.email, code);
-
-    // Mark invitation as accepted if used
-    if (invitation) {
-      const { InvitationRepository } =
-        await import("@/lib/db/repositories/invitations.repository");
-      await InvitationRepository.markAsAccepted(invitation.id);
-    }
 
     return {
       success: true,
@@ -242,8 +230,7 @@ export class AuthService {
     }
 
     // Verify code
-    const codeHash = HashUtil.hashVerificationCode(request.code);
-    if (codeHash !== verificationCode.codeHash) {
+    if (request.code !== verificationCode.code) {
       return {
         success: false,
         message: "Invalid verification code.",
@@ -272,7 +259,6 @@ export class AuthService {
   }
 
   static async resendVerificationCode(): Promise<AuthResponse> {
-    // Get verification session cookie
     const token = await CookieUtil.getVerificationSessionCookie();
     if (!token) {
       return {
@@ -317,9 +303,7 @@ export class AuthService {
       );
 
     if (existingCode) {
-      const lastSent = existingCode.lastSentAt
-        ? new Date(existingCode.lastSentAt).getTime()
-        : 0;
+      const lastSent = new Date(existingCode.createdAt).getTime();
       const now = Date.now();
       const waitTime = authConfig.verificationCode.resendWaitTime * 1000;
 
@@ -342,17 +326,15 @@ export class AuthService {
 
     // Generate new verification code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const codeHash = HashUtil.hashVerificationCode(code);
 
     // Store verification code
     await VerificationCodeRepository.create({
       userId: user.id,
-      codeHash: codeHash,
+      code: code,
       purpose: "email_verification",
       expiresAt: new Date(
         Date.now() + authConfig.verificationCode.expiresInMinutes * 60 * 1000,
       ),
-      lastSentAt: new Date(),
     });
 
     // Send verification email
@@ -397,7 +379,7 @@ export class AuthService {
     }
 
     // Check password
-    if (!user.password) {
+    if (!user.passwordHash) {
       return {
         success: false,
         message: "Invalid email or password.",
@@ -406,7 +388,7 @@ export class AuthService {
 
     const passwordMatch = await HashUtil.comparePassword(
       request.password,
-      user.password,
+      user.passwordHash,
     );
     if (!passwordMatch) {
       return {
@@ -428,19 +410,13 @@ export class AuthService {
       role: user.role as any,
     });
 
-    // Hash refresh token
-    const refreshTokenHash = HashUtil.hashToken(refreshToken);
-
     // Store refresh token
-    const familyId = uuidv4();
     await RefreshTokenRepository.create({
       userId: user.id,
-      tokenHash: refreshTokenHash,
-      familyId: familyId,
+      token: refreshToken,
       deviceInfo: "Web", // TODO: Extract from User-Agent
       userAgent: "Unknown", // TODO: Extract from request
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-      revokedAt: null,
     });
 
     return {

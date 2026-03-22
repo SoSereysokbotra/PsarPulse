@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { createHash } from "crypto";
 import { authConfig } from "../config";
 

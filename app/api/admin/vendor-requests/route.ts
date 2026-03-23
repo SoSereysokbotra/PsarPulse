@@ -1,24 +1,27 @@
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { vendorRequests, users } from "@/lib/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 import { jwtVerify } from "jose";
 
-async function verifyAdmin(request: NextRequest) {
+import { TokenUtil } from "@/lib/auth/utils/token.util";
+
+function verifyAdmin(request: NextRequest): boolean {
   const token = request.cookies.get("access_token")?.value;
   if (!token) return false;
 
   try {
-    const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET!);
-    const { payload } = await jwtVerify(token, secret);
+    const payload = TokenUtil.verifyAccessToken(token);
     return payload.role === "admin" || payload.role === "super_admin";
-  } catch {
+  } catch (error) {
+    console.error("verifyAdmin TokenUtil error:", error);
     return false;
   }
 }
 
 export async function GET(request: NextRequest) {
-  const isAdmin = await verifyAdmin(request);
+  const isAdmin = verifyAdmin(request);
   if (!isAdmin) {
     return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
   }

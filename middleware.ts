@@ -17,6 +17,7 @@ const publicPaths = [
   "/api/auth/password",
   "/api/auth/tokens/refresh",
   "/api/auth/invitations",
+  "/api/auth/vendor-signup",
   "/admin",
 ];
 

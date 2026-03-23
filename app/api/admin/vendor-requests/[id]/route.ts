@@ -8,16 +8,16 @@ import {
   vendorPlans,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { jwtVerify } from "jose";
 import { AdminService } from "@/lib/auth/services/admin.service";
 
-async function verifyAdmin(request: NextRequest) {
+import { TokenUtil } from "@/lib/auth/utils/token.util";
+
+function verifyAdmin(request: NextRequest): string | null {
   const token = request.cookies.get("access_token")?.value;
   if (!token) return null;
 
   try {
-    const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET!);
-    const { payload } = await jwtVerify(token, secret);
+    const payload = TokenUtil.verifyAccessToken(token);
     if (payload.role !== "admin" && payload.role !== "super_admin") return null;
     return payload.id as string;
   } catch {
@@ -29,7 +29,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const adminUserId = await verifyAdmin(request);
+  const adminUserId = verifyAdmin(request);
   if (!adminUserId) {
     return NextResponse.json(
       { success: false, message: "Unauthorized" },

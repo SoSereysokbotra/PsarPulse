@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { vendorRequests } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { vendorRequests, users } from "@/lib/db/schema";
+import { eq, desc, sql } from "drizzle-orm";
 import { jwtVerify } from "jose";
 
 async function verifyAdmin(request: NextRequest) {
@@ -11,7 +11,7 @@ async function verifyAdmin(request: NextRequest) {
   try {
     const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET!);
     const { payload } = await jwtVerify(token, secret);
-    return payload.role === "admin";
+    return payload.role === "admin" || payload.role === "super_admin";
   } catch {
     return false;
   }
@@ -25,8 +25,19 @@ export async function GET(request: NextRequest) {
 
   try {
     const requests = await db
-      .select()
+      .select({
+        id: vendorRequests.id,
+        storeName: vendorRequests.businessName,
+        email: vendorRequests.businessEmail,
+        fullName: users.fullName,
+        date: vendorRequests.createdAt,
+        status: vendorRequests.status,
+        phone: sql<string>`'N/A'`,
+        businessAddress: sql<string>`'Not provided'`,
+        description: vendorRequests.businessCategory,
+      })
       .from(vendorRequests)
+      .leftJoin(users, eq(vendorRequests.userId, users.id))
       .where(eq(vendorRequests.status, "pending"))
       .orderBy(desc(vendorRequests.createdAt));
 

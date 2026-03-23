@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Search, 
   MapPin, 
@@ -17,54 +17,42 @@ import {
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
-// Mock data for pending vendor requests
-const mockRequests = [
-  {
-    id: "req_001",
-    fullName: "Sokha Meas",
-    email: "sokha.meas@example.com",
-    phone: "012 345 678",
-    storeName: "Sokha Fresh Veggies",
-    businessAddress: "Stall #12, Zone B, Central Market",
-    description: "Selling organic and locally sourced fresh vegetables daily.",
-    status: "pending",
-    date: "Oct 16, 2025"
-  },
-  {
-    id: "req_002",
-    fullName: "Rithy Chea",
-    email: "rithy.electronics@gmail.com",
-    phone: "098 765 432",
-    storeName: "Rithy Tech Hub",
-    businessAddress: "Stall #45, Tech Zone, Night Market",
-    description: "Mobile phone accessories, chargers, and small electronics repairs.",
-    status: "pending",
-    date: "Oct 15, 2025"
-  },
-  {
-    id: "req_003",
-    fullName: "Vanna Nhem",
-    email: "vanna.clothing@yahoo.com",
-    phone: "077 111 222",
-    storeName: "Vanna Style",
-    businessAddress: "Stall #88, Fashion Row, Boeung Keng Kang Market",
-    description: "Women's traditional and modern clothing boutique.",
-    status: "pending",
-    date: "Oct 14, 2025"
-  }
-];
-
 export default function VendorRequestsPage() {
   const { language } = useLanguage();
   const { resolvedTheme } = useTheme();
   const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
 
-  const [requests, setRequests] = useState(mockRequests);
+  const [requests, setRequests] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [modalAction, setModalAction] = useState<"approve" | "reject" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const res = await fetch("/api/admin/vendor-requests");
+        const json = await res.json();
+        if (json.success) {
+          // Format the date for the display
+          const formatted = json.data.map((req: any) => ({
+            ...req,
+            date: new Date(req.date).toLocaleDateString(isKhmer ? 'km-KH' : 'en-US', {
+              year: 'numeric', month: 'short', day: 'numeric'
+            })
+          }));
+          setRequests(formatted);
+        }
+      } catch (err) {
+        console.error("Failed to fetch requests", err);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+    fetchRequests();
+  }, [isKhmer]);
 
   const filteredRequests = requests.filter(req => 
     req.storeName.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -76,15 +64,29 @@ export default function VendorRequestsPage() {
     if (!selectedRequest || !modalAction) return;
     
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
     
-    // Remove the processed request from the list
-    setRequests(prev => prev.filter(r => r.id !== selectedRequest.id));
-    
-    setIsLoading(false);
-    setSelectedRequest(null);
-    setModalAction(null);
+    try {
+      const res = await fetch(`/api/admin/vendor-requests/${selectedRequest.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: modalAction === "approve" ? "approved" : "rejected" })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        // Remove the processed request from the list
+        setRequests(prev => prev.filter(r => r.id !== selectedRequest.id));
+      } else {
+        alert(data.message || "Failed to process request");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred");
+    } finally {
+      setIsLoading(false);
+      setSelectedRequest(null);
+      setModalAction(null);
+    }
   };
 
   const openModal = (request: any, action: "approve" | "reject") => {
@@ -130,7 +132,12 @@ export default function VendorRequestsPage() {
 
       {/* Requests List */}
       <div className={`rounded-xl border shadow-sm overflow-hidden ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
-        {filteredRequests.length > 0 ? (
+        {isLoadingData ? (
+          <div className="p-12 text-center text-slate-500">
+            <span className="w-8 h-8 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto block mb-4"></span>
+            <p className={`text-lg font-medium ${isDark ? "text-slate-300" : "text-slate-900"}`}>{isKhmer ? "កំពុងផ្ទុក..." : "Loading..."}</p>
+          </div>
+        ) : filteredRequests.length > 0 ? (
           <div className={`divide-y ${isDark ? "divide-white/5" : "divide-slate-100"}`}>
             {filteredRequests.map((req) => (
               <div key={req.id} className={`p-5 transition-colors flex flex-col md:flex-row gap-6 justify-between items-start md:items-center ${isDark ? "hover:bg-white/[0.02]" : "hover:bg-slate-50"}`}>

@@ -16,6 +16,162 @@ import {
 } from "../types";
 
 export class AuthService {
+  /**
+   * Vendor Registration Request
+   */
+  static async requestVendorSignup(request: {
+    fullName: string;
+    email: string;
+    businessName: string;
+    businessEmail: string;
+    phone?: string;
+  }): Promise<AuthResponse> {
+    // Check if user already exists
+    const existingUser = await UserRepository.findByEmail(request.email);
+
+    if (existingUser) {
+      return {
+        success: false,
+        message: "User account already exists with this email.",
+      };
+    }
+
+    // Create pending user (no password)
+    const user = await UserRepository.create({
+      fullName: request.fullName,
+      email: request.email,
+      role: "vendor",
+      isVerified: false,
+      status: "pending",
+    });
+
+    if (!user) {
+      return {
+        success: false,
+        message: "Failed to create user.",
+      };
+    }
+
+    // Create Vendor Request
+    const { VendorRequestRepository } = await import(
+      "@/lib/db/repositories/vendor_requests.repository"
+    );
+    await VendorRequestRepository.create({
+      userId: user.id,
+      businessName: request.businessName,
+      businessEmail: request.businessEmail,
+      status: "pending",
+      requiredPlan: "free",
+    });
+
+    return {
+      success: true,
+      message:
+        "Vendor registration request submitted. Please wait for admin approval.",
+    };
+  }
+
+  /**
+   * Complete Setup (Admin or Vendor) from Token Link
+   */
+  static async completeSignup(request: {
+    token: string;
+    fullName?: string;
+    password?: string;
+  }): Promise<AuthResponse> {
+    const { InvitationRepository } = await import(
+      "@/lib/db/repositories/invitations.repository"
+    );
+
+    const invitation = await InvitationRepository.findByToken(request.token);
+
+    if (!invitation) {
+      return {
+        success: false,
+        message: "Invalid setup token.",
+      };
+    }
+
+    if (invitation.status !== "pending") {
+      return {
+        success: false,
+        message: "Setup token has already been used or expired.",
+      };
+    }
+
+    if (new Date(invitation.expiresAt) < new Date()) {
+      await InvitationRepository.markAsExpired(invitation.id);
+      return {
+        success: false,
+        message: "Setup token has expired.",
+      };
+    }
+
+    if (!request.password) {
+      return {
+        success: false,
+        message: "Password is required to complete setup.",
+      };
+    }
+
+    const passwordHash = await HashUtil.hashPassword(request.password);
+    let user = await UserRepository.findByEmail(invitation.email);
+
+    if (user) {
+      // Vendor flow: User exists, just update their details & set active
+      user = await UserRepository.update(user.id, {
+        fullName: request.fullName || user.fullName,
+        passwordHash: passwordHash,
+        isVerified: true,
+        status: "active",
+        updatedAt: new Date(),
+      });
+    } else {
+      // Admin flow: User doesn't exist, create Admin user
+      if (!request.fullName) {
+        return {
+          success: false,
+          message: "Full name is required to complete admin setup.",
+        };
+      }
+      
+      user = await UserRepository.create({
+        fullName: request.fullName,
+        email: invitation.email,
+        passwordHash: passwordHash,
+        role: invitation.role as any,
+        isVerified: true,
+        status: "active",
+      });
+
+      if (user?.role === "admin") {
+        const { db } = await import("@/lib/db");
+        const { admins } = await import("@/lib/db/schema");
+        await db.insert(admins).values({
+          userId: user.id,
+          role: "admin",
+        });
+      }
+    }
+
+    if (!user) {
+      return {
+        success: false,
+        message: "Failed to complete setup.",
+      };
+    }
+
+    // Mark invitation as accepted
+    await InvitationRepository.markAsAccepted(invitation.id);
+
+    return {
+      success: true,
+      data: {
+        userId: user.id,
+      },
+    };
+  }
+
   static async signup(request: SignupRequest): Promise<AuthResponse> {
     // Check if user already exists
     const existingUser = await UserRepository.findByEmail(request.email);
@@ -414,11 +570,11 @@ export class AuthService {
       };
     }
 
-    // Check password
+    // Check password set
     if (!user.passwordHash) {
       return {
         success: false,
-        message: "Invalid email or password.",
+        message: "Please complete your account setup via the link sent to your email.",
       };
     }
 

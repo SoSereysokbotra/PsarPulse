@@ -34,7 +34,6 @@ export default function VendorRegisterPage() {
     storeName: "",
     businessAddress: "",
     description: "",
-    password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -53,17 +52,20 @@ export default function VendorRegisterPage() {
     setError("");
 
     try {
-      const result = (await authClient.signup({
-        fullName: formData.fullName,
-        email: formData.email,
-        password: formData.password,
-        role: "vendor",
-        businessName: formData.storeName,
-        businessEmail: formData.email,
-        phone: formData.phone,
-        businessAddress: formData.businessAddress,
-        description: formData.description,
-      })) as SignupResponse;
+      const response = await fetch("/api/auth/vendor-signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          storeName: formData.storeName,
+          phone: formData.phone,
+          businessAddress: formData.businessAddress,
+          description: formData.description,
+        })
+      });
+      
+      const result = (await response.json()) as SignupResponse;
 
       if (!result.success) {
         setError(result.message || "Registration failed. Please try again.");
@@ -219,19 +221,6 @@ export default function VendorRegisterPage() {
           rows={3}
         />
 
-        <FormInput
-          id="password"
-          name="password"
-          type="password"
-          label={t("auth.register.securePassword")}
-          icon={Lock}
-          placeholder={t("auth.register.passwordPlaceholder")}
-          value={formData.password}
-          onChange={handleInputChange}
-          required
-          minLength={8}
-          disabled={isLoading}
-        />
 
         {error && (
           <p

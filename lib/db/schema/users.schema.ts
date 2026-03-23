@@ -5,7 +5,7 @@ export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   fullName: varchar("full_name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
-  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }),
   role: varchar("role", { length: 50 }).$type<"vendor" | "admin" | "super_admin" | "customer">().default("customer").notNull(),
   status: varchar("status", { length: 50 }).$type<"active" | "pending" | "blocked" | "deleted">().default("pending").notNull(),
   isVerified: boolean("is_verified").default(false).notNull(),

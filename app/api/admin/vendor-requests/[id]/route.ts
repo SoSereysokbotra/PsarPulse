@@ -9,6 +9,7 @@ import {
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { jwtVerify } from "jose";
+import { AdminService } from "@/lib/auth/services/admin.service";
 
 async function verifyAdmin(request: NextRequest) {
   const token = request.cookies.get("access_token")?.value;
@@ -17,7 +18,7 @@ async function verifyAdmin(request: NextRequest) {
   try {
     const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET!);
     const { payload } = await jwtVerify(token, secret);
-    if (payload.role !== "admin") return null;
+    if (payload.role !== "admin" && payload.role !== "super_admin") return null;
     return payload.id as string;
   } catch {
     return null;
@@ -40,86 +41,43 @@ export async function PATCH(
 
   try {
     const body = await request.json();
-    const { status } = body; // 'approved' or 'rejected'
-
-    // Validate request
-    const existingReq = await db.query.vendorRequests.findFirst({
-      where: eq(vendorRequests.id, id),
-    });
-
-    if (!existingReq) {
-      return NextResponse.json(
-        { success: false, message: "Request not found" },
-        { status: 404 },
-      );
-    }
-
-    if (existingReq.status !== "pending") {
-      return NextResponse.json(
-        { success: false, message: "Request is already processed" },
-        { status: 400 },
-      );
-    }
-
-    let defaultAdminId = null;
+    const { status, reason } = body; // 'approved' or 'rejected', reason for rejection
 
     // JWT contains User ID, fetch the corresponding Admin record
     const adminRecord = await db.query.admins.findFirst({
       where: eq(admins.userId, adminUserId),
     });
 
-    if (adminRecord) {
-      defaultAdminId = adminRecord.id;
-    }
-
-    await db
-      .update(vendorRequests)
-      .set({
-        status,
-        reviewedBy: defaultAdminId,
-        reviewedAt: new Date(),
-      })
-      .where(eq(vendorRequests.id, id));
+    const actualAdminId = adminRecord?.id || adminUserId;
 
     if (status === "approved") {
-      // Find a default vendor plan
-      const vendorPlanRecord = await db.query.vendorPlans.findFirst({
-        where: eq(vendorPlans.name, "free"),
-      });
-
-      let planIdToUse = vendorPlanRecord?.id;
-
-      if (!vendorPlanRecord) {
-        // Create default free plan if missed in migrations
-        const [newPlan] = await db
-          .insert(vendorPlans)
-          .values({
-            name: "free",
-            description: "Default free plan",
-            monthlyPrice: "0",
-            priority: 1,
-          })
-          .returning();
-        planIdToUse = newPlan.id;
+      const result = await AdminService.approveVendorRequest(id, actualAdminId);
+      if (!result.success) {
+        return NextResponse.json(
+          { success: false, message: result.message },
+          { status: 400 },
+        );
       }
-
-      await db.insert(vendors).values({
-        userId: existingReq.userId,
-        businessName: existingReq.businessName,
-        businessEmail: existingReq.businessEmail,
-        planId: planIdToUse!,
-        subscriptionStatus: "active",
-        status: "active",
-      });
-
-      // Update user role to vendor just in case
-      await db
-        .update(users)
-        .set({ role: "vendor" })
-        .where(eq(users.id, existingReq.userId));
+    } else if (status === "rejected") {
+      const result = await AdminService.rejectVendorRequest(
+        id,
+        actualAdminId,
+        reason || "Application rejected by admin.",
+      );
+      if (!result.success) {
+        return NextResponse.json(
+          { success: false, message: result.message },
+          { status: 400 },
+        );
+      }
+    } else {
+      return NextResponse.json(
+        { success: false, message: "Invalid status provided." },
+        { status: 400 },
+      );
     }
 
-    return NextResponse.json({ success: true, message: "Request updated" });
+    return NextResponse.json({ success: true, message: "Request updated successfully" });
   } catch (error) {
     console.error("Failed to update vendor request:", error);
     return NextResponse.json(

@@ -12,29 +12,43 @@ async function verifyAdmin(request: NextRequest) {
     const { payload } = await jwtVerify(token, secret);
     if (payload.role !== "admin" && payload.role !== "super_admin") return null;
     return { userId: payload.id as string, role: payload.role as string };
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const actor = await verifyAdmin(request);
-  if (!actor) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  if (!actor)
+    return NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 },
+    );
 
   try {
     const { status, action } = await request.json();
 
     if (action === "deactivate") {
-      await db.update(users).set({ status: "blocked" }).where(eq(users.id, params.id));
+      await db
+        .update(users)
+        .set({ status: "blocked" })
+        .where(eq(users.id, params.id));
     } else if (action === "reactivate") {
-      await db.update(users).set({ status: "active" }).where(eq(users.id, params.id));
+      await db
+        .update(users)
+        .set({ status: "active" })
+        .where(eq(users.id, params.id));
     } else if (status) {
       await db.update(users).set({ status }).where(eq(users.id, params.id));
     }
 
     // Log the action
-    const adminRecord = await db.query.admins.findFirst({ where: eq(admins.userId, actor.userId) });
+    const adminRecord = await db.query.admins.findFirst({
+      where: eq(admins.userId, actor.userId),
+    });
     if (adminRecord) {
       await db.insert(auditLogs).values({
         adminId: adminRecord.id,
@@ -48,6 +62,9 @@ export async function PATCH(
     return NextResponse.json({ success: true, message: "User updated" });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Server error" },
+      { status: 500 },
+    );
   }
 }

@@ -12,15 +12,21 @@ async function verifyAdmin(request: NextRequest) {
     const { payload } = await jwtVerify(token, secret);
     if (payload.role !== "admin" && payload.role !== "super_admin") return null;
     return payload.id as string;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const userId = await verifyAdmin(request);
-  if (!userId) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 },
+    );
 
   try {
     const notes = await db
@@ -30,33 +36,56 @@ export async function GET(
       .orderBy(desc(supportNotes.createdAt));
     return NextResponse.json({ success: true, data: notes });
   } catch (error) {
-    return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Server error" },
+      { status: 500 },
+    );
   }
 }
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { id: string } },
 ) {
   const actorUserId = await verifyAdmin(request);
-  if (!actorUserId) return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+  if (!actorUserId)
+    return NextResponse.json(
+      { success: false, message: "Unauthorized" },
+      { status: 401 },
+    );
 
   try {
     const { note } = await request.json();
-    if (!note?.trim()) return NextResponse.json({ success: false, message: "Note cannot be empty" }, { status: 400 });
+    if (!note?.trim())
+      return NextResponse.json(
+        { success: false, message: "Note cannot be empty" },
+        { status: 400 },
+      );
 
-    const adminRecord = await db.query.admins.findFirst({ where: eq(admins.userId, actorUserId) });
-    if (!adminRecord) return NextResponse.json({ success: false, message: "Admin record not found" }, { status: 403 });
+    const adminRecord = await db.query.admins.findFirst({
+      where: eq(admins.userId, actorUserId),
+    });
+    if (!adminRecord)
+      return NextResponse.json(
+        { success: false, message: "Admin record not found" },
+        { status: 403 },
+      );
 
-    const [created] = await db.insert(supportNotes).values({
-      userId: params.id,
-      adminId: adminRecord.id,
-      note: note.trim(),
-    }).returning();
+    const [created] = await db
+      .insert(supportNotes)
+      .values({
+        userId: params.id,
+        adminId: adminRecord.id,
+        note: note.trim(),
+      })
+      .returning();
 
     return NextResponse.json({ success: true, data: created });
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Server error" },
+      { status: 500 },
+    );
   }
 }

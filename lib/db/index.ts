@@ -11,8 +11,13 @@ const connectionString = process.env.DATABASE_URL;
 // Create a postgres client for migrations
 export const migrationClient = postgres(connectionString, { max: 1 });
 
-// Create a postgres client for regular operations
-const queryClient = postgres(connectionString);
+// Singleton pattern to prevent multiple instances in development
+const globalForDb = globalThis as unknown as {
+  conn: postgres.Sql | undefined;
+};
+
+const queryClient = globalForDb.conn ?? postgres(connectionString);
+if (process.env.NODE_ENV !== "production") globalForDb.conn = queryClient;
 
 export const db = drizzle(queryClient, { schema });
 

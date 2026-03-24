@@ -8,6 +8,7 @@ import { TokenUtil } from "../utils/token.util";
 import { CookieUtil } from "../utils/cookie.util";
 import { EmailService } from "./email.service";
 import { authConfig } from "../config";
+import { and, eq } from "drizzle-orm";
 import {
   SignupRequest,
   LoginRequest,
@@ -139,20 +140,47 @@ export class AuthService {
     }
 
     // Role-specific record creation
-    if (user.role === "vendor" && !existingUser) {
+    if (user.role === "vendor" && !request.token) {
       const { db } = await import("@/lib/db");
       const { vendorRequests } = await import("@/lib/db/schema");
 
-      await db.insert(vendorRequests).values({
-        userId: user.id,
+      const pendingRequest = await db.query.vendorRequests.findFirst({
+        where: and(
+          eq(vendorRequests.userId, user.id),
+          eq(vendorRequests.status, "pending"),
+        ),
+      });
+
+      const requestPayload = {
         businessName: request.businessName || request.fullName,
         businessEmail: request.businessEmail || request.email,
         businessPhone: request.phone,
         businessAddress: request.businessAddress,
         businessDescription: request.description,
-        status: "pending",
-        requiredPlan: "free",
-      });
+      };
+
+      if (pendingRequest) {
+        await db
+          .update(vendorRequests)
+          .set(requestPayload)
+          .where(eq(vendorRequests.id, pendingRequest.id));
+      } else {
+        await db.insert(vendorRequests).values({
+          userId: user.id,
+          ...requestPayload,
+          status: "pending",
+          requiredPlan: "free",
+        });
+      }
+
+      // Vendor requests are reviewed by admin before activation.
+      // Do not send email verification OTP for this self-registration flow.
+      return {
+        success: true,
+        data: {
+          userId: user.id,
+        },
+      };
     } else if (user.role === "admin" && !existingUser) {
       const { db } = await import("@/lib/db");
       const { admins } = await import("@/lib/db/schema");
@@ -193,7 +221,8 @@ export class AuthService {
 
     // If an invitation was successfully used, mark it as accepted
     if (invitation) {
-      const { InvitationRepository } = await import("@/lib/db/repositories/invitations.repository");
+      const { InvitationRepository } =
+        await import("@/lib/db/repositories/invitations.repository");
       await InvitationRepository.markAsAccepted(invitation.id);
     }
 

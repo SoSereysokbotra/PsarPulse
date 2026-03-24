@@ -9,7 +9,6 @@ import {
   Settings,
   CreditCard,
   LogOut,
-  MailOpen,
   ClipboardList,
   Bell,
   ChevronDown,
@@ -27,15 +26,38 @@ export function AdminTopNav() {
   const [profileOpen, setProfileOpen] = useState(false);
 
   const navItems = [
-    { name: isKhmer ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { name: isKhmer ? "អាជីវករ" : "Vendors", href: "/admin/vendors", icon: Store },
-    { name: isKhmer ? "សំណើសុំ" : "Requests", href: "/admin/vendor-requests", icon: ClipboardList },
+    {
+      name: isKhmer ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard",
+      href: "/admin",
+      icon: LayoutDashboard,
+    },
+    {
+      name: isKhmer ? "អាជីវករ" : "Vendors",
+      href: "/admin/vendors",
+      icon: Store,
+    },
+    {
+      name: isKhmer ? "សំណើសុំ" : "Requests",
+      href: "/admin/vendor-requests",
+      icon: ClipboardList,
+    },
     { name: isKhmer ? "អ្នកប្រើ" : "Users", href: "/admin/users", icon: Users },
     { name: isKhmer ? "ផែនទីតូប" : "Stall Map", href: "/admin/map", icon: Map },
-    { name: isKhmer ? "ការអញ្ជើញ" : "Invitations", href: "/admin/invites", icon: MailOpen },
-    { name: isKhmer ? "ការបង់ប្រាក់" : "Billing", href: "/admin/billing", icon: CreditCard },
-    { name: isKhmer ? "ជំនួយ" : "Support", href: "/admin/support", icon: Headphones },
-    { name: isKhmer ? "ការកំណត់" : "Settings", href: "/admin/settings", icon: Settings },
+    {
+      name: isKhmer ? "ការបង់ប្រាក់" : "Billing",
+      href: "/admin/billing",
+      icon: CreditCard,
+    },
+    {
+      name: isKhmer ? "ជំនួយ" : "Support",
+      href: "/admin/support",
+      icon: Headphones,
+    },
+    {
+      name: isKhmer ? "ការកំណត់" : "Settings",
+      href: "/admin/settings",
+      icon: Settings,
+    },
   ];
 
   return (
@@ -43,8 +65,12 @@ export function AdminTopNav() {
       <div className="flex h-14 items-center px-4 md:px-6 gap-4">
         {/* Logo */}
         <Link href="/admin" className="flex items-center gap-1.5 shrink-0 mr-2">
-          <span className="text-lg font-bold text-emerald-400 tracking-tight">PsarPulse</span>
-          <span className="text-lg font-bold text-white tracking-tight">KH</span>
+          <span className="text-lg font-bold text-emerald-400 tracking-tight">
+            PsarPulse
+          </span>
+          <span className="text-lg font-bold text-white tracking-tight">
+            KH
+          </span>
         </Link>
 
         {/* Admin label */}
@@ -56,7 +82,9 @@ export function AdminTopNav() {
         <div className="hidden md:block h-6 w-px bg-slate-700 mx-1" />
 
         {/* Nav Items */}
-        <nav className={`flex items-center gap-0.5 overflow-x-auto flex-1 scrollbar-none ${isKhmer ? "font-suwannaphum" : ""}`}>
+        <nav
+          className={`flex items-center gap-0.5 overflow-x-auto flex-1 scrollbar-none ${isKhmer ? "font-suwannaphum" : ""}`}
+        >
           {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -73,7 +101,9 @@ export function AdminTopNav() {
                     : "text-slate-400 hover:bg-slate-800 hover:text-white"
                 }`}
               >
-                <Icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? "text-emerald-400" : "text-slate-500 group-hover:text-white"}`} />
+                <Icon
+                  className={`h-4 w-4 shrink-0 transition-colors ${isActive ? "text-emerald-400" : "text-slate-500 group-hover:text-white"}`}
+                />
                 <span className="hidden sm:inline">{item.name}</span>
                 {isActive && (
                   <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-emerald-400 rounded-full shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
@@ -84,9 +114,14 @@ export function AdminTopNav() {
         </nav>
 
         {/* Right side: Superadmin link + Notifications + Profile */}
-        <div className={`flex items-center gap-2 ml-auto shrink-0 ${isKhmer ? "font-suwannaphum" : ""}`}>
+        <div
+          className={`flex items-center gap-2 ml-auto shrink-0 ${isKhmer ? "font-suwannaphum" : ""}`}
+        >
           {/* Superadmin link */}
-          <Link href="/superadmin" className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-colors text-xs font-semibold whitespace-nowrap">
+          <Link
+            href="/superadmin"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-colors text-xs font-semibold whitespace-nowrap"
+          >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Superadmin</span>
           </Link>
@@ -99,24 +134,34 @@ export function AdminTopNav() {
 
           {/* Profile dropdown */}
           <div className="relative">
-            <button onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800 transition-all group">
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800 transition-all group"
+            >
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-700 border border-slate-600 text-emerald-400 font-bold text-xs shadow-inner">
                 A
               </div>
               <div className="hidden md:flex flex-col items-start leading-tight">
-                <span className="text-xs font-semibold text-white">{isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin User"}</span>
+                <span className="text-xs font-semibold text-white">
+                  {isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin User"}
+                </span>
                 <span className="text-[10px] text-slate-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
                   {isKhmer ? "អ្នកគ្រប់គ្រងទីផ្សារ" : "Market Manager"}
                 </span>
               </div>
-              <ChevronDown className={`hidden md:block h-3.5 w-3.5 text-slate-500 group-hover:text-white transition-transform ${profileOpen ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`hidden md:block h-3.5 w-3.5 text-slate-500 group-hover:text-white transition-transform ${profileOpen ? "rotate-180" : ""}`}
+              />
             </button>
 
             {profileOpen && (
               <div className="absolute right-0 mt-2 w-44 rounded-xl bg-slate-800 border border-slate-700 shadow-xl py-1 text-sm z-50">
-                <Link href="/admin/settings" onClick={() => setProfileOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+                <Link
+                  href="/admin/settings"
+                  onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                >
                   <Settings className="h-4 w-4 text-slate-400" />
                   {isKhmer ? "ការកំណត់" : "Settings"}
                 </Link>

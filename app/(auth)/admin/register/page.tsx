@@ -21,7 +21,7 @@ export default function AdminRegisterPage() {
   const searchParams = useSearchParams();
   const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
-  
+
   const token = searchParams.get("token");
 
   const [formData, setFormData] = useState({
@@ -33,6 +33,7 @@ export default function AdminRegisterPage() {
   const [isVerifying, setIsVerifying] = useState(true);
   const [isTokenValid, setIsTokenValid] = useState(false);
   const [error, setError] = useState("");
+  const [tokenError, setTokenError] = useState("");
 
   React.useEffect(() => {
     async function verifyToken() {
@@ -42,15 +43,20 @@ export default function AdminRegisterPage() {
       }
 
       try {
-        const response = await fetch(`/api/auth/invitations/verify?token=${token}`);
+        const response = await fetch(
+          `/api/auth/invitations/verify?token=${encodeURIComponent(token)}`,
+        );
         const data = await response.json();
-        
+
         if (data.success) {
           setIsTokenValid(true);
-          setFormData(prev => ({ ...prev, email: data.email }));
+          setFormData((prev) => ({ ...prev, email: data.email }));
+        } else {
+          setTokenError(data.message || "Invalid invitation");
         }
       } catch (err) {
         console.error(err);
+        setTokenError("Unable to verify invitation at the moment.");
       } finally {
         setIsVerifying(false);
       }
@@ -80,7 +86,9 @@ export default function AdminRegisterPage() {
       })) as SignupResponse;
 
       if (!result.success) {
-        setError(result.message || "Admin Registration failed. Please try again.");
+        setError(
+          result.message || "Admin Registration failed. Please try again.",
+        );
         return;
       }
 
@@ -105,11 +113,19 @@ export default function AdminRegisterPage() {
       <div className="flex h-screen w-full items-center justify-center p-4 bg-slate-50 dark:bg-[#0d1117]">
         <div className="max-w-md w-full p-8 rounded-2xl bg-white dark:bg-[#161b22] border border-slate-200 dark:border-white/10 shadow-xl text-center">
           <div className="w-16 h-16 bg-red-100 dark:bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-             <Shield className="w-8 h-8 text-red-600 dark:text-red-500" />
+            <Shield className="w-8 h-8 text-red-600 dark:text-red-500" />
           </div>
-          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Invalid Invitation</h2>
-          <p className="text-slate-500 mb-6 text-sm">The invitation link is missing, expired, or has already been used.</p>
-          <Link href="/" className="inline-block px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors">
+          <h2 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">
+            Invalid Invitation
+          </h2>
+          <p className="text-slate-500 mb-6 text-sm">
+            {tokenError ||
+              "The invitation link is missing, expired, or has already been used."}
+          </p>
+          <Link
+            href="/"
+            className="inline-block px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors"
+          >
             Return to Home
           </Link>
         </div>
@@ -125,14 +141,14 @@ export default function AdminRegisterPage() {
           title="Admin Registration"
           subtitle="Manage PsarPulseKH Market Operations"
           features={[
-             {
-               title: "Full Control",
-               desc: "Oversee market operations and vendor management securely.",
-             },
-             {
-               title: "Review Vendors",
-               desc: "Approve vendor registrations and manage stalls directly from your dashboard.",
-             },
+            {
+              title: "Full Control",
+              desc: "Oversee market operations and vendor management securely.",
+            },
+            {
+              title: "Review Vendors",
+              desc: "Approve vendor registrations and manage stalls directly from your dashboard.",
+            },
           ]}
           footerText="© 2026 PsarPulse KH • Admin Portal"
         />

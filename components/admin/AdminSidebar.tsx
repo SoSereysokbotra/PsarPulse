@@ -2,22 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Store, 
-  Map, 
-  TrendingUp, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Store,
+  Map,
+  TrendingUp,
+  Settings,
   CreditCard,
   LogOut,
-  MailOpen
 } from "lucide-react";
 
 const navItems = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Vendor Directory", href: "/admin/vendors", icon: Store },
   { name: "Stall Map", href: "/admin/map", icon: Map },
-  { name: "Invitations", href: "/admin/invites", icon: MailOpen },
   { name: "Billing", href: "/admin/billing", icon: CreditCard },
 ];
 
@@ -38,7 +36,9 @@ export function AdminSidebar() {
           Management
         </div>
         {navItems.map((item) => {
-          const isActive = pathname === item.href || (pathname.startsWith(`${item.href}/`) && item.href !== "/admin");
+          const isActive =
+            pathname === item.href ||
+            (pathname.startsWith(`${item.href}/`) && item.href !== "/admin");
           const Icon = item.icon;
 
           return (
@@ -51,11 +51,13 @@ export function AdminSidebar() {
                   : "text-slate-300 hover:bg-slate-800 hover:text-white"
               }`}
             >
-              <Icon 
+              <Icon
                 className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors ${
-                  isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-white"
-                }`} 
-                aria-hidden="true" 
+                  isActive
+                    ? "text-emerald-400"
+                    : "text-slate-400 group-hover:text-white"
+                }`}
+                aria-hidden="true"
               />
               {item.name}
               {isActive && (
@@ -84,13 +86,18 @@ export function AdminSidebar() {
             A
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="truncate text-sm font-medium text-white">Admin User</span>
+            <span className="truncate text-sm font-medium text-white">
+              Admin User
+            </span>
             <span className="truncate text-xs text-slate-400 flex items-center">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></div>
               Market Manager
             </span>
           </div>
-          <button className="ml-auto p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-md transition-colors" title="Sign out">
+          <button
+            className="ml-auto p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-md transition-colors"
+            title="Sign out"
+          >
             <LogOut className="h-4 w-4" />
           </button>
         </div>

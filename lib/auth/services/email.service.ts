@@ -57,8 +57,11 @@ export class EmailService {
   static async sendAdminInvitationEmail(
     email: string,
     token: string,
+    origin?: string,
   ): Promise<void> {
-    const link = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/register?token=${token}`;
+    const baseUrl =
+      origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const link = `${baseUrl}/admin/register?token=${token}`;
     const subject = `You're invited to be an Admin on PsarPulse KH`;
     const html = `
       <div style="font-family: sans-serif; padding: 20px;">
@@ -66,6 +69,29 @@ export class EmailService {
         <p>You have been invited to join the administrative team for PsarPulse KH.</p>
         <p>Please click the link below to set up your account.</p>
         <a href="${link}" style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
+          Accept Invitation
+        </a>
+        <p style="margin-top: 20px; font-size: 12px; color: #666;">This link will expire in 24 hours.</p>
+      </div>
+    `;
+    await this.provider.sendEmail(email, subject, html);
+  }
+
+  static async sendVipVendorInvitationEmail(
+    email: string,
+    token: string,
+    origin?: string,
+  ): Promise<void> {
+    const baseUrl =
+      origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const link = `${baseUrl}/vendor/vip?token=${token}`;
+    const subject = `You're invited as a VIP Vendor on PsarPulse KH`;
+    const html = `
+      <div style="font-family: sans-serif; padding: 20px;">
+        <h2>VIP Vendor Invitation</h2>
+        <p>You have been invited to join PsarPulse KH as a VIP Vendor.</p>
+        <p>Please click the secure link below to complete your account setup.</p>
+        <a href="${link}" style="display: inline-block; padding: 10px 20px; background-color: #0f766e; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
           Accept Invitation
         </a>
         <p style="margin-top: 20px; font-size: 12px; color: #666;">This link will expire in 24 hours.</p>

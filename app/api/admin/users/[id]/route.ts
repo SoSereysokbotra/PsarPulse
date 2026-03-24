@@ -44,7 +44,10 @@ export async function PATCH(
         .set({ status: "active" })
         .where(eq(users.id, resolvedParams.id));
     } else if (status) {
-      await db.update(users).set({ status }).where(eq(users.id, resolvedParams.id));    
+      await db
+        .update(users)
+        .set({ status })
+        .where(eq(users.id, resolvedParams.id));
     }
 
     // Log the action

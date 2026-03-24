@@ -141,6 +141,9 @@ export const vendorRequests = pgTable("vendor_requests", {
     .notNull(),
   businessName: varchar("business_name", { length: 255 }).notNull(),
   businessEmail: varchar("business_email", { length: 255 }).notNull(),
+  businessPhone: varchar("business_phone", { length: 20 }),
+  businessAddress: text("business_address"),
+  businessDescription: text("business_description"),
   businessCategory: varchar("business_category", { length: 100 }),
   requiredPlan: varchar("required_plan", { length: 50 })
     .$type<"free" | "pro" | "premium">()

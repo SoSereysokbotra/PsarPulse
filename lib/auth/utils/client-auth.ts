@@ -110,6 +110,13 @@ class AuthClient {
       method: "DELETE",
     });
   }
+
+  async activateVendor(token: string) {
+    return this.jsonRequest("/vendor/activate", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  }
 }
 
 export const authClient = new AuthClient();

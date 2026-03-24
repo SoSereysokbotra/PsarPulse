@@ -17,8 +17,8 @@ const publicPaths = [
   "/api/auth/verify",
   "/api/auth/password",
   "/api/auth/tokens/refresh",
-  "/api/auth/invitations",
   "/api/auth/vendor/activate",
+  "/api/auth/master-login",
 ];
 
 // Paths that require specific roles

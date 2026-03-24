@@ -41,15 +41,24 @@ export default function EmailVerificationPage() {
     try {
       const result = (await authClient.verifyEmail(
         otp.join(""),
-      )) as VerifyResponse;
+      )) as any; // Using any to avoid strict type issues with the new return data
 
       if (!result.success) {
         setError(result.message || "Verification failed. Please try again.");
         return;
       }
 
-      setInfo("Email verified successfully. Redirecting to login...");
-      router.push("/login");
+      setInfo("Email verified successfully. Redirecting...");
+      
+      // Auto-login and redirect based on role
+      const role = result.data?.user?.role;
+      if (role === "vendor") {
+        router.push("/vendor");
+      } else if (role === "admin" || role === "super_admin") {
+        router.push("/admin");
+      } else {
+        router.push("/customer");
+      }
     } catch {
       setError("Unable to connect to server. Please try again.");
     } finally {

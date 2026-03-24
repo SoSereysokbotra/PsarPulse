@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { LayoutDashboard, CircleDollarSign, Receipt, Users } from "lucide-react";
 import VendorSettings from "@/components/vendor/VendorSettings";
 
@@ -13,10 +13,12 @@ const NAV_LINKS = [
 
 export default function SettingsPage() {
   return (
-    <VendorSettings 
-      tier="free"
-      navLinks={NAV_LINKS}
-      currentPath="/vendor/settings"
-    />
+    <Suspense fallback={<div className="min-h-screen animate-pulse bg-slate-50/30" />}>
+      <VendorSettings 
+        tier="free"
+        navLinks={NAV_LINKS}
+        currentPath="/vendor/settings"
+      />
+    </Suspense>
   );
 }

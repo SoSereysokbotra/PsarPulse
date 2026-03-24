@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { ShieldCheck, RefreshCcw, Loader2 } from "lucide-react";
 import { AuthLayout, LeftPanelContent, OTPInput } from "@/components/auth";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -17,7 +17,7 @@ type ForgotResponse = {
   message?: string;
 };
 
-export default function VerifyCodePage() {
+function VerifyCodePageContent() {
   const { resolvedTheme } = useTheme();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -164,5 +164,13 @@ export default function VerifyCodePage() {
         </button>
       </div>
     </AuthLayout>
+  );
+}
+
+export default function VerifyCodePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <VerifyCodePageContent />
+    </Suspense>
   );
 }

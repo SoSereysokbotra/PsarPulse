@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { User, Mail, Lock, Shield, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -14,7 +14,7 @@ type SignupResponse = {
   message?: string;
 };
 
-export default function AdminRegisterPage() {
+function AdminRegisterPageContent() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const router = useRouter();
@@ -245,5 +245,17 @@ export default function AdminRegisterPage() {
         </Link>
       </p>
     </AuthLayout>
+  );
+}
+
+export default function AdminRegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50 dark:bg-[#0d1117]">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    }>
+      <AdminRegisterPageContent />
+    </Suspense>
   );
 }

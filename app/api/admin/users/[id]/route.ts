@@ -21,6 +21,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const actor = await verifyAdmin(request);
   if (!actor)
     return NextResponse.json(
@@ -37,17 +38,14 @@ export async function PATCH(
       await db
         .update(users)
         .set({ status: "blocked" })
-        .where(eq(users.id, resolvedParams.id));
+        .where(eq(users.id, id));
     } else if (action === "reactivate") {
       await db
         .update(users)
         .set({ status: "active" })
-        .where(eq(users.id, resolvedParams.id));
+        .where(eq(users.id, id));
     } else if (status) {
-      await db
-        .update(users)
-        .set({ status })
-        .where(eq(users.id, resolvedParams.id));
+      await db.update(users).set({ status }).where(eq(users.id, id));
     }
 
     // Log the action
@@ -59,7 +57,7 @@ export async function PATCH(
         adminId: adminRecord.id,
         action: action || `update_status_${status}`,
         entityType: "user",
-        entityId: resolvedParams.id,
+        entityId: id,
         changes: { action, status },
       });
     }

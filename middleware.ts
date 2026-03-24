@@ -20,6 +20,10 @@ const publicPaths = [
   "/api/auth/tokens/refresh",
   "/api/auth/vendor/activate",
   "/api/auth/master-login",
+  "/api/auth/invitations",
+  "/admin",
+  "/sw.js",
+  "/manifest.webmanifest",
 ];
 
 // Paths that require specific roles
@@ -53,6 +57,7 @@ export async function middleware(request: NextRequest) {
     isPublicPath(pathname) ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
+    pathname.startsWith("/icons/") ||
     pathname.includes(".")
   ) {
     return NextResponse.next();

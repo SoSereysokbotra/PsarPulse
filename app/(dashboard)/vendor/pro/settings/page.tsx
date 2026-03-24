@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import {
   LayoutDashboard,
   CircleDollarSign,
@@ -52,10 +52,12 @@ const PRO_NAV = [
 
 export default function SettingsPage() {
   return (
-    <VendorSettings 
-      tier="pro"
-      navLinks={PRO_NAV}
-      currentPath="/vendor/pro/settings"
-    />
+    <Suspense fallback={<div className="min-h-screen animate-pulse bg-slate-50/30" />}>
+      <VendorSettings 
+        tier="pro"
+        navLinks={PRO_NAV}
+        currentPath="/vendor/pro/settings"
+      />
+    </Suspense>
   );
 }

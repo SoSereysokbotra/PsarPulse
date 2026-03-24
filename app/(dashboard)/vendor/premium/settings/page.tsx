@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import {
   LayoutDashboard,
   CircleDollarSign,
@@ -22,10 +22,12 @@ const PREMIUM_NAV = [
 
 export default function SettingsPage() {
   return (
-    <VendorSettings 
-      tier="premium"
-      navLinks={PREMIUM_NAV}
-      currentPath="/vendor/premium/settings"
-    />
+    <Suspense fallback={<div className="min-h-screen animate-pulse bg-slate-50/30" />}>
+      <VendorSettings 
+        tier="premium"
+        navLinks={PREMIUM_NAV}
+        currentPath="/vendor/premium/settings"
+      />
+    </Suspense>
   );
 }

@@ -11,7 +11,11 @@ const inviteSchema = z.object({
   name: z.string().min(1).optional(), // Optional display name for the invite
 });
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params; // Destructure to satisfy type-checker
   try {
     // Check admin authorization
     const authError = requireAdmin(request);
@@ -28,7 +32,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
   try {
     // Check admin authorization
     const authError = requireAdmin(request);

@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { SuperadminTopNav } from "../../../components/admin/SuperadminTopNav";
 
 const navItems = [
   {
@@ -116,7 +117,8 @@ export default function SuperadminLayout({
       </aside>
 
       {/* Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto flex flex-col">
+        <SuperadminTopNav />
         <div className="w-full px-6 py-8">{children}</div>
       </main>
     </div>

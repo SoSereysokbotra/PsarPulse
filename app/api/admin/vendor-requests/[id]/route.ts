@@ -141,20 +141,18 @@ export async function PATCH(
         const activationLink = `${appUrl}/vendor/activate?token=${activationToken}`;
 
         await EmailService.sendVendorApprovedEmail(
-          vendorUser.email,
+          existingReq.businessEmail,
           activationLink,
           existingReq.businessName,
         );
       }
     } else if (status === "rejected") {
       // Send rejection email with optional reason
-      if (vendorUser) {
-        await EmailService.sendVendorRejectedEmail(
-          vendorUser.email,
-          existingReq.businessName,
-          reason,
-        );
-      }
+      await EmailService.sendVendorRejectedEmail(
+        existingReq.businessEmail,
+        existingReq.businessName,
+        reason,
+      );
     }
 
     return NextResponse.json({ success: true, message: "Request updated" });

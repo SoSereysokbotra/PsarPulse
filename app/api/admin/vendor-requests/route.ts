@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { vendorRequests } from "@/lib/db/schema";
+import { vendorRequests, users } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { jwtVerify } from "jose";
 
@@ -25,8 +25,21 @@ export async function GET(request: NextRequest) {
 
   try {
     const requests = await db
-      .select()
+      .select({
+        id: vendorRequests.id,
+        userId: vendorRequests.userId,
+        fullName: users.fullName,
+        businessName: vendorRequests.businessName,
+        businessEmail: vendorRequests.businessEmail,
+        businessPhone: vendorRequests.businessPhone,
+        businessAddress: vendorRequests.businessAddress,
+        businessDescription: vendorRequests.businessDescription,
+        businessCategory: vendorRequests.businessCategory,
+        status: vendorRequests.status,
+        createdAt: vendorRequests.createdAt,
+      })
       .from(vendorRequests)
+      .leftJoin(users, eq(vendorRequests.userId, users.id))
       .where(eq(vendorRequests.status, "pending"))
       .orderBy(desc(vendorRequests.createdAt));
 

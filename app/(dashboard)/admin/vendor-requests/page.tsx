@@ -21,8 +21,12 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 type VendorRequest = {
   id: string;
   userId: string;
+  fullName: string | null;
   businessName: string;
   businessEmail: string;
+  businessPhone: string | null;
+  businessAddress: string | null;
+  businessDescription: string | null;
   businessCategory: string | null;
   status: "pending" | "approved" | "rejected";
   createdAt: string;
@@ -171,11 +175,10 @@ export default function VendorRequestsPage() {
       {/* Feedback Banner */}
       {feedback && (
         <div
-          className={`p-4 rounded-xl border text-sm font-medium ${
-            feedback.type === "success"
+          className={`p-4 rounded-xl border text-sm font-medium ${feedback.type === "success"
               ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400"
               : "bg-red-50 border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400"
-          }`}
+            }`}
         >
           {feedback.message}
         </div>
@@ -196,11 +199,10 @@ export default function VendorRequestsPage() {
             }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className={`w-full pl-9 pr-4 py-2 border rounded-lg text-sm transition-all outline-none focus:ring-2 focus:ring-emerald-500/20 ${
-              isDark
+            className={`w-full pl-9 pr-4 py-2 border rounded-lg text-sm transition-all outline-none focus:ring-2 focus:ring-emerald-500/20 ${isDark
                 ? "bg-white/5 border-white/10 text-white placeholder:text-slate-500"
                 : "bg-slate-50/50 border-slate-200 text-slate-900 placeholder:text-slate-400"
-            }`}
+              }`}
           />
         </div>
         <div className="flex items-center gap-2 px-3">
@@ -265,22 +267,20 @@ export default function VendorRequestsPage() {
                 >
                   <button
                     onClick={() => openModal(req, "approve")}
-                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                      isDark
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${isDark
                         ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border-emerald-500/20"
                         : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200"
-                    }`}
+                      }`}
                   >
                     <CheckCircle2 className="h-4 w-4" />
                     {isKhmer ? "អនុម័ត" : "Approve"}
                   </button>
                   <button
                     onClick={() => openModal(req, "reject")}
-                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                      isDark
+                    className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${isDark
                         ? "bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20"
                         : "bg-red-50 text-red-700 hover:bg-red-100 border-red-200"
-                    }`}
+                      }`}
                   >
                     <XCircle className="h-4 w-4" />
                     {isKhmer ? "បដិសេធ" : "Reject"}
@@ -290,11 +290,10 @@ export default function VendorRequestsPage() {
                       setSelectedRequest(req);
                       setViewOnly(true);
                     }}
-                    className={`flex-none flex items-center justify-center p-2 rounded-lg transition-colors border ${
-                      isDark
+                    className={`flex-none flex items-center justify-center p-2 rounded-lg transition-colors border ${isDark
                         ? "bg-white/5 text-slate-400 hover:bg-white/10 border-white/10"
                         : "bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200"
-                    }`}
+                      }`}
                     title={isKhmer ? "មើលព័ត៌មានលម្អិត" : "View Details"}
                   >
                     <Eye className="h-4 w-4" />
@@ -324,21 +323,19 @@ export default function VendorRequestsPage() {
       {selectedRequest && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div
-            className={`rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border animate-in zoom-in-95 duration-200 ${
-              isDark ? "bg-[#0d1117] border-white/10" : "bg-white border-slate-200"
-            }`}
+            className={`rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border animate-in zoom-in-95 duration-200 ${isDark ? "bg-[#0d1117] border-white/10" : "bg-white border-slate-200"
+              }`}
           >
             {/* Modal Header */}
             <div
-              className={`p-5 border-b flex items-center gap-3 ${
-                viewOnly
+              className={`p-5 border-b flex items-center gap-3 ${viewOnly
                   ? isDark
                     ? "bg-white/5 border-white/5"
                     : "bg-slate-50 border-slate-100"
                   : modalAction === "approve"
                     ? "bg-emerald-500/10 border-emerald-500/20"
                     : "bg-red-500/10 border-red-500/20"
-              }`}
+                }`}
             >
               {viewOnly ? (
                 <Eye
@@ -350,15 +347,14 @@ export default function VendorRequestsPage() {
                 <AlertCircle className="h-5 w-5 text-red-500" />
               )}
               <h2
-                className={`font-bold text-lg ${
-                  viewOnly
+                className={`font-bold text-lg ${viewOnly
                     ? isDark
                       ? "text-white"
                       : "text-slate-900"
                     : modalAction === "approve"
                       ? "text-emerald-500"
                       : "text-red-500"
-                }`}
+                  }`}
               >
                 {viewOnly
                   ? isKhmer
@@ -392,41 +388,54 @@ export default function VendorRequestsPage() {
               <div
                 className={`p-4 rounded-xl border ${isDark ? "bg-white/5 border-white/5" : "bg-slate-50 border-slate-100"} space-y-3`}
               >
-                <div className="grid grid-cols-[110px_1fr] gap-2 text-sm">
-                  <span className="text-slate-500 font-medium">
-                    {isKhmer ? "ហាង:" : "Business:"}
+                <div className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-3 text-sm">
+                  <span className="text-slate-500 font-medium shrink-0">
+                    {isKhmer ? "ឈ្មោះអ្នកលក់:" : "Full Name:"}
                   </span>
-                  <span
-                    className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}
-                  >
-                    {selectedRequest.businessName}
+                  <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
+                    {selectedRequest.fullName || "N/A"}
                   </span>
 
-                  <span className="text-slate-500 font-medium">
+                  <span className="text-slate-500 font-medium shrink-0">
+                    {isKhmer ? "លេខទូរស័ព្ទ:" : "Phone:"}
+                  </span>
+                  <span className={isDark ? "text-slate-300" : "text-slate-800"}>
+                    {selectedRequest.businessPhone || "N/A"}
+                  </span>
+
+                  <span className="text-slate-500 font-medium shrink-0">
                     {isKhmer ? "អ៊ីមែល:" : "Email:"}
                   </span>
                   <span className={isDark ? "text-slate-300" : "text-slate-800"}>
                     {selectedRequest.businessEmail}
                   </span>
 
-                  {selectedRequest.businessCategory && (
-                    <>
-                      <span className="text-slate-500 font-medium">
-                        {isKhmer ? "ប្រភេទ:" : "Category:"}
-                      </span>
-                      <span
-                        className={isDark ? "text-slate-300" : "text-slate-800"}
-                      >
-                        {selectedRequest.businessCategory}
-                      </span>
-                    </>
-                  )}
+                  <span className="text-slate-500 font-medium shrink-0">
+                    {isKhmer ? "ឈ្មោះហាង:" : "Store Name:"}
+                  </span>
+                  <span className={`font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>
+                    {selectedRequest.businessName}
+                  </span>
 
-                  <span className="text-slate-500 font-medium">
-                    {isKhmer ? "ថ្ងៃដាក់:" : "Submitted:"}
+                  <span className="text-slate-500 font-medium shrink-0">
+                    {isKhmer ? "អាសយដ្ឋាន:" : "Address:"}
                   </span>
                   <span className={isDark ? "text-slate-300" : "text-slate-800"}>
-                    {new Date(selectedRequest.createdAt).toLocaleDateString()}
+                    {selectedRequest.businessAddress || "N/A"}
+                  </span>
+
+                  <span className="text-slate-500 font-medium shrink-0">
+                    {isKhmer ? "ការពិពណ៌នា:" : "Description:"}
+                  </span>
+                  <span className={`leading-relaxed ${isDark ? "text-slate-300" : "text-slate-800"}`}>
+                    {selectedRequest.businessDescription || "N/A"}
+                  </span>
+
+                  <span className="text-slate-500 font-medium shrink-0 text-[11px] uppercase tracking-wider mt-1">
+                    {isKhmer ? "ថ្ងៃដាក់:" : "Submitted:"}
+                  </span>
+                  <span className={`text-[11px] mt-1 ${isDark ? "text-slate-500" : "text-slate-500"}`}>
+                    {new Date(selectedRequest.createdAt).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -450,11 +459,10 @@ export default function VendorRequestsPage() {
                         ? "ពន្យល់ពីមូលហេតុ..."
                         : "Explain why the application was rejected…"
                     }
-                    className={`w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none focus:ring-2 focus:ring-red-500/20 ${
-                      isDark
+                    className={`w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none focus:ring-2 focus:ring-red-500/20 ${isDark
                         ? "bg-white/5 border-white/10 text-white placeholder:text-slate-500"
                         : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
-                    }`}
+                      }`}
                   />
                 </div>
               )}
@@ -467,11 +475,10 @@ export default function VendorRequestsPage() {
               <button
                 onClick={closeModal}
                 disabled={isLoading}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors border border-transparent disabled:opacity-50 ${
-                  isDark
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors border border-transparent disabled:opacity-50 ${isDark
                     ? "text-slate-400 hover:text-white hover:bg-white/5"
                     : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
-                }`}
+                  }`}
               >
                 {viewOnly
                   ? isKhmer
@@ -486,11 +493,10 @@ export default function VendorRequestsPage() {
                 <button
                   onClick={handleAction}
                   disabled={isLoading}
-                  className={`px-4 py-2 text-sm font-bold text-white rounded-lg transition-colors shadow-sm flex items-center justify-center min-w-[130px] disabled:opacity-70 disabled:cursor-not-allowed ${
-                    modalAction === "approve"
+                  className={`px-4 py-2 text-sm font-bold text-white rounded-lg transition-colors shadow-sm flex items-center justify-center min-w-[130px] disabled:opacity-70 disabled:cursor-not-allowed ${modalAction === "approve"
                       ? "bg-emerald-600 hover:bg-emerald-700"
                       : "bg-red-600 hover:bg-red-700"
-                  }`}
+                    }`}
                 >
                   {isLoading ? (
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

@@ -57,6 +57,27 @@ export class TokenUtil {
     return jwt.verify(token, authConfig.jwt.accessSecret) as JwtPayload;
   }
 
+  static generateVendorActivationToken(
+    payload: Omit<JwtPayload, "type">,
+  ): string {
+    return jwt.sign(
+      { ...payload, type: "vendor_activation" },
+      authConfig.jwt.accessSecret,
+      { expiresIn: "24h" },
+    );
+  }
+
+  static verifyVendorActivationToken(token: string): JwtPayload {
+    const decoded = jwt.verify(
+      token,
+      authConfig.jwt.accessSecret,
+    ) as JwtPayload;
+    if (decoded.type !== "vendor_activation") {
+      throw new Error("Invalid token type");
+    }
+    return decoded;
+  }
+
   static decodeToken(token: string): JwtPayload {
     return jwt.decode(token) as JwtPayload;
   }

@@ -11,7 +11,8 @@ export interface JwtPayload {
     | "refresh"
     | "verification"
     | "password_reset"
-    | "password_reset_verified";
+    | "password_reset_verified"
+    | "vendor_activation";
 }
 
 export interface SignupRequest {

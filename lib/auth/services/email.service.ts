@@ -6,6 +6,8 @@ import {
   ClassInvitationData,
 } from "@/lib/email/templates/class-invitation.template";
 import { getTeacherInvitationEmailTemplate } from "@/lib/email/templates/teacher-invitation.template";
+import { getVendorApprovedEmailTemplate } from "@/lib/email/templates/vendor-approved.template";
+import { getVendorRejectedEmailTemplate } from "@/lib/email/templates/vendor-rejected.template";
 
 export class EmailService {
   private static provider = new NodemailerProvider();
@@ -70,5 +72,31 @@ export class EmailService {
       </div>
     `;
     await this.provider.sendEmail(email, subject, html);
+  }
+
+  static async sendVendorApprovedEmail(
+    email: string,
+    activationLink: string,
+    businessName: string,
+  ): Promise<void> {
+    const html = getVendorApprovedEmailTemplate(businessName, activationLink);
+    await this.provider.sendEmail(
+      email,
+      "🎉 Your Vendor Application is Approved — Activate Your Account",
+      html,
+    );
+  }
+
+  static async sendVendorRejectedEmail(
+    email: string,
+    businessName: string,
+    reason?: string,
+  ): Promise<void> {
+    const html = getVendorRejectedEmailTemplate(businessName, reason);
+    await this.provider.sendEmail(
+      email,
+      "Update on Your PsarPulse Vendor Application",
+      html,
+    );
   }
 }

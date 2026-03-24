@@ -470,4 +470,79 @@ export class AuthService {
       },
     };
   }
+
+  static async activateVendor(token: string): Promise<AuthResponse> {
+    // Verify the vendor activation JWT
+    let payload;
+    try {
+      payload = TokenUtil.verifyVendorActivationToken(token);
+    } catch {
+      return {
+        success: false,
+        message: "Invalid or expired activation link. Please contact support.",
+      };
+    }
+
+    // Load user
+    const user = await UserRepository.findById(payload.id);
+    if (!user) {
+      return { success: false, message: "Account not found." };
+    }
+
+    if (user.role !== "vendor") {
+      return {
+        success: false,
+        message: "This activation link is not valid for this account.",
+      };
+    }
+
+    // Activate account if not already active
+    if (!user.isVerified || user.status !== "active") {
+      await UserRepository.update(user.id, {
+        isVerified: true,
+        status: "active",
+        updatedAt: new Date(),
+      });
+    }
+
+    // Generate auth tokens
+    const accessToken = TokenUtil.generateAccessToken({
+      id: user.id,
+      email: user.email,
+      role: user.role as any,
+    });
+    const refreshToken = TokenUtil.generateRefreshToken({
+      id: user.id,
+      email: user.email,
+      role: user.role as any,
+    });
+
+    // Persist refresh token
+    const tokenHash = HashUtil.hashToken(refreshToken);
+    await RefreshTokenRepository.create({
+      userId: user.id,
+      tokenHash,
+      deviceInfo: "Web",
+      userAgent: "Unknown",
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    });
+
+    // Set auth cookies
+    await CookieUtil.setAccessTokenCookie(accessToken);
+    await CookieUtil.setRefreshTokenCookie(refreshToken);
+
+    return {
+      success: true,
+      data: {
+        accessToken,
+        refreshToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+          role: user.role as any,
+        },
+      },
+    };
+  }
 }

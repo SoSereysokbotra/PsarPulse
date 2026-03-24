@@ -11,7 +11,7 @@ async function verifyAdmin(request: NextRequest) {
   try {
     const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET!);
     const { payload } = await jwtVerify(token, secret);
-    return payload.role === "admin";
+    return payload.role === "admin" || payload.role === "super_admin";
   } catch {
     return false;
   }
@@ -36,3 +36,4 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
 }
+

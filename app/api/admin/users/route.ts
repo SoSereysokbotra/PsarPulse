@@ -45,8 +45,9 @@ export async function GET(request: NextRequest) {
     if (filterRole) conditions.push(eq(users.role, filterRole as any));
     if (filterStatus) conditions.push(eq(users.status, filterStatus as any));
 
+    const { and: drizzleAnd } = await import("drizzle-orm");
     const results = conditions.length > 0
-      ? await query.where(conditions.length === 1 ? conditions[0]! : conditions[0]!)
+      ? await query.where(drizzleAnd(...conditions)).orderBy(desc(users.createdAt))
       : await query.orderBy(desc(users.createdAt));
 
     return NextResponse.json({ success: true, data: results });

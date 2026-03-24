@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { InvitationRepository } from "@/lib/db/repositories/invitations.repository";
 
-interface RouteParams {
-  params: Promise<{
-    token: string;
-  }>;
-}
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ token: string }> },
+) {
   try {
     const { token } = await params;
     const invitation = await InvitationRepository.findByToken(token);

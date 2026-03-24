@@ -19,8 +19,9 @@ async function verifyAdmin(request: NextRequest) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const userId = await verifyAdmin(request);
   if (!userId)
     return NextResponse.json(
@@ -32,7 +33,7 @@ export async function GET(
     const notes = await db
       .select()
       .from(supportNotes)
-      .where(eq(supportNotes.userId, params.id))
+      .where(eq(supportNotes.userId, id))
       .orderBy(desc(supportNotes.createdAt));
     return NextResponse.json({ success: true, data: notes });
   } catch (error) {
@@ -45,8 +46,9 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const actorUserId = await verifyAdmin(request);
   if (!actorUserId)
     return NextResponse.json(
@@ -74,7 +76,7 @@ export async function POST(
     const [created] = await db
       .insert(supportNotes)
       .values({
-        userId: params.id,
+        userId: id,
         adminId: adminRecord.id,
         note: note.trim(),
       })

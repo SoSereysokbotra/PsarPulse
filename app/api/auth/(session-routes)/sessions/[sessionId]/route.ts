@@ -5,13 +5,12 @@ import {
   getAuthUser,
 } from "@/lib/auth/middleware/auth.middleware";
 
-interface RouteParams {
-  params: Promise<{
-    sessionId: string;
-  }>;
-}
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ sessionId: string }> },
+) {
   // Authenticate request
   const authResponse = await authenticate(request);
   if (authResponse.status !== 200) {

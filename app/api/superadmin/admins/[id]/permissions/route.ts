@@ -18,8 +18,9 @@ async function verifySuperAdmin(request: NextRequest): Promise<boolean> {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const ok = await verifySuperAdmin(request);
   if (!ok)
     return NextResponse.json(
@@ -49,7 +50,7 @@ export async function PATCH(
         ...(role !== undefined && { role }),
         updatedAt: new Date(),
       })
-      .where(eq(admins.id, params.id));
+      .where(eq(admins.id, id));
 
     return NextResponse.json({ success: true, message: "Permissions updated" });
   } catch (error) {

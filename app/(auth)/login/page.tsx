@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import {
   LogIn,
@@ -27,7 +27,7 @@ type LoginResponse = {
   };
 };
 
-export default function LoginPage() {
+function LoginPageContent() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const router = useRouter();
@@ -304,5 +304,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </AuthLayout>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

@@ -26,8 +26,9 @@ async function verifyAdmin(request: NextRequest) {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const adminUserId = await verifyAdmin(request);
   if (!adminUserId) {
     return NextResponse.json(
@@ -36,7 +37,7 @@ export async function PATCH(
     );
   }
 
-  const { id } = params;
+
 
   try {
     const body = await request.json();

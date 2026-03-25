@@ -120,7 +120,7 @@ export default function ProDashboard() {
   };
 
   const displayName = user?.fullName || (loading ? "..." : (isKhmer ? "អ្នកប្រើប្រាស់" : "User"));
-  const displayInitials = user?.fullName ? getInitials(user.fullName) : (loading ? ".." : "U");
+  const displayInitials = user?.fullName ? getInitials(user.fullName) : (loading ? ".." : "ERR");
 
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");

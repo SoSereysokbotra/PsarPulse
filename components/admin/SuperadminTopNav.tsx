@@ -13,6 +13,7 @@ import {
   Bell,
   ChevronDown,
   Users,
+  MailOpen,
 } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -30,6 +31,11 @@ export function SuperadminTopNav() {
       icon: LayoutDashboard,
     },
     {
+      name: isKhmer ? "ការអញ្ជើញ" : "Invitations",
+      href: "/superadmin/invitations",
+      icon: MailOpen,
+    },
+    {
       name: isKhmer ? "សិទ្ធិ" : "Permissions",
       href: "/superadmin/permissions",
       icon: ShieldCheck,
@@ -38,11 +44,6 @@ export function SuperadminTopNav() {
       name: isKhmer ? "គម្រោង" : "Plans",
       href: "/superadmin/plans",
       icon: CreditCard,
-    },
-    {
-      name: isKhmer ? "សុវត្ថិភាព" : "Security",
-      href: "/superadmin/security",
-      icon: Lock,
     },
     {
       name: isKhmer ? "កំណត់ហេតុ" : "Audit Log",

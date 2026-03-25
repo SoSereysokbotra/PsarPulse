@@ -16,6 +16,7 @@ import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useUser } from "@/components/providers/UserProvider";
 
 // ─── Types ────────────────────────────────────────────────────────
 type Period  = "Day" | "Week" | "Month";
@@ -87,8 +88,21 @@ const METHOD_BADGE: Record<Method, string> = {
 export default function SalesDemoDashboard() {
   const { resolvedTheme } = useTheme();
   const { language, t } = useLanguage();
+  const { user, loading } = useUser();
   const isDark = resolvedTheme === "dark";
   const isKhmer = language === "km";
+
+  // Initials logic
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.trim().slice(0, 2).toUpperCase();
+  };
+
+  const displayInitials = user?.fullName ? getInitials(user.fullName) : (loading ? ".." : "SM");
 
   const [isSidebarOpen,      setIsSidebarOpen]      = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -257,7 +271,7 @@ export default function SalesDemoDashboard() {
               </DemoTooltip>
 
               <div className="w-[34px] h-[34px] rounded-full bg-[rgba(62,207,142,0.12)] border-[1.5px] border-[#3ecf8e] flex items-center justify-center text-[11px] font-bold text-[#3ecf8e]">
-                SM
+                {loading ? ".." : displayInitials}
               </div>
             </>
           }

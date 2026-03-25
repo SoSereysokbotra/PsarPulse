@@ -22,6 +22,7 @@ import {
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useUser } from "@/components/providers/UserProvider";
 
 interface Vendor {
   id: string;
@@ -103,8 +104,21 @@ const mockVendors: (t: any) => Vendor[] = (t) => [
 export default function PsarPulseDashboard() {
   const { t, language } = useLanguage();
   const { resolvedTheme } = useTheme();
+  const { user, loading } = useUser();
   const isDark = resolvedTheme === "dark";
   const isKhmer = language === "km";
+
+  // Initials
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.trim().slice(0, 2).toUpperCase();
+  };
+
+  const displayInitials = getInitials(user?.fullName || "User");
 
   const [activeTab, setActiveTab] = useState<TabId>("list");
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -175,7 +189,9 @@ export default function PsarPulseDashboard() {
             <div className="w-44 shrink-0 flex items-center justify-end gap-3">
               <ThemeToggle />
               <div className="w-10 h-10 rounded-full border-2 border-emerald-500/40 flex items-center justify-center bg-slate-800 cursor-pointer hover:border-emerald-500 transition-all shadow-lg active:scale-95">
-                <span className="text-emerald-400 font-bold text-xs">SM</span>
+                <span className="text-emerald-400 font-bold text-xs">
+                  {loading ? ".." : displayInitials}
+                </span>
               </div>
             </div>
           </div>

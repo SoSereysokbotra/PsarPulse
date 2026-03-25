@@ -18,12 +18,27 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useUser } from "@/components/providers/UserProvider";
 
 export function AdminTopNav() {
   const pathname = usePathname();
   const { language } = useLanguage();
+  const { user, loading } = useUser();
   const isKhmer = language === "km";
   const [profileOpen, setProfileOpen] = useState(false);
+
+  // Initials logic
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.trim().slice(0, 2).toUpperCase();
+  };
+
+  const displayName = user?.fullName || (loading ? "..." : (isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin"));
+  const displayInitials = user?.fullName ? getInitials(user.fullName) : (loading ? ".." : (isKhmer ? "អ" : "A"));
 
   const navItems = [
     {
@@ -139,15 +154,13 @@ export function AdminTopNav() {
               className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800 transition-all group"
             >
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-700 border border-slate-600 text-emerald-400 font-bold text-xs shadow-inner">
-                A
+                {loading ? ".." : displayInitials}
               </div>
-              <div className="hidden md:flex flex-col items-start leading-tight">
-                <span className="text-xs font-semibold text-white">
-                  {isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin User"}
-                </span>
+              <div className="hidden md:flex flex-col items-start leading-tight text-left">
+                <span className="text-xs font-semibold text-white">{displayName}</span>
                 <span className="text-[10px] text-slate-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                  {isKhmer ? "អ្នកគ្រប់គ្រងទីផ្សារ" : "Market Manager"}
+                  {user?.role === "super_admin" ? (isKhmer ? "អ្នកគ្រប់គ្រងកំពូល" : "Super Admin") : (isKhmer ? "អ្នកគ្រប់គ្រងទីផ្សារ" : "Market Manager")}
                 </span>
               </div>
               <ChevronDown

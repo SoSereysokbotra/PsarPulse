@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/components/providers/LanguageProvider";
 import { ServiceWorkerProvider } from "@/components/pwa/ServiceWorkerProvider";
 import { OfflineIndicator } from "@/components/pwa/OfflineIndicator";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { UserProvider } from "@/components/providers/UserProvider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -43,9 +44,11 @@ export default function RootLayout({
         <ServiceWorkerProvider>
           <ThemeProvider>
             <LanguageProvider>
-              <OfflineIndicator />
-              {children}
-              <InstallPrompt />
+              <UserProvider>
+                <OfflineIndicator />
+                {children}
+                <InstallPrompt />
+              </UserProvider>
             </LanguageProvider>
           </ThemeProvider>
         </ServiceWorkerProvider>

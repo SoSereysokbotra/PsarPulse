@@ -128,8 +128,7 @@ export class FacebookAdapter implements OAuthAdapter {
     });
     if (!response.ok) throw new Error("Facebook profile fetch failed");
     const data = await response.json();
-    if (!data.email) throw new Error("Facebook profile did not return an email address. OAuth cannot proceed.");
-    return { id: data.id, email: data.email, name: data.name || null };
+    return { id: data.id, email: data.email || null, name: data.name || null };
   }
 }
 

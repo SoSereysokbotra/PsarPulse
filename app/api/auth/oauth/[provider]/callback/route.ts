@@ -15,8 +15,10 @@ export async function GET(
   const resolvedParams = await params;
   const provider = resolvedParams.provider as "google" | "facebook" | "tiktok";
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.url;
+
   if (!ALLOWED_PROVIDERS.includes(provider)) {
-    return NextResponse.redirect(new URL("/login?error=Invalid+provider", request.url));
+    return NextResponse.redirect(new URL("/login?error=Invalid+provider", baseUrl));
   }
 
   const { searchParams } = new URL(request.url);
@@ -25,11 +27,11 @@ export async function GET(
   const error = searchParams.get("error");
 
   if (error) {
-    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, request.url));
+    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, baseUrl));
   }
 
   if (!code || !state) {
-    return NextResponse.redirect(new URL("/login?error=Missing+OAuth+parameters", request.url));
+    return NextResponse.redirect(new URL("/login?error=Missing+OAuth+parameters", baseUrl));
   }
 
   try {
@@ -67,7 +69,7 @@ export async function GET(
       if (user) {
         // Link existing user if vendor checks permit
         if (user.role === "vendor" && user.status !== "active") {
-          return NextResponse.redirect(new URL("/login?error=Vendor+account+is+not+active.", request.url));
+          return NextResponse.redirect(new URL("/login?error=Vendor+account+is+not+active.", baseUrl));
         }
 
         await OAuthAccountRepository.create({
@@ -98,7 +100,7 @@ export async function GET(
     } else {
       // User is already linked
       if (user.role === "vendor" && user.status !== "active") {
-        return NextResponse.redirect(new URL("/login?error=Vendor+account+is+not+active.", request.url));
+        return NextResponse.redirect(new URL("/login?error=Vendor+account+is+not+active.", baseUrl));
       }
     }
 
@@ -123,16 +125,16 @@ export async function GET(
       super_admin: "/superadmin",
       admin: "/admin",
       vendor: "/vendor",
-      customer: "/",
+      customer: "/customer",
     };
     const redirectPath = dashboardUrls[user!.role as keyof typeof dashboardUrls] || "/";
 
-    return NextResponse.redirect(new URL(redirectPath, request.url));
+    return NextResponse.redirect(new URL(redirectPath, baseUrl));
 
   } catch (error: any) {
     console.error(`[OAuth Callback Error] ${provider}:`, error);
     return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(error?.message || 'Authentication failed')}`, request.url)
+      new URL(`/login?error=${encodeURIComponent(error?.message || 'Authentication failed')}`, baseUrl)
     );
   }
 }

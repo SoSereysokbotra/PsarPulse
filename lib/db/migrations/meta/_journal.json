@@ -15,6 +15,13 @@
       "when": 1774186273282,
       "tag": "0001_sticky_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774453200000,
+      "tag": "0002_payment_transactions",
+      "breakpoints": true
     }
   ]
 }

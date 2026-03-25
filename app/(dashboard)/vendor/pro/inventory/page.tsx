@@ -85,7 +85,7 @@ export default function ProInventoryPage() {
       id: 4,
       name: "Noodle Soup",
       khmerName: "គុយទាវ",
-      price: "$3.00",
+      price: "$0.01",
       stock: 24,
       threshold: 15,
       status: "good",

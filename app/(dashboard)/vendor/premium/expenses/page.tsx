@@ -216,7 +216,7 @@ const pushAlerts: PushAlert[] = [
     title: "Unusual Spending Detected",
     icon: AlertTriangle,
     message:
-      "Transport costs logged twice today ($7.00 total) — AI flagged this as a possible duplicate entry. Please review.",
+      "Transport costs logged twice today ($0.02 total) — AI flagged this as a possible duplicate entry. Please review.",
     time: "45 min ago",
   },
   {

@@ -3,6 +3,7 @@ import { Outfit, Suwannaphum } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
+import { UserProvider } from "@/components/providers/UserProvider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -33,7 +34,9 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <LanguageProvider>
-            {children}
+            <UserProvider>
+              {children}
+            </UserProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

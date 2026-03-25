@@ -26,9 +26,19 @@ export async function GET(request: NextRequest) {
     // Return user data without sensitive information
     const { passwordHash, ...safeUserData } = userData;
 
+    // Fetch vendor data if user is a vendor
+    let vendorData = null;
+    if (safeUserData.role === "vendor") {
+      const { VendorRepository } = await import("@/lib/db/repositories/vendor.repository");
+      vendorData = await VendorRepository.findByUserId(userData.id);
+    }
+
     return NextResponse.json({
       success: true,
-      data: { user: safeUserData },
+      data: { 
+        user: safeUserData,
+        vendor: vendorData 
+      },
     });
   } catch (error) {
     console.error("Get profile error:", error);

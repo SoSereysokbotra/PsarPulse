@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useUser } from "@/components/providers/UserProvider";
 import {
   LayoutDashboard,
   CircleDollarSign,
@@ -110,8 +111,22 @@ const GOAL = {
 export default function VendorDashboard() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
+  const { user, loading } = useUser();
   const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
+
+  // Initials
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.trim().slice(0, 2).toUpperCase();
+  };
+
+  const displayName = user?.fullName || (isKhmer ? "អ្នកប្រើប្រាស់" : "User");
+  const displayInitials = getInitials(user?.fullName || "User");
 
   const [isDayLocked, setIsDayLocked] = useState(false);
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
@@ -639,12 +654,12 @@ export default function VendorDashboard() {
             {/* Left — greeting */}
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[17px] font-extrabold text-white shrink-0 shadow-[0_0_0_3px_rgba(62,207,142,0.2)]">
-                SM
+                {loading ? "..." : displayInitials}
               </div>
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-[18px] font-extrabold text-[#e6edf3]">
-                    {greeting}, Sok Maly 👋
+                    {greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName} 👋
                   </span>
                 </div>
                 <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2">

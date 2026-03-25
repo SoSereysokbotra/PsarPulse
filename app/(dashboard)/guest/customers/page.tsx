@@ -40,6 +40,7 @@ import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useUser } from "@/components/providers/UserProvider";
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface Product {
@@ -76,8 +77,21 @@ const PRODUCT_LIBRARY: Product[] = [
 export default function CustomersPage() {
   const { resolvedTheme } = useTheme();
   const { language, t } = useLanguage();
+  const { user, loading } = useUser();
   const isDark = resolvedTheme === "dark";
   const isKhmer = language === "km";
+
+  // Initials logic
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.trim().slice(0, 2).toUpperCase();
+  };
+
+  const displayInitials = user?.fullName ? getInitials(user.fullName) : (loading ? ".." : "GU");
 
   const [mounted, setMounted] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -479,7 +493,7 @@ export default function CustomersPage() {
                   className="w-[34px] h-[34px] rounded-full bg-[rgba(156,163,175,0.12)] border-[1.5px] border-[#9ca3af] flex items-center justify-center text-[11px] font-bold text-[#9ca3af] cursor-pointer hover:bg-[rgba(156,163,175,0.2)] transition-colors"
                   onClick={() => (window.location.href = "/signup")}
                 >
-                  GU
+                  {loading ? ".." : displayInitials}
                 </div>
               </>
             }

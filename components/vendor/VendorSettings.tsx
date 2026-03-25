@@ -22,6 +22,8 @@ import {
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
+import { authClient } from "@/lib/auth/utils/client-auth";
+import { useUser } from "@/components/providers/UserProvider";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -174,6 +176,7 @@ export default function VendorSettings({
 }: VendorSettingsProps) {
   const { language, setLanguage, t } = useLanguage();
   const { resolvedTheme, setTheme } = useTheme();
+  const { user, vendor, loading: userLoading } = useUser();
   const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
 
@@ -186,6 +189,33 @@ export default function VendorSettings({
   );
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  const [personalInfo, setPersonalInfo] = useState({
+    fullName: "",
+    email: "",
+    phoneNumber: "012 345 678",
+    stallLocation: "Phnom Penh Market",
+    role: "Merchant Administrator",
+    language: "English",
+    timezone: "(UTC+07:00) Indochina Time",
+  });
+
+  // Sync personal info with user data
+  useEffect(() => {
+    if (user) {
+      setPersonalInfo({
+        fullName: user.fullName || "",
+        email: user.email || "",
+        phoneNumber: vendor?.businessPhone || "012 345 678",
+        stallLocation: vendor?.businessAddress || "Phnom Penh Market",
+        role: user.role === "vendor" ? "Merchant Administrator" : user.role,
+        language: language === "km" ? "Khmer" : "English",
+        timezone: "(UTC+07:00) Indochina Time",
+      });
+    }
+  }, [user, vendor, language]);
+
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   // Sync tab with URL
   useEffect(() => {
@@ -200,17 +230,6 @@ export default function VendorSettings({
     params.set("tab", tab);
     router.replace(`${currentPath}?${params.toString()}`);
   };
-
-  // Form states
-  const [personalInfo, setPersonalInfo] = useState({
-    fullName: "Sok Maly",
-    email: "sokmaly@gmail.com",
-    phoneNumber: "012 345 678",
-    stallLocation: "Phnom Penh Market",
-    role: "Merchant Administrator",
-    language: "English",
-    timezone: "(UTC+07:00) Indochina Time",
-  });
 
   // Billing states
   const [selectedMethod, setSelectedMethod] = useState<
@@ -234,7 +253,7 @@ export default function VendorSettings({
 
   const tabs = [
     { id: "profile", label: t("settings.profile"), icon: User },
-    { id: "billing", label: t("settings.billing"), icon: CreditCard },
+    { id: "billing", label: t("settings.subscriptions"), icon: Sparkles },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "security", label: "Security & Access", icon: Shield },
     { id: "appearance", label: "Appearance", icon: Paintbrush },
@@ -363,7 +382,7 @@ export default function VendorSettings({
                                 : "bg-[#f0f4ff] border-white text-[#4f46e5]/40"
                             }`}
                           >
-                            SM
+                            {userLoading ? "..." : (user?.fullName ? (user.fullName.trim().split(/\s+/).length >= 2 ? (user.fullName.trim().split(/\s+/)[0][0] + user.fullName.trim().split(/\s+/).slice(-1)[0][0]).toUpperCase() : user.fullName.trim().slice(0, 2).toUpperCase()) : "U")}
                           </div>
                           <button className="absolute bottom-0 right-0 w-9 h-9 bg-slate-900 rounded-full flex items-center justify-center border-4 border-white text-white text-xs hover:bg-[#29B28D] transition-all shadow-lg shadow-slate-200">
                             <Camera size={16} />
@@ -635,299 +654,133 @@ export default function VendorSettings({
                 </div>
               )}
 
-              {/* ══ BILLING SECTION ══ */}
+              {/* ══ SUBSCRIPTIONS SECTION ══ */}
               {activeTab === "billing" && (
-                <div className="h-full">
-                  {paymentStatus === "success" ? (
-                    <SuccessView
-                      plan={checkoutPlan}
-                      onReset={() => setPaymentStatus("idle")}
-                    />
-                  ) : (
-                    <div className="flex flex-col lg:flex-row h-full animate-in fade-in zoom-in-95 duration-500">
-                      {/* Left: Panel */}
-                      <div className="w-full lg:w-[360px] bg-[#141618] text-white p-10 flex flex-col justify-between shrink-0">
-                        <div>
-                          <div className="flex items-center gap-2 mb-12">
-                            <div className="w-8 h-8 bg-[#29B28D] rounded-lg flex items-center justify-center shadow-lg shadow-[#29B28D]/20">
-                              <Sparkles size={18} className="text-white" />
+                <div className="h-full p-8 sm:p-10 animate-in fade-in duration-300">
+                  <div className="flex flex-col mb-10">
+                    <h2 className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-800"}`}>
+                      {t("settings.subscriptions")}
+                    </h2>
+                    <p className={`text-sm mt-1 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>
+                      Manage your current plan and view subscription details.
+                    </p>
+                  </div>
+
+                  {isLoadingProfile ? (
+                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                      <div className="w-10 h-10 rounded-full border-4 border-psar-primary/20 border-t-psar-primary animate-spin" />
+                      <p className="text-sm font-medium text-slate-400">Loading subscription details...</p>
+                    </div>
+                  ) : profile?.vendor ? (
+                    <div className="space-y-8">
+                      {/* Active Subscription Card */}
+                      <div className={`p-8 rounded-[32px] border relative overflow-hidden ${
+                        isDark ? "bg-[#1C2128] border-white/5" : "bg-white border-slate-100 shadow-xl shadow-slate-200/20"
+                      }`}>
+                        {/* Decorative background element */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-psar-primary/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+                        
+                        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                          <div className="flex items-center gap-6">
+                            <div className="w-16 h-16 bg-psar-primary/10 rounded-2xl flex items-center justify-center shrink-0">
+                              <Sparkles className="w-8 h-8 text-psar-primary" />
                             </div>
-                            <span className="text-lg font-bold tracking-tight">
-                              PsarPulse
-                            </span>
+                            <div>
+                              <div className="flex items-center gap-3 mb-1">
+                                <h3 className={`text-2xl font-black uppercase tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
+                                  {profile.vendor.plan?.name || "Free Plan"}
+                                </h3>
+                                <span className="px-2.5 py-1 bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase rounded-lg tracking-wider">
+                                  {profile.vendor.subscriptionStatus || "Active"}
+                                </span>
+                              </div>
+                              <p className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>
+                                {profile.vendor.plan?.description || "Basic features for small stalls."}
+                              </p>
+                            </div>
                           </div>
 
-                          <div className="mb-10">
-                            <p className="text-xs font-bold text-[#29B28D] mb-2">
-                              Upgrade Plan
-                            </p>
-                            <h2 className="text-3xl font-bold mb-4 leading-none tracking-tight">
-                              {checkoutPlan}
-                            </h2>
-                            <div className="flex items-baseline gap-2">
-                              <span className="text-4xl font-bold tracking-tight">
-                                ${checkoutPlan === "pro" ? "3.00" : "7.00"}
+                          <div className="text-left md:text-right">
+                            <div className="flex items-baseline gap-1 md:justify-end mb-1">
+                              <span className={`text-3xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
+                                ${profile.vendor.plan?.monthlyPrice || "0.00"}
                               </span>
-                              <span className="text-slate-500 font-bold text-[10px]">
-                                / month
-                              </span>
+                              <span className="text-slate-500 font-bold text-[11px]">/month</span>
                             </div>
-                          </div>
-
-                          <div className="space-y-4">
-                            <p className="text-xs font-bold text-slate-500 ml-1">
-                              Select Tier
+                            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                              Billed {profile.vendor.subscriptions?.[0]?.billingCycle || "monthly"}
                             </p>
-                            <div className="bg-[#0c0e0f] p-1 rounded-2xl flex gap-1 border border-white/5">
-                              <button
-                                onClick={() => setCheckoutPlan("pro")}
-                                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all ${
-                                  checkoutPlan === "pro"
-                                    ? isDark
-                                      ? "bg-[#3ecf8e] text-black shadow-xl"
-                                      : "bg-white text-slate-900 shadow-xl"
-                                    : isDark
-                                      ? "text-[#7d8590] hover:text-white"
-                                      : "text-slate-500 hover:text-white"
-                                }`}
-                              >
-                                Pro
-                              </button>
-                              <button
-                                onClick={() => setCheckoutPlan("premium")}
-                                className={`flex-1 py-3 px-4 rounded-xl text-xs font-bold transition-all ${
-                                  checkoutPlan === "premium"
-                                    ? isDark
-                                      ? "bg-[#3ecf8e] text-black shadow-xl"
-                                      : "bg-white text-slate-900 shadow-xl"
-                                    : isDark
-                                      ? "text-[#7d8590] hover:text-white"
-                                      : "text-slate-500 hover:text-white"
-                                }`}
-                              >
-                                Premium
-                              </button>
-                            </div>
                           </div>
                         </div>
 
-                        <div
-                          className={`pt-8 border-t flex items-center justify-between ${
-                            isDark ? "border-white/5" : "border-white/5"
-                          }`}
-                        >
-                          <div
-                            className={`flex items-center gap-2 text-xs font-bold ${
-                              isDark ? "text-[#7d8590]" : "text-slate-500"
-                            }`}
-                          >
-                            <Shield size={12} className="text-[#29B28D]" />
-                            <span>Secure Process</span>
+                        <div className={`mt-10 pt-8 border-t grid grid-cols-1 sm:grid-cols-3 gap-6 ${isDark ? "border-white/5" : "border-slate-50"}`}>
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Member Since</p>
+                            <p className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}>
+                              {new Date(profile.vendor.createdAt).toLocaleDateString()}
+                            </p>
                           </div>
-                          <span
-                            className={`text-[10px] font-bold ${
-                              isDark ? "text-[#7d8590]" : "text-slate-700"
-                            }`}
-                          >
-                            v1.2
-                          </span>
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Next Billing Date</p>
+                            <p className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}>
+                              {profile.vendor.subscriptions?.[0]?.nextBillingDate 
+                                ? new Date(profile.vendor.subscriptions[0].nextBillingDate).toLocaleDateString()
+                                : "N/A"}
+                            </p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Auto-Renew</p>
+                            <div className="flex items-center gap-2">
+                              <div className={`w-2 h-2 rounded-full ${profile.vendor.subscriptions?.[0]?.isAutoRenew !== false ? "bg-emerald-500" : "bg-slate-300"}`} />
+                              <p className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}>
+                                {profile.vendor.subscriptions?.[0]?.isAutoRenew !== false ? "Enabled" : "Disabled"}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Right Panel */}
-                      <div
-                        className={`flex-1 p-10 flex flex-col justify-between transition-colors ${
-                          isDark ? "bg-dark-surface" : "bg-white"
-                        }`}
-                      >
-                        <div>
-                          <h3
-                            className={`text-sm font-bold mb-6 flex items-center gap-2 ${
-                              isDark ? "text-white" : "text-slate-900"
-                            }`}
-                          >
-                            Select Payment Method
-                            <div
-                              className={`h-px flex-1 ${
-                                isDark ? "bg-white/5" : "bg-slate-100"
-                              }`}
-                            />
-                          </h3>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
-                            {(["aba", "acleda", "bakong"] as const).map(
-                              (bank) => (
-                                <button
-                                  key={bank}
-                                  onClick={() => setSelectedMethod(bank)}
-                                  className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 group relative ${
-                                    selectedMethod === bank
-                                      ? isDark
-                                        ? "border-[#3ecf8e] bg-[#3ecf8e]/10"
-                                        : "border-[#29B28D] bg-[#29B28D]/5 shadow-lg shadow-[#29B28D]/5"
-                                      : isDark
-                                        ? "border-white/10 hover:border-white/20"
-                                        : "border-slate-50 hover:border-slate-100"
-                                  }`}
-                                >
-                                  <div
-                                    className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${
-                                      selectedMethod === bank
-                                        ? isDark
-                                          ? "border-[#3ecf8e] bg-[#3ecf8e] text-black"
-                                          : "border-[#29B28D] bg-[#29B28D] text-white"
-                                        : isDark
-                                          ? "border-white/20 text-[#7d8590]"
-                                          : "border-slate-100 text-slate-200"
-                                    }`}
-                                  >
-                                    {selectedMethod === bank ? (
-                                      <CheckCircle2 size={16} />
-                                    ) : (
-                                      <div
-                                        className={`w-1.5 h-1.5 rounded-full ${
-                                          isDark
-                                            ? "bg-white/20"
-                                            : "bg-slate-100"
-                                        }`}
-                                      />
-                                    )}
-                                  </div>
-                                  <span
-                                    className={`text-xs font-bold ${
-                                      selectedMethod === bank
-                                        ? isDark
-                                          ? "text-[#3ecf8e]"
-                                          : "text-[#29B28D]"
-                                        : isDark
-                                          ? "text-[#7d8590]"
-                                          : "text-slate-400"
-                                    }`}
-                                  >
-                                    {bank}
-                                  </span>
-                                </button>
-                              ),
-                            )}
-                          </div>
-
-                          <div
-                            className={`mb-8 p-1 rounded-[32px] border shadow-inner ${
-                              isDark
-                                ? "bg-white/5 border-white/10"
-                                : "bg-slate-50/50 border-slate-50"
-                            }`}
-                          >
-                            <div
-                              className={`rounded-[28px] border p-6 flex flex-col items-center transition-colors ${
-                                isDark
-                                  ? "bg-dark-surface border-white/10"
-                                  : "bg-white border-slate-50"
-                              }`}
-                            >
-                              <p
-                                className={`text-[10px] font-bold mb-6 ${
-                                  isDark ? "text-[#7d8590]" : "text-slate-400"
-                                }`}
-                              >
-                                Scan using{" "}
-                                <span
-                                  className={
-                                    isDark ? "text-white" : "text-slate-900"
-                                  }
-                                >
-                                  {selectedMethod.toUpperCase()} App
-                                </span>
-                              </p>
-                              <div
-                                className={`relative group p-4 border rounded-3xl shadow-2xl ${
-                                  isDark
-                                    ? "bg-[#111111] border-white/10"
-                                    : "bg-white border-slate-100"
-                                }`}
-                              >
-                                <QRCode bank={selectedMethod} />
-                                <div
-                                  className={`absolute inset-0 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity ${
-                                    isDark ? "bg-[#3ecf8e]/5" : "bg-[#29B28D]/5"
-                                  }`}
-                                />
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="mb-8">
-                            <label className="flex items-start gap-3 cursor-pointer group px-2">
-                              <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                checked={tosAccepted}
-                                onChange={(e) =>
-                                  setTosAccepted(e.target.checked)
-                                }
-                              />
-                              <div
-                                className={`w-5 h-5 rounded-lg border-2 mt-0.5 flex items-center justify-center peer-checked:bg-[#29B28D] peer-checked:border-[#29B28D] transition-all shrink-0 ${
-                                  isDark
-                                    ? "border-white/20"
-                                    : "border-slate-100"
-                                }`}
-                              >
-                                <CheckCircle2
-                                  size={12}
-                                  className="text-white opacity-0 peer-checked:opacity-100"
-                                />
-                              </div>
-                              <span
-                                className={`text-xs leading-tight font-medium tracking-tight ${
-                                  isDark ? "text-[#7d8590]" : "text-slate-400"
-                                }`}
-                              >
-                                I agree to the{" "}
-                                <span className="text-[#29B28D] border-b border-[#29B28D]/20">
-                                  Terms of License
-                                </span>
-                                . PsarPulse will charge the total shown monthly.
-                                Cancel anytime.
-                              </span>
-                            </label>
-                          </div>
+                      {/* Plan Limits */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className={`p-6 rounded-3xl border ${isDark ? "bg-[#0d1117] border-white/5" : "bg-slate-50/50 border-slate-100"}`}>
+                          <h4 className={`text-xs font-black uppercase tracking-widest mb-6 ${isDark ? "text-[#7d8590]" : "text-slate-400"}`}>Plan Features</h4>
+                          <ul className="space-y-4">
+                            {[
+                              { label: "Max Products", value: profile.vendor.plan?.maxProducts || "Unlimited" },
+                              { label: "Max Team Members", value: profile.vendor.plan?.maxUsers || "Unlimited" },
+                              { label: "Advanced Reports", value: profile.vendor.plan?.hasAdvancedReports ? "Included" : "Not Included" },
+                              { label: "API Access", value: profile.vendor.plan?.hasAPI ? "Included" : "Not Included" },
+                            ].map((feature, i) => (
+                              <li key={i} className="flex justify-between items-center text-sm">
+                                <span className={`font-medium ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>{feature.label}</span>
+                                <span className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>{feature.value}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
 
-                        <div>
-                          <button
-                            onClick={() => {
-                              if (!tosAccepted) return;
-                              setPaymentStatus("processing");
-                              setTimeout(
-                                () => setPaymentStatus("success"),
-                                2000,
-                              );
-                            }}
-                            disabled={
-                              !tosAccepted || paymentStatus === "processing"
-                            }
-                            className={`w-full py-5 rounded-2xl font-bold text-sm transition-all shadow-xl active:scale-95 ${
-                              !tosAccepted
-                                ? isDark
-                                  ? "bg-[#1a1a1a] text-[#4d5562] cursor-not-allowed"
-                                  : "bg-slate-50 text-slate-300 cursor-not-allowed"
-                                : isDark
-                                  ? "bg-white text-black hover:bg-[#3ecf8e] shadow-white/10 hover:shadow-[#3ecf8e]/20"
-                                  : "bg-slate-900 text-white hover:bg-[#29B28D] shadow-slate-100 hover:shadow-[#29B28D]/20"
-                            }`}
+                        <div className={`p-8 rounded-3xl border flex flex-col justify-center items-center text-center ${
+                          isDark ? "bg-psar-primary/5 border-psar-primary/10" : "bg-psar-primary/5 border-psar-primary/10"
+                        }`}>
+                          <Sparkles className="w-10 h-10 text-psar-primary mb-4" />
+                          <h4 className={`text-lg font-bold mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>Need more power?</h4>
+                          <p className={`text-xs mb-8 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>Upgrade to a higher tier to unlock advanced features and higher limits.</p>
+                          <button 
+                            onClick={() => router.push("/vendor/pricing")}
+                            className="w-full py-3.5 bg-psar-primary text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-xl shadow-psar-primary/20 hover:-translate-y-1 transition-all active:scale-95"
                           >
-                            {paymentStatus === "processing" ? (
-                              <div className="flex items-center justify-center gap-3">
-                                <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                                <span>Processing...</span>
-                              </div>
-                            ) : (
-                              "Subscribe Now"
-                            )}
+                            Compare Plans
                           </button>
                         </div>
                       </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                      <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mb-6">
+                        <AlertCircle className="w-10 h-10 text-slate-300" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-800">No vendor data found</h3>
+                      <p className="text-sm text-slate-500 max-w-xs mt-2">We couldn't retrieve your vendor profile. Please contact support if this persists.</p>
                     </div>
                   )}
                 </div>

@@ -36,6 +36,8 @@ import {
 } from "lucide-react";
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
+import { useUser } from "@/components/providers/UserProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface Product {
@@ -102,9 +104,26 @@ const PREMIUM_NAV = [
 ];
 
 export default function PremiumDashboard() {
+  const { language } = useLanguage();
+  const { user, loading } = useUser();
+  const isKhmer = language === "km";
+
   const [isDayLocked, setIsDayLocked] = useState(false);
   const [showCustomCategoryModal, setShowCustomCategoryModal] = useState(false);
   const [customCategoryName, setCustomCategoryName] = useState("");
+
+  // Initials logic
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.trim().slice(0, 2).toUpperCase();
+  };
+
+  const displayName = user?.fullName || (loading ? "..." : (isKhmer ? "អ្នកប្រើប្រាស់" : "User"));
+  const displayInitials = user?.fullName ? getInitials(user.fullName) : (loading ? ".." : "U");
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<{ product: Product; qty: number }[]>([]);
@@ -567,11 +586,11 @@ export default function PremiumDashboard() {
 
           <div className="flex items-center gap-5 relative z-10">
             <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-[19px] font-extrabold text-white shrink-0">
-              SM
+              {loading ? ".." : displayInitials}
             </div>
             <div className="space-y-1">
               <span className="text-[22px] font-extrabold text-white tracking-tight">
-                {greeting}, Sok Maly 👋
+                {greeting}, {displayName} 👋
               </span>
               <div className="text-[13px] text-[#7d8590] mt-1 flex items-center gap-2">
                 <span>{greetingKh}</span>

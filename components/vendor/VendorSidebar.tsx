@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Settings, ChevronRight, X, Crown, Sparkles, LogOut, User, CreditCard as BillingIcon } from "lucide-react";
 import VendorNavItem from "./VendorNavItem";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useUser } from "@/components/providers/UserProvider";
 
 interface NavLink {
   icon: React.ElementType;
@@ -66,13 +67,28 @@ export default function VendorSidebar({
   isOpen = false,
   onClose,
   currentPath,
-  userName = "Sok Maly",
-  userInitials = "SM",
-  userEmail = "sokmaly@gmail.com",
+  userName: propUserName,
+  userInitials: propUserInitials,
+  userEmail: propUserEmail,
 }: VendorSidebarProps) {
   const { language, t } = useLanguage();
+  const { user, loading } = useUser();
   const isKhmer = language === "km";
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  // Initials logic
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.trim().slice(0, 2).toUpperCase();
+  };
+
+  const userName = propUserName || user?.fullName || (loading ? "..." : (isKhmer ? "អ្នកប្រើប្រាស់" : "User"));
+  const userInitials = propUserInitials || (user?.fullName ? getInitials(user.fullName) : (loading ? ".." : "U"));
+  const userEmail = propUserEmail || user?.email || (loading ? "..." : "");
   const config = PLAN_CONFIG[plan];
   const PlanIcon = config.icon;
 

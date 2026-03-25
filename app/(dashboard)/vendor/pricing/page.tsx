@@ -128,7 +128,10 @@ const premiumIconStyle: React.CSSProperties = {
   background: "linear-gradient(to right, #a855f7, #d946ef)",
 };
 
+import { useRouter } from "next/navigation";
+
 export default function PricingPage() {
+  const router = useRouter();
   const [currentPlan, setCurrentPlan] = useState<PlanId>("free");
   const [isAnnual, setIsAnnual] = useState(false);
 
@@ -254,7 +257,7 @@ export default function PricingPage() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => setCurrentPlan(plan.id)}
+                      onClick={() => router.push(`/vendor/pricing/checkout?plan=${plan.id}&billing=${isAnnual ? "annual" : "monthly"}`)}
                       className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl font-bold text-sm transition-all mb-6 text-white"
                       style={
                         plan.id === "premium"

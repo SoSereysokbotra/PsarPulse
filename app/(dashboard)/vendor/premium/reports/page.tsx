@@ -295,6 +295,7 @@ export default function PremiumReportsPage() {
 
   return (
     <VendorDashboardLayout
+      settingsHref="/vendor/premium/settings"
       plan="premium"
       navLinks={PREMIUM_NAV}
       currentPath="/vendor/premium/reports"

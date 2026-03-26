@@ -22,6 +22,13 @@
       "when": 1774490639361,
       "tag": "0002_init_vendor_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774453200000,
+      "tag": "0003_payment_transactions",
+      "breakpoints": true
     }
   ]
 }

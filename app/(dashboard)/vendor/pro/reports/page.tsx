@@ -139,6 +139,7 @@ export default function ProReportsPage() {
 
   return (
     <VendorDashboardLayout
+      settingsHref="/vendor/pro/settings"
       plan="pro"
       navLinks={PRO_NAV}
       currentPath="/vendor/pro/reports"

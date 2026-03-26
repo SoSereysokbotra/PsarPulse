@@ -614,7 +614,8 @@ export class AuthService {
     let payload;
     try {
       payload = TokenUtil.verifyVendorActivationToken(token);
-    } catch {
+    } catch (error) {
+      console.error("[activateVendor] Token Verification Error:", error);
       return {
         success: false,
         message: "Invalid or expired activation link. Please contact support.",

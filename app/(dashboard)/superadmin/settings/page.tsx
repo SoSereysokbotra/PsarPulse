@@ -116,7 +116,7 @@ export default function SuperadminSettingsPage() {
           setSettings(map);
         }
       })
-      .catch(() => console.log("Simulating fetch failure, using defaults."))
+      .catch((err) => console.error("Failed to fetch settings:", err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -126,21 +126,24 @@ export default function SuperadminSettingsPage() {
       settings[key] ?? DEFAULT_SETTINGS.find((s) => s.key === key)?.value ?? "";
 
     try {
-      await fetch("/api/superadmin/settings", {
+      const res = await fetch("/api/superadmin/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, value, label }),
       });
+      const data = await res.json();
+      
+      if (data.success) {
+        setSaved(key);
+        setTimeout(() => setSaved(null), 2000);
+      } else {
+        console.error("Failed to save setting:", data.message);
+      }
     } catch (error) {
-      console.log("Simulating save for", key);
-    }
-
-    // Simulate network delay for UI feedback
-    setTimeout(() => {
+      console.error("Error saving setting:", error);
+    } finally {
       setSaving(null);
-      setSaved(key);
-      setTimeout(() => setSaved(null), 2000);
-    }, 600);
+    }
   };
 
   const currentGroupSettings = DEFAULT_SETTINGS.filter(

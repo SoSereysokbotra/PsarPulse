@@ -21,11 +21,37 @@ import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
 const FREE_NAV = [
-  { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
-  { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/sales" },
-  { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/expenses" },
-  { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/customer" },
-  { icon: Package, title: "Inventory", khmerTitle: "ស្តុក", href: "/vendor/inventory", active: true },
+  {
+    icon: LayoutDashboard,
+    title: "Dashboard",
+    khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
+    href: "/vendor",
+  },
+  {
+    icon: CircleDollarSign,
+    title: "Sales",
+    khmerTitle: "ការលក់",
+    href: "/vendor/sales",
+  },
+  {
+    icon: Receipt,
+    title: "Expenses",
+    khmerTitle: "ចំណាយ",
+    href: "/vendor/expenses",
+  },
+  {
+    icon: Users,
+    title: "Customers",
+    khmerTitle: "អតិថិជន",
+    href: "/vendor/customer",
+  },
+  {
+    icon: Package,
+    title: "Inventory",
+    khmerTitle: "ស្តុក",
+    href: "/vendor/inventory",
+    active: true,
+  },
 ];
 
 export default function InventoryPage() {
@@ -75,7 +101,7 @@ export default function InventoryPage() {
       id: 4,
       name: "Noodle Soup",
       khmerName: "គុយទាវ",
-      price: "$3.00",
+      price: "$0.01",
       stock: 24,
       threshold: 15,
       status: "good",
@@ -135,8 +161,8 @@ export default function InventoryPage() {
                 </h3>
               </div>
               <p className="text-orange-800 text-[14px] leading-relaxed max-w-2xl">
-                Hot Latte and Mango Sticky Rice are running low.
-                Consider restocking soon to avoid stockouts.
+                Hot Latte and Mango Sticky Rice are running low. Consider
+                restocking soon to avoid stockouts.
               </p>
             </div>
           </div>
@@ -176,7 +202,6 @@ export default function InventoryPage() {
             icon={TrendingUp}
             subtext="Highest margin"
           />
-
         </div>
 
         {/* Inventory Table Area */}

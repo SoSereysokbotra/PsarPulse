@@ -72,36 +72,23 @@ export default function SuperadminPage() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const [admins, setAdmins] = useState<any[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/superadmin/admins")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success) setAdmins(d.data);
+    Promise.all([
+      fetch("/api/superadmin/admins").then((r) => r.json()),
+      fetch("/api/superadmin/plans").then((r) => r.json()),
+      fetch("/api/admin/audit-log").then((r) => r.json()),
+    ])
+      .then(([adminsData, plansData, auditLogsData]) => {
+        if (adminsData.success) setAdmins(adminsData.data);
+        if (plansData.success) setPlans(plansData.data);
+        if (auditLogsData.success) setAuditLogs(auditLogsData.data);
       })
-      .catch(() => {
-        // Fallback dummy data for visualization
-        setAdmins([
-          {
-            id: 1,
-            userFullName: "John Doe",
-            userEmail: "john@psarpulse.com",
-            role: "super_admin",
-            canManageVendors: true,
-            canManageUsers: true,
-            canManagePlans: true,
-          },
-          {
-            id: 2,
-            userFullName: "Jane Smith",
-            userEmail: "jane@psarpulse.com",
-            role: "admin",
-            canManageVendors: true,
-            canManageUsers: false,
-            canManagePlans: false,
-          },
-        ]);
+      .catch((err) => {
+        console.error("Failed to fetch superadmin overview data:", err);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -138,7 +125,7 @@ export default function SuperadminPage() {
         />
         <StatCard
           title="Active Plans"
-          value="3"
+          value={plans.length.toString()}
           sub="Free · Pro · Premium"
           icon={CreditCard}
           colorClass="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
@@ -156,8 +143,10 @@ export default function SuperadminPage() {
         />
         <StatCard
           title="Audit Events"
-          value="12.4k"
-          sub="System events in the last 24h"
+          value={
+            auditLogs.length > 99 ? "99+" : auditLogs.length.toString() || "-"
+          }
+          sub="Recent system events"
           icon={ScrollText}
           colorClass="bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
           href="/superadmin/audit-log"
@@ -320,12 +309,6 @@ export default function SuperadminPage() {
           </h3>
           <div className="space-y-3">
             {[
-              {
-                label: "Security Config",
-                href: "/superadmin/security",
-                desc: "MFA & Session control",
-                icon: Lock,
-              },
               {
                 label: "Plans & Pricing",
                 href: "/superadmin/plans",

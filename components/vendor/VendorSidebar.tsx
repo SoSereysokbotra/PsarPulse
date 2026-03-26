@@ -21,7 +21,7 @@ interface VendorSidebarProps {
   settingsHref?: string;
   isGuest?: boolean;
   onLockedClick?: () => void;
-  collapsed?: boolean;
+  collapsed?: boolean;  
   isOpen?: boolean;
   onClose?: () => void;
   currentPath?: string;
@@ -159,16 +159,6 @@ export default function VendorSidebar({
 
       {/* Footer */}
       <div className={`pb-3 pt-2 border-t border-white/[0.07] ${collapsed ? "px-2" : "px-3"}`}>
-        <VendorNavItem
-          icon={Settings}
-          title="Settings"
-          khmerTitle={t("settings.title")}
-          href={isGuest ? "#" : settingsHref}
-          active={currentPath === settingsHref}
-          collapsed={collapsed}
-          onClick={isGuest ? onLockedClick : undefined}
-        />
-
         {!collapsed && (
           <>
             {/* Plan badge */}
@@ -191,7 +181,9 @@ export default function VendorSidebar({
                 href={config.ctaHref}
                 className={`block text-center text-[13px] font-bold py-2 rounded-[8px] no-underline transition-colors text-[#29B28D] bg-[rgba(41,178,141,0.12)] hover:bg-[rgba(41,178,141,0.18)] dark:text-[#3ecf8e] dark:bg-[#3ecf8e]/10 dark:hover:bg-[#3ecf8e]/20`}
               >
-                {t("settings.subscribe")}
+                <span suppressHydrationWarning>
+                  {plan === "free" ? t("settings.subscribe") : (isKhmer ? "បានជាវ" : "Subscribed")}
+                </span>
               </Link>
             </div>
 
@@ -232,11 +224,12 @@ export default function VendorSidebar({
                     </div>
                     <div className="border-t border-[#f0f2f5]" />
                     <div className="py-1">
+
                       <Link href={settingsHref} onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] no-underline hover:bg-[#f7f8fa] transition-colors">
-                        <User size={16} className="text-[#6b7280]" />
-                        {t("settings.profile")}
+                        <Settings size={16} className="text-[#6b7280]" />
+                        {t("settings.title") || "Settings"}
                       </Link>
-                      <Link href="/vendor/pricing" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] no-underline hover:bg-[#f7f8fa] transition-colors">
+                      <Link href={`${settingsHref}?tab=billing`} onClick={() => setUserMenuOpen(false)} className="flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] no-underline hover:bg-[#f7f8fa] transition-colors">
                         <BillingIcon size={16} className="text-[#6b7280]" />
                         {t("settings.subscriptions")}
                       </Link>

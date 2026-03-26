@@ -128,6 +128,7 @@ export default function InventoryPage() {
 
   return (
     <VendorDashboardLayout
+      settingsHref="/vendor/premium/settings"
       plan="premium"
       navLinks={PREMIUM_NAV}
       currentPath="/vendor/premium/inventory"

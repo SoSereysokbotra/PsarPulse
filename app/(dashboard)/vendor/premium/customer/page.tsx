@@ -99,6 +99,7 @@ export default function CustomersPage() {
       }`}
     >
       <VendorSidebar
+        settingsHref="/vendor/premium/settings"
         plan="premium"
         navLinks={[
           {

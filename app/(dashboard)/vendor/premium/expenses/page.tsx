@@ -509,6 +509,7 @@ export default function PremiumExpensesPage() {
 
   return (
     <VendorDashboardLayout
+      settingsHref="/vendor/premium/settings"
       plan="premium"
       navLinks={PREMIUM_NAV}
       currentPath="/vendor/premium/expenses"

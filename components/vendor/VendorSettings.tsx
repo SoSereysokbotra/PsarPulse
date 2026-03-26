@@ -217,6 +217,31 @@ export default function VendorSettings({
 
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
+  // Fetch profile to populate subscription data
+  useEffect(() => {
+    let mounted = true;
+    setIsLoadingProfile(true);
+    
+    authClient
+      .getProfile()
+      .then((res: any) => {
+        if (!mounted) return;
+        if (res?.success && res?.data) {
+          setProfile(res.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch profile:", err);
+      })
+      .finally(() => {
+        if (mounted) setIsLoadingProfile(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   // Sync tab with URL
   useEffect(() => {
     if (tabParam && tabParam !== activeTab) {
@@ -262,7 +287,7 @@ export default function VendorSettings({
 
   return (
     <VendorDashboardLayout
-      plan={tier}
+      plan={profile?.vendor?.plan?.name || tier}
       navLinks={navLinks}
       currentPath={currentPath}
       settingsHref={

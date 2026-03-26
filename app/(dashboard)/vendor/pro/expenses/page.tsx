@@ -169,6 +169,7 @@ export default function ProExpensePage() {
 
   return (
     <VendorDashboardLayout
+      settingsHref="/vendor/pro/settings"
       plan="pro"
       navLinks={PRO_NAV}
       currentPath="/vendor/pro/expenses"

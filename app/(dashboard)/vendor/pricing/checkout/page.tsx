@@ -11,6 +11,9 @@ import {
   Loader2,
   ShieldCheck,
   HelpCircle,
+  ArrowLeft,
+  Info,
+  Box,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { authClient } from "@/lib/auth/utils/client-auth";
@@ -29,6 +32,9 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const planParam = searchParams.get("plan") as PlanId;
   const billingParam = searchParams.get("billing") || "monthly";
+
+  const [currency, setCurrency] = useState("KHR");
+  const [isAnnual, setIsAnnual] = useState(billingParam === "annual");
 
   const [step, setStep] = useState<CheckoutStep>("selection");
   const [method, setMethod] = useState<PaymentMethod>("aba");
@@ -81,6 +87,20 @@ export default function CheckoutPage() {
 
   const planId = planParam || "pro";
 
+  const USD_TO_KHR = 4170.2287;
+  const basePriceUSD = planId === "premium" 
+      ? (isAnnual ? 70.00 : 0.02)
+      : (isAnnual ? 30.00 : 0.01);
+  const displayPriceUSD = `$${basePriceUSD.toFixed(2)}`;
+  const displayPriceKHR = `KHR ${(basePriceUSD * USD_TO_KHR).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const displayPrice = currency === "USD" ? displayPriceUSD : displayPriceKHR;
+  const displayPeriod = isAnnual ? "year" : "month";
+  
+  const monthlyEquivalentUSD = planId === "premium" ? (70 / 12) : (30 / 12);
+  const discountText = currency === "USD" 
+    ? `$${monthlyEquivalentUSD.toFixed(2)}/month` 
+    : `KHR ${(monthlyEquivalentUSD * USD_TO_KHR).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/month`;
+
   const startPayment = async (selectedMethod: PaymentMethod) => {
     setMethod(selectedMethod);
     setStep("details");
@@ -95,7 +115,7 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planId,
-          billingCycle: billingParam === "annual" ? "annual" : "monthly",
+          billingCycle: isAnnual ? "annual" : "monthly",
           method: selectedMethod,
         }),
       });
@@ -223,62 +243,55 @@ export default function CheckoutPage() {
         {/* Main Content */}
         <main className="flex-grow flex items-center justify-center p-6 sm:p-12">
           <div className="max-w-5xl w-full mx-auto flex flex-col lg:flex-row gap-12 lg:gap-24">
-            {/* Left Column: Summary & Value Reinforcement */}
-            <div className="lg:w-[45%] flex flex-col justify-center">
-              <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-8 text-slate-900">
+            {/* Left Column: Summary & Value Reinforcement (Redesigned Boxless) */}
+            <div className="lg:w-[45%] flex flex-col justify-center py-4">
+              <h1 className="text-4xl sm:text-5xl font-black tracking-tight mb-10 text-slate-900">
                 Complete your purchase
               </h1>
 
-              {/* Order Summary Card */}
-              <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-                <div className="flex items-center justify-between mb-8 pb-8 border-b border-slate-100">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-50 rounded-2xl">
-                      <Shield
-                        className="w-8 h-8 text-blue-600"
-                        fill="currentColor"
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-black text-2xl leading-none">
-                        {planInfo.name}
-                      </span>
-                      <span className="text-xs font-bold text-slate-400 uppercase mt-1.5 tracking-widest">
-                        Plan
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p
-                      className="font-black text-3xl text-slate-900"
-                      suppressHydrationWarning
-                    >
-                      {planInfo.price}
-                    </p>
-                    <p className="text-sm font-bold text-slate-400 capitalize">
-                      per {planInfo.period}
-                    </p>
-                  </div>
+              {/* Price & Plan Name (Integrated Typography instead of a card) */}
+              <div className="mb-10">
+                <div className="flex items-baseline gap-2 mb-3">
+                  <span
+                    className="text-6xl font-black text-slate-900 tracking-tighter"
+                    suppressHydrationWarning
+                  >
+                    {planInfo.price}
+                  </span>
+                  <span className="text-xl font-bold text-slate-400">
+                    / {planInfo.period}
+                  </span>
                 </div>
 
-                {/* Feature List */}
-                <div className="space-y-4 mb-8">
-                  <p className="text-sm font-bold text-slate-900 mb-2 uppercase tracking-wide">
-                    What's included
-                  </p>
-                  {planInfo.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
-                      <span className="text-slate-600 font-medium">
-                        {feature}
-                      </span>
-                    </div>
-                  ))}
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-50 rounded-xl text-blue-600">
+                    <Shield className="w-6 h-6" fill="currentColor" />
+                  </div>
+                  <span className="text-2xl font-bold text-slate-800">
+                    {planInfo.name} Plan
+                  </span>
                 </div>
               </div>
 
-              {/* Trust Indicators */}
-              <div className="flex items-center gap-6 mt-8 text-slate-500 text-sm font-medium">
+              {/* Feature List */}
+              <div className="space-y-5 mb-12">
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">
+                  Everything included
+                </p>
+                {planInfo.features.map((feature, idx) => (
+                  <div key={idx} className="flex items-start gap-4">
+                    <div className="mt-0.5 bg-blue-50 p-1 rounded-full text-blue-600 shrink-0">
+                      <CheckCircle2 className="w-5 h-5" />
+                    </div>
+                    <span className="text-slate-700 text-lg font-medium leading-relaxed">
+                      {feature}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Trust Indicators (Separated by a subtle line instead of a box) */}
+              <div className="flex flex-col sm:flex-row gap-6 text-slate-500 text-sm font-medium border-t border-slate-200/60 pt-8">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-emerald-500" />
                   <span>256-bit Encryption</span>
@@ -295,7 +308,7 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Right Column: Payment Selection */}
+            {/* Right Column: Payment Selection (Unchanged) */}
             <div className="lg:w-[55%] flex flex-col justify-center">
               <div className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-10 shadow-xl shadow-slate-200/20">
                 <h3 className="text-xl font-black text-slate-900 mb-2 tracking-tight">
@@ -322,7 +335,9 @@ export default function CheckoutPage() {
                               className="w-full h-full object-contain"
                               onError={(e) => {
                                 e.currentTarget.style.display = "none";
-                                e.currentTarget.parentElement!.innerHTML = `<span class="text-xs font-bold text-slate-400">${details.name}</span>`;
+                                if (e.currentTarget.parentElement) {
+                                  e.currentTarget.parentElement.innerHTML = `<span class="text-xs font-bold text-slate-400">${details.name}</span>`;
+                                }
                               }}
                             />
                           </div>
@@ -364,50 +379,140 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#ffffff] font-sans">
       {/* Left Panel: Dark */}
-      <div className="w-full md:w-1/2 bg-[#222222] text-white flex items-center justify-center p-10 lg:p-20 relative shrink-0">
-        <div className="max-w-[320px] w-full flex flex-col min-h-[500px]">
+      <div className="w-full md:w-1/2 bg-black text-white flex justify-center p-8 lg:p-16 shrink-0 font-sans">
+        <div className="max-w-[420px] w-full flex flex-col mt-4">
+          {/* Header / Back Button */}
           <button
             onClick={() => setStep("selection")}
-            className="flex items-center gap-1 group mb-2 -ml-6"
+            className="flex items-center gap-3 w-fit text-neutral-400 hover:text-white transition-colors mb-10"
           >
-            <ChevronLeft
-              size={24}
-              className="text-white opacity-40 group-hover:opacity-100 transition-opacity"
-            />
-            <span className="text-3xl font-black tracking-tighter uppercase italic">
-              PsarPulse
-            </span>
+            <ArrowLeft size={20} />
           </button>
 
-          <div className="mt-8 mb-4">
-            <p className="text-white/60 text-sm font-medium mb-1">
-              Subscribe to PsarPulse {planInfo.name}
-            </p>
-            <div className="flex items-baseline gap-1">
-              <span
-                className="text-5xl font-bold tracking-tight"
-                suppressHydrationWarning
-              >
-                {planInfo.price}
-              </span>
-              <div className="flex flex-col ml-1">
-                <span className="text-white/60 text-[10px] font-bold leading-none">
-                  per
-                </span>
-                <span className="text-white/60 text-[10px] font-bold leading-none">
-                  {planInfo.period}
-                </span>
-              </div>
+          {/* Subscribe Title */}
+          <h2 className="text-neutral-300 font-semibold text-base mb-1.5">
+            Subscribe to PsarPulse {planInfo.name}
+          </h2>
+
+          {/* Large Price Display */}
+          <div className="flex items-center gap-2.5 mb-8">
+            <span
+              className="text-[40px] font-bold tracking-tight text-white leading-none"
+              suppressHydrationWarning
+            >
+              {displayPrice}
+            </span>
+            <div className="flex flex-col text-neutral-400 text-xs font-semibold justify-center mt-1">
+              <span>per</span>
+              <span>{displayPeriod}</span>
             </div>
           </div>
 
-          <div className="flex-1 flex items-center justify-center py-20">
-            <div className="w-32 h-32 lg:w-40 lg:h-40 bg-white/5 rounded-3xl flex items-center justify-center border border-white/10 shadow-2xl backdrop-blur-sm">
-              <Shield
-                className="w-16 h-16 lg:w-20 lg:h-20 text-white/90"
-                fill="currentColor"
-                strokeWidth={0}
-              />
+          {/* Currency Toggles */}
+          <div className="flex gap-3 mb-3">
+            <button
+              onClick={() => setCurrency("KHR")}
+              className={`flex-1 rounded-lg py-2.5 flex items-center justify-center gap-2 text-sm font-semibold transition-all ${
+                currency === "KHR"
+                  ? "bg-transparent border border-neutral-600 text-white"
+                  : "bg-[#1A1A1A] border border-transparent text-neutral-400 hover:bg-neutral-800"
+              }`}
+            >
+              🇰🇭 KHR
+            </button>
+            <button
+              onClick={() => setCurrency("USD")}
+              className={`flex-1 rounded-lg py-2.5 flex items-center justify-center gap-2 text-sm font-semibold transition-all ${
+                currency === "USD"
+                  ? "bg-transparent border border-neutral-600 text-white"
+                  : "bg-[#1A1A1A] border border-transparent text-neutral-400 hover:bg-neutral-800"
+              }`}
+            >
+              🇺🇸 USD
+            </button>
+          </div>
+          <p className="text-neutral-500 text-[13px] mb-10">
+            1 USD = 4,170.2287 KHR. Charges can vary based on exchange rates.
+          </p>
+
+          {/* Plan Details Card */}
+          <div className="border border-neutral-800 rounded-xl bg-black overflow-hidden mb-10">
+            <div className="p-5">
+              <div className="flex justify-between items-start">
+                <div className="flex items-start gap-4">
+                  <div>
+                    <h3 className="font-bold text-white text-[15px]">
+                      PsarPulse {planInfo.name}
+                    </h3>
+                    <p className="text-neutral-400 text-[13px] mt-1.5 leading-relaxed pr-4">
+                      PsarPulse {planInfo.name} unlocks unlimited tab
+                      completions, extended agent limits, and access to most
+                      features.
+                    </p>
+                    <p className="text-neutral-500 text-[13px] mt-3 font-medium">
+                      Billed {displayPeriod}ly
+                    </p>
+                  </div>
+                </div>
+                <span className="font-bold text-[15px] shrink-0 text-white" suppressHydrationWarning>
+                  {displayPrice}
+                </span>
+              </div>
+            </div>
+
+            {/* Annual Billing Toggle Footer */}
+            <div className="bg-[#111111] px-5 py-4 border-t border-neutral-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsAnnual(!isAnnual)}
+                  className={`w-9 h-5 rounded-full relative px-0.5 flex items-center transition-colors duration-200 ease-in-out ${
+                    isAnnual ? "bg-white" : "bg-neutral-600"
+                  }`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full transition-transform duration-200 ease-in-out ${
+                      isAnnual
+                        ? "bg-black translate-x-4"
+                        : "bg-white translate-x-0"
+                    }`}
+                  />
+                </button>
+                <div className="flex items-center gap-2">
+                  <span className="bg-[#B9FBC0] text-[#0A4D1C] text-xs font-bold px-2 py-0.5 rounded-sm">
+                    Save 20%
+                  </span>
+                  <span className="text-[13px] font-semibold text-white">
+                    with annual billing
+                  </span>
+                </div>
+              </div>
+              {/* Dynamic logic implemented */}
+              <span className="text-[13px] text-neutral-300 font-medium" suppressHydrationWarning>
+                {isAnnual ? discountText : "Switch to save 20%"}
+              </span>
+            </div>
+          </div>
+
+          {/* Totals Summary */}
+          <div className="space-y-4 px-1">
+            <div className="flex justify-between items-center text-[15px] font-bold text-white">
+              <span>Subtotal</span>
+              <span suppressHydrationWarning>{displayPrice}</span>
+            </div>
+            <div className="flex justify-between items-center text-[15px] text-neutral-400">
+              <div className="flex items-center gap-1.5">
+                <span>Tax</span>
+                <Info
+                  size={14}
+                  className="text-neutral-500 cursor-pointer hover:text-neutral-300"
+                />
+              </div>
+              <span className="text-neutral-500" suppressHydrationWarning>{currency === "USD" ? "$0.00" : "KHR 0.00"}</span>
+            </div>
+
+            <div className="flex justify-between items-center text-[15px] font-bold text-white pt-6 border-t border-neutral-800 mt-2">
+              <span>Total due today</span>
+              <span suppressHydrationWarning>{displayPrice}</span>
             </div>
           </div>
         </div>
@@ -471,7 +576,7 @@ export default function CheckoutPage() {
                     <p className="text-xs text-slate-500 font-medium mt-4 text-center px-4">
                       Open your {activeMethod.name} app to scan and pay.
                     </p>
-                    
+
                     {/* SIMULATION BUTTON FOR LOCAL DEVELOPMENT */}
                     {process.env.NODE_ENV === "development" && (
                       <button
@@ -483,7 +588,7 @@ export default function CheckoutPage() {
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({
                                 transactionId: transactionId,
-                                status: "SUCCESS"
+                                status: "SUCCESS",
                               }),
                             });
                           } catch (e) {

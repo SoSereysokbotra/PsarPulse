@@ -169,7 +169,7 @@ export default function PricingPage() {
 
   const visiblePlans = plans.filter((plan) => {
     if (currentPlan === "free") return true;
-    if (currentPlan === "pro") return plan.id !== "free";
+    if (currentPlan === "pro") return plan.id === "premium";
     return plan.id === "premium";
   });
 
@@ -234,7 +234,13 @@ export default function PricingPage() {
         </div>
 
         {/* Plan Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div 
+          className={`grid grid-cols-1 gap-6 mb-12 ${
+            visiblePlans.length === 1 
+              ? 'max-w-md mx-auto' 
+              : 'md:grid-cols-3'
+          }`}
+        >
           {visiblePlans.map((plan) => {
             const isCurrentPlan = currentPlan === plan.id;
             const Icon = plan.icon;

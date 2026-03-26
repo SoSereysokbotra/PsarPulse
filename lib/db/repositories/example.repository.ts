@@ -1,6 +1,6 @@
 import { eq, and, desc, lt, isNull } from "drizzle-orm";
 import { db } from "../index";
-import { users, refreshTokens, verificationCodes } from "../schema";
+import { users, refreshTokens, verificationCodes, oauthAccounts } from "../schema";
 import type {
   NewUser,
   User,
@@ -35,6 +35,36 @@ export class UserRepository {
   static async findByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
     return user;
+  }
+
+  /**
+   * Find user by OAuth provider and provider user ID
+   */
+  static async findByOAuthId(provider: string, providerUserId: string): Promise<User | undefined> {
+    const [user] = await db
+      .select({
+        id: users.id,
+        fullName: users.fullName,
+        email: users.email,
+        passwordHash: users.passwordHash,
+        role: users.role,
+        status: users.status,
+        isVerified: users.isVerified,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      })
+      .from(users)
+      .innerJoin(
+        oauthAccounts,
+        eq(users.id, oauthAccounts.userId)
+      )
+      .where(
+        and(
+          eq(oauthAccounts.provider, provider),
+          eq(oauthAccounts.providerUserId, providerUserId)
+        )
+      );
+    return user as User;
   }
 
   /**

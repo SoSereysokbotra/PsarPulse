@@ -5,7 +5,7 @@ export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   fullName: varchar("full_name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull().unique(),
-  passwordHash: varchar("password_hash", { length: 255 }).notNull(),
+  passwordHash: varchar("password_hash", { length: 255 }), // Made nullable for OAuth users
   role: varchar("role", { length: 50 }).$type<"vendor" | "admin" | "super_admin" | "customer">().default("customer").notNull(),
   status: varchar("status", { length: 50 }).$type<"active" | "pending" | "blocked" | "deleted">().default("pending").notNull(),
   isVerified: boolean("is_verified").default(false).notNull(),
@@ -36,10 +36,38 @@ export const verificationCodes = pgTable("verification_codes", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const oauthAccounts = pgTable("oauth_accounts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  provider: varchar("provider", { length: 50 }).notNull(), // 'google', 'facebook', 'tiktok'
+  providerUserId: varchar("provider_user_id", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const oauthStates = pgTable("oauth_states", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  state: varchar("state", { length: 255 }).unique().notNull(),
+  codeVerifier: varchar("code_verifier", { length: 255 }),
+  provider: varchar("provider", { length: 50 }).notNull(),
+  redirectUri: varchar("redirect_uri", { length: 255 }).notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   refreshTokens: many(refreshTokens),
   verificationCodes: many(verificationCodes),
+  oauthAccounts: many(oauthAccounts),
+}));
+
+export const oauthAccountsRelations = relations(oauthAccounts, ({ one }) => ({
+  user: one(users, {
+    fields: [oauthAccounts.userId],
+    references: [users.id],
+  }),
 }));
 
 export const refreshTokensRelations = relations(refreshTokens, ({ one }) => ({

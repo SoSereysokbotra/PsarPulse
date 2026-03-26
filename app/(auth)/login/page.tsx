@@ -205,7 +205,7 @@ function LoginPageContent() {
         {/* Google */}
         <button
           type="button"
-          onClick={() => console.log("Google login")}
+          onClick={() => window.location.href = "/api/auth/oauth/google"}
           disabled={isLoading}
           className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl transition-all disabled:opacity-50 ${
             isDark
@@ -241,7 +241,7 @@ function LoginPageContent() {
         {/* Facebook */}
         <button
           type="button"
-          onClick={() => console.log("Facebook login")}
+          onClick={() => window.location.href = "/api/auth/oauth/facebook"}
           disabled={isLoading}
           className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl transition-all disabled:opacity-50 ${
             isDark
@@ -262,7 +262,7 @@ function LoginPageContent() {
         {/* TikTok */}
         <button
           type="button"
-          onClick={() => console.log("TikTok login")}
+          onClick={() => window.location.href = "/api/auth/oauth/tiktok"}
           disabled={isLoading}
           className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl transition-all disabled:opacity-50 ${
             isDark

@@ -40,6 +40,23 @@ export const authConfig = {
     pass: process.env.EMAIL_PASS!,
     from: process.env.SMTP_FROM || '"PsarPulse Support" <noreply@psarpulse.com>',
   },
+  oauth: {
+    google: {
+      get clientId() { return process.env.GOOGLE_CLIENT_ID; },
+      get clientSecret() { return process.env.GOOGLE_CLIENT_SECRET; },
+      get redirectUri() { return process.env.GOOGLE_CALLBACK_URL; }
+    },
+    facebook: {
+      get clientId() { return process.env.FACEBOOK_CLIENT_ID; },
+      get clientSecret() { return process.env.FACEBOOK_CLIENT_SECRET; },
+      get redirectUri() { return process.env.FACEBOOK_CALLBACK_URL; }
+    },
+    tiktok: {
+      get clientKey() { return process.env.TIKTOK_CLIENT_KEY; },
+      get clientSecret() { return process.env.TIKTOK_CLIENT_SECRET; },
+      get redirectUri() { return process.env.TIKTOK_CALLBACK_URL; }
+    }
+  }
 };
 
 // Validate required environment variables

@@ -100,10 +100,10 @@ const EXP_BREAKDOWN = [
   { key: "other", label: "ផ្សេងៗ", labelEn: "Other", pct: 2, color: "#6366f1" },
 ];
 
-const GOAL = {
+const GOAL_DATA = {
   label: "Daily Revenue Goal",
   khmer: "គោលដៅចំណូលប្រចាំថ្ងៃ",
-  current: 124.5,
+  current: 0,
   target: 200,
 };
 
@@ -111,9 +111,14 @@ const GOAL = {
 export default function VendorDashboard() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
-  const { user, loading } = useUser();
+  const { user, vendor, loading } = useUser();
   const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
+  
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Initials
   const getInitials = (name: string) => {
@@ -125,8 +130,18 @@ export default function VendorDashboard() {
     return name.trim().slice(0, 2).toUpperCase();
   };
 
-  const displayName = user?.fullName || (isKhmer ? "អ្នកប្រើប្រាស់" : "User");
-  const displayInitials = getInitials(user?.fullName || "User");
+  const displayName = 
+    user?.fullName || 
+    (user as any)?.full_name || 
+    vendor?.businessName || 
+    (user?.email ? user.email.split('@')[0] : (loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : (isKhmer ? "អ្នកប្រើប្រាស់" : "User")));
+
+  const displayInitials = getInitials(
+    user?.fullName || 
+    (user as any)?.full_name || 
+    vendor?.businessName || 
+    (user?.email ? user.email.split('@')[0] : (isKhmer ? "អ្នកប្រើប្រាស់" : "User"))
+  );
 
   const [isDayLocked, setIsDayLocked] = useState(false);
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
@@ -137,13 +152,61 @@ export default function VendorDashboard() {
   const searchRef = useRef<HTMLInputElement>(null);
   const quickSaleRef = useRef<HTMLDivElement>(null);
 
+  const [stats, setStats] = useState({
+    sales: 0,
+    expenses: 0,
+    customers: 0,
+    transactions: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [salesRes, expRes, custRes] = await Promise.all([
+          fetch("/api/vendor/sales"),
+          fetch("/api/vendor/expenses"),
+          fetch("/api/vendor/customers")
+        ]);
+        const [salesData, expData, custData] = await Promise.all([
+          salesRes.json(),
+          expRes.json(),
+          custRes.json()
+        ]);
+
+        if (salesData.success && expData.success && custData.success) {
+          const totalSales = salesData.data.reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
+          const totalExp = expData.data.reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
+          setStats({
+            sales: totalSales,
+            expenses: totalExp,
+            customers: custData.data.length,
+            transactions: salesData.data.length
+          });
+        }
+      } catch (e) {
+        console.error("Dashboard fetch error:", e);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const hasData = stats.transactions > 0 || stats.expenses > 0 || stats.customers > 0;
+
   const summary = {
-    sales: "$124.50",
-    expenses: "$45.00",
-    profit: "$79.50",
-    customers: "42",
-    avgCustomer: "$2.96",
+    sales: `$${stats.sales.toFixed(2)}`,
+    expenses: `$${stats.expenses.toFixed(2)}`,
+    profit: `$${(stats.sales - stats.expenses).toFixed(2)}`,
+    customers: String(stats.customers),
+    avgCustomer: stats.transactions > 0 ? `$${(stats.sales / stats.transactions).toFixed(2)}` : "$0.00",
+    trends: {
+      sales: hasData ? "+0%" : "",
+      expenses: hasData ? "+0%" : "",
+      profit: hasData ? "+0%" : "",
+      customers: hasData ? "+0%" : ""
+    }
   };
+
+  const GOAL = hasData ? GOAL_DATA : { ...GOAL_DATA, current: 0 };
 
   const expenseCategories = [
     { label: "គ្រឿងផ្សំ", value: 38, color: "#3ecf8e" },
@@ -155,21 +218,34 @@ export default function VendorDashboard() {
     { label: "ផ្សេងៗ", value: 3, color: "#94a3b8" },
   ];
 
-  const usage = { used: 127, limit: 500 };
+  // Avoid hydration mismatch by leaving initialization neutral or using client-side boundary logic.
+  // Given hasData is statically false, the mismatch implies a dev transient reload. 
+  // Defining it as a simple state bypasses the warning.
+  const [usage] = useState(() => hasData ? { used: 127, limit: 500 } : { used: 0, limit: 500 });
   const usagePct = Math.min((usage.used / usage.limit) * 100, 100);
 
-  // Greeting
-  const now = new Date();
-  const hour = now.getHours();
-  const greeting =
-    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const greetingKh =
-    hour < 12 ? "អរុណសួស្តី" : hour < 17 ? "ទិវាសួស្តី" : "សាយ័ណ្ហសួស្តី";
-  const dateStr = now.toLocaleDateString("en-KH", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
+  // Hydration-safe greeting and date
+  const [greetingState, setGreetingState] = useState({ 
+    greeting: "", 
+    greetingKh: "", 
+    dateStr: "" 
   });
+
+  useEffect(() => {
+    if (!mounted) return;
+    const now = new Date();
+    const hour = now.getHours();
+    const g = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    const gKh = hour < 12 ? "អរុណសួស្តី" : hour < 17 ? "ទិវាសួស្តី" : "សាយ័ណ្ហសួស្តី";
+    const d = now.toLocaleDateString("en-KH", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+    setGreetingState({ greeting: g, greetingKh: gKh, dateStr: d });
+  }, [mounted, isKhmer]);
+
+  const { greeting, greetingKh, dateStr } = greetingState;
 
   // Goal ring
   const goalPct = Math.min((GOAL.current / GOAL.target) * 100, 100);
@@ -238,11 +314,37 @@ export default function VendorDashboard() {
   const cartTotal = cart.reduce((sum, i) => sum + i.product.price * i.qty, 0);
   const cartItems = cart.reduce((sum, i) => sum + i.qty, 0);
 
-  const completeSale = () => {
-    setCart([]);
-    setCustomers(1);
-    setSearchQuery("");
-    setQuickSaleOpen(false);
+  const completeSale = async () => {
+    if (!cart.length) return;
+    
+    try {
+      const itemsStr = cart.map(i => `${i.qty}x ${i.product.name}`).join(", ");
+      const res = await fetch("/api/vendor/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: cartTotal,
+          method: "Cash",
+          items: itemsStr,
+        }),
+      });
+
+      if (res.ok) {
+        // Optimistically update local stats or just refetch
+        setStats(prev => ({
+          ...prev,
+          sales: prev.sales + cartTotal,
+          transactions: prev.transactions + 1
+        }));
+        
+        setCart([]);
+        setCustomers(1);
+        setSearchQuery("");
+        setQuickSaleOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to complete quick sale:", error);
+    }
   };
   const closeQuickSale = useCallback(() => {
     setQuickSaleOpen(false);
@@ -286,6 +388,9 @@ export default function VendorDashboard() {
       ]}
       currentPath="/vendor"
       title="Overview"
+      userName={displayName}
+      userInitials={displayInitials}
+      userEmail={user?.email || ""}
       rightActions={
         <>
           {/* ─── QUICK SALE ─── */}
@@ -421,57 +526,68 @@ export default function VendorDashboard() {
                         Tap to add
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
-                        {PRODUCT_LIBRARY.map((p) => {
-                          const inCart = cart.find(
-                            (i) => i.product.id === p.id,
-                          );
-                          return (
-                            <button
-                              key={p.id}
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                addToCart(p);
-                              }}
-                              className={`px-3 py-[9px] rounded-[9px] text-left cursor-pointer transition-all duration-[120ms] relative border ${
-                                inCart
-                                  ? isDark
-                                    ? "bg-[#3ecf8e]/15 border-[#3ecf8e]/30"
-                                    : "bg-[rgba(62,207,142,0.12)] border-[#3ecf8e]"
-                                  : isDark
-                                    ? "bg-[#1a1a1a] border-white/5 hover:bg-[#222222]"
-                                    : "bg-[#f7f8fa] border-[#e8eaed] hover:bg-[#eff0f2]"
-                              }`}
-                            >
-                              <div
-                                className={`text-xs font-semibold truncate mb-0.5 ${
+                        {hasData ? (
+                          PRODUCT_LIBRARY.map((p) => {
+                            const inCart = cart.find(
+                              (i) => i.product.id === p.id,
+                            );
+                            return (
+                              <button
+                                key={p.id}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  addToCart(p);
+                                }}
+                                className={`px-3 py-[9px] rounded-[9px] text-left cursor-pointer transition-all duration-[120ms] relative border ${
                                   inCart
-                                    ? "text-[#3ecf8e]"
+                                    ? isDark
+                                      ? "bg-[#3ecf8e]/15 border-[#3ecf8e]/30"
+                                      : "bg-[rgba(62,207,142,0.12)] border-[#3ecf8e]"
                                     : isDark
-                                      ? "text-white"
-                                      : "text-[#111827]"
+                                      ? "bg-[#1a1a1a] border-white/5 hover:bg-[#222222]"
+                                      : "bg-[#f7f8fa] border-[#e8eaed] hover:bg-[#eff0f2]"
                                 }`}
                               >
-                                {p.name}
-                              </div>
-                              <div
-                                className={`text-[11px] font-bold ${
-                                  inCart
-                                    ? "text-[#3ecf8e]"
-                                    : isDark
-                                      ? "text-[#7d8590]"
-                                      : "text-[#6b7280]"
-                                }`}
-                              >
-                                ${p.price.toFixed(2)}
-                              </div>
-                              {inCart && (
-                                <span className="absolute top-1.5 right-2 bg-[#3ecf8e] text-[#0d1117] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
-                                  {inCart.qty}
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
+                                <div
+                                  className={`text-xs font-semibold truncate mb-0.5 ${
+                                    inCart
+                                      ? "text-[#3ecf8e]"
+                                      : isDark
+                                        ? "text-white"
+                                        : "text-[#111827]"
+                                  }`}
+                                >
+                                  {p.name}
+                                </div>
+                                <div
+                                  className={`text-[11px] font-bold ${
+                                    inCart
+                                      ? "text-[#3ecf8e]"
+                                      : isDark
+                                        ? "text-[#7d8590]"
+                                        : "text-[#6b7280]"
+                                  }`}
+                                >
+                                  ${p.price.toFixed(2)}
+                                </div>
+                                {inCart && (
+                                  <span className="absolute top-1.5 right-2 bg-[#3ecf8e] text-[#0d1117] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
+                                    {inCart.qty}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <div className={`col-span-2 py-8 flex flex-col items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}>
+                            <span className={`text-[13px] font-bold ${isDark ? "text-white/40" : "text-slate-400"}`}>
+                              No data. Add item
+                            </span>
+                            <span className="text-[10px] text-slate-300 mt-1">
+                              Add products to your inventory first
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -658,11 +774,11 @@ export default function VendorDashboard() {
               </div>
               <div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[18px] font-extrabold text-[#e6edf3]">
+                  <span className="text-[18px] font-extrabold text-[#e6edf3]" suppressHydrationWarning>
                     {greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName} 👋
                   </span>
                 </div>
-                <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2">
+                <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2" suppressHydrationWarning>
                   <span>{greetingKh}</span>
                   <span className="w-[3px] h-[3px] rounded-full bg-[#4d5562] inline-block" />
                   <Clock size={10} className="inline-block" />
@@ -746,7 +862,7 @@ export default function VendorDashboard() {
                 <div
                   className={`text-[11px] mt-px ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
                 >
-                  {t("dashboard.customers.subtitle")}
+                  {t("dashboard.customerSection.subtitle")}
                 </div>
               </div>
               <span
@@ -793,7 +909,7 @@ export default function VendorDashboard() {
               khmerTitle="ការលក់សរុប"
               value={summary.sales}
               icon={CircleDollarSign}
-              trend="+12%"
+              trend={summary.trends.sales}
               isPositive
               variant={isDark ? "dark" : "light"}
             />
@@ -802,7 +918,7 @@ export default function VendorDashboard() {
               khmerTitle="ចំណាយសរុប"
               value={summary.expenses}
               icon={Receipt}
-              trend="-5%"
+              trend={summary.trends.expenses}
               isPositive={false}
               variant={isDark ? "dark" : "light"}
             />
@@ -811,15 +927,16 @@ export default function VendorDashboard() {
               khmerTitle="ប្រាក់ចំណេញ"
               value={summary.profit}
               icon={TrendingUp}
-              trend="+17%"
+              trend={summary.trends.profit}
               isPositive
               highlight
             />
             <VendorSummaryCard
               title={t("Customers")}
-              khmerTitle={t("customers.title")}
+              khmerTitle="អតិថិជន"
               value={summary.customers}
               icon={Users}
+              trend={summary.trends.customers}
               subtext={`Avg ${summary.avgCustomer}`}
               variant={isDark ? "dark" : "light"}
             />
@@ -841,32 +958,40 @@ export default function VendorDashboard() {
                 ចំណូលប្រចាំខែ
               </p>
               <div className="h-40 flex items-end gap-2">
-                {monthlyData.map((val, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 flex flex-col items-center gap-1"
-                  >
-                    <span
-                      className={`text-[11px] font-bold ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
-                    >
-                      ${val}
-                    </span>
+                {hasData ? (
+                  monthlyData.map((val, i) => (
                     <div
-                      className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
-                      style={{ height: "100px" }}
+                      key={i}
+                      className="flex-1 flex flex-col items-center gap-1"
                     >
+                      <span
+                        className={`text-[11px] font-bold ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                      >
+                        ${val}
+                      </span>
                       <div
-                        className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
-                        style={{ height: `${(val / 800) * 100}%` }}
-                      />
+                        className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
+                        style={{ height: "100px" }}
+                      >
+                        <div
+                          className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
+                          style={{ height: `${(val / 800) * 100}%` }}
+                        />
+                      </div>
+                      <span
+                        className={`text-[10px] ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                      >
+                        {monthlyLabels[i]}
+                      </span>
                     </div>
-                    <span
-                      className={`text-[10px] ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
-                    >
-                      {monthlyLabels[i]}
+                  ))
+                ) : (
+                  <div className={`w-full h-full flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}>
+                    <span className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                      No data. Add item
                     </span>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
@@ -885,27 +1010,35 @@ export default function VendorDashboard() {
                 ចំណូលប្រចាំសប្តាហ៍
               </p>
               <div className="h-40 flex items-end gap-1.5">
-                {weeklyData.map((height, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 flex flex-col items-center gap-1"
-                  >
+                {hasData ? (
+                  weeklyData.map((height, i) => (
                     <div
-                      className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
-                      style={{ height: "120px" }}
+                      key={i}
+                      className="flex-1 flex flex-col items-center gap-1"
                     >
                       <div
-                        className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
-                        style={{ height: `${height}%` }}
-                      />
+                        className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
+                        style={{ height: "120px" }}
+                      >
+                        <div
+                          className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
+                          style={{ height: `${height}%` }}
+                        />
+                      </div>
+                      <span
+                        className={`text-[10px] ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                      >
+                        {weeklyLabels[i]}
+                      </span>
                     </div>
-                    <span
-                      className={`text-[10px] ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
-                    >
-                      {weeklyLabels[i]}
+                  ))
+                ) : (
+                  <div className={`w-full h-full flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}>
+                    <span className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                      No data. Add item
                     </span>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
@@ -932,36 +1065,44 @@ export default function VendorDashboard() {
                 ការចំណាយ
               </p>
               <div className="space-y-3">
-                {expenseCategories.map((item, i) => (
-                  <div key={i}>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-medium text-[#111827]">
-                          {item.label}
-                        </span>
-                        {(item as any).custom && (
-                          <span className="text-[9px] font-bold text-[#29B28D] bg-[rgba(41,178,141,0.1)] px-1.5 py-0.5 rounded border border-[rgba(41,178,141,0.2)]">
-                            CUSTOM
+                {hasData ? (
+                  expenseCategories.map((item, i) => (
+                    <div key={i}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[13px] font-medium text-[#111827]">
+                            {item.label}
                           </span>
-                        )}
+                          {(item as any).custom && (
+                            <span className="text-[9px] font-bold text-[#29B28D] bg-[rgba(41,178,141,0.1)] px-1.5 py-0.5 rounded border border-[rgba(41,178,141,0.2)]">
+                              CUSTOM
+                            </span>
+                          )}
+                        </div>
+                        <span
+                          className={`text-[13px] font-bold ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                        >
+                          {item.value}%
+                        </span>
                       </div>
-                      <span
-                        className={`text-[13px] font-bold ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
-                      >
-                        {item.value}%
-                      </span>
+                      <div className="w-full h-2.5 bg-[#f0f2f5] rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${item.value}%`,
+                            backgroundColor: item.color,
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full h-2.5 bg-[#f0f2f5] rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${item.value}%`,
-                          backgroundColor: item.color,
-                        }}
-                      />
-                    </div>
+                  ))
+                ) : (
+                  <div className={`w-full py-8 flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}>
+                    <span className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                      No data. Add item
+                    </span>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -980,12 +1121,12 @@ export default function VendorDashboard() {
                 <div
                   className={`text-sm font-semibold ${isDark ? "text-white" : "text-[#111827]"}`}
                 >
-                  {t("dashboard.metrics.totalExpenses")}
+                  {t("dashboard.metrics.breakdown")}
                 </div>
                 <div
                   className={`text-[11px] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
                 >
-                  {t("dashboard.customers.subtitle")}
+                  {isKhmer ? "ការបែងចែកចំណាយ" : "Expense Details"}
                 </div>
               </div>
               {expLogged && (
@@ -997,31 +1138,39 @@ export default function VendorDashboard() {
 
             {/* Horizontal bar chart rows */}
             <div className="flex flex-col gap-[16px] mb-[24px]">
-              {EXP_BREAKDOWN.map((item) => (
-                <div key={item.key} className="flex items-center gap-4">
-                  {/* Khmer label */}
-                  <div className="w-[90px] shrink-0">
-                    <div
-                      className={`text-[12.5px] font-medium leading-tight ${
-                        isDark ? "text-white" : "text-[#111827]"
-                      }`}
-                    >
-                      {item.label}
+              {hasData ? (
+                EXP_BREAKDOWN.map((item) => (
+                  <div key={item.key} className="flex items-center gap-4">
+                    {/* Khmer label */}
+                    <div className="w-[90px] shrink-0">
+                      <div
+                        className={`text-[12.5px] font-medium leading-tight ${
+                          isDark ? "text-white" : "text-[#111827]"
+                        }`}
+                      >
+                        {item.label}
+                      </div>
+                    </div>
+                    {/* Track */}
+                    <div className="flex-1 h-[6px] bg-[#f0f2f5] rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-[width] duration-700 ease-out"
+                        style={{ width: `${item.pct}%`, background: item.color }}
+                      />
+                    </div>
+                    {/* Percent */}
+                    <div className="w-[36px] text-right text-[12.5px] font-bold text-[#6b7280] shrink-0">
+                      {item.pct}%
                     </div>
                   </div>
-                  {/* Track */}
-                  <div className="flex-1 h-[6px] bg-[#f0f2f5] rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-[width] duration-700 ease-out"
-                      style={{ width: `${item.pct}%`, background: item.color }}
-                    />
-                  </div>
-                  {/* Percent */}
-                  <div className="w-[36px] text-right text-[12.5px] font-bold text-[#6b7280] shrink-0">
-                    {item.pct}%
-                  </div>
+                ))
+              ) : (
+                <div className={`w-full py-10 flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}>
+                  <span className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                    No data. Add item
+                  </span>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -1089,7 +1238,26 @@ export default function VendorDashboard() {
 
               {!isDayLocked ? (
                 <button
-                  onClick={() => setIsDayLocked(true)}
+                  onClick={async () => {
+                    try {
+                      const res = await fetch("/api/vendor/reports", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          date: new Date().toISOString(),
+                          totalSales: stats.sales,
+                          totalExpenses: stats.expenses,
+                          netProfit: stats.sales - stats.expenses,
+                          isLocked: true
+                        }),
+                      });
+                      if (res.ok) {
+                        setIsDayLocked(true);
+                      }
+                    } catch (e) {
+                      console.error("Failed to lock day:", e);
+                    }
+                  }}
                   className="w-full flex items-center justify-center gap-[9px] bg-[#3ecf8e] text-[#0d1117] font-bold text-[15px] py-4 rounded-[11px] border-0 cursor-pointer transition-all duration-200 shadow-[0_4px_22px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a]"
                 >
                   <Lock size={16} />

@@ -88,6 +88,8 @@ export default function VendorDashboardLayout({
           setIsSidebarCollapsed={setIsSidebarCollapsed}
           setIsMobileSidebarOpen={setIsSidebarOpen}
           rightActions={rightActions}
+          userName={userName}
+          userInitials={userInitials}
         />
 
         {/* ── Page Content ── */}

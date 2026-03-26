@@ -15,6 +15,13 @@
       "when": 1774186273282,
       "tag": "0001_sticky_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774490639361,
+      "tag": "0002_init_vendor_tables",
+      "breakpoints": true
     }
   ]
 }

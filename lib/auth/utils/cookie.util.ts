@@ -37,8 +37,8 @@ export class CookieUtil {
   }
 
   static async setAccessTokenCookie(token: string) {
-    // Access token expires in 15 minutes (matching JWT expiry)
-    const expiresIn = 15 * 60 * 1000; // 15 minutes
+    // Access token matches JWT expansion
+    const expiresIn = 24 * 60 * 60 * 1000; // 24 hours
     const expires = new Date(Date.now() + expiresIn);
     await this.setCookie(authConfig.cookies.accessToken, token, expires);
   }

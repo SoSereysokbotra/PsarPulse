@@ -11,6 +11,8 @@ interface VendorTopbarProps {
   setIsMobileSidebarOpen: (o: boolean) => void;
   planBadge?: { label: string; icon: React.ElementType };
   rightActions?: React.ReactNode;
+  userName?: string;
+  userInitials?: string;
 }
 
 export default function VendorTopbar({
@@ -20,6 +22,8 @@ export default function VendorTopbar({
   setIsMobileSidebarOpen,
   planBadge,
   rightActions,
+  userName,
+  userInitials,
 }: VendorTopbarProps) {
   const { theme, setTheme } = useTheme();
 
@@ -53,17 +57,33 @@ export default function VendorTopbar({
         )}
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
-        <button 
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="p-2 rounded-lg transition-colors border-0 bg-transparent cursor-pointer text-[#6b7280] hover:text-[#111827] hover:bg-[#f7f8fa] dark:text-[#7d8590] dark:hover:text-white dark:hover:bg-white/5"
-        >
-          <Sun className="w-5 h-5 hidden dark:block" />
-          <Moon className="w-5 h-5 block dark:hidden" />
-        </button>
-        <button className="relative p-2 transition-colors border-0 bg-transparent cursor-pointer text-[#6b7280] hover:text-[#111827] dark:text-[#7d8590] dark:hover:text-white">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-[#0d1117]" />
+      <div className="ml-auto flex items-center gap-3">
+        {/* rightActions (Quick Sale button etc) */}
+        {rightActions && (
+          <div className="flex items-center gap-3">
+            {rightActions}
+          </div>
+        )}
+
+        <div className="hidden sm:flex items-center gap-2 pr-2 border-r border-[#e8eaed] dark:border-white/10 mr-1">
+          <button 
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="p-2 rounded-lg transition-colors border-0 bg-transparent cursor-pointer text-[#6b7280] hover:text-[#111827] hover:bg-[#f7f8fa] dark:text-[#7d8590] dark:hover:text-white dark:hover:bg-white/5"
+          >
+            <Sun className="w-5 h-5 hidden dark:block" />
+            <Moon className="w-5 h-5 block dark:hidden" />
+          </button>
+          <button className="relative p-2 transition-colors border-0 bg-transparent cursor-pointer text-[#6b7280] hover:text-[#111827] dark:text-[#7d8590] dark:hover:text-white">
+            <Bell className="w-5 h-5" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-[#0d1117]" />
+          </button>
+        </div>
+
+        {/* Profile Icon */}
+        <button className="w-9 h-9 rounded-full bg-[#f7f8fa] dark:bg-white/5 border border-[#e8eaed] dark:border-white/10 flex items-center justify-center cursor-pointer transition-colors hover:border-[#3ecf8e]">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
+            {userInitials || "U"}
+          </div>
         </button>
       </div>
     </header>

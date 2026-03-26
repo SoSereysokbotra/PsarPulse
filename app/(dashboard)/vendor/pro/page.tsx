@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   LayoutDashboard,
@@ -53,11 +53,11 @@ const PRODUCT_LIBRARY: Product[] = [
   { id: "6", name: "Mango Sticky Rice", price: 2.0 },
 ];
 
-const GOAL = {
+const GOAL_DATA = {
   label: "Daily Revenue Goal",
   khmer: "គោលដៅចំណូលប្រចាំថ្ងៃ",
-  current: 324.5,
-  target: 500,
+  current: 0,
+  target: 200,
 };
 
 const PRO_NAV = [
@@ -102,12 +102,19 @@ const PRO_NAV = [
 
 export default function ProDashboard() {
   const { language } = useLanguage();
-  const { user, loading } = useUser();
+  const { user, vendor, loading } = useUser();
   const isKhmer = language === "km";
+  
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const [isDayLocked, setIsDayLocked] = useState(false);
   const [showCustomCategoryModal, setShowCustomCategoryModal] = useState(false);
   const [customCategoryName, setCustomCategoryName] = useState("");
+  
+  const hasData = false; // Empty state for new user
 
   // Initials logic
   const getInitials = (name: string) => {
@@ -119,8 +126,18 @@ export default function ProDashboard() {
     return name.trim().slice(0, 2).toUpperCase();
   };
 
-  const displayName = user?.fullName || (loading ? "..." : (isKhmer ? "អ្នកប្រើប្រាស់" : "User"));
-  const displayInitials = user?.fullName ? getInitials(user.fullName) : (loading ? ".." : "ERR");
+  const displayName = 
+    user?.fullName || 
+    (user as any)?.full_name || 
+    vendor?.businessName || 
+    (user?.email ? user.email.split('@')[0] : (loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : (isKhmer ? "អ្នកប្រើប្រាស់" : "User")));
+
+  const displayInitials = getInitials(
+    user?.fullName || 
+    (user as any)?.full_name || 
+    vendor?.businessName || 
+    (user?.email ? user.email.split('@')[0] : (isKhmer ? "អ្នកប្រើប្រាស់" : "User"))
+  );
 
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -130,26 +147,37 @@ export default function ProDashboard() {
   const searchRef = React.useRef<HTMLInputElement>(null);
   const quickSaleRef = React.useRef<HTMLDivElement>(null);
 
-  // Greeting
-  const now = new Date();
-  const hour = now.getHours();
-  const greeting =
-    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-  const greetingKh =
-    hour < 12 ? "អរុណសួស្តី" : hour < 17 ? "ទិវាសួស្តី" : "សាយ័ណ្ហសួស្តី";
-  const dateStr = now.toLocaleDateString("en-KH", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
+  // Hydration-safe greeting and date
+  const [greetingState, setGreetingState] = useState({ 
+    greeting: "", 
+    greetingKh: "", 
+    dateStr: "" 
   });
 
+  useEffect(() => {
+    if (!mounted) return;
+    const now = new Date();
+    const hour = now.getHours();
+    const g = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    const gKh = hour < 12 ? "អរុណសួស្តី" : hour < 17 ? "ទិវាសួស្តី" : "សាយ័ណ្ហសួស្តី";
+    const d = now.toLocaleDateString("en-KH", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+    setGreetingState({ greeting: g, greetingKh: gKh, dateStr: d });
+  }, [mounted, isKhmer]);
+
+  const { greeting, greetingKh, dateStr } = greetingState;
+
   // Goal ring
+  const GOAL = hasData ? GOAL_DATA : { ...GOAL_DATA, current: 0 };
   const goalPct = Math.min((GOAL.current / GOAL.target) * 100, 100);
   const radius = 38;
   const circum = 2 * Math.PI * radius;
   const strokeDash = (goalPct / 100) * circum;
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (quickSaleOpen) setTimeout(() => searchRef.current?.focus(), 120);
   }, [quickSaleOpen]);
 
@@ -218,7 +246,9 @@ export default function ProDashboard() {
     setTimeout(() => setExpLogged(false), 2200);
   };
 
-  const summaryData = {
+
+
+  const summaryData = hasData ? {
     sales: "$324.50",
     expenses: "$95.00",
     profit: "$229.50",
@@ -226,7 +256,29 @@ export default function ProDashboard() {
     avgCustomer: "$4.16",
     bestSelling: "Iced Coffee",
     profitMargin: "70.7%",
+    trends: {
+      sales: "+22%",
+      profit: "+28%",
+      expenses: "-5%",
+      customers: "+15%"
+    }
+  } : {
+    sales: "$0.00",
+    expenses: "$0.00",
+    profit: "$0.00",
+    customers: "0",
+    avgCustomer: "$0.00",
+    bestSelling: "-",
+    profitMargin: "0%",
+    trends: {
+      sales: "",
+      profit: "",
+      expenses: "",
+      customers: ""
+    }
   };
+
+
 
   const weeklyData = [55, 82, 48, 95, 72, 130, 92];
   const weeklyLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -318,6 +370,9 @@ export default function ProDashboard() {
       currentPath="/vendor/pro"
       settingsHref="/vendor/pro/settings"
       title="Pro Dashboard"
+      userName={displayName}
+      userInitials={displayInitials}
+      userEmail={user?.email || ""}
       planBadge={{ label: "PRO", icon: Crown }}
       rightActions={
         <>
@@ -409,41 +464,52 @@ export default function ProDashboard() {
                         Tap to add
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
-                        {PRODUCT_LIBRARY.map((p) => {
-                          const inCart = cart.find(
-                            (i) => i.product.id === p.id,
-                          );
-                          return (
-                            <button
-                              key={p.id}
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                addToCart(p);
-                              }}
-                              className={`px-3 py-[9px] rounded-[9px] text-left cursor-pointer transition-all duration-[120ms] relative border ${
-                                inCart
-                                  ? "bg-[rgba(41,178,141,0.12)] border-[#29B28D]"
-                                  : "bg-[#f7f8fa] dark:bg-[#0d1117] border-[#e8eaed] dark:border-white/5 hover:bg-[#eff0f2]"
-                              }`}
-                            >
-                              <div
-                                className={`text-xs font-semibold truncate mb-0.5 ${inCart ? "text-[#29B28D]" : "text-[#111827] dark:text-white"}`}
+                        {hasData ? (
+                          PRODUCT_LIBRARY.map((p) => {
+                            const inCart = cart.find(
+                              (i) => i.product.id === p.id,
+                            );
+                            return (
+                              <button
+                                key={p.id}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  addToCart(p);
+                                }}
+                                className={`px-3 py-[9px] rounded-[9px] text-left cursor-pointer transition-all duration-[120ms] relative border ${
+                                  inCart
+                                    ? "bg-[rgba(41,178,141,0.12)] border-[#29B28D]"
+                                    : "bg-[#f7f8fa] dark:bg-[#0d1117] border-[#e8eaed] dark:border-white/5 hover:bg-[#eff0f2]"
+                                }`}
                               >
-                                {p.name}
-                              </div>
-                              <div
-                                className={`text-[11px] font-bold ${inCart ? "text-[#29B28D]" : "text-[#6b7280] dark:text-[#7d8590]"}`}
-                              >
-                                ${p.price.toFixed(2)}
-                              </div>
-                              {inCart && (
-                                <span className="absolute top-1.5 right-2 bg-[#29B28D] text-[#0E1319] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
-                                  {inCart.qty}
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
+                                <div
+                                  className={`text-xs font-semibold truncate mb-0.5 ${inCart ? "text-[#29B28D]" : "text-[#111827] dark:text-white"}`}
+                                >
+                                  {p.name}
+                                </div>
+                                <div
+                                  className={`text-[11px] font-bold ${inCart ? "text-[#29B28D]" : "text-[#6b7280] dark:text-[#7d8590]"}`}
+                                >
+                                  ${p.price.toFixed(2)}
+                                </div>
+                                {inCart && (
+                                  <span className="absolute top-1.5 right-2 bg-[#29B28D] text-[#0E1319] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
+                                    {inCart.qty}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <div className="col-span-2 py-8 flex flex-col items-center justify-center rounded-lg border border-dashed border-white/10">
+                            <span className="text-[13px] font-bold text-white/40">
+                              No data. Add item
+                            </span>
+                            <span className="text-[10px] text-[#7d8590] mt-1 text-center">
+                              Add products to your inventory first
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -566,16 +632,16 @@ export default function ProDashboard() {
             </div>
             <div>
               <div className="flex items-baseline gap-2">
-                <span className="text-[18px] font-extrabold text-[#e6edf3]">
-                  {greeting}, {displayName} 👋
-                </span>
+                  <span className="text-[18px] font-extrabold text-[#e6edf3]" suppressHydrationWarning>
+                    {greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName} 👋
+                  </span>
               </div>
-              <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2">
-                <span>{greetingKh}</span>
-                <span className="w-[3px] h-[3px] rounded-full bg-[#4d5562] inline-block" />
-                <Clock size={10} className="inline-block" />
-                <span>{dateStr}</span>
-              </div>
+                <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2" suppressHydrationWarning>
+                  <span>{greetingKh}</span>
+                  <span className="w-[3px] h-[3px] rounded-full bg-[#4d5562] inline-block" />
+                  <Clock size={10} className="inline-block" />
+                  <span>{dateStr}</span>
+                </div>
             </div>
           </div>
 
@@ -648,7 +714,7 @@ export default function ProDashboard() {
             khmerTitle="ការលក់សរុប"
             value={summaryData.sales}
             icon={CircleDollarSign}
-            trend="+12%"
+            trend={summaryData.trends.sales}
             isPositive
           />
           <VendorSummaryCard
@@ -656,7 +722,7 @@ export default function ProDashboard() {
             khmerTitle="ចំណាយសរុប"
             value={summaryData.expenses}
             icon={Receipt}
-            trend="-5%"
+            trend={summaryData.trends.expenses}
             isPositive={false}
           />
           <VendorSummaryCard
@@ -664,15 +730,16 @@ export default function ProDashboard() {
             khmerTitle="ប្រាក់ចំណេញ"
             value={summaryData.profit}
             icon={TrendingUp}
-            trend="+17%"
-            isPositive
+            trend={summaryData.trends.profit}
             highlight
+            isPositive
           />
           <VendorSummaryCard
             title="Customers"
             khmerTitle="អតិថិជនសរុប"
             value={summaryData.customers}
             icon={Users}
+            trend={summaryData.trends.customers}
             subtext={`Avg ${summaryData.avgCustomer}`}
           />
         </div>
@@ -688,25 +755,31 @@ export default function ProDashboard() {
               ចំណូលប្រចាំសប្តាហ៍
             </p>
             <div className="h-40 flex items-end gap-1.5">
-              {weeklyData.map((height, i) => (
-                <div
-                  key={i}
-                  className="flex-1 flex flex-col items-center gap-1"
-                >
+              {hasData ? (
+                weeklyData.map((height, i) => (
                   <div
-                    className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
-                    style={{ height: "120px" }}
+                    key={i}
+                    className="flex-1 flex flex-col items-center gap-1"
                   >
                     <div
-                      className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
-                      style={{ height: `${height}%` }}
-                    />
+                      className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
+                      style={{ height: "120px" }}
+                    >
+                      <div
+                        className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
+                        style={{ height: `${height}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
+                      {weeklyLabels[i]}
+                    </span>
                   </div>
-                  <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
-                    {weeklyLabels[i]}
-                  </span>
+                ))
+              ) : (
+                <div className="w-full h-full flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10">
+                  <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">No data. Add item</span>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -717,28 +790,34 @@ export default function ProDashboard() {
             </h3>
             <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-5">ចំណូលប្រចាំខែ</p>
             <div className="h-40 flex items-end gap-2">
-              {monthlyData.map((val, i) => (
-                <div
-                  key={i}
-                  className="flex-1 flex flex-col items-center gap-1"
-                >
-                  <span className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590]">
-                    ${val}
-                  </span>
+              {hasData ? (
+                monthlyData.map((val, i) => (
                   <div
-                    className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
-                    style={{ height: "100px" }}
+                    key={i}
+                    className="flex-1 flex flex-col items-center gap-1"
                   >
+                    <span className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590]">
+                      ${val}
+                    </span>
                     <div
-                      className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
-                      style={{ height: `${(val / 800) * 100}%` }}
-                    />
+                      className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
+                      style={{ height: "100px" }}
+                    >
+                      <div
+                        className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
+                        style={{ height: `${(val / 800) * 100}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
+                      {monthlyLabels[i]}
+                    </span>
                   </div>
-                  <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
-                    {monthlyLabels[i]}
-                  </span>
+                ))
+              ) : (
+                <div className="w-full h-full flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10">
+                  <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">No data. Add item</span>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -756,34 +835,40 @@ export default function ProDashboard() {
             </div>
             <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-4">ការចំណាយ</p>
             <div className="space-y-3">
-              {expenseCategories.map((item, i) => (
-                <div key={i}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[13px] font-medium text-[#111827] dark:text-white">
-                        {item.label}
-                      </span>
-                      {(item as any).custom && (
-                        <span className="text-[9px] font-bold text-[#29B28D] bg-[rgba(41,178,141,0.1)] px-1.5 py-0.5 rounded border border-[rgba(41,178,141,0.2)]">
-                          CUSTOM
+              {hasData ? (
+                expenseCategories.map((item, i) => (
+                  <div key={i}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-medium text-[#111827] dark:text-white">
+                          {item.label}
                         </span>
-                      )}
+                        {(item as any).custom && (
+                          <span className="text-[9px] font-bold text-[#29B28D] bg-[rgba(41,178,141,0.1)] px-1.5 py-0.5 rounded border border-[rgba(41,178,141,0.2)]">
+                            CUSTOM
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[13px] font-bold text-[#6b7280] dark:text-[#7d8590]">
+                        {item.value}%
+                      </span>
                     </div>
-                    <span className="text-[13px] font-bold text-[#6b7280] dark:text-[#7d8590]">
-                      {item.value}%
-                    </span>
+                    <div className="w-full h-2.5 bg-[#f0f2f5] rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${item.value}%`,
+                          backgroundColor: item.color,
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full h-2.5 bg-[#f0f2f5] rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${item.value}%`,
-                        backgroundColor: item.color,
-                      }}
-                    />
-                  </div>
+                ))
+              ) : (
+                <div className="w-full py-6 flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10">
+                  <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">No data. Add item</span>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -804,44 +889,50 @@ export default function ProDashboard() {
             </span>
           </div>
           <div className="p-5 space-y-4">
-            {bestSellingProducts.map((item, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <span className="w-7 h-7 rounded-full bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[12px] font-bold flex items-center justify-center shrink-0">
-                  {i + 1}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div>
-                      <span className="text-[14px] font-semibold text-[#111827] dark:text-white">
-                        {item.name}
-                      </span>
-                      <span className="text-[11px] text-[#6b7280] dark:text-[#7d8590] ml-2">
-                        {item.khmer}
-                      </span>
+            {hasData ? (
+              bestSellingProducts.map((item, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <span className="w-7 h-7 rounded-full bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[12px] font-bold flex items-center justify-center shrink-0">
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div>
+                        <span className="text-[14px] font-semibold text-[#111827] dark:text-white">
+                          {item.name}
+                        </span>
+                        <span className="text-[11px] text-[#6b7280] dark:text-[#7d8590] ml-2">
+                          {item.khmer}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[14px] font-bold text-[#29B28D]">
+                          {item.revenue}
+                        </span>
+                        <span className="text-[12px] text-[#6b7280] dark:text-[#7d8590] ml-2">
+                          ({item.qty} sold)
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-[14px] font-bold text-[#29B28D]">
-                        {item.revenue}
-                      </span>
-                      <span className="text-[12px] text-[#6b7280] dark:text-[#7d8590] ml-2">
-                        ({item.qty} sold)
-                      </span>
+                    <div className="w-full h-2 bg-[#f0f2f5] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#29B28D] rounded-full transition-all duration-700"
+                        style={{ width: `${item.pct}%` }}
+                      />
                     </div>
-                  </div>
-                  <div className="w-full h-2 bg-[#f0f2f5] rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#29B28D] rounded-full transition-all duration-700"
-                      style={{ width: `${item.pct}%` }}
-                    />
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="w-full py-8 flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10 text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">
+                No data. Add item
               </div>
-            ))}
+            )}
           </div>
         </div>
 
         {/* Low Stock Alerts */}
-        {inventoryItems.filter((i) => i.status !== "good").length > 0 && (
+        {hasData && inventoryItems.filter((i) => i.status !== "good").length > 0 && (
           <div className="bg-orange-50 border border-orange-200 rounded-[14px] p-5">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-5 h-5 text-orange-500" />
@@ -931,10 +1022,16 @@ export default function ProDashboard() {
                 </span>
               </div>
               <p className="text-[14px] text-[#111827] dark:text-white leading-relaxed">
-                📊 <strong>Great day!</strong> Revenue increased by 18% vs.
-                yesterday. Iced Coffee continues to dominate with 52 units sold.
-                Your profit margin improved to 70.7%. Consider restocking Hot
-                Latte — current stock is critically low at 8 units.
+                {hasData ? (
+                  <>
+                    📊 <strong>Great day!</strong> Revenue increased by 18% vs.
+                    yesterday. Iced Coffee continues to dominate with 52 units sold.
+                    Your profit margin improved to 70.7%. Consider restocking Hot
+                    Latte — current stock is critically low at 8 units.
+                  </>
+                ) : (
+                  <>Not enough data yet. Start making sales to generate your AI daily summary.</>
+                )}
               </p>
             </div>
 

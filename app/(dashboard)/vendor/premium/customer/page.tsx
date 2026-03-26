@@ -185,19 +185,9 @@ export default function CustomersPage() {
                 Tracker and Log your daily foot traffic
               </p>
             </div>
-            <div className="relative">
-              <Search
-                className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? "text-[#7d8590]" : "text-slate-400"}`}
-              />
-              <input
-                type="text"
-                placeholder="Search Class..."
-                className={`pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-[#29B28D] focus:ring-1 focus:ring-[#29B28D] w-56 transition-colors ${
-                  isDark
-                    ? "bg-[#0d1117] border border-white/5 text-white"
-                    : "bg-white border border-slate-200 text-slate-900"
-                }`}
-              />
+            <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#0d1117] transition-all w-56 focus-within:border-[#29B28D] focus-within:ring-1 focus-within:ring-[#29B28D] group">
+              <Search className="w-4 h-4 text-slate-400 dark:text-[#7d8590] transition-colors group-focus-within:text-[#29B28D]" />
+              <input type="text" placeholder="Search Class..." className="bg-transparent border-none outline-none text-sm w-full placeholder:text-slate-400 dark:text-white" />
             </div>
           </div>
 

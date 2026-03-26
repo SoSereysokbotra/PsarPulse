@@ -31,10 +31,56 @@
   },
   "dashboard": {
     "title": "Dashboard",
+    "welcome": "Welcome back",
     "overview": "Overview",
     "sales": "Sales",
     "expenses": "Expenses",
-    "customers": "Customers"
+    "customers": "Customers",
+    "metrics": {
+      "revenue": "Total Revenue",
+      "sales": "Total Sales",
+      "customers": "Total Customers",
+      "totalSales": "Total Sales",
+      "totalExpenses": "Total Expenses",
+      "netProfit": "Net Profit",
+      "avgCustomer": "Avg. per Customer",
+      "revenueGoal": "Revenue Goal",
+      "dailyGoal": "Daily Goal",
+      "weeklyRevenue": "Weekly Revenue",
+      "monthlyRevenue": "Monthly Revenue",
+      "breakdown": "Expense Breakdown"
+    },
+    "actions": {
+      "quickSale": "Quick Sale",
+      "addSale": "Add Sale",
+      "addExpense": "Add Expense",
+      "cancel": "Cancel",
+      "complete": "Complete",
+      "save": "Save"
+    },
+    "customerSection": {
+      "title": "My Customers",
+      "subtitle": "Track and log daily customer counts",
+      "newLog": "Log Customers",
+      "history": "Expense History"
+    },
+    "common": {
+      "search": "Search...",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "viewAll": "View All"
+    },
+    "placeholders": {
+      "searchProduct": "Search products...",
+      "searchTxn": "Search transactions...",
+      "searchExp": "Search expenses..."
+    },
+    "status": {
+      "logged": "Logged!",
+      "success": "Success",
+      "error": "Error"
+    }
   },
   "theme": {
     "light": "Light",

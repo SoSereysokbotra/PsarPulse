@@ -1,28 +1,23 @@
 "use client";
+// dev-bump: 2026-03-26T11:27:00Z
 
-import React, { useState } from "react";
-import Link from "next/link";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   LayoutDashboard,
   CircleDollarSign,
   Receipt,
   Users,
-  Package,
-  Settings,
-  TrendingUp,
-  Menu,
-  X,
-  Bell,
-  Sparkles,
   Search,
-  Clock,
   Plus,
   Minus,
-  FileBarChart,
   Zap,
-  FileText,
-  CreditCard,
-  FileSpreadsheet,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  Clock,
 } from "lucide-react";
 
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -30,340 +25,361 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
+import { ConfirmModal } from "@/components/ConfirmModal";
 
 export default function CustomersPage() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const isKhmer = language === "km";
-  const isDark = resolvedTheme === "dark";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  const isDark = mounted && resolvedTheme === "dark";
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("analysis");
   const [customCount, setCustomCount] = useState(1);
-  const [logHistory, setLogHistory] = useState([
-    { id: 1, time: "2:15 PM", count: 2, status: "Regular" },
-    { id: 2, time: "10:00 AM", count: 2, status: "Peak Traffic" },
-    { id: 3, time: "11:00 AM", count: 12, status: "Peak Traffic" },
-  ]);
 
-  const summaryData = {
-    todayCount: 48,
-    todayLogs: 4,
-    avgSpend: "$5.45",
-    weeklyCount: 315,
-    weeklyChange: "+27% then last week",
-    weeklyCustomers: "15 Customer",
-    peakTime: "12:10 PM",
-    avgLTV: "$102.02",
+  // Data state
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [logHistory, setLogHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+  // Modal State (For Edit only now)
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<any | null>(null);
+  const [fName, setFName] = useState("");
+  const [fPhone, setFPhone] = useState("");
+  const [fEmail, setFEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // Delete State
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
+  const [toasts, setToasts] = useState<any[]>([]);
+
+  // Form Ref
+  const addFormRef = useRef<HTMLFormElement>(null);
+
+  // Fetch customers
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const res = await fetch("/api/vendor/customers");
+        const data = await res.json();
+        if (data.success) setCustomers(data.data);
+      } catch (error) {
+        console.error("Failed to fetch customers:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCustomers();
+  }, []);
+
+  // Fetch Traffic
+  useEffect(() => {
+    const fetchTraffic = async () => {
+      try {
+        const res = await fetch("/api/vendor/traffic");
+        const data = await res.json();
+        if (data.success) {
+          const mapped = data.data.map((l: any) => ({
+            id: l.id,
+            time: new Date(l.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+            count: l.count,
+            status: l.status,
+            rawDate: l.createdAt,
+          }));
+          setLogHistory(mapped);
+        }
+      } catch (e) {
+        console.error("Traffic fetch error:", e);
+      }
+    };
+    fetchTraffic();
+  }, []);
+
+  // Click-away
+  useEffect(() => {
+    const handleClick = () => setActiveMenuId(null);
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, []);
+
+  const showToast = useCallback((msg: string, type: "success" | "error" = "success") => {
+    const id = Date.now();
+    setToasts((p) => [...p, { id, msg, type }]);
+    setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 3500);
+  }, []);
+
+  const summaryData = React.useMemo(() => {
+    const nowTimestamp = new Date();
+    const startOfToday = new Date(nowTimestamp.getFullYear(), nowTimestamp.getMonth(), nowTimestamp.getDate()).getTime();
+    const sevenDaysAgo = nowTimestamp.getTime() - 7 * 24 * 60 * 60 * 1000;
+
+    const todayMatches = logHistory.filter(l => new Date(l.rawDate).getTime() >= startOfToday);
+    const weeklyMatches = logHistory.filter(l => new Date(l.rawDate).getTime() >= sevenDaysAgo);
+
+    const totalSpentValue = customers.reduce((sum, c) => sum + parseFloat(c.totalSpent || 0), 0);
+    const avgLTVValue = customers.length > 0 ? totalSpentValue / customers.length : 0;
+
+    return {
+      todayCount: todayMatches.reduce((sum, l) => sum + l.count, 0),
+      todayLogs: todayMatches.length,
+      avgSpend: customers.length > 0 ? `$${(totalSpentValue / (customers.length || 1)).toFixed(2)}` : "$0.00",
+      weeklyCount: weeklyMatches.reduce((sum, l) => sum + l.count, 0),
+      weeklyChange: "+12% vs last week",
+      weeklyCustomers: `${customers.length} Customer${customers.length !== 1 ? "s" : ""}`,
+      peakTime: todayMatches.length > 0 ? todayMatches[0].time : "—",
+      avgLTV: `$${avgLTVValue.toFixed(2)}`,
+    };
+  }, [logHistory, customers]);
+
+  const handleLogTraffic = async (amount: number) => {
+    const status = amount >= 10 ? "Peak Traffic" : "Regular";
+    try {
+      const res = await fetch("/api/vendor/traffic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count: amount, status }),
+      });
+      if (res.ok) {
+        const result = await res.json();
+        setLogHistory((prev) => [
+          {
+            id: result.data.id,
+            time: new Date(result.data.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+            count: result.data.count,
+            status: result.data.status,
+            rawDate: result.data.createdAt,
+          },
+          ...prev,
+        ]);
+        showToast("Traffic logged");
+      }
+    } catch (e) {
+      showToast("Failed to log traffic", "error");
+    }
   };
 
-  const handleLog = (amount: number) => {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    setLogHistory((prev) => [
-      {
-        id: Date.now(),
-        time: timeStr,
-        count: amount,
-        status: amount >= 10 ? "Peak Traffic" : "Regular",
-      },
-      ...prev,
-    ]);
+  const handleCreateCustomer = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const payload = {
+      name: formData.get("name"),
+      phone: formData.get("phone"),
+      email: formData.get("email"),
+    };
+    try {
+      const res = await fetch("/api/vendor/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setCustomers(p => [result.data, ...p]);
+        showToast("Customer added to directory");
+        (e.target as HTMLFormElement).reset();
+      }
+    } catch (err) {
+      showToast("Error adding customer", "error");
+    }
   };
 
-  const filtered = logHistory.filter(
-    (l) =>
-      l.time.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      l.status.toLowerCase().includes(searchTerm.toLowerCase()),
+  const openEdit = (c: any) => {
+    setEditTarget(c);
+    setFName(c.name);
+    setFPhone(c.phone || "");
+    setFEmail(c.email || "");
+    setModalOpen(true);
+    setActiveMenuId(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!fName || !editTarget) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/vendor/customers/${editTarget.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: fName, phone: fPhone, email: fEmail }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setCustomers(p => p.map(x => x.id === editTarget.id ? result.data : x));
+        showToast("Customer updated");
+        setModalOpen(false);
+      }
+    } catch (e) {
+      showToast("Error updating", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      const res = await fetch(`/api/vendor/customers/${deleteTarget.id}`, { method: "DELETE" });
+      const result = await res.json();
+      if (result.success) {
+        setCustomers(p => p.filter(x => x.id !== deleteTarget.id));
+        showToast("Customer deleted");
+      }
+    } catch (e) {
+      showToast("Error deleting", "error");
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
+  const filteredItems = customers.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c.phone && c.phone.includes(searchTerm))
   );
 
   return (
-    <div
-      className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white transition-colors duration-200 ${
-        isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"
-      }`}
-    >
-      <VendorSidebar
-        plan="free"
-        navLinks={[
-          {
-            icon: LayoutDashboard,
-            title: "Dashboard",
-            khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
-            href: "/vendor",
-          },
-          {
-            icon: CircleDollarSign,
-            title: "Sales",
-            khmerTitle: "ការលក់",
-            href: "/vendor/sales",
-          },
-          {
-            icon: Receipt,
-            title: "Expenses",
-            khmerTitle: "ចំណាយ",
-            href: "/vendor/expenses",
-          },
-          {
-            icon: Users,
-            title: "Customers",
-            khmerTitle: "អតិថិជន",
-            href: "/vendor/customer",
-          },
-        ]}
-        currentPath="/vendor/customer"
-        collapsed={isCollapsed}
-        isOpen={isMobileOpen}
-        onClose={() => setIsMobileOpen(false)}
-      />
+    <div className={`min-h-screen flex font-sans transition-colors duration-200 ${isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"}`}>
+      {/* Toasts */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
+        {toasts.map((t) => (
+          <div key={t.id} className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.18)] text-[13.5px] font-semibold min-w-[280px] border ${t.type === "error" ? "bg-white text-[#ef4444] border-[#fecaca]" : "bg-white text-[#111827] border-[#e8eaed]"}`}>
+            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#3ecf8e]" /> : <AlertCircle size={16} className="text-[#ef4444]" />}
+            <span className="flex-1">{t.msg}</span>
+          </div>
+        ))}
+      </div>
 
-      {/* ── MAIN ── */}
-      <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
-        <VendorTopbar
-          title={"Customers"}
-          isSidebarCollapsed={isCollapsed}
-          setIsSidebarCollapsed={setIsCollapsed}
-          setIsMobileSidebarOpen={setIsMobileOpen}
-          rightActions={
-            <>
-              <button className="hidden sm:flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
-                <Zap className="w-3.5 h-3.5 text-[#29B28D]" />
-                Quick sale
-              </button>
-            </>
-          }
-        />
+      <VendorSidebar plan="free" currentPath="/vendor/customer" navLinks={[
+        { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
+        { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/sales" },
+        { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/expenses" },
+        { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/customer" },
+      ]} />
 
-        {/* Page content */}
+      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+        <VendorTopbar title="Customers" isSidebarCollapsed={isCollapsed} setIsSidebarCollapsed={setIsCollapsed} setIsMobileSidebarOpen={setIsMobileOpen} />
+
         <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px] space-y-6">
-          {/* Page title + search */}
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div>
-              <h1
-                className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}
-              >
-                {"My Customers"}
-              </h1>
-              <p
-                className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
-              >
-                Tracker and Log your daily foot traffic
-              </p>
+              <h1 className="text-[26px] font-bold">My Customers</h1>
+              <p className="text-sm text-slate-500 mt-0.5">Tracker and Log your daily foot traffic</p>
             </div>
-            <div className="relative">
-              <Search
-                className={`w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 ${isDark ? "text-[#7d8590]" : "text-slate-400"}`}
-              />
-              <input
-                type="text"
-                placeholder="Search Class..."
-                className={`pl-9 pr-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-[#29B28D] focus:ring-1 focus:ring-[#29B28D] w-56 ${
-                  isDark
-                    ? "bg-[#0d1117] border border-white/5 text-white"
-                    : "bg-white border border-slate-200 text-slate-900"
-                }`}
-              />
+            <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-64 focus-within:border-[#29B28D]/30 focus-within:shadow-[0_0_0_4px_rgba(41,178,141,0.03)] group">
+              <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#29B28D]" />
+              <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
             </div>
           </div>
 
-          {/* 5 Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <VendorSummaryCard
-              variant="dark"
-              title="Today Customer"
-              khmerTitle="អតិថិជនថ្ងៃនេះ"
-              value={summaryData.todayCount}
-              subtext={`${summaryData.todayLogs} logs`}
-            />
-            <VendorSummaryCard
-              title="Avg.Spend"
-              khmerTitle="កាន់ឈ្នួលការចាយ"
-              value={summaryData.avgSpend}
-              subtext="per customer"
-              variant={isDark ? "dark" : "light"}
-            />
-            <VendorSummaryCard
-              variant="green"
-              title="Weekly Customer"
-              khmerTitle="អតិថិជនច្រើនជាងក្នុងរូប"
-              value={summaryData.weeklyCount}
-              subtext={summaryData.weeklyChange}
-            />
-            <VendorSummaryCard
-              title="Avg.LTV"
-              khmerTitle="ភ្លេចអតិថិជន"
-              value={summaryData.avgLTV}
-              subtext="Per Customer"
-              variant={isDark ? "dark" : "light"}
-            />
+            <VendorSummaryCard variant="dark" title="Today Customer" khmerTitle="អតិថិជនថ្ងៃនេះ" value={summaryData.todayCount} subtext={`${summaryData.todayLogs} logs`} />
+            <VendorSummaryCard title="Avg.Spend" khmerTitle="មធ្យមចាយ" value={summaryData.avgSpend} variant={isDark ? "dark" : "light"} />
+            <VendorSummaryCard variant="green" title="Weekly Customer" khmerTitle="អតិថិជនប្រចាំសប្តាហ៍" value={summaryData.weeklyCount} subtext={summaryData.weeklyChange} />
+            <VendorSummaryCard title="Avg.LTV" khmerTitle="តម្លៃអតិថិជនមធ្យម" value={summaryData.avgLTV} variant={isDark ? "dark" : "light"} />
           </div>
 
-          {/* Log Customers Bar */}
-          <div className="bg-slate-900 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <p className="font-bold text-white text-[15px]">Log Customers</p>
-              <p className="text-[11px] font-khmer text-slate-400 mt-0.5">
-                កត់ត្រាអតិថិជន
-              </p>
-            </div>
+          {/* Log Traffic Bar */}
+          <div className="bg-[#0d1117] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 border border-[#3ecf8e]/10">
+            <div><p className="font-bold text-white text-[15px]">Log Customers</p><p className="text-[11px] text-slate-400 mt-0.5">កត់ត្រាអតិថិជន</p></div>
             <div className="flex items-center gap-2 flex-wrap">
-              {[1, 5, 10].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => handleLog(n)}
-                  className="px-4 py-2 bg-[#29B28D] hover:bg-[#239979] text-white text-sm font-bold rounded-xl transition-colors min-h-11"
-                >
-                  +{n}
-                </button>
-              ))}
-              <div className="flex items-center bg-white/10 rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setCustomCount((c) => Math.max(1, c - 1))}
-                  className="px-3 py-2 text-white hover:bg-white/10 transition-colors min-h-11"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span className="text-white font-bold text-sm w-6 text-center">
-                  {customCount}
-                </span>
-                <button
-                  onClick={() => setCustomCount((c) => c + 1)}
-                  className="px-3 py-2 text-white hover:bg-white/10 transition-colors min-h-11"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
-              <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-xl transition-colors min-h-11">
-                Custom...
-              </button>
-              <button className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors min-h-11">
-                <Plus className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => handleLog(customCount)}
-                className="px-5 py-2 bg-[#29B28D] hover:bg-[#239979] text-white font-bold rounded-xl transition-colors text-sm flex items-center gap-1.5 min-h-11"
-              >
-                <Plus className="w-4 h-4" />
-                Log {customCount}
-              </button>
+              {[1, 5, 10].map(n => <button key={n} onClick={() => handleLogTraffic(n)} className="px-4 py-2 bg-[#1a1a1a] text-[#3ecf8e] text-sm font-bold rounded-xl border border-[#3ecf8e]/20 min-h-11 hover:bg-black transition-all">+{n}</button>)}
+              <div className="flex items-center bg-white/10 rounded-xl px-2 py-1"><button onClick={() => setCustomCount(c => Math.max(1, c - 1))} className="text-white"><Minus size={14} /></button><span className="text-white font-bold mx-3">{customCount}</span><button onClick={() => setCustomCount(c => c + 1)} className="text-white"><Plus size={14} /></button></div>
+              <button onClick={() => handleLogTraffic(customCount)} className="px-5 py-2 bg-[#3ecf8e] text-[#0d1117] font-bold rounded-xl text-sm min-h-11 hover:bg-[#4dd49a] transition-colors flex items-center gap-1.5"><Plus size={14} /> Log {customCount}</button>
             </div>
           </div>
 
-          {/* Log History Table */}
-          <div
-            className={`border rounded-2xl shadow-sm overflow-hidden ${
-              isDark
-                ? "bg-dark-surface border-white/5"
-                : "bg-white border-slate-200"
-            }`}
-          >
-            <div
-              className={`p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
-                isDark ? "border-white/5" : "border-slate-100"
-              }`}
-            >
-              <h3
-                className={`font-bold text-[17px] ${isDark ? "text-white" : "text-slate-900"}`}
-              >
-                Expense History
-              </h3>
-              <div className="relative w-full sm:w-auto">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder={t("common.search") || "Search Class..."}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#29B28D] min-h-11 ${
-                    isDark
-                      ? "bg-[#0d1117] border-white/5 text-white focus:border-[#29B28D]"
-                      : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"
-                  }`}
-                />
+          {/* Inline Form (Restored) */}
+          <div className={`${isDark ? "bg-dark-surface border-white/5" : "bg-white border-slate-200"} border rounded-2xl p-6 shadow-sm`}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold">Add Customer to Directory</h3>
+              <Users className="w-5 h-5 text-[#29B28D]" />
+            </div>
+            <form ref={addFormRef} onSubmit={handleCreateCustomer} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Name <span className="text-red-500">*</span></label>
+                <input name="name" required className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#29B28D]" placeholder="John Doe" />
               </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Phone (Optional)</label>
+                <input name="phone" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#29B28D]" placeholder="012 345 678" />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email (Optional)</label>
+                <input name="email" type="email" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#29B28D]" placeholder="john@example.com" />
+              </div>
+              <button type="submit" className="bg-[#0d1117] text-[#3ecf8e] font-bold py-2.5 rounded-xl text-sm border border-[#3ecf8e]/20 hover:bg-black transition-all">
+                Add Customer
+              </button>
+            </form>
+          </div>
+
+          {/* Table */}
+          <div className={`border rounded-2xl overflow-hidden shadow-sm ${isDark ? "bg-dark-surface border-white/5" : "bg-white border-slate-200"}`}>
+            <div className="px-6 py-4 border-b border-white/5">
+              <h3 className="font-bold text-sm">Customer Directory</h3>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr
-                    className={`border-b text-xs uppercase tracking-wider font-semibold ${
-                      isDark
-                        ? "bg-white/5 border-white/5 text-[#7d8590]"
-                        : "bg-slate-50/50 border-slate-100 text-slate-500"
-                    }`}
-                  >
-                    <th className="px-6 py-4">Time Logged</th>
-                    <th className="px-6 py-4">Count</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
-                  </tr>
+              <table className="w-full text-left">
+                <thead className="text-[10.5px] uppercase font-bold text-slate-500 border-b border-white/5">
+                  <tr><th className="px-6 py-3">Customer</th><th className="px-6 py-3">Phone</th><th className="px-6 py-3">Status</th><th className="px-6 py-3 text-right">Total Spent</th><th className="px-6 py-3 text-center">Actions</th></tr>
                 </thead>
-                <tbody
-                  className={`divide-y ${isDark ? "divide-white/5" : "divide-slate-100"}`}
-                >
-                  {filtered.map((log) => (
-                    <tr
-                      key={log.id}
-                      className={`transition-colors ${isDark ? "hover:bg-white/5" : "hover:bg-slate-50/50"}`}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div
-                          className={`flex items-center gap-2 text-[15px] ${isDark ? "text-white" : "text-slate-600"}`}
-                        >
-                          <Clock className="w-4 h-4 text-slate-400" />
-                          {log.time}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={`text-[15px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}
-                          >
-                            +{log.count}
-                          </span>
-                          <Users className="w-3.5 h-3.5 text-slate-400" />
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {log.status === "Peak Traffic" ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold">
-                            Peak Traffic
-                          </span>
-                        ) : (
-                          <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                              isDark
-                                ? "bg-white/5 text-white"
-                                : "bg-slate-100 text-slate-600"
-                            }`}
-                          >
-                            Regular
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <button className="text-slate-300 hover:text-slate-600 text-xl tracking-widest transition-colors">
-                          ···
+                <tbody className="divide-y divide-white/5 text-[13.5px]">
+                  {filteredItems.map(c => (
+                    <tr key={c.id} className="group hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4"><div className="font-bold">{c.name}</div><div className="text-[11px] text-slate-400">{c.email || "No email"}</div></td>
+                      <td className="px-6 py-4 text-slate-500">{c.phone || "—"}</td>
+                      <td className="px-6 py-4"><span className="px-2.5 py-[3px] rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold">{c.points} Points</span></td>
+                      <td className="px-6 py-4 text-right font-bold text-[#29B28D]">${parseFloat(c.totalSpent).toFixed(2)}</td>
+                      <td className="px-6 py-4 text-center relative">
+                        <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === c.id ? null : c.id); }} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+                          <MoreVertical size={16} className="text-slate-400" />
                         </button>
+                        {activeMenuId === c.id && (
+                          <div className={`absolute right-[80%] top-1/2 -translate-y-1/2 mr-2 z-20 w-[120px] rounded-xl shadow-2xl border overflow-hidden ${isDark ? "bg-dark-surface border-white/10" : "bg-white border-slate-200"}`}>
+                            <button onClick={() => openEdit(c)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> Edit</button>
+                            <button onClick={() => { setDeleteTarget(c); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> Delete</button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
+                  {!filteredItems.length && (
+                    <tr><td colSpan={5} className="px-6 py-10 text-center text-slate-400 italic">No customers found</td></tr>
+                  )}
                 </tbody>
               </table>
-            </div>
-            <div className="px-6 py-4 border-t border-slate-100 text-center">
-              <button className="text-[#29B28D] text-sm font-semibold hover:underline">
-                View Full History
-              </button>
             </div>
           </div>
         </div>
       </main>
+
+      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} title="Delete Customer?" description="Permanently remove customer from directory." previewText={deleteTarget?.name} />
+
+      {/* Edit Modal Only */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-[20px] shadow-2xl overflow-hidden">
+            <div className="bg-[#0d1117] px-7 py-5 flex items-center justify-between text-white">
+              <div><div className="text-[18px] font-bold">Edit Customer</div><div className="text-[12px] text-slate-500">កែប្រែព័ត៌មានអតិថិជន</div></div>
+              <button onClick={() => setModalOpen(false)}><X size={18} /></button>
+            </div>
+            <div className="p-7 space-y-5">
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-2 block">Name *</label><input value={fName} onChange={e => setFName(e.target.value)} className="w-full px-4 py-3 rounded-xl border bg-slate-50 focus:border-[#29B28D] outline-none" /></div>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-2 block">Phone (Optional)</label><input value={fPhone} onChange={e => setFPhone(e.target.value)} className="w-full px-4 py-3 rounded-xl border bg-slate-50 focus:border-[#29B28D] outline-none" /></div>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-2 block">Email (Optional)</label><input type="email" value={fEmail} onChange={e => setFEmail(e.target.value)} className="w-full px-4 py-3 rounded-xl border bg-slate-50 focus:border-[#29B28D] outline-none" /></div>
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setModalOpen(false)} className="flex-1 py-4 rounded-xl bg-slate-100 text-slate-500 font-bold">Cancel</button>
+                <button onClick={handleSaveEdit} disabled={!fName || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black transition-all">{saving ? "Saving..." : "Save Changes"}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

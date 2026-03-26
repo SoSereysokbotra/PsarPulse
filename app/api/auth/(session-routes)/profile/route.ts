@@ -40,7 +40,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: { 
-        user: safeUserData,
+        user: {
+          ...safeUserData,
+          fullName: (safeUserData as any).fullName || (safeUserData as any).full_name,
+        },
         vendor: vendorData 
       },
     });

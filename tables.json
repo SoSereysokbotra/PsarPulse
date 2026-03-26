@@ -1,0 +1,827 @@
+{
+  "tables": [
+    "support_notes",
+    "platform_settings",
+    "refresh_tokens",
+    "users",
+    "verification_codes",
+    "admins",
+    "audit_logs",
+    "vendor_plans",
+    "vendor_requests",
+    "vendor_team_members",
+    "vendors",
+    "invitations",
+    "vendor_subscriptions",
+    "oauth_accounts",
+    "oauth_states"
+  ],
+  "schemas": {
+    "support_notes": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid"
+      },
+      {
+        "column": "admin_id",
+        "type": "uuid"
+      },
+      {
+        "column": "note",
+        "type": "text"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "platform_settings": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "key",
+        "type": "character varying"
+      },
+      {
+        "column": "value",
+        "type": "text"
+      },
+      {
+        "column": "label",
+        "type": "character varying"
+      },
+      {
+        "column": "updated_by_id",
+        "type": "uuid"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "refresh_tokens": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid"
+      },
+      {
+        "column": "token_hash",
+        "type": "character varying"
+      },
+      {
+        "column": "family_id",
+        "type": "uuid"
+      },
+      {
+        "column": "device_info",
+        "type": "text"
+      },
+      {
+        "column": "user_agent",
+        "type": "text"
+      },
+      {
+        "column": "expires_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "revoked_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "instance_id",
+        "type": "uuid"
+      },
+      {
+        "column": "id",
+        "type": "bigint"
+      },
+      {
+        "column": "token",
+        "type": "character varying"
+      },
+      {
+        "column": "user_id",
+        "type": "character varying"
+      },
+      {
+        "column": "revoked",
+        "type": "boolean"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "parent",
+        "type": "character varying"
+      },
+      {
+        "column": "session_id",
+        "type": "uuid"
+      }
+    ],
+    "users": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "full_name",
+        "type": "character varying"
+      },
+      {
+        "column": "email",
+        "type": "character varying"
+      },
+      {
+        "column": "password_hash",
+        "type": "character varying"
+      },
+      {
+        "column": "role",
+        "type": "character varying"
+      },
+      {
+        "column": "status",
+        "type": "character varying"
+      },
+      {
+        "column": "is_verified",
+        "type": "boolean"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "instance_id",
+        "type": "uuid"
+      },
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "aud",
+        "type": "character varying"
+      },
+      {
+        "column": "role",
+        "type": "character varying"
+      },
+      {
+        "column": "email",
+        "type": "character varying"
+      },
+      {
+        "column": "encrypted_password",
+        "type": "character varying"
+      },
+      {
+        "column": "email_confirmed_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "invited_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "confirmation_token",
+        "type": "character varying"
+      },
+      {
+        "column": "confirmation_sent_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "recovery_token",
+        "type": "character varying"
+      },
+      {
+        "column": "recovery_sent_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "email_change_token_new",
+        "type": "character varying"
+      },
+      {
+        "column": "email_change",
+        "type": "character varying"
+      },
+      {
+        "column": "email_change_sent_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "last_sign_in_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "raw_app_meta_data",
+        "type": "jsonb"
+      },
+      {
+        "column": "raw_user_meta_data",
+        "type": "jsonb"
+      },
+      {
+        "column": "is_super_admin",
+        "type": "boolean"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "phone",
+        "type": "text"
+      },
+      {
+        "column": "phone_confirmed_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "phone_change",
+        "type": "text"
+      },
+      {
+        "column": "phone_change_token",
+        "type": "character varying"
+      },
+      {
+        "column": "phone_change_sent_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "confirmed_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "email_change_token_current",
+        "type": "character varying"
+      },
+      {
+        "column": "email_change_confirm_status",
+        "type": "smallint"
+      },
+      {
+        "column": "banned_until",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "reauthentication_token",
+        "type": "character varying"
+      },
+      {
+        "column": "reauthentication_sent_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "is_sso_user",
+        "type": "boolean"
+      },
+      {
+        "column": "deleted_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "column": "is_anonymous",
+        "type": "boolean"
+      }
+    ],
+    "verification_codes": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid"
+      },
+      {
+        "column": "code_hash",
+        "type": "character varying"
+      },
+      {
+        "column": "purpose",
+        "type": "character varying"
+      },
+      {
+        "column": "expires_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "last_sent_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "admins": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid"
+      },
+      {
+        "column": "role",
+        "type": "character varying"
+      },
+      {
+        "column": "permissions",
+        "type": "jsonb"
+      },
+      {
+        "column": "can_manage_vendors",
+        "type": "boolean"
+      },
+      {
+        "column": "can_manage_users",
+        "type": "boolean"
+      },
+      {
+        "column": "can_manage_plans",
+        "type": "boolean"
+      },
+      {
+        "column": "can_manage_billing",
+        "type": "boolean"
+      },
+      {
+        "column": "can_view_analytics",
+        "type": "boolean"
+      },
+      {
+        "column": "last_login_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "audit_logs": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "admin_id",
+        "type": "uuid"
+      },
+      {
+        "column": "action",
+        "type": "character varying"
+      },
+      {
+        "column": "entity_type",
+        "type": "character varying"
+      },
+      {
+        "column": "entity_id",
+        "type": "uuid"
+      },
+      {
+        "column": "changes",
+        "type": "jsonb"
+      },
+      {
+        "column": "ip_address",
+        "type": "character varying"
+      },
+      {
+        "column": "user_agent",
+        "type": "text"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "vendor_plans": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "name",
+        "type": "character varying"
+      },
+      {
+        "column": "description",
+        "type": "text"
+      },
+      {
+        "column": "monthly_price",
+        "type": "numeric"
+      },
+      {
+        "column": "yearly_price",
+        "type": "numeric"
+      },
+      {
+        "column": "features",
+        "type": "jsonb"
+      },
+      {
+        "column": "max_products",
+        "type": "integer"
+      },
+      {
+        "column": "max_customers",
+        "type": "integer"
+      },
+      {
+        "column": "max_users",
+        "type": "integer"
+      },
+      {
+        "column": "has_advanced_reports",
+        "type": "boolean"
+      },
+      {
+        "column": "has_api",
+        "type": "boolean"
+      },
+      {
+        "column": "priority",
+        "type": "integer"
+      },
+      {
+        "column": "is_active",
+        "type": "boolean"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "vendor_requests": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid"
+      },
+      {
+        "column": "business_name",
+        "type": "character varying"
+      },
+      {
+        "column": "business_email",
+        "type": "character varying"
+      },
+      {
+        "column": "business_category",
+        "type": "character varying"
+      },
+      {
+        "column": "required_plan",
+        "type": "character varying"
+      },
+      {
+        "column": "status",
+        "type": "character varying"
+      },
+      {
+        "column": "reason_for_rejection",
+        "type": "text"
+      },
+      {
+        "column": "reviewed_by",
+        "type": "uuid"
+      },
+      {
+        "column": "reviewed_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "business_phone",
+        "type": "character varying"
+      },
+      {
+        "column": "business_address",
+        "type": "text"
+      },
+      {
+        "column": "business_description",
+        "type": "text"
+      }
+    ],
+    "vendor_team_members": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "vendor_id",
+        "type": "uuid"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid"
+      },
+      {
+        "column": "role",
+        "type": "character varying"
+      },
+      {
+        "column": "permissions",
+        "type": "jsonb"
+      },
+      {
+        "column": "joined_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "removed_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "is_active",
+        "type": "boolean"
+      }
+    ],
+    "vendors": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid"
+      },
+      {
+        "column": "business_name",
+        "type": "character varying"
+      },
+      {
+        "column": "business_email",
+        "type": "character varying"
+      },
+      {
+        "column": "business_phone",
+        "type": "character varying"
+      },
+      {
+        "column": "business_logo",
+        "type": "character varying"
+      },
+      {
+        "column": "business_description",
+        "type": "text"
+      },
+      {
+        "column": "business_address",
+        "type": "text"
+      },
+      {
+        "column": "tax_id",
+        "type": "character varying"
+      },
+      {
+        "column": "plan_id",
+        "type": "uuid"
+      },
+      {
+        "column": "subscription_status",
+        "type": "character varying"
+      },
+      {
+        "column": "trial_ends_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "subscription_started_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "subscription_ends_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "is_verified",
+        "type": "boolean"
+      },
+      {
+        "column": "verification_status",
+        "type": "character varying"
+      },
+      {
+        "column": "status",
+        "type": "character varying"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "invitations": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "email",
+        "type": "character varying"
+      },
+      {
+        "column": "token",
+        "type": "character varying"
+      },
+      {
+        "column": "role",
+        "type": "character varying"
+      },
+      {
+        "column": "status",
+        "type": "character varying"
+      },
+      {
+        "column": "expires_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "used_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "vendor_subscriptions": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "vendor_id",
+        "type": "uuid"
+      },
+      {
+        "column": "plan_id",
+        "type": "uuid"
+      },
+      {
+        "column": "billing_cycle",
+        "type": "character varying"
+      },
+      {
+        "column": "amount",
+        "type": "numeric"
+      },
+      {
+        "column": "stripe_subscription_id",
+        "type": "character varying"
+      },
+      {
+        "column": "next_billing_date",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "is_auto_renew",
+        "type": "boolean"
+      },
+      {
+        "column": "status",
+        "type": "character varying"
+      },
+      {
+        "column": "cancelled_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "oauth_accounts": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid"
+      },
+      {
+        "column": "provider",
+        "type": "character varying"
+      },
+      {
+        "column": "provider_user_id",
+        "type": "character varying"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "oauth_states": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "state",
+        "type": "character varying"
+      },
+      {
+        "column": "code_verifier",
+        "type": "character varying"
+      },
+      {
+        "column": "provider",
+        "type": "character varying"
+      },
+      {
+        "column": "redirect_uri",
+        "type": "character varying"
+      },
+      {
+        "column": "expires_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "used",
+        "type": "boolean"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      }
+    ]
+  }
+}

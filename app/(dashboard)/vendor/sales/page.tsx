@@ -1,4 +1,5 @@
 "use client";
+// dev-bump: 2026-03-26T11:28:00Z
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
@@ -7,9 +8,6 @@ import {
   Plus,
   Search,
   CheckCircle2,
-  Pencil,
-  Trash2,
-  RotateCcw,
   AlertCircle,
   LayoutDashboard,
   CircleDollarSign,
@@ -19,6 +17,9 @@ import {
   BarChart3,
   CreditCard,
   TrendingUp,
+  MoreVertical,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -34,8 +35,7 @@ export type Method = "Cash" | "ABA/KHQR" | "Other";
 export type ToastT = {
   id: number;
   msg: string;
-  type: "success" | "error" | "undo";
-  txnId?: string;
+  type: "success" | "error";
 };
 
 export interface Transaction {
@@ -44,71 +44,15 @@ export interface Transaction {
   items: string;
   amount: number;
   method: Method;
-  deletedAt?: number;
+  rawDate?: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
-const uid = () => Math.random().toString(36).slice(2, 9);
 const now = () =>
   new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
   });
-
-// ─── Initial Data ─────────────────────────────────────────────────
-const INITIAL: Transaction[] = [
-  {
-    id: uid(),
-    time: "1:45 PM",
-    items: "2x Coffee Latte, 1x Spring Roll",
-    amount: 10.8,
-    method: "ABA/KHQR",
-  },
-  {
-    id: uid(),
-    time: "1:15 PM",
-    items: "1x Mango Sticky Rice",
-    amount: 2.0,
-    method: "Cash",
-  },
-  {
-    id: uid(),
-    time: "12:30 PM",
-    items: "3x Fried Rice",
-    amount: 7.5,
-    method: "Cash",
-  },
-  {
-    id: uid(),
-    time: "11:55 AM",
-    items: "2x Green Tea, 2x Coconut Water",
-    amount: 6.4,
-    method: "ABA/KHQR",
-  },
-  {
-    id: uid(),
-    time: "10:20 AM",
-    items: "1x Coffee Latte",
-    amount: 4.5,
-    method: "Other",
-  },
-  {
-    id: uid(),
-    time: "9:44 AM",
-    items: "1x Fried Rice, 1x Spring Roll",
-    amount: 4.3,
-    method: "Cash",
-  },
-];
-
-const STATS: Record<
-  Period,
-  { revenue: number; change: string; positive: boolean }
-> = {
-  Day: { revenue: 35.5, change: "+5%", positive: true },
-  Week: { revenue: 1240.0, change: "+12%", positive: true },
-  Month: { revenue: 5820.0, change: "-2%", positive: false },
-};
 
 const METHOD_BADGE: Record<Method, string> = {
   Cash: "bg-[rgba(62,207,142,0.12)] text-[#3ecf8e] border border-[rgba(62,207,142,0.25)]",
@@ -120,18 +64,25 @@ const METHOD_BADGE: Record<Method, string> = {
 // ═════════════════════════════════════════════════════════════════
 export default function SalesDashboard() {
   const { language, t } = useLanguage();
-  const { resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const isKhmer = language === "km";
-  const isDark = resolvedTheme === "dark";
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
+  const isDark = mounted && resolvedTheme === "dark";
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [period, setPeriod] = useState<Period>("Day");
   const [search, setSearch] = useState("");
-  const [txns, setTxns] = useState<Transaction[]>(INITIAL);
-  const [toasts, setToasts] = useState<ToastT[]>([]);
 
-  // Add/Edit Modal State
+  // Data state
+  const [txns, setTxns] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toasts, setToasts] = useState<ToastT[]>([]);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+
+  // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Transaction | null>(null);
   const [fAmount, setFAmount] = useState("");
@@ -139,46 +90,61 @@ export default function SalesDashboard() {
   const [fMethod, setFMethod] = useState<Method>("Cash");
   const [saving, setSaving] = useState(false);
 
-  // Delete Modal State
+  // Delete State
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
 
   const amountRef = useRef<HTMLInputElement>(null);
 
+  // Fetch sales on mount
   useEffect(() => {
-    const fn = () => {
-      if (window.innerWidth >= 1024) setIsSidebarOpen(false);
-    };
-    window.addEventListener("resize", fn);
-    return () => window.removeEventListener("resize", fn);
-  }, []);
-
-  useEffect(() => {
-    if (modalOpen) setTimeout(() => amountRef.current?.focus(), 120);
-  }, [modalOpen]);
-
-  useEffect(() => {
-    const fn = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeModal();
-        setDeleteTarget(null);
+    const fetchSales = async () => {
+      try {
+        const res = await fetch("/api/vendor/sales");
+        const data = await res.json();
+        if (data.success) {
+          const mapped = data.data.map((s: any) => ({
+            id: s.id,
+            time: new Date(s.createdAt).toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+            }),
+            items: s.items || "",
+            amount: parseFloat(s.amount),
+            method: s.method,
+            rawDate: s.createdAt,
+          }));
+          setTxns(mapped);
+        }
+      } catch (error) {
+        console.error("Failed to fetch sales:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    window.addEventListener("keydown", fn);
-    return () => window.removeEventListener("keydown", fn);
+    fetchSales();
   }, []);
 
-  const toast = useCallback(
-    (msg: string, type: ToastT["type"], txnId?: string) => {
-      const id = Date.now();
-      setToasts((p) => [...p, { id, msg, type, txnId }]);
-      if (type !== "undo")
-        setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 3500);
-    },
-    [],
-  );
+  // Click-away for menu
+  useEffect(() => {
+    const handleClick = () => setActiveMenuId(null);
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, []);
 
-  const dismissToast = (id: number) =>
-    setToasts((p) => p.filter((t) => t.id !== id));
+  const showToast = useCallback((msg: string, type: ToastT["type"] = "success") => {
+    const id = Date.now();
+    setToasts((p) => [...p, { id, msg, type }]);
+    setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 3500);
+  }, []);
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSaving(false);
+    setEditTarget(null);
+    setFAmount("");
+    setFItems("");
+    setFMethod("Cash");
+  };
 
   const openAdd = () => {
     setEditTarget(null);
@@ -194,585 +160,215 @@ export default function SalesDashboard() {
     setFItems(t.items);
     setFMethod(t.method);
     setModalOpen(true);
+    setActiveMenuId(null);
   };
 
-  const closeModal = () => {
-    setModalOpen(false);
-    setSaving(false);
-    setEditTarget(null);
-    setFAmount("");
-    setFItems("");
-    setFMethod("Cash");
-  };
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!fAmount || isNaN(Number(fAmount))) return;
     setSaving(true);
-
-    setTimeout(() => {
-      if (editTarget) {
-        setTxns((p) =>
-          p.map((t) =>
-            t.id === editTarget.id
-              ? {
-                  ...t,
-                  amount: parseFloat(fAmount),
-                  items: fItems,
-                  method: fMethod,
-                }
-              : t,
-          ),
-        );
-        toast("Transaction updated successfully", "success");
-      } else {
-        const newTxn: Transaction = {
-          id: uid(),
-          time: now(),
-          items: fItems || "Manual entry",
+    try {
+      const url = editTarget ? `/api/vendor/sales/${editTarget.id}` : "/api/vendor/sales";
+      const method = editTarget ? "PUT" : "POST";
+      
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           amount: parseFloat(fAmount),
           method: fMethod,
+          items: fItems,
+        }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        const mappedTxn: Transaction = {
+          id: result.data.id,
+          time: editTarget ? editTarget.time : now(),
+          items: result.data.items || "",
+          amount: parseFloat(result.data.amount),
+          method: result.data.method,
         };
-        setTxns((p) => [newTxn, ...p]);
-        toast("Sale logged successfully", "success");
+        
+        if (editTarget) {
+          setTxns((p) => p.map((x) => x.id === editTarget.id ? mappedTxn : x));
+          showToast("Sale updated");
+        } else {
+          setTxns((p) => [mappedTxn, ...p]);
+          showToast("Sale logged successfully");
+        }
+        closeModal();
       }
-      closeModal();
-    }, 400);
+    } catch (error) {
+      showToast("Error saving sale", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDelete = (t: Transaction) => {
-    setDeleteTarget(null);
-    setTxns((p) =>
-      p.map((x) => (x.id === t.id ? { ...x, deletedAt: Date.now() } : x)),
-    );
-
-    const toastId = Date.now();
-    setToasts((p) => [
-      ...p,
-      {
-        id: toastId,
-        msg: `"${t.items.slice(0, 28)}..." deleted`,
-        type: "undo",
-        txnId: t.id,
-      },
-    ]);
-
-    setTimeout(() => {
-      setTxns((p) => p.filter((x) => x.id !== t.id));
-      setToasts((p) => p.filter((x) => x.id !== toastId));
-    }, 5000);
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      const res = await fetch(`/api/vendor/sales/${deleteTarget.id}`, { method: "DELETE" });
+      const result = await res.json();
+      if (result.success) {
+        setTxns((p) => p.filter((x) => x.id !== deleteTarget.id));
+        showToast("Sale deleted");
+      }
+    } catch (error) {
+      showToast("Error deleting", "error");
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
-  const handleUndo = (toastId: number, txnId: string) => {
-    setTxns((p) =>
-      p.map((t) => (t.id === txnId ? { ...t, deletedAt: undefined } : t)),
-    );
-    dismissToast(toastId);
-    toast("Deletion undone", "success");
-  };
-
-  const activeTxns = txns.filter((t) => !t.deletedAt);
-  const filtered = activeTxns.filter(
+  const filtered = txns.filter(
     (t) =>
       t.items.toLowerCase().includes(search.toLowerCase()) ||
       t.time.toLowerCase().includes(search.toLowerCase()),
   );
-  const totalRevenue = activeTxns.reduce((s, t) => s + t.amount, 0);
-  const avgSale = activeTxns.length ? totalRevenue / activeTxns.length : 0;
-  const statChange = STATS[period];
+  const totalRevenue = txns.reduce((s, t) => s + t.amount, 0);
+  const avgSale = txns.length ? totalRevenue / txns.length : 0;
+  const hasData = txns.length > 0;
 
   return (
-    <div
-      className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white transition-colors duration-200 ${
-        isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"
-      }`}
-    >
+    <div className={`min-h-screen flex font-sans selection:bg-[#29B28D] transition-colors duration-200 ${isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"}`}>
       {/* ── Toasts ── */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
         {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.18)] text-[13.5px] font-semibold min-w-[280px] border ${
-              t.type === "undo"
-                ? "bg-[#0d1117] text-[#e6edf3] border-white/[0.1]"
-                : t.type === "error"
-                  ? "bg-white text-[#ef4444] border-[#fecaca]"
-                  : "bg-white text-[#111827] border-[#e8eaed]"
-            }`}
-          >
-            {t.type === "success" && (
-              <CheckCircle2 size={16} className="text-[#3ecf8e] shrink-0" />
-            )}
-            {t.type === "error" && (
-              <AlertCircle size={16} className="text-[#ef4444] shrink-0" />
-            )}
-            {t.type === "undo" && (
-              <Trash2 size={16} className="text-[#7d8590] shrink-0" />
-            )}
+          <div key={t.id} className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.18)] text-[13.5px] font-semibold min-w-[280px] border ${t.type === "error" ? "bg-white text-[#ef4444] border-[#fecaca]" : "bg-white text-[#111827] border-[#e8eaed]"}`}>
+            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#3ecf8e]" /> : <AlertCircle size={16} className="text-[#ef4444]" />}
             <span className="flex-1">{t.msg}</span>
-            {t.type === "undo" && t.txnId && (
-              <button
-                onClick={() => handleUndo(t.id, t.txnId!)}
-                className="bg-[#3ecf8e] text-[#0d1117] font-bold text-[12px] px-3 py-1 rounded-[7px] cursor-pointer border-0 hover:bg-[#4dd49a] transition-colors"
-              >
-                Undo
-              </button>
-            )}
-            <button
-              onClick={() => dismissToast(t.id)}
-              className="bg-transparent border-0 cursor-pointer text-[#7d8590] hover:text-[#111827] p-0 ml-1"
-            >
-              <X size={14} />
-            </button>
           </div>
         ))}
       </div>
 
-      {/* ── Extracted Components ── */}
-      <VendorSidebar
-        plan="free"
-        navLinks={[
-          {
-            icon: LayoutDashboard,
-            title: "Dashboard",
-            khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
-            href: "/vendor",
-          },
-          {
-            icon: CircleDollarSign,
-            title: "Sales",
-            khmerTitle: "ការលក់",
-            href: "/vendor/sales",
-          },
-          {
-            icon: Receipt,
-            title: "Expenses",
-            khmerTitle: "ចំណាយ",
-            href: "/vendor/expenses",
-          },
-          {
-            icon: Users,
-            title: "Customers",
-            khmerTitle: "អតិថិជន",
-            href: "/vendor/customer",
-          },
-        ]}
-        currentPath="/vendor/sales"
-        collapsed={isSidebarCollapsed}
-        isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-      />
+      <VendorSidebar plan="free" currentPath="/vendor/sales" navLinks={[
+        { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
+        { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/sales" },
+        { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/expenses" },
+        { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/customer" },
+      ]} />
 
-      <ConfirmModal
-        isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={() => deleteTarget && handleDelete(deleteTarget)}
-        title="Delete Transaction?"
-        description="You can undo this within 5 seconds after deletion."
-        previewText={deleteTarget?.items || "Manual entry"}
-        previewSubtext={
-          deleteTarget
-            ? `$${deleteTarget.amount.toFixed(2)} · ${deleteTarget.time}`
-            : undefined
-        }
-      />
+      <main className="flex-1 flex flex-col w-full h-screen overflow-hidden">
+        <VendorTopbar
+          title="Sales"
+          isSidebarCollapsed={isSidebarCollapsed}
+          setIsSidebarCollapsed={setIsSidebarCollapsed}
+          setIsMobileSidebarOpen={setIsSidebarOpen}
+          rightActions={
+          <>
+            <div className={`hidden sm:flex items-center border rounded-[10px] p-[3px] ${isDark ? "bg-[#1a1a1a] border-white/10" : "bg-[#f0f2f5] border-[#e8eaed]"}`}>
+              {(["Day", "Week", "Month"] as Period[]).map((p) => (
+                <button key={p} onClick={() => setPeriod(p)} className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${period === p ? (isDark ? "bg-dark-surface text-white shadow-md" : "bg-white text-[#111827] shadow-sm") : "text-slate-500 hover:text-[#111827]"}`}>{p}</button>
+              ))}
+            </div>
+            <button onClick={openAdd} className="flex items-center gap-[7px] bg-[#0d1117] text-[#3ecf8e] border border-[#3ecf8e]/20 rounded-[10px] px-4 py-[9px] font-bold text-[13px] shadow-[0_2px_14px_rgba(0,0,0,0.15)] hover:bg-black transition-all">
+              <Plus size={14} /> Add Sale
+            </button>
+          </>
+        } />
 
-      {/* ── Add/Edit Modal (Still Inline) ── */}
-      {modalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeModal();
-          }}
-        >
-          <div
-            className={`w-full max-w-md rounded-[20px] shadow-[0_32px_80px_rgba(0,0,0,0.2)] overflow-hidden ${
-              isDark ? "bg-dark-surface border border-white/5" : "bg-white"
-            }`}
-          >
-            <div
-              className={`${isDark ? "bg-[#0d1117]" : "bg-[#0d1117]"} px-7 py-5 flex items-center justify-between`}
-            >
-              <div>
-                <div className="text-[18px] font-bold text-[#e6edf3]">
-                  {editTarget
-                    ? t("sales.editSale") || "Edit Sale"
-                    : t("sales.newSale") || "Log New Sale"}
-                </div>
-                <div
-                  className={`text-[12px] text-[#7d8590] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""}`}
-                >
-                  {editTarget ? "កែប្រែការលក់" : "កត់ត្រាការលក់រហ័ស"}
-                </div>
-              </div>
-              <button
-                onClick={closeModal}
-                className="w-9 h-9 rounded-[9px] bg-white/[0.06] border border-white/[0.08] flex items-center justify-center text-[#7d8590] hover:text-[#e6edf3] transition-colors cursor-pointer"
-              >
-                <X size={16} />
-              </button>
+        <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px]">
+          <div className="max-w-[1400px] mx-auto flex flex-col gap-5">
+            <div>
+              <h1 className="text-[26px] font-bold">My Sales</h1>
+              <p className="text-sm text-slate-500 mt-0.5">Track and manage your daily sales · តាមដាន និងគ្រប់គ្រងការលក់</p>
             </div>
 
-            <div className="p-7 flex flex-col gap-5">
-              <div>
-                <div className="text-[11px] font-bold text-[#6b7280] uppercase tracking-[0.06em] mb-2">
-                  Amount <span className="text-[#ef4444]">*</span>
-                </div>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[17px] font-bold text-[#6b7280]">
-                    $
-                  </span>
-                  <input
-                    ref={amountRef}
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="0.00"
-                    value={fAmount}
-                    onChange={(e) => setFAmount(e.target.value)}
-                    className="w-full pl-10 pr-4 py-4 bg-[#f7f8fa] border border-[#e8eaed] rounded-[12px] text-[24px] font-bold outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
-                    style={{ fontFamily: "inherit" }}
-                  />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <VendorSummaryCard variant="dark" title="Revenue" khmerTitle="ចំណូលប្រចាំ" value={`$${totalRevenue.toFixed(2)}`} />
+              <VendorSummaryCard title="Transactions" khmerTitle="ប្រតិបត្តិការ" value={txns.length} variant={isDark ? "dark" : "light"} />
+              <VendorSummaryCard title="Avg. Sale" khmerTitle="មធ្យមលក់" value={`$${avgSale.toFixed(2)}`} variant={isDark ? "dark" : "light"} />
+            </div>
+
+            <div className={`border rounded-[14px] overflow-hidden shadow-sm ${isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"}`}>
+              <div className="px-[22px] py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-3">
+                <h3 className="font-semibold text-[14px]">Transaction History</h3>
+                <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-64 focus-within:border-[#3ecf8e]/30 focus-within:shadow-[0_0_0_4px_rgba(62,207,142,0.03)] group">
+                  <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#3ecf8e]" />
+                  <input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
                 </div>
               </div>
 
-              <div>
-                <div className="text-[11px] font-bold text-[#6b7280] uppercase tracking-[0.06em] mb-2">
-                  Items{" "}
-                  <span className="text-[#9ca3af] font-normal normal-case tracking-normal">
-                    (optional)
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  placeholder="e.g. 2x Coffee Latte, 1x Spring Roll"
-                  value={fItems}
-                  onChange={(e) => setFItems(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && fAmount) handleSave();
-                  }}
-                  className="w-full px-4 py-3.5 bg-[#f7f8fa] border border-[#e8eaed] rounded-[12px] text-[14px] outline-none text-[#111827] focus:border-[#3ecf8e] transition-colors"
-                  style={{ fontFamily: "inherit" }}
-                />
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="text-[10.5px] uppercase font-bold text-slate-500 border-b border-white/5">
+                    <tr>
+                      <th className="px-[22px] py-[11px]">Time</th>
+                      <th className="px-[22px] py-[11px]">Items</th>
+                      <th className="px-[22px] py-[11px]">Method</th>
+                      <th className="px-[22px] py-[11px] text-right">Amount</th>
+                      <th className="px-[22px] py-[11px] text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {filtered.map((t) => (
+                      <tr key={t.id} className="group hover:bg-white/5 transition-colors text-[13px]">
+                        <td className="px-[22px] py-[14px] text-slate-400">{t.time}</td>
+                        <td className="px-[22px] py-[14px] font-medium">{t.items || "—"}</td>
+                        <td className="px-[22px] py-[14px]">
+                          <span className={`px-2.5 py-[3px] rounded-full text-[11px] font-bold ${METHOD_BADGE[t.method]}`}>{t.method}</span>
+                        </td>
+                        <td className="px-[22px] py-[14px] text-right font-bold text-[#3ecf8e]">+${t.amount.toFixed(2)}</td>
+                        <td className="px-[22px] py-[14px] text-center relative">
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === t.id ? null : t.id); }}
+                            className={`p-1.5 rounded-lg hover:bg-white/10 transition-colors ${activeMenuId === t.id ? "bg-white/10" : ""}`}
+                          >
+                            <MoreVertical size={16} className="text-slate-400" />
+                          </button>
+                          {activeMenuId === t.id && (
+                            <div className={`absolute right-full top-1/2 -translate-y-1/2 mr-2 z-20 w-[120px] rounded-xl shadow-2xl border overflow-hidden ${isDark ? "bg-dark-surface border-white/10" : "bg-white border-slate-200"}`}>
+                              <button onClick={() => openEdit(t)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> Edit</button>
+                              <button onClick={() => { setDeleteTarget(t); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> Delete</button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            </div>
+          </div>
+        </div>
+      </main>
 
-              <div>
-                <div className="text-[11px] font-bold text-[#6b7280] uppercase tracking-[0.06em] mb-2">
-                  Payment Method
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {(["Cash", "ABA/KHQR", "Other"] as Method[]).map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => setFMethod(m)}
-                      className={`py-3 rounded-[10px] text-[13.5px] font-semibold border-0 cursor-pointer transition-all ${
-                        fMethod === m
-                          ? "bg-[rgba(62,207,142,0.12)] outline outline-1 outline-[#3ecf8e] text-[#3ecf8e]"
-                          : "bg-[#f7f8fa] text-[#6b7280] hover:bg-[#eff0f2]"
-                      }`}
-                    >
-                      {m}
-                    </button>
-                  ))}
+      <ConfirmModal 
+        isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete}
+        title="Delete Sale?" description="This action cannot be undone." previewText={deleteTarget ? `$${deleteTarget.amount.toFixed(2)}` : ""}
+      />
+
+      {/* ── Add/Edit Modal ── */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
+          <div className={`w-full max-w-md rounded-[20px] shadow-2xl overflow-hidden ${isDark ? "bg-dark-surface border border-white/5" : "bg-white"}`}>
+            <div className="bg-[#0d1117] px-7 py-5 flex items-center justify-between text-[#e6edf3]">
+              <div><div className="text-[18px] font-bold">{editTarget ? "Edit Sale" : "Log New Sale"}</div><div className="text-[12px] text-slate-500">{editTarget ? "កែប្រែការលក់" : "កត់ត្រាការលក់"}</div></div>
+              <button onClick={closeModal}><X size={18} /></button>
+            </div>
+            <div className="p-7 space-y-5">
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Amount *</label>
+                <div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">$</span>
+                  <input ref={amountRef} type="number" placeholder="0.00" value={fAmount} onChange={(e) => setFAmount(e.target.value)} className="w-full pl-9 pr-4 py-4 rounded-xl text-2xl font-bold border outline-none bg-slate-50 focus:border-[#3ecf8e]" />
                 </div>
               </div>
-
-              <div className="flex gap-3 pt-1">
-                <button
-                  onClick={closeModal}
-                  className="flex-1 py-4 rounded-[12px] bg-[#f0f2f5] text-[#6b7280] font-bold text-[14px] border-0 cursor-pointer hover:bg-[#e8eaed] transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={!fAmount || saving}
-                  className={`flex-[1.5] py-4 rounded-[12px] font-bold text-[14px] border-0 flex items-center justify-center gap-2 transition-all ${
-                    saving
-                      ? "bg-[rgba(62,207,142,0.15)] text-[#3ecf8e] cursor-default"
-                      : fAmount
-                        ? "bg-[#3ecf8e] text-[#0d1117] cursor-pointer hover:bg-[#4dd49a] shadow-[0_4px_14px_rgba(62,207,142,0.3)]"
-                        : "bg-[#f0f2f5] text-[#9ca3af] cursor-not-allowed"
-                  }`}
-                >
-                  {saving ? (
-                    <>
-                      <CheckCircle2 size={16} />{" "}
-                      {editTarget ? "Updated!" : "Saved!"}
-                    </>
-                  ) : (
-                    <>
-                      <Plus size={16} />{" "}
-                      {editTarget ? "Update Sale" : "Save Log"}
-                    </>
-                  )}
-                </button>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Items (Optional)</label>
+                <input type="text" placeholder="e.g. 2x Coffee" value={fItems} onChange={(e) => setFItems(e.target.value)} className="w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none bg-slate-50 focus:border-[#3ecf8e]" />
+              </div>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Payment Method</label>
+                <div className="grid grid-cols-3 gap-2">{(["Cash", "ABA/KHQR", "Other"] as Method[]).map((m) => (
+                  <button key={m} onClick={() => setFMethod(m)} className={`py-3 rounded-[10px] text-[13px] font-bold transition-all ${fMethod === m ? "bg-[#3ecf8e] text-[#0d1117] shadow-lg" : "bg-slate-50 text-slate-500"}`}>{m}</button>
+                ))}</div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button onClick={closeModal} className="flex-1 py-4 rounded-xl bg-slate-100 text-slate-500 font-bold">Cancel</button>
+                <button onClick={handleSave} disabled={!fAmount || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black transition-all">{saving ? "Saving..." : "Save Log"}</button>
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* ══ MAIN ══════════════════════════════════════════════════ */}
-      <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
-        {/* ── Topbar ── */}
-        <VendorTopbar
-          title={"Sales"}
-          isSidebarCollapsed={isSidebarCollapsed}
-          setIsSidebarCollapsed={setIsSidebarCollapsed}
-          setIsMobileSidebarOpen={setIsSidebarOpen}
-          rightActions={
-            <>
-              <div
-                className={`hidden sm:flex items-center border rounded-[10px] p-[3px] ${
-                  isDark
-                    ? "bg-[#1a1a1a] border-white/10"
-                    : "bg-[#f0f2f5] border-[#e8eaed]"
-                }`}
-              >
-                {(["Day", "Week", "Month"] as Period[]).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setPeriod(p)}
-                    className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${
-                      period === p
-                        ? isDark
-                          ? "bg-dark-surface text-white shadow-[0_1px_4px_rgba(0,0,0,0.3)]"
-                          : "bg-white text-[#111827] shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
-                        : isDark
-                          ? "bg-transparent text-[#7d8590] hover:text-white"
-                          : "bg-transparent text-[#6b7280] hover:text-[#111827]"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={openAdd}
-                className="flex items-center gap-[7px] bg-[#3ecf8e] text-[#0d1117] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a] transition-colors"
-              >
-                <Plus size={14} /> Add Sale
-              </button>
-            </>
-          }
-        />
-
-        {/* ── Scrollable body ── */}
-        <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px]">
-          <div className="max-w-[1400px] mx-auto flex flex-col gap-5">
-            {/* ══ SALES HEADER ══════════════════════════════════════ */}
-            <div className="pt-1 pb-2">
-              <h1
-                className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}
-              >
-                {"My Sales"}
-              </h1>
-              <p
-                className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
-              >
-                {t("sales.subtitle") || "Track and manage your daily sales"} ·
-                តាមដាន និងគ្រប់គ្រងការលក់
-              </p>
-            </div>
-
-            {/* ── 3 stat cards (Using Extracted Components) ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <VendorSummaryCard
-                variant="dark"
-                title={`${period}'s Revenue`}
-                khmerTitle="ចំណូលប្រចាំ"
-                value={`$${totalRevenue.toFixed(2)}`}
-              />
-              <VendorSummaryCard
-                title="Transactions"
-                khmerTitle="ចំនួនការលក់"
-                value={activeTxns.length}
-                subtext="sales today"
-                variant={isDark ? "dark" : "light"}
-              />
-              <VendorSummaryCard
-                title="Avg. Sale"
-                khmerTitle="មធ្យមតម្លៃ"
-                value={`$${avgSale.toFixed(2)}`}
-                subtext="per txn"
-                variant={isDark ? "dark" : "light"}
-              />
-            </div>
-
-            {/* ── Transactions table (Still Inline) ── */}
-            <div
-              className={`border rounded-[14px] overflow-hidden shadow-sm ${
-                isDark
-                  ? "bg-dark-surface border-white/5"
-                  : "bg-white border-[#e8eaed]"
-              }`}
-            >
-              <div
-                className={`px-[22px] py-4 border-b flex items-center justify-between gap-3 flex-wrap ${
-                  isDark ? "border-white/5" : "border-[#f0f2f5]"
-                }`}
-              >
-                <div>
-                  <div
-                    className={`text-[14px] font-semibold ${isDark ? "text-white" : "text-[#111827]"}`}
-                  >
-                    {t("sales.history") || "Transaction History"}
-                  </div>
-                  <div className="text-[11px] text-[#6b7280] mt-0.5">
-                    {activeTxns.length} record
-                    {activeTxns.length !== 1 ? "s" : ""} · Click row to edit
-                  </div>
-                </div>
-                <div className="relative">
-                  <Search
-                    size={13}
-                    className="absolute left-[11px] top-1/2 -translate-y-1/2 text-[#6b7280] pointer-events-none"
-                  />
-                  <input
-                    type="text"
-                    placeholder={t("common.search") || "Search transactions..."}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className={`pl-[33px] pr-4 py-[9px] border rounded-[9px] text-[13px] outline-none transition-colors w-[200px] ${
-                      isDark
-                        ? "bg-[#0d1117] border-white/5 text-white focus:border-[#3ecf8e]"
-                        : "bg-[#f7f8fa] border-[#e8eaed] text-[#111827] focus:border-[#3ecf8e]"
-                    }`}
-                    style={{ fontFamily: "inherit" }}
-                  />
-                </div>
-              </div>
-
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-[#f0f2f5]">
-                    <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">
-                      Time
-                    </th>
-                    <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">
-                      Items
-                    </th>
-                    <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em]">
-                      Method
-                    </th>
-                    <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">
-                      Amount
-                    </th>
-                    <th className="px-[22px] py-[11px] text-[10.5px] font-bold text-[#9ca3af] uppercase tracking-[0.07em] text-right">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.length ? (
-                    filtered.map((t, i) => (
-                      <tr
-                        key={t.id}
-                        className={`group transition-colors cursor-pointer ${
-                          isDark ? "hover:bg-[#1a1a1a]" : "hover:bg-[#f7f8fa]"
-                        } ${i < filtered.length - 1 ? (isDark ? "border-b border-white/5" : "border-b border-[#f0f2f5]") : ""}`}
-                        onClick={() => openEdit(t)}
-                      >
-                        <td
-                          className={`px-[22px] py-[14px] text-[13px] whitespace-nowrap ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
-                        >
-                          {t.time}
-                        </td>
-                        <td
-                          className={`px-[22px] py-[14px] text-[13px] font-medium max-w-[280px] truncate ${isDark ? "text-white" : "text-[#111827]"}`}
-                        >
-                          {t.items || "—"}
-                        </td>
-                        <td className="px-[22px] py-[14px]">
-                          <span
-                            className={`inline-block px-2.5 py-[3px] rounded-full text-[11.5px] font-semibold ${METHOD_BADGE[t.method]}`}
-                          >
-                            {t.method}
-                          </span>
-                        </td>
-                        <td className="px-[22px] py-[14px] text-[13.5px] font-bold text-[#3ecf8e] text-right whitespace-nowrap">
-                          +${t.amount.toFixed(2)}
-                        </td>
-                        <td
-                          className="px-[22px] py-[14px] text-right"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => openEdit(t)}
-                              className="w-8 h-8 rounded-[8px] bg-transparent hover:bg-[#f0f2f5] border-0 flex items-center justify-center cursor-pointer text-[#6b7280] hover:text-[#111827] transition-colors"
-                              title="Edit"
-                            >
-                              <Pencil size={13} />
-                            </button>
-                            <button
-                              onClick={() => setDeleteTarget(t)}
-                              className="w-8 h-8 rounded-[8px] bg-transparent hover:bg-[rgba(239,68,68,0.08)] border-0 flex items-center justify-center cursor-pointer text-[#6b7280] hover:text-[#ef4444] transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="px-[22px] py-14 text-center">
-                        <div className="text-[13px] text-[#9ca3af]">
-                          {search
-                            ? "No transactions match your search"
-                            : "No transactions yet — add your first sale!"}
-                        </div>
-                        {!search && (
-                          <button
-                            onClick={openAdd}
-                            className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#3ecf8e] bg-transparent border-0 cursor-pointer hover:underline"
-                          >
-                            <Plus size={14} /> Add first sale
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-
-              {activeTxns.length > 0 && (
-                <div
-                  className={`px-[22px] py-3 border-t flex items-center justify-between ${
-                    isDark ? "border-white/5" : "border-[#f0f2f5]"
-                  }`}
-                >
-                  <span
-                    className={`text-[12px] ${isDark ? "text-[#7d8590]" : "text-[#9ca3af]"}`}
-                  >
-                    {filtered.length} of {activeTxns.length} records
-                  </span>
-                  <span
-                    className={`text-[13px] font-bold ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}
-                  >
-                    Total:{" "}
-                    <span className="text-[#3ecf8e]">
-                      ${filtered.reduce((s, t) => s + t.amount, 0).toFixed(2)}
-                    </span>
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 px-1">
-              <RotateCcw size={12} className="text-[#9ca3af]" />
-              <span className="text-[11.5px] text-[#9ca3af]">
-                Deleted records can be undone within 5 seconds · Click any row
-                to edit
-              </span>
-            </div>
-
-            <div className="h-4" />
-          </div>
-        </div>
-      </main>
     </div>
   );
 }

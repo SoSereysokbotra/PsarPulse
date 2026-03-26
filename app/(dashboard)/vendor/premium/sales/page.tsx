@@ -338,12 +338,12 @@ export default function PremiumSalesPage() {
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="relative">
-                    <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-colors group focus-within:border-[#3ecf8e] w-64">
+                    <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#3ecf8e] transition-colors" />
                     <input
                       type="text"
                       placeholder="Search unlimited logs..."
-                      className="pl-9 pr-4 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] text-[#111827] dark:text-white outline-none focus:border-[#3ecf8e] dark:focus:border-[#3ecf8e] min-h-[40px] transition-colors"
+                      className="bg-transparent border-none outline-none text-[13px] text-[#111827] dark:text-white w-full placeholder:text-[#9ca3af]"
                     />
                   </div>
                   <button className="p-2 border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[#6b7280] dark:text-[#7d8590] hover:bg-[#f0f2f5] dark:hover:bg-white/5 transition-colors min-h-[40px] bg-white dark:bg-[#161B22] cursor-pointer">

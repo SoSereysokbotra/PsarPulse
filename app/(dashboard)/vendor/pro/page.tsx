@@ -53,12 +53,17 @@ const PRODUCT_LIBRARY: Product[] = [
   { id: "6", name: "Mango Sticky Rice", price: 2.0 },
 ];
 
-const GOAL_DATA = {
-  label: "Daily Revenue Goal",
-  khmer: "គោលដៅចំណូលប្រចាំថ្ងៃ",
-  current: 0,
-  target: 200,
-};
+const GOAL_TARGET = 200;
+
+const EXPENSE_COLORS = [
+  "#29B28D",
+  "#6366f1",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#ec4899",
+  "#94a3b8",
+];
 
 const PRO_NAV = [
   {
@@ -113,32 +118,212 @@ export default function ProDashboard() {
   const [isDayLocked, setIsDayLocked] = useState(false);
   const [showCustomCategoryModal, setShowCustomCategoryModal] = useState(false);
   const [customCategoryName, setCustomCategoryName] = useState("");
-  
-  const hasData = false; // Empty state for new user
+  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+  const [salesRaw, setSalesRaw] = useState<any[]>([]);
+  const [expensesRaw, setExpensesRaw] = useState<any[]>([]);
 
-  // Initials logic
+  const [stats, setStats] = useState({
+    sales: 0,
+    expenses: 0,
+    customers: 0,
+    transactions: 0
+  });
+
+  const fetchAllData = useCallback(async () => {
+    try {
+      const [salesRes, expRes, custRes, invRes] = await Promise.all([
+        fetch("/api/vendor/sales"),
+        fetch("/api/vendor/expenses"),
+        fetch("/api/vendor/customers"),
+        fetch("/api/vendor/inventory")
+      ]);
+      const [salesData, expData, custData, invData] = await Promise.all([
+        salesRes.json(),
+        expRes.json(),
+        custRes.json(),
+        invRes.json()
+      ]);
+
+      if (salesData.success) {
+        const raw: any[] = salesData.data;
+        setSalesRaw(raw);
+        const totalSales = raw.reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
+        setStats(prev => ({ ...prev, sales: totalSales, transactions: raw.length }));
+      }
+      if (expData.success) {
+        const raw: any[] = expData.data;
+        setExpensesRaw(raw);
+        const totalExp = raw.reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
+        setStats(prev => ({ ...prev, expenses: totalExp }));
+      }
+      if (custData.success) {
+        setStats(prev => ({ ...prev, customers: custData.data.length }));
+      }
+      if (invData.success) {
+        setInventoryItems(invData.data);
+      }
+    } catch (e) {
+      console.error("Dashboard fetch error:", e);
+    }
+  }, []);
+
+  // Initial fetch
+  useEffect(() => { fetchAllData(); }, [fetchAllData]);
+
+  // Re-fetch whenever the tab becomes visible again (user navigates back from Sales/Expenses etc.)
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === "visible") fetchAllData(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [fetchAllData]);
+
+  const hasData = stats.transactions > 0 || stats.expenses > 0 || stats.customers > 0;
+
+  // ── Goal ring ─────────────────────────────────────────
+  const goalPct = Math.min((stats.sales / GOAL_TARGET) * 100, 100);
+  const radius = 38;
+  const circum = 2 * Math.PI * radius;
+  const strokeDash = (goalPct / 100) * circum;
+
+  // ── Weekly Revenue chart: group salesRaw by day-of-week (Mon=0…Sun=6) ──
+  const weeklyLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const weeklyData = React.useMemo(() => {
+    // Only last 7 days
+    const now = new Date();
+    const buckets = [0, 0, 0, 0, 0, 0, 0];
+    salesRaw.forEach((t) => {
+      const d = new Date(t.createdAt);
+      const diffMs = now.getTime() - d.getTime();
+      const diffDays = Math.floor(diffMs / 86400000);
+      if (diffDays < 7) {
+        // dayOfWeek: 0=Sun,1=Mon…6=Sat — remap to Mon=0
+        const dow = (d.getDay() + 6) % 7; // Mon=0, Sun=6
+        buckets[dow] += parseFloat(t.amount || "0");
+      }
+    });
+    return buckets;
+  }, [salesRaw]);
+
+  // ── Monthly Revenue chart: group salesRaw into 4 calendar weeks ──
+  const monthlyLabels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+  const monthlyData = React.useMemo(() => {
+    const buckets = [0, 0, 0, 0];
+    salesRaw.forEach((t) => {
+      const d = new Date(t.createdAt);
+      const weekIdx = Math.min(3, Math.floor((d.getDate() - 1) / 7));
+      buckets[weekIdx] += parseFloat(t.amount || "0");
+    });
+    return buckets;
+  }, [salesRaw]);
+
+  // ── Expense categories chart ──
+  const expenseCategories = React.useMemo(() => {
+    const map: Record<string, number> = {};
+    expensesRaw.forEach((e) => {
+      const cat = e.category || "Others";
+      map[cat] = (map[cat] || 0) + parseFloat(e.amount || "0");
+    });
+    const total = Object.values(map).reduce((a, b) => a + b, 0);
+    return Object.entries(map).map(([label, value], idx) => ({
+      label,
+      value: total > 0 ? Math.round((value / total) * 100) : 0,
+      amount: value,
+      color: EXPENSE_COLORS[idx % EXPENSE_COLORS.length],
+    }));
+  }, [expensesRaw]);
+
+  // ── Best Selling: counted from salesRaw items strings ──
+  const bestSellingProducts = React.useMemo(() => {
+    if (inventoryItems.length > 0) {
+      // Use inventory as product list, compute sold qty from salesRaw item descriptions
+      const soldMap: Record<string, number> = {};
+      salesRaw.forEach((t) => {
+        const itemStr: string = t.items || "";
+        // parse "2x Coffee, 1x Tea" style strings
+        const parts = itemStr.split(",").map((s: string) => s.trim());
+        parts.forEach((part) => {
+          const match = part.match(/^(\d+)x?\s+(.+)$/i);
+          if (match) {
+            const qty = parseInt(match[1], 10);
+            const name = match[2].trim();
+            soldMap[name] = (soldMap[name] || 0) + qty;
+          }
+        });
+      });
+      const sorted = Object.entries(soldMap)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 4);
+      const maxQty = sorted[0]?.[1] || 1;
+      return sorted.map(([name, qty], i) => {
+        const invItem = inventoryItems.find((inv: any) => inv.name.toLowerCase() === name.toLowerCase());
+        return {
+          name,
+          khmer: invItem?.khmerName || "",
+          qty,
+          revenue: `$${(invItem ? parseFloat(invItem.price || "0") * qty : 0).toFixed(2)}`,
+          pct: Math.round((qty / maxQty) * 100),
+        };
+      });
+    }
+    return [];
+  }, [salesRaw, inventoryItems]);
+
+  // ── Export handlers ──
+  const handleExportPDF = () => window.print();
+  const handleExportCSV = () => {
+    const rows = [
+      ["Metric", "Value"],
+      ["Total Sales", `$${stats.sales.toFixed(2)}`],
+      ["Total Expenses", `$${stats.expenses.toFixed(2)}`],
+      ["Net Profit", `$${(stats.sales - stats.expenses).toFixed(2)}`],
+      ["Customers", String(stats.customers)],
+      ["Transactions", String(stats.transactions)],
+    ];
+    const csv = rows.map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "dashboard_summary.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── User display ──
   const getInitials = (name: string) => {
     if (!name) return "??";
     const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     return name.trim().slice(0, 2).toUpperCase();
   };
 
-  const displayName = 
-    user?.fullName || 
-    (user as any)?.full_name || 
-    vendor?.businessName || 
+  const displayName =
+    user?.fullName ||
+    (user as any)?.full_name ||
+    vendor?.businessName ||
     (user?.email ? user.email.split('@')[0] : (loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : (isKhmer ? "អ្នកប្រើប្រាស់" : "User")));
 
   const displayInitials = getInitials(
-    user?.fullName || 
-    (user as any)?.full_name || 
-    vendor?.businessName || 
+    user?.fullName ||
+    (user as any)?.full_name ||
+    vendor?.businessName ||
     (user?.email ? user.email.split('@')[0] : (isKhmer ? "អ្នកប្រើប្រាស់" : "User"))
   );
 
+  // ── Greeting (hydration-safe) ──
+  const [greetingState, setGreetingState] = useState({ greeting: "", greetingKh: "", dateStr: "" });
+  useEffect(() => {
+    if (!mounted) return;
+    const now = new Date();
+    const hour = now.getHours();
+    const g = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    const gKh = hour < 12 ? "អរុណសួស្តី" : hour < 17 ? "ទិវាសួស្តី" : "សាយ័ណ្ហសួស្តី";
+    const d = now.toLocaleDateString("en-KH", { weekday: "long", month: "long", day: "numeric" });
+    setGreetingState({ greeting: g, greetingKh: gKh, dateStr: d });
+  }, [mounted, isKhmer]);
+  const { greeting, greetingKh, dateStr } = greetingState;
+
+  // ── Quick Sale ──
   const [quickSaleOpen, setQuickSaleOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [cart, setCart] = useState<{ product: Product; qty: number }[]>([]);
@@ -147,40 +332,6 @@ export default function ProDashboard() {
   const searchRef = React.useRef<HTMLInputElement>(null);
   const quickSaleRef = React.useRef<HTMLDivElement>(null);
 
-  // Hydration-safe greeting and date
-  const [greetingState, setGreetingState] = useState({ 
-    greeting: "", 
-    greetingKh: "", 
-    dateStr: "" 
-  });
-
-  useEffect(() => {
-    if (!mounted) return;
-    const now = new Date();
-    const hour = now.getHours();
-    const g = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-    const gKh = hour < 12 ? "អរុណសួស្តី" : hour < 17 ? "ទិវាសួស្តី" : "សាយ័ណ្ហសួស្តី";
-    const d = now.toLocaleDateString("en-KH", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    });
-    setGreetingState({ greeting: g, greetingKh: gKh, dateStr: d });
-  }, [mounted, isKhmer]);
-
-  const { greeting, greetingKh, dateStr } = greetingState;
-
-  // Goal ring
-  const GOAL = hasData ? GOAL_DATA : { ...GOAL_DATA, current: 0 };
-  const goalPct = Math.min((GOAL.current / GOAL.target) * 100, 100);
-  const radius = 38;
-  const circum = 2 * Math.PI * radius;
-  const strokeDash = (goalPct / 100) * circum;
-
-  useEffect(() => {
-    if (quickSaleOpen) setTimeout(() => searchRef.current?.focus(), 120);
-  }, [quickSaleOpen]);
-
   const closeQuickSale = React.useCallback(() => {
     setQuickSaleOpen(false);
     setCart([]);
@@ -188,9 +339,7 @@ export default function ProDashboard() {
   }, []);
 
   React.useEffect(() => {
-    const fn = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeQuickSale();
-    };
+    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") closeQuickSale(); };
     window.addEventListener("keydown", fn);
     return () => window.removeEventListener("keydown", fn);
   }, [closeQuickSale]);
@@ -198,27 +347,20 @@ export default function ProDashboard() {
   React.useEffect(() => {
     if (!quickSaleOpen) return;
     const fn = (e: MouseEvent) => {
-      if (
-        quickSaleRef.current &&
-        !quickSaleRef.current.contains(e.target as Node)
-      )
-        closeQuickSale();
+      if (quickSaleRef.current && !quickSaleRef.current.contains(e.target as Node)) closeQuickSale();
     };
     setTimeout(() => document.addEventListener("mousedown", fn), 0);
     return () => document.removeEventListener("mousedown", fn);
   }, [quickSaleOpen, closeQuickSale]);
 
-  const filteredProducts = PRODUCT_LIBRARY.filter((p) =>
+  const filteredProducts = inventoryItems.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const addToCart = (product: Product) => {
     setCart((prev) => {
       const exists = prev.find((i) => i.product.id === product.id);
-      if (exists)
-        return prev.map((i) =>
-          i.product.id === product.id ? { ...i, qty: i.qty + 1 } : i,
-        );
+      if (exists) return prev.map((i) => i.product.id === product.id ? { ...i, qty: i.qty + 1 } : i);
       return [...prev, { product, qty: 1 }];
     });
     setSearchQuery("");
@@ -226,142 +368,53 @@ export default function ProDashboard() {
   };
 
   const changeQty = (id: string, delta: number) =>
-    setCart((prev) =>
-      prev
-        .map((i) => (i.product.id === id ? { ...i, qty: i.qty + delta } : i))
-        .filter((i) => i.qty > 0),
-    );
+    setCart((prev) => prev.map((i) => i.product.id === id ? { ...i, qty: i.qty + delta } : i).filter((i) => i.qty > 0));
 
   const cartTotal = cart.reduce((sum, i) => sum + i.product.price * i.qty, 0);
   const cartItems = cart.reduce((sum, i) => sum + i.qty, 0);
 
-  const completeSale = () => {
-    setCart([]);
-    setCustomers(1);
-    setSearchQuery("");
-    setQuickSaleOpen(false);
+  const completeSale = async () => {
+    if (!cart.length) return;
+    try {
+      const itemsStr = cart.map(i => `${i.qty}x ${i.product.name}`).join(", ");
+      const res = await fetch("/api/vendor/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: cartTotal, method: "Cash", items: itemsStr }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        // Optimistically update raw sales so all charts refresh immediately
+        setSalesRaw(prev => [json.data, ...prev]);
+        setStats(prev => ({ ...prev, sales: prev.sales + cartTotal, transactions: prev.transactions + 1 }));
+        setCart([]);
+        setCustomers(1);
+        setSearchQuery("");
+        setQuickSaleOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to complete quick sale:", error);
+    }
   };
+
   const logExpense = () => {
     setExpLogged(true);
     setTimeout(() => setExpLogged(false), 2200);
   };
 
-
-
-  const summaryData = hasData ? {
-    sales: "$324.50",
-    expenses: "$95.00",
-    profit: "$229.50",
-    customers: "78",
-    avgCustomer: "$4.16",
-    bestSelling: "Iced Coffee",
-    profitMargin: "70.7%",
-    trends: {
-      sales: "+22%",
-      profit: "+28%",
-      expenses: "-5%",
-      customers: "+15%"
-    }
-  } : {
-    sales: "$0.00",
-    expenses: "$0.00",
-    profit: "$0.00",
-    customers: "0",
-    avgCustomer: "$0.00",
-    bestSelling: "-",
-    profitMargin: "0%",
-    trends: {
-      sales: "",
-      profit: "",
-      expenses: "",
-      customers: ""
-    }
+  // ── Summary card data ──
+  const summaryData = {
+    sales: `$${stats.sales.toFixed(2)}`,
+    expenses: `$${stats.expenses.toFixed(2)}`,
+    profit: `$${(stats.sales - stats.expenses).toFixed(2)}`,
+    customers: String(stats.customers),
+    avgCustomer: stats.transactions > 0 ? `$${(stats.sales / stats.transactions).toFixed(2)}` : "$0.00",
+    bestSelling: bestSellingProducts[0]?.name || "-",
+    profitMargin: stats.sales > 0 ? `${(((stats.sales - stats.expenses) / stats.sales) * 100).toFixed(1)}%` : "0%",
+    trends: { sales: "", profit: "", expenses: "", customers: "" },
   };
 
-
-
-  const weeklyData = [55, 82, 48, 95, 72, 130, 92];
-  const weeklyLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const monthlyData = [520, 680, 610, 740];
-  const monthlyLabels = ["Week 1", "Week 2", "Week 3", "Week 4"];
-
-  const bestSellingProducts = [
-    {
-      name: "Iced Coffee",
-      khmer: "កាហ្វេទឹកកក",
-      qty: 52,
-      revenue: "$78.00",
-      pct: 100,
-    },
-    {
-      name: "Noodle Soup",
-      khmer: "គុយទាវ",
-      qty: 38,
-      revenue: "$114.00",
-      pct: 73,
-    },
-    {
-      name: "Hot Latte",
-      khmer: "ឡាតេក្តៅ",
-      qty: 30,
-      revenue: "$60.00",
-      pct: 58,
-    },
-    { name: "Green Tea", khmer: "តែបៃតង", qty: 24, revenue: "$36.00", pct: 46 },
-  ];
-
-  const expenseCategories = [
-    { label: "គ្រឿងផ្សំ", value: 38, color: "#29B28D" },
-    { label: "ថ្លៃជួល", value: 22, color: "#6366f1" },
-    { label: "ពលកម្ម", value: 18, color: "#f59e0b" },
-    { label: "ដឹកជញ្ជូន", value: 10, color: "#ef4444" },
-    { label: "អគ្គិសនី", value: 5, color: "#8b5cf6" },
-    { label: "ទីផ្សារ", value: 4, color: "#ec4899", custom: true },
-    { label: "ផ្សេងៗ", value: 3, color: "#94a3b8" },
-  ];
-
-  const inventoryItems = [
-    {
-      id: 1,
-      name: "Iced Coffee",
-      khmer: "កាហ្វេទឹកកក",
-      stock: 45,
-      threshold: 10,
-      status: "good",
-    },
-    {
-      id: 2,
-      name: "Hot Latte",
-      khmer: "ឡាតេក្តៅ",
-      stock: 8,
-      threshold: 10,
-      status: "low",
-    },
-    {
-      id: 3,
-      name: "Mango Sticky Rice",
-      khmer: "បាយដំណើបស្វាយ",
-      stock: 0,
-      threshold: 5,
-      status: "out",
-    },
-    {
-      id: 4,
-      name: "Noodle Soup",
-      khmer: "គុយទាវ",
-      stock: 24,
-      threshold: 15,
-      status: "good",
-    },
-    {
-      id: 5,
-      name: "Green Tea",
-      khmer: "តែបៃតង",
-      stock: 12,
-      threshold: 10,
-      status: "good",
-    },
-  ];
+  const goalKhmer = "គោលដៅចំណូលប្រចាំថ្ងៃ";
 
   return (
     <VendorDashboardLayout
@@ -464,8 +517,8 @@ export default function ProDashboard() {
                         Tap to add
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
-                        {hasData ? (
-                          PRODUCT_LIBRARY.map((p) => {
+                        {inventoryItems.length > 0 ? (
+                          inventoryItems.map((p) => {
                             const inCart = cart.find(
                               (i) => i.product.id === p.id,
                             );
@@ -613,11 +666,11 @@ export default function ProDashboard() {
           </div>
 
           {/* Export buttons */}
-          <button className="hidden lg:flex items-center gap-2 bg-[#0E1319] hover:opacity-90 text-white font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer border-0">
+          <button onClick={handleExportPDF} className="hidden lg:flex items-center gap-2 bg-[#0E1319] hover:opacity-90 text-white font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer border-0">
             <FileText className="w-4 h-4" /> Export PDF
           </button>
-          <button className="hidden lg:flex items-center gap-2 bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 hover:bg-[#f7f8fa] dark:hover:bg-white/5 dark:bg-[#0d1117] text-[#111827] dark:text-white font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer">
-            <FileSpreadsheet className="w-4 h-4" /> Export Excel
+          <button onClick={handleExportCSV} className="hidden lg:flex items-center gap-2 bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 hover:bg-[#f7f8fa] dark:hover:bg-white/5 text-[#111827] dark:text-white font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer">
+            <FileSpreadsheet className="w-4 h-4" /> Export CSV
           </button>
         </>
       }
@@ -688,10 +741,10 @@ export default function ProDashboard() {
                 </span>
               </div>
               <div className="text-[22px] font-extrabold text-[#e6edf3] leading-none">
-                ${GOAL.current.toFixed(2)}
+                ${stats.sales.toFixed(2)}
               </div>
               <div className="text-[11px] text-[#7d8590] mt-1">
-                of ${GOAL.target.toFixed(2)} target
+                of ${GOAL_TARGET.toFixed(2)} target
               </div>
               <div className="mt-2 w-[120px] h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                 <div
@@ -700,7 +753,7 @@ export default function ProDashboard() {
                 />
               </div>
               <div className="text-[10px] text-[#7d8590] mt-1">
-                {GOAL.khmer}
+                {goalKhmer}
               </div>
             </div>
           </div>
@@ -755,27 +808,23 @@ export default function ProDashboard() {
               ចំណូលប្រចាំសប្តាហ៍
             </p>
             <div className="h-40 flex items-end gap-1.5">
-              {hasData ? (
-                weeklyData.map((height, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 flex flex-col items-center gap-1"
-                  >
-                    <div
-                      className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
-                      style={{ height: "120px" }}
-                    >
+              {hasData ? (() => {
+                const maxVal = Math.max(...weeklyData, 0.01);
+                return weeklyData.map((val, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    {val > 0 && (
+                      <span className="text-[9px] font-bold text-[#6b7280] dark:text-[#7d8590]">${val.toFixed(0)}</span>
+                    )}
+                    <div className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group" style={{ height: "120px" }}>
                       <div
                         className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
-                        style={{ height: `${height}%` }}
+                        style={{ height: `${(val / maxVal) * 100}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
-                      {weeklyLabels[i]}
-                    </span>
+                    <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">{weeklyLabels[i]}</span>
                   </div>
-                ))
-              ) : (
+                ));
+              })() : (
                 <div className="w-full h-full flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10">
                   <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">No data. Add item</span>
                 </div>
@@ -790,30 +839,21 @@ export default function ProDashboard() {
             </h3>
             <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-5">ចំណូលប្រចាំខែ</p>
             <div className="h-40 flex items-end gap-2">
-              {hasData ? (
-                monthlyData.map((val, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 flex flex-col items-center gap-1"
-                  >
-                    <span className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590]">
-                      ${val}
-                    </span>
-                    <div
-                      className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
-                      style={{ height: "100px" }}
-                    >
+              {hasData ? (() => {
+                const maxVal = Math.max(...monthlyData, 0.01);
+                return monthlyData.map((val, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <span className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590]">${val.toFixed(0)}</span>
+                    <div className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group" style={{ height: "100px" }}>
                       <div
                         className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
-                        style={{ height: `${(val / 800) * 100}%` }}
+                        style={{ height: `${(val / maxVal) * 100}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
-                      {monthlyLabels[i]}
-                    </span>
+                    <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">{monthlyLabels[i]}</span>
                   </div>
-                ))
-              ) : (
+                ));
+              })() : (
                 <div className="w-full h-full flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10">
                   <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">No data. Add item</span>
                 </div>

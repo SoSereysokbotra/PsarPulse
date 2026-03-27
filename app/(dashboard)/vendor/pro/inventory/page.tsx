@@ -41,77 +41,85 @@ export default function ProInventoryPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const summaryData = {
-    totalItems: "48", // Pro has more items capability
-    lowStock: "3",
-    totalValue: "$1,245.50",
-    mostSold: "Iced Coffee",
-    stockTurnover: "4.2x",
+  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [formData, setFormData] = useState({ name: "", khmerName: "", price: "", stock: 0, threshold: 10 });
+
+  const fetchInventory = async () => {
+    try {
+      const res = await fetch("/api/vendor/inventory");
+      const data = await res.json();
+      if (data.success) setInventoryItems(data.data);
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
-  // Mock Inventory Data mapping to SRS DB Requirements (ProductID, ProductName, DefaultPrice)
-  const inventoryItems = [
-    {
-      id: 1,
-      name: "Iced Coffee",
-      khmerName: "កាហ្វេទឹកកក",
-      price: "$1.50",
-      stock: 45,
-      threshold: 10,
-      status: "good",
-      lastRestock: "2 days ago",
-    },
-    {
-      id: 2,
-      name: "Hot Latte",
-      khmerName: "ឡាតេក្តៅ",
-      price: "$2.00",
-      stock: 8,
-      threshold: 10,
-      status: "low",
-      lastRestock: "1 week ago",
-    },
-    {
-      id: 3,
-      name: "Mango Sticky Rice",
-      khmerName: "បាយដំណើបស្វាយ",
-      price: "$2.50",
-      stock: 0,
-      threshold: 5,
-      status: "out",
-      lastRestock: "Yesterday",
-    },
-    {
-      id: 4,
-      name: "Noodle Soup",
-      khmerName: "គុយទាវ",
-      price: "$0.01",
-      stock: 24,
-      threshold: 15,
-      status: "good",
-      lastRestock: "3 days ago",
-    },
-    {
-      id: 5,
-      name: "Green Tea",
-      khmerName: "តែបៃតង",
-      price: "$1.50",
-      stock: 12,
-      threshold: 10,
-      status: "good",
-      lastRestock: "4 days ago",
-    },
-    {
-      id: 6,
-      name: "Croissant",
-      khmerName: "នំខូសង់",
-      price: "$1.80",
-      stock: 5,
-      threshold: 8,
-      status: "low",
-      lastRestock: "Today",
-    },
-  ];
+  React.useEffect(() => { fetchInventory(); }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const url = editingItem ? `/api/vendor/inventory/${editingItem.id}` : "/api/vendor/inventory";
+    const method = editingItem ? "PUT" : "POST";
+    try {
+      const res = await fetch(url, {
+        method, headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+      if (res.ok) {
+        setIsModalOpen(false);
+        setEditingItem(null);
+        fetchInventory();
+      }
+    } catch (error) { console.error(error); }
+  };
+
+  const handleDelete = async (id: string) => {
+    if(!window.confirm("Are you sure?")) return;
+    try {
+      const res = await fetch(`/api/vendor/inventory/${id}`, { method: "DELETE" });
+      if (res.ok) fetchInventory();
+    } catch (error) { console.error(error); }
+  };
+
+  const openAdd = () => { setFormData({ name: "", khmerName: "", price: "", stock: 0, threshold: 10 }); setEditingItem(null); setIsModalOpen(true); };
+  const openEdit = (item: any) => { setFormData({ name: item.name, khmerName: item.khmerName || "", price: item.price, stock: item.stock, threshold: item.threshold }); setEditingItem(item); setIsModalOpen(true); };
+
+  const handleExportCSV = () => {
+    const rows = [
+      ["Name", "Khmer Name", "Price", "Stock", "Status", "Threshold"],
+      ...inventoryItems.map((item) => [
+        item.name,
+        item.khmerName || "",
+        item.price,
+        item.stock,
+        item.status,
+        item.threshold,
+      ]),
+    ];
+    const csv = rows.map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "inventory_export.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const lowStockItems = inventoryItems.filter(
+    (i) => i.status === "low" || i.status === "out" || (typeof i.stock === "number" && typeof i.threshold === "number" && i.stock <= i.threshold)
+  );
+
+  const summaryData = {
+    totalItems: inventoryItems.length.toString(),
+    lowStock: inventoryItems.filter(i => i.status === 'low' || i.stock <= i.threshold).length.toString(),
+    totalValue: "$" + inventoryItems.reduce((acc, curr) => acc + (parseFloat(curr.price) * curr.stock), 0).toFixed(2),
+    mostSold: inventoryItems.length > 0 ? inventoryItems[0].name : "-",
+    stockTurnover: "N/A",
+  };
+
 
   return (
     <VendorDashboardLayout
@@ -123,8 +131,11 @@ export default function ProInventoryPage() {
       planBadge={{ label: "PRO", icon: Crown }}
       rightActions={
         <>
-          <button className="hidden sm:flex items-center gap-2 bg-psar-dark hover:opacity-90 text-white font-medium px-4 py-2 rounded-xl transition-colors text-[13px] min-h-[40px] cursor-pointer">
-            <Download className="w-4 h-4" /> Export Stock
+          <button
+            onClick={handleExportCSV}
+            className="hidden sm:flex items-center gap-2 bg-psar-dark hover:opacity-90 text-white font-medium px-4 py-2 rounded-xl transition-colors text-[13px] min-h-[40px] cursor-pointer border-0"
+          >
+            <Download className="w-4 h-4" /> Export CSV
           </button>
         </>
       }
@@ -143,7 +154,8 @@ export default function ProInventoryPage() {
             </p>
           </div>
 
-          {/* FR-26: Low Stock Notification Banner (Pro logic: handles more than just basic alerts) */}
+          {/* FR-26: Dynamic Low Stock Alert Banner */}
+          {lowStockItems.length > 0 ? (
           <div className="bg-orange-50 rounded-2xl p-5 md:p-6 border border-orange-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
             <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-orange-100 pointer-events-none" />
             <div className="flex items-start gap-4 z-10">
@@ -153,13 +165,12 @@ export default function ProInventoryPage() {
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
                   <h3 className="font-bold text-[16px] text-orange-900">
-                    Low Stock Alert (3 Items)
+                    Low Stock Alert ({lowStockItems.length} Item{lowStockItems.length !== 1 ? "s" : ""})
                   </h3>
                 </div>
                 <p className="text-orange-800 text-[14px] leading-relaxed max-w-2xl">
-                  Hot Latte, Mango Sticky Rice, and Croissant are running low.
-                  Tap below to automatically generate a resupply list for your
-                  suppliers.
+                  <strong>{lowStockItems.map((i) => i.name).join(", ")}</strong>{" "}
+                  {lowStockItems.length === 1 ? "is" : "are"} running low. Tap below to review and restock.
                 </p>
               </div>
             </div>
@@ -167,6 +178,14 @@ export default function ProInventoryPage() {
               <FileText className="w-4 h-4" /> Create PO
             </button>
           </div>
+          ) : (
+          <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-200 flex items-center gap-3">
+            <div className="p-2 bg-white border border-emerald-200 rounded-xl">
+              <AlertTriangle className="w-5 h-5 text-emerald-600" />
+            </div>
+            <p className="text-emerald-800 text-[14px] font-medium">All items are well stocked ✓</p>
+          </div>
+          )}
 
           {/* Metric Cards - Pro introduces wider range of metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
@@ -234,7 +253,7 @@ export default function ProInventoryPage() {
                     className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[44px]"
                   />
                 </div>
-                <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-psar-primary text-white font-medium px-4 py-2.5 rounded-xl hover:bg-psar-primary transition-colors min-h-[44px]">
+                <button onClick={openAdd} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-psar-primary text-white font-medium px-4 py-2.5 rounded-xl hover:bg-psar-primary transition-colors min-h-[44px]">
                   <Plus className="w-4 h-4" />
                   <span className="text-sm">Add Item</span>
                 </button>
@@ -313,12 +332,14 @@ export default function ProInventoryPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
-                            className="p-2 text-slate-400 hover:text-psar-primary rounded-lg hover:bg-psar-primary/10 transition-colors"
-                            title="Quick Restock"
+                            onClick={() => handleDelete(item.id)}
+                            className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+                            title="Delete Product"
                           >
-                            <PlusCircle className="w-4 h-4 mx-auto" />
+                            <X className="w-4 h-4 mx-auto" />
                           </button>
                           <button
+                            onClick={() => openEdit(item)}
                             className="p-2 text-slate-400 hover:text-slate-900 dark:text-white rounded-lg hover:bg-slate-100 transition-colors"
                             title="Edit Product"
                           >
@@ -338,6 +359,43 @@ export default function ProInventoryPage() {
             </div>
           </div>
         </div>
+        
+        {/* Modals */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-white dark:bg-[#161B22] p-6 rounded-2xl shadow-xl w-full max-w-md">
+              <h3 className="text-xl font-bold mb-4">{editingItem ? "Edit Item" : "Add New Item"}</h3>
+              <form onSubmit={handleSave} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-[#0d1117] dark:border-white/10" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Khmer Name</label>
+                  <input value={formData.khmerName} onChange={e => setFormData({...formData, khmerName: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-[#0d1117] dark:border-white/10" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Price ($)</label>
+                  <input type="number" step="0.01" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-[#0d1117] dark:border-white/10" />
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1">Stock</label>
+                    <input type="number" required value={formData.stock} onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} className="w-full border rounded-lg p-2 dark:bg-[#0d1117] dark:border-white/10" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1">Threshold</label>
+                    <input type="number" required value={formData.threshold} onChange={e => setFormData({...formData, threshold: parseInt(e.target.value)})} className="w-full border rounded-lg p-2 dark:bg-[#0d1117] dark:border-white/10" />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg">Cancel</button>
+                  <button type="submit" className="px-4 py-2 bg-psar-primary text-white rounded-lg">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
     </VendorDashboardLayout>
   );
 }

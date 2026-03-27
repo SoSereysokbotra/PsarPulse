@@ -1,19 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import {
   LayoutDashboard,
   CircleDollarSign,
   Receipt,
   Users,
-  Settings,
   Plus,
   Search,
   MoreVertical,
-  Menu,
   X,
-  Bell,
   Clock,
   Filter,
   TrendingUp,
@@ -22,112 +18,132 @@ import {
   Crown,
   FileText,
   CheckCircle2,
+  ArrowUpDown,
 } from "lucide-react";
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
-import { Period } from "../../expenses/page";
+
+export type Period = "Day" | "Week" | "Month";
 
 const PRO_NAV = [
-  {
-    icon: LayoutDashboard,
-    title: "Dashboard",
-    khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
-    href: "/vendor/pro",
-  },
-  {
-    icon: CircleDollarSign,
-    title: "Sales",
-    khmerTitle: "ការលក់",
-    href: "/vendor/pro/sales",
-    active: true,
-  },
-  {
-    icon: Receipt,
-    title: "Expenses",
-    khmerTitle: "ចំណាយ",
-    href: "/vendor/pro/expenses",
-  },
-  {
-    icon: Users,
-    title: "Customers",
-    khmerTitle: "អតិថិជន",
-    href: "/vendor/pro/customer",
-  },
-  {
-    icon: Package,
-    title: "Inventory",
-    khmerTitle: "ស្តុក",
-    href: "/vendor/pro/inventory",
-  },
-  {
-    icon: FileBarChart,
-    title: "Reports",
-    khmerTitle: "របាយការណ៍",
-    href: "/vendor/pro/reports",
-  },
+  { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor/pro" },
+  { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/pro/sales", active: true },
+  { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/pro/expenses" },
+  { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/pro/customer" },
+  { icon: Package, title: "Inventory", khmerTitle: "ស្តុក", href: "/vendor/pro/inventory" },
+  { icon: FileBarChart, title: "Reports", khmerTitle: "របាយការណ៍", href: "/vendor/pro/reports" },
 ];
 
 export default function ProSalesPage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [quickAmount, setQuickAmount] = useState("");
   const [quickItem, setQuickItem] = useState("");
+  const [quickMethod, setQuickMethod] = useState("Cash");
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
   const [period, setPeriod] = useState<Period>("Day");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  // Pro features: unlimited tracking
-  // Mock data for today's transactions
-  const transactions = [
-    {
-      id: 1,
-      time: "1:45 PM",
-      amount: "$12.50",
-      item: "2x Iced Coffee, 1x Bread",
-      status: "Logged",
-    },
-    {
-      id: 2,
-      time: "1:15 PM",
-      amount: "$4.00",
-      item: "1x Hot Latte",
-      status: "Logged",
-    },
-    {
-      id: 3,
-      time: "12:30 PM",
-      amount: "$15.00",
-      item: "3x Noodle Soup",
-      status: "Logged",
-    },
-    {
-      id: 4,
-      time: "11:00 AM",
-      amount: "$8.50",
-      item: "Quick Sale",
-      status: "Logged",
-    },
-  ];
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleQuickLog = (e: React.FormEvent) => {
+  React.useEffect(() => {
+    const fetchSales = async () => {
+      try {
+        const res = await fetch("/api/vendor/sales");
+        const json = await res.json();
+        if (json.success) setTransactions(json.data);
+      } catch (error) {
+        console.error("Failed to fetch sales", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSales();
+  }, []);
+
+  const handleQuickLog = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Logged:", quickAmount, quickItem);
-    setQuickAmount("");
-    setQuickItem("");
-    setIsQuickLogModalOpen(false);
+    if (!quickAmount || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/vendor/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(quickAmount),
+          method: quickMethod,
+          items: quickItem || "Quick Sale",
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setTransactions((prev) => [json.data, ...prev]);
+        setQuickAmount("");
+        setQuickItem("");
+        setQuickMethod("Cash");
+        setSubmitSuccess(true);
+        setTimeout(() => {
+          setSubmitSuccess(false);
+          setIsQuickLogModalOpen(false);
+        }, 900);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const activeTxns = transactions;
-  const totalRevenue = transactions.reduce(
-    (sum, t) => sum + parseFloat(t.amount.replace("$", "")),
-    0,
-  );
-  const avgSale = totalRevenue / (activeTxns.length || 1);
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Delete this sale?")) return;
+    // Optimistically remove from UI
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+  };
 
-  function openAdd(
-    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ): void {
-    throw new Error("Function not implemented.");
-  }
+  const handleExportPDF = () => window.print();
+
+  const handleExportCSV = () => {
+    const rows = [
+      ["Time", "Items", "Method", "Amount"],
+      ...filteredTransactions.map((t) => [
+        new Date(t.createdAt).toLocaleString(),
+        t.items || "Sale",
+        t.method || "Cash",
+        parseFloat(t.amount).toFixed(2),
+      ]),
+    ];
+    const csv = rows.map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sales_export.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Filter + search
+  const filtered = transactions.filter((t) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      (t.items || "").toLowerCase().includes(q) ||
+      (t.method || "").toLowerCase().includes(q) ||
+      parseFloat(t.amount).toFixed(2).includes(q)
+    );
+  });
+
+  const filteredTransactions = [...filtered].sort((a, b) => {
+    const aAmt = parseFloat(a.amount);
+    const bAmt = parseFloat(b.amount);
+    return sortOrder === "desc" ? bAmt - aAmt : aAmt - bAmt;
+  });
+
+  const totalRevenue = transactions.reduce((sum, t) => sum + parseFloat(t.amount || "0"), 0);
+  const avgSale = totalRevenue / (transactions.length || 1);
 
   return (
     <VendorDashboardLayout
@@ -139,7 +155,7 @@ export default function ProSalesPage() {
       planBadge={{ label: "PRO", icon: Crown }}
       rightActions={
         <>
-          {/* 1. Period Toggle (Day / Week / Month) */}
+          {/* Period Toggle */}
           <div className="hidden sm:flex items-center bg-[#f0f2f5] border border-[#e8eaed] dark:border-white/5 rounded-[10px] p-[3px]">
             {(["Day", "Week", "Month"] as Period[]).map((p) => (
               <button
@@ -148,7 +164,7 @@ export default function ProSalesPage() {
                 className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${
                   period === p
                     ? "bg-white dark:bg-dark-surface text-[#111827] dark:text-white shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
-                    : "bg-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:text-white"
+                    : "bg-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827]"
                 }`}
               >
                 {p}
@@ -156,14 +172,17 @@ export default function ProSalesPage() {
             ))}
           </div>
 
-          {/* 2. Export PDF Button */}
-          <button className="hidden sm:flex items-center gap-2 bg-psar-dark hover:opacity-90 text-white font-medium px-4 py-[9px] rounded-[10px] transition-colors text-[13px] cursor-pointer border-0">
-            <FileText className="w-4 h-4" /> Export PDF
+          {/* Export CSV */}
+          <button
+            onClick={handleExportCSV}
+            className="hidden sm:flex items-center gap-2 bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 hover:bg-[#f7f8fa] text-[#111827] dark:text-white font-medium px-4 py-[9px] rounded-[10px] transition-colors text-[13px] cursor-pointer"
+          >
+            <FileText className="w-4 h-4" /> Export CSV
           </button>
 
-          {/* 3. Add Sale Button */}
+          {/* Add Sale */}
           <button
-            onClick={openAdd}
+            onClick={() => setIsQuickLogModalOpen(true)}
             className="flex items-center gap-[7px] bg-[#3ecf8e] text-[#0d1117] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a] transition-colors"
           >
             <Plus size={14} /> Add Sale
@@ -171,50 +190,40 @@ export default function ProSalesPage() {
         </>
       }
     >
-      {/* SCROLLING CONTAINER */}
       <div className="flex-1 overflow-y-auto h-full w-full">
-        {/* CHANGED: Removed max-w-5xl and mx-auto. Replaced with w-full to make it expand edge-to-edge */}
         <div className="p-6 md:p-8 space-y-7 w-full">
-          {/* ══ SALES HEADER ══════════════════════════════════════ */}
+          {/* Header */}
           <div className="pt-1 pb-2">
-            <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
-              My Sales
-            </h2>
+            <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">My Sales</h2>
             <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
               Track and manage your daily sales ·{" "}
               <span className="text-[#9ca3af]">តាមដាន និងគ្រប់គ្រងការលក់</span>
             </p>
           </div>
 
-          {/* QUICK LOGGING SECTION - TRIGGER BUTTON */}
-          <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          {/* Quick Log Trigger */}
+          <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="font-bold text-[19px]">Quick Log Sale</h2>
-              <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
-                កត់ត្រាការលក់រហ័ស
-              </p>
+              <h2 className="font-bold text-[19px] text-[#111827] dark:text-white">Quick Log Sale</h2>
+              <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">កត់ត្រាការលក់រហ័ស</p>
             </div>
             <button
               onClick={() => setIsQuickLogModalOpen(true)}
-              className="bg-psar-primary hover:bg-psar-primary text-white font-bold text-[16px] px-6 py-3.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 w-full sm:w-auto min-h-[50px]"
+              className="bg-psar-primary hover:opacity-90 text-white font-bold text-[16px] px-6 py-3.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 w-full sm:w-auto min-h-[50px]"
             >
               <Plus className="w-5 h-5" />
               <span>Add Sale</span>
             </button>
           </div>
 
-          {/* QUICK LOGGING MODAL */}
+          {/* Quick Log Modal */}
           {isQuickLogModalOpen && (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-              <div
-                className="absolute inset-0"
-                onClick={() => setIsQuickLogModalOpen(false)}
-              ></div>
-
+              <div className="absolute inset-0" onClick={() => !isSubmitting && setIsQuickLogModalOpen(false)} />
               <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
                 <button
                   onClick={() => setIsQuickLogModalOpen(false)}
-                  className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
+                  className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] hover:bg-slate-100 p-1.5 rounded-lg transition-colors border-0 bg-transparent cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -224,72 +233,96 @@ export default function ProSalesPage() {
                     <CircleDollarSign className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="font-bold text-[22px] text-slate-900 dark:text-white">
-                      Log New Sale
-                    </h2>
-                    <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590]">
-                      កត់ត្រាការលក់រហ័ស
-                    </p>
+                    <h2 className="font-bold text-[22px] text-slate-900 dark:text-white">Log New Sale</h2>
+                    <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590]">កត់ត្រាការលក់ថ្មី</p>
                   </div>
                 </div>
 
-                <form onSubmit={handleQuickLog} className="flex flex-col gap-6">
-                  <div className="relative group mt-2">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <CircleDollarSign className="h-6 w-6 text-slate-400 group-focus-within:text-psar-primary transition-colors" />
-                    </div>
-                    <input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={quickAmount}
-                      onChange={(e) => setQuickAmount(e.target.value)}
-                      required
-                      className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-xl font-bold placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
-                    />
-                    <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">
-                      Amount (ចំនួនទឹកប្រាក់){" "}
-                      <span className="text-red-500">*</span>
-                    </div>
+                {submitSuccess ? (
+                  <div className="flex flex-col items-center justify-center py-10 gap-3">
+                    <CheckCircle2 className="w-14 h-14 text-psar-primary" />
+                    <p className="font-bold text-lg text-slate-900 dark:text-white">Sale Logged!</p>
                   </div>
+                ) : (
+                  <form onSubmit={handleQuickLog} className="flex flex-col gap-5">
+                    {/* Amount */}
+                    <div className="relative group mt-2">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <CircleDollarSign className="h-6 w-6 text-slate-400 group-focus-within:text-psar-primary transition-colors" />
+                      </div>
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={quickAmount}
+                        onChange={(e) => setQuickAmount(e.target.value)}
+                        required
+                        className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-xl font-bold placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                      />
+                      <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">
+                        Amount (ចំនួនទឹកប្រាក់) <span className="text-red-500">*</span>
+                      </div>
+                    </div>
 
-                  <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Package className="h-5 w-5 text-slate-400 group-focus-within:text-psar-primary transition-colors" />
+                    {/* Items */}
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Package className="h-5 w-5 text-slate-400 group-focus-within:text-psar-primary transition-colors" />
+                      </div>
+                      <input
+                        type="text"
+                        placeholder="e.g., 2x Iced Coffee"
+                        value={quickItem}
+                        onChange={(e) => setQuickItem(e.target.value)}
+                        className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                      />
+                      <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">
+                        Items / Notes (ទំនិញ)
+                      </div>
                     </div>
-                    <input
-                      type="text"
-                      placeholder="e.g., 2x Iced Coffee (Select from inventory)"
-                      value={quickItem}
-                      onChange={(e) => setQuickItem(e.target.value)}
-                      className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
-                    />
-                    <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] mt-1">
-                      Item / Track Inventory Stock (ទំនិញ)
-                    </div>
-                  </div>
 
-                  <div className="flex gap-3 mt-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsQuickLogModalOpen(false)}
-                      className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:text-[#c9d1d9] font-bold text-[16px] py-4 rounded-xl transition-all min-h-[56px]"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="flex-[2] bg-psar-primary hover:bg-psar-primary text-white font-bold text-[16px] py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 min-h-[56px]"
-                    >
-                      <Plus className="w-5 h-5" />
-                      <span>Save Log</span>
-                    </button>
-                  </div>
-                </form>
+                    {/* Payment Method */}
+                    <div className="relative group">
+                      <select
+                        value={quickMethod}
+                        onChange={(e) => setQuickMethod(e.target.value)}
+                        className="block w-full px-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px] appearance-none cursor-pointer"
+                      >
+                        <option value="Cash">Cash (សាច់ប្រាក់)</option>
+                        <option value="ABA">ABA / Bakong QR</option>
+                        <option value="Wing">Wing Money</option>
+                        <option value="Card">Card</option>
+                        <option value="Other">Other</option>
+                      </select>
+                      <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">
+                        Payment Method (វិធីទូទាត់)
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsQuickLogModalOpen(false)}
+                        className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 dark:text-[#c9d1d9] font-bold text-[16px] py-4 rounded-xl transition-all min-h-[56px] border-0 cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting || !quickAmount}
+                        className="flex-[2] bg-psar-primary hover:opacity-90 text-white font-bold text-[16px] py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer disabled:opacity-60"
+                      >
+                        <Plus className="w-5 h-5" />
+                        <span>{isSubmitting ? "Saving…" : "Save Sale"}</span>
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
             </div>
           )}
 
+          {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <VendorSummaryCard
               variant="dark"
@@ -300,7 +333,7 @@ export default function ProSalesPage() {
             <VendorSummaryCard
               title="Transactions"
               khmerTitle="ចំនួនការលក់"
-              value={activeTxns.length}
+              value={transactions.length}
               subtext="sales today"
             />
             <VendorSummaryCard
@@ -311,29 +344,33 @@ export default function ProSalesPage() {
             />
           </div>
 
-          {/* TRANSACTION HISTORY */}
-          <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          {/* Transaction History */}
+          <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden flex flex-col">
             <div className="p-5 md:p-6 border-b border-slate-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">
-                  Unlimited Recent Transactions
-                </h3>
-                <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
-                  ប្រវត្តិប្រតិបត្តិការ
-                </p>
+                <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">All Transactions</h3>
+                <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">ប្រវត្តិប្រតិបត្តិការ</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
+                {/* Search */}
                 <div className="relative">
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Search all logs..."
-                    className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[40px]"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search logs..."
+                    className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/5 rounded-xl text-sm focus:outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[40px] dark:text-white"
                   />
                 </div>
-                <button className="p-2 border border-slate-200 rounded-xl text-slate-500 dark:text-[#7d8590] hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117] transition-colors min-h-[40px]">
-                  <Filter className="w-4 h-4" />
+                {/* Sort by amount */}
+                <button
+                  onClick={() => setSortOrder((o) => (o === "desc" ? "asc" : "desc"))}
+                  title="Sort by amount"
+                  className="p-2 border border-slate-200 dark:border-white/5 rounded-xl text-slate-500 dark:text-[#7d8590] hover:bg-slate-50 dark:hover:bg-white/5 bg-white dark:bg-dark-surface transition-colors min-h-[40px]"
+                >
+                  <ArrowUpDown className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -343,59 +380,80 @@ export default function ProSalesPage() {
                 <thead>
                   <tr className="bg-slate-50 dark:bg-[#0d1117] border-b border-slate-100 dark:border-white/5 text-[13px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
                     <th className="px-6 py-4">Time</th>
-                    <th className="px-6 py-4">Item Breakdown</th>
+                    <th className="px-6 py-4">Item / Notes</th>
+                    <th className="px-6 py-4">Method</th>
                     <th className="px-6 py-4">Amount</th>
                     <th className="px-6 py-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                  {transactions.map((txn) => (
-                    <tr
-                      key={txn.id}
-                      className="hover:bg-psar-primary/10 transition-colors group"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900 dark:text-white">
-                          <Clock className="w-4 h-4 text-slate-400" />
-                          {txn.time}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-[14px] font-medium text-slate-700 dark:text-[#c9d1d9]">
-                          {txn.item}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-[16px] font-bold text-psar-primary">
-                          {txn.amount}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button className="p-2 text-slate-400 hover:text-psar-primary rounded-lg hover:bg-psar-primary/10 transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px]">
-                          <MoreVertical className="w-5 h-5 mx-auto" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {transactions.length === 0 && (
+                  {loading ? (
                     <tr>
-                      <td
-                        colSpan={4}
-                        className="px-6 py-12 text-center text-slate-500 dark:text-[#7d8590]"
-                      >
-                        No transactions logged today yet.
+                      <td colSpan={5} className="px-6 py-12 text-center text-slate-400">Loading…</td>
+                    </tr>
+                  ) : filteredTransactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-slate-500 dark:text-[#7d8590]">
+                        {searchQuery ? "No results found." : "No transactions logged yet."}
                       </td>
                     </tr>
+                  ) : (
+                    filteredTransactions.map((txn) => (
+                      <tr key={txn.id} className="hover:bg-psar-primary/5 transition-colors group">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900 dark:text-white">
+                            <Clock className="w-4 h-4 text-slate-400" />
+                            {new Date(txn.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </div>
+                          <div className="text-[11px] text-slate-400 mt-0.5">
+                            {new Date(txn.createdAt).toLocaleDateString()}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-[14px] font-medium text-slate-700 dark:text-[#c9d1d9]">
+                            {txn.items || "Sale"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-[#9aa4b2] text-[12px] font-semibold">
+                            {txn.method || "Cash"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-[16px] font-bold text-psar-primary">
+                            ${parseFloat(txn.amount).toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <button
+                            onClick={() => handleDelete(txn.id)}
+                            className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] cursor-pointer border-0 bg-transparent"
+                            title="Delete"
+                          >
+                            <X className="w-4 h-4 mx-auto" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>
             </div>
 
-            <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center">
-              <button className="text-[14px] font-semibold text-psar-primary hover:underline">
-                View All Required History
-              </button>
-            </div>
+            {!loading && (
+              <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] flex items-center justify-between text-[13px]">
+                <span className="text-slate-500 dark:text-[#7d8590]">
+                  Showing <strong className="text-slate-900 dark:text-white">{filteredTransactions.length}</strong>{" "}
+                  of <strong className="text-slate-900 dark:text-white">{transactions.length}</strong> records
+                </span>
+                <button
+                  onClick={handleExportCSV}
+                  className="text-psar-primary font-semibold hover:underline cursor-pointer border-0 bg-transparent"
+                >
+                  Export CSV
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -91,68 +91,58 @@ export default function ProExpensePage() {
     { value: "Others", label: "Others (ផ្សេងៗ)", isCustom: false },
   ]);
 
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const res = await fetch("/api/vendor/expenses");
+        const json = await res.json();
+        if (json.success) {
+          setExpenses(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch expenses", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExpenses();
+  }, []);
+
+  const totalExpense = expenses.reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
+
   const summaryData = {
-    todayTotal: "$45.00",
-    topCategory: "Ingredients",
-    weeklyTotal: "$180.50",
-    monthlyTotal: "$650.00",
+    todayTotal: `$${totalExpense.toFixed(2)}`,
+    topCategory: expenses.length > 0 ? expenses[0].category : "None",
+    weeklyTotal: `$${totalExpense.toFixed(2)}`,
+    monthlyTotal: `$${totalExpense.toFixed(2)}`,
   };
 
-  const recentExpenses = [
-    {
-      id: 1,
-      time: "2:15 PM",
-      category: "Ingredients",
-      note: "Pork and Vegetables",
-      amount: "$25.00",
-      hasReceipt: false,
-      isCustom: false,
-    },
-    {
-      id: 2,
-      time: "10:00 AM",
-      category: "Transport",
-      note: "TukTuk to market",
-      amount: "$3.50",
-      hasReceipt: false,
-      isCustom: false,
-    },
-    {
-      id: 5,
-      time: "Yesterday",
-      category: "Marketing",
-      note: "Facebook Ads",
-      amount: "$10.00",
-      hasReceipt: true,
-      isCustom: true,
-    },
-    {
-      id: 3,
-      time: "Yesterday",
-      category: "Electricity",
-      note: "Weekly stall power",
-      amount: "$15.00",
-      hasReceipt: true,
-      isCustom: false,
-    },
-    {
-      id: 4,
-      time: "Yesterday",
-      category: "Labor",
-      note: "Assistant pay",
-      amount: "$10.00",
-      hasReceipt: false,
-      isCustom: false,
-    },
-  ];
-
-  const handleQuickLog = (e: React.FormEvent) => {
+  const handleQuickLog = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`Logged Expense: ${expenseAmount} under ${expenseCategory}`);
-    setExpenseAmount("");
-    setExpenseVendor("");
-    setExpenseNote("");
-    setIsQuickLogModalOpen(false);
+    try {
+      const res = await fetch("/api/vendor/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(expenseAmount),
+          category: expenseCategory,
+          description: expenseNote,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setExpenses(prev => [json.data, ...prev]);
+        setExpenseAmount("");
+        setExpenseVendor("");
+        setExpenseNote("");
+        setIsQuickLogModalOpen(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleCreateCustomCategory = () => {
@@ -468,7 +458,7 @@ export default function ProExpensePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                {recentExpenses.map((exp) => (
+                {expenses.map((exp) => (
                   <tr
                     key={exp.id}
                     className="hover:bg-psar-primary/10/30 transition-colors group"
@@ -476,7 +466,7 @@ export default function ProExpensePage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900 dark:text-white">
                         <Clock className="w-4 h-4 text-slate-400" />
-                        {exp.time}
+                        {new Date(exp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -510,7 +500,7 @@ export default function ProExpensePage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-[16px] font-bold text-red-500">
-                        -{exp.amount}
+                        -${parseFloat(exp.amount).toFixed(2)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">

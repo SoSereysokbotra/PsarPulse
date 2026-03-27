@@ -129,6 +129,96 @@ export default function ProReportsPage() {
   const [dateRange, setDateRange] = useState("This Week");
   const [activeTab, setActiveTab] = useState("pl");
 
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    sales: 0,
+    expenses: 0,
+    customers: 0,
+    transactions: 0
+  });
+  const [realExpenseCategories, setRealExpenseCategories] = useState<any[]>([]);
+  const [realExpenseTotal, setRealExpenseTotal] = useState("$0.00");
+  const [realInventoryItems, setRealInventoryItems] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [salesRes, expRes, custRes, invRes] = await Promise.all([
+          fetch("/api/vendor/sales"),
+          fetch("/api/vendor/expenses"),
+          fetch("/api/vendor/customers"),
+          fetch("/api/vendor/inventory"),
+        ]);
+        const [salesDataRes, expDataRes, custDataRes, invDataRes] = await Promise.all([
+          salesRes.json(),
+          expRes.json(),
+          custRes.json(),
+          invRes.json(),
+        ]);
+
+        if (salesDataRes.success && expDataRes.success && custDataRes.success) {
+          const totalSales = salesDataRes.data.reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
+          const totalExp = expDataRes.data.reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
+          setStats({
+            sales: totalSales,
+            expenses: totalExp,
+            customers: custDataRes.data.length,
+            transactions: salesDataRes.data.length
+          });
+
+          // Compute real expense breakdown by category
+          const catMap: Record<string, number> = {};
+          expDataRes.data.forEach((e: any) => {
+            const cat = e.category || "Others";
+            catMap[cat] = (catMap[cat] || 0) + parseFloat(e.amount || "0");
+          });
+          const COLORS = ["#6366f1", "#8b5cf6", "#f43f5e", "#f59e0b", "#10b981", "#94a3b8"];
+          const totalCatAmt = Object.values(catMap).reduce((a, b) => a + b, 0);
+          const dynamicExpCats = Object.entries(catMap).map(([name, amount], idx) => ({
+            name,
+            khmer: name,
+            amount: `$${amount.toFixed(2)}`,
+            pct: totalCatAmt > 0 ? Math.round((amount / totalCatAmt) * 100) : 0,
+            color: COLORS[idx % COLORS.length],
+          }));
+          setRealExpenseCategories(dynamicExpCats);
+          setRealExpenseTotal(`$${totalExp.toFixed(2)}`);
+        }
+
+        if (invDataRes.success) {
+          setRealInventoryItems(invDataRes.data);
+        }
+      } catch (e) {
+        console.error("Reports fetch error:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const dynamicPlData = {
+    ...plData,
+    revenue: `$${stats.sales.toFixed(2)}`,
+    expenses: `$${stats.expenses.toFixed(2)}`,
+    netProfit: `$${(stats.sales - stats.expenses).toFixed(2)}`,
+    profitMargin: stats.sales > 0 ? `${(((stats.sales - stats.expenses) / stats.sales) * 100).toFixed(1)}%` : "0%"
+  };
+
+  const dynamicSalesData = {
+    ...salesData,
+    totalSales: stats.transactions,
+    avgOrderValue: stats.transactions > 0 ? `$${(stats.sales / stats.transactions).toFixed(2)}` : "$0.00"
+  };
+
+  const dynamicCustomerData = {
+    ...customerData,
+    totalCustomers: stats.customers,
+    avgSpend: stats.customers > 0 ? `$${(stats.sales / stats.customers).toFixed(2)}` : "$0.00"
+  };
+
+  const handleExportPDF = () => window.print();
+
   const tabs = [
     { id: "pl", label: "Profit & Loss", khmer: "ចំណេញ និង ខាត" },
     { id: "sales", label: "Sales Report", khmer: "របាយការណ៍ការលក់" },
@@ -159,7 +249,7 @@ export default function ProReportsPage() {
               <option>Last 3 Months (Pro)</option>
               <option>Last 12 Months (Pro)</option>
             </select>
-            <button className="hidden lg:flex items-center gap-2 bg-psar-dark hover:opacity-90 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm min-h-[40px] border-0 cursor-pointer">
+            <button onClick={handleExportPDF} className="hidden lg:flex items-center gap-2 bg-psar-dark hover:opacity-90 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm min-h-[40px] border-0 cursor-pointer">
               <Download className="w-4 h-4" /> Export PDF
             </button>
             <button className="lg:hidden p-2.5 bg-psar-dark text-white rounded-xl border-0 cursor-pointer">
@@ -202,19 +292,19 @@ export default function ProReportsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
               <PLCard
                 title="Total Revenue" khmer="ចំណូលសរុប"
-                value={plData.revenue} trend={plData.revenueTrend} isPositive={true}
+                value={dynamicPlData.revenue} trend={dynamicPlData.revenueTrend} isPositive={true}
                 icon={<TrendingUp className="w-5 h-5" />}
                 accentColor="bg-psar-primary"
               />
               <PLCard
                 title="Total Expenses" khmer="ចំណាយសរុប"
-                value={plData.expenses} trend={plData.expenseTrend} isPositive={true}
+                value={dynamicPlData.expenses} trend={dynamicPlData.expenseTrend} isPositive={true}
                 icon={<TrendingDown className="w-5 h-5" />}
                 accentColor="bg-slate-50 dark:bg-[#0d1117]"
               />
               <PLCard
                 title="Net Profit" khmer="ប្រាក់ចំណេញសុទ្ធ"
-                value={plData.netProfit} trend={plData.profitTrend} isPositive={true}
+                value={dynamicPlData.netProfit} trend={dynamicPlData.profitTrend} isPositive={true}
                 icon={<CircleDollarSign className="w-5 h-5" />}
                 accentColor="bg-psar-primary"
                 highlight
@@ -222,7 +312,7 @@ export default function ProReportsPage() {
               {/* Pro Specific */}
               <PLCard
                 title="Profit Margin" khmer="អត្រាប្រាក់ចំណេញ"
-                value={plData.profitMargin} trend="Excellent" isPositive={true}
+                value={dynamicPlData.profitMargin} trend="Excellent" isPositive={true}
                 icon={<MousePointerClick className="w-5 h-5" />}
                 accentColor="bg-fuchsia-500"
               />
@@ -232,7 +322,7 @@ export default function ProReportsPage() {
             <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl p-6 shadow-sm">
               <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-5">Revenue vs Expenses</h3>
               <div className="h-52 flex items-end gap-3">
-                {plData.daily.map((d, i) => {
+                {dynamicPlData.daily.map((d, i) => {
                   const maxVal = 550; // Dynamic based on data in real world
                   return (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -286,7 +376,7 @@ export default function ProReportsPage() {
                   <p className="text-[12px] font-khmer text-slate-400 mt-0.5">ទំនិញលក់ដាច់ជាងគេ</p>
                 </div>
                 <div className="p-5 space-y-4">
-                  {salesData.topItems.map((item, i) => (
+                  {dynamicSalesData.topItems.map((item, i) => (
                     <div key={i} className="flex items-center gap-4">
                       <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 dark:text-[#7d8590] text-[12px] font-bold flex items-center justify-center shrink-0">
                         {i + 1}
@@ -322,17 +412,17 @@ export default function ProReportsPage() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Current</span>
-                      <span className="text-[17px] font-bold text-slate-900 dark:text-white">{salesData.comparison.current}</span>
+                      <span className="text-[17px] font-bold text-slate-900 dark:text-white">{dynamicSalesData.comparison.current}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Previous</span>
-                      <span className="text-[17px] font-bold text-slate-400">{salesData.comparison.previous}</span>
+                      <span className="text-[17px] font-bold text-slate-400">{dynamicSalesData.comparison.previous}</span>
                     </div>
                     <div className="pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
                       <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Change</span>
                       <span className="flex items-center gap-1 text-[15px] font-bold text-psar-primary">
                         <ArrowUpRight className="w-4 h-4" />
-                        {salesData.comparison.change}
+                        {dynamicSalesData.comparison.change}
                       </span>
                     </div>
                   </div>
@@ -342,7 +432,7 @@ export default function ProReportsPage() {
                 <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm p-5 flex-1">
                   <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-4">Sales Trend</h3>
                   <div className="h-24 flex items-end gap-1.5">
-                    {salesData.trend.map((h, i) => (
+                    {dynamicSalesData.trend.map((h, i) => (
                       <div key={i} className="flex-1 bg-psar-primary/10 rounded-t-md relative group">
                         <div
                           className="absolute bottom-0 w-full bg-psar-primary rounded-t-md transition-all duration-500 group-hover:bg-psar-primary"
@@ -352,9 +442,9 @@ export default function ProReportsPage() {
                     ))}
                   </div>
                   <div className="mt-3 flex items-center gap-2 text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">
-                    <span>Total: {salesData.totalSales} sales</span>
+                    <span>Total: {dynamicSalesData.totalSales} sales</span>
                     <span>·</span>
-                    <span>Avg: {salesData.avgOrderValue}/order</span>
+                    <span>Avg: {dynamicSalesData.avgOrderValue}/order</span>
                   </div>
                 </div>
               </div>
@@ -375,13 +465,19 @@ export default function ProReportsPage() {
               {/* Donut-style visual */}
               <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm p-6">
                 <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-5">By Category</h3>
+                {realExpenseCategories.length === 0 ? (
+                  <div className="flex items-center justify-center h-44 rounded-xl border border-dashed border-slate-200 dark:border-white/10">
+                    <p className="text-sm text-slate-400 text-center">No expense data yet.<br/>Add expenses to see the breakdown.</p>
+                  </div>
+                ) : (
+                  <>
                 {/* CSS Donut */}
                 <div className="flex items-center justify-center mb-6">
                   <div className="relative w-44 h-44">
                     <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
                       {(() => {
                         let offset = 0;
-                        return expenseData.categories.map((cat, i) => {
+                        return realExpenseCategories.map((cat, i) => {
                           const dash = cat.pct;
                           const gap = 100 - dash;
                           const el = (
@@ -402,14 +498,14 @@ export default function ProReportsPage() {
                       })()}
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-[22px] font-bold text-slate-900 dark:text-white">$890</span>
+                      <span className="text-[22px] font-bold text-slate-900 dark:text-white">{realExpenseTotal}</span>
                       <span className="text-[11px] text-slate-400 font-medium">Total</span>
                     </div>
                   </div>
                 </div>
                 {/* Legend */}
                 <div className="grid grid-cols-2 gap-2.5">
-                  {expenseData.categories.map((cat, i) => (
+                  {realExpenseCategories.map((cat, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }}></div>
                       <span className="text-[12px] text-slate-600 dark:text-[#9aa4b2] font-medium truncate">{cat.name}</span>
@@ -417,18 +513,24 @@ export default function ProReportsPage() {
                     </div>
                   ))}
                 </div>
+                  </>
+                )}
               </div>
 
               {/* Category Bars */}
               <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm p-6">
                 <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-5">Category Details</h3>
+                {realExpenseCategories.length === 0 ? (
+                  <div className="flex items-center justify-center h-44 rounded-xl border border-dashed border-slate-200 dark:border-white/10">
+                    <p className="text-sm text-slate-400 text-center">Log expenses to see category details.</p>
+                  </div>
+                ) : (
                 <div className="space-y-4">
-                  {expenseData.categories.map((cat, i) => (
+                  {realExpenseCategories.map((cat, i) => (
                     <div key={i}>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2">
                           <span className="text-[14px] font-semibold text-slate-900 dark:text-white">{cat.name}</span>
-                          <span className="text-[11px] font-khmer text-slate-400">{cat.khmer}</span>
                         </div>
                         <span className="text-[14px] font-bold text-slate-700 dark:text-[#c9d1d9]">{cat.amount}</span>
                       </div>
@@ -441,6 +543,7 @@ export default function ProReportsPage() {
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             </div>
           </section>
@@ -456,10 +559,10 @@ export default function ProReportsPage() {
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 md:grid-cols-2 gap-5 mb-6">
-              <MiniCard title="Total Customers" khmer="អតិថិជនសរុប" value={String(customerData.totalCustomers)} />
-              <MiniCard title="Avg. Spend" khmer="ការចំណាយមធ្យម" value={customerData.avgSpend} />
-              <MiniCard title="Peak Hour" khmer="ម៉ោងមមាញឹក" value={customerData.peakHour} accent />
-              <MiniCard title="Retention Rate" khmer="អត្រារក្សាទុក" value={customerData.retentionRate} />
+              <MiniCard title="Total Customers" khmer="អតិថិជនសរុប" value={String(dynamicCustomerData.totalCustomers)} />
+              <MiniCard title="Avg. Spend" khmer="ការចំណាយមធ្យម" value={dynamicCustomerData.avgSpend} />
+              <MiniCard title="Peak Hour" khmer="ម៉ោងមមាញឹក" value={dynamicCustomerData.peakHour} accent />
+              <MiniCard title="Retention Rate" khmer="អត្រារក្សាទុក" value={dynamicCustomerData.retentionRate} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -468,7 +571,7 @@ export default function ProReportsPage() {
                 <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-1">Hourly Traffic</h3>
                 <p className="text-[12px] text-slate-400 font-medium mb-5">Customer volume by hour of day</p>
                 <div className="h-40 flex items-end gap-1">
-                  {customerData.hourlyTraffic.map((h, i) => {
+                  {dynamicCustomerData.hourlyTraffic.map((h, i) => {
                     const isPeak = h.val >= 70;
                     return (
                       <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -498,7 +601,7 @@ export default function ProReportsPage() {
                 <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-1">Daily Customer Trend</h3>
                 <p className="text-[12px] text-slate-400 font-medium mb-5">Customers per day this week</p>
                 <div className="h-40 flex items-end gap-2">
-                  {customerData.dailyTrend.map((val, i) => {
+                  {dynamicCustomerData.dailyTrend.map((val, i) => {
                     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
                     const isWeekend = i >= 5;
                     return (
@@ -548,28 +651,31 @@ export default function ProReportsPage() {
                   </div>
                 </div>
                 <div className="p-5 space-y-4">
-                  {inventoryData.lowStockItems.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117]/50 dark:bg-white/5">
-                      <div>
-                        <p className="text-[14px] font-semibold text-slate-900 dark:text-white">{item.name}</p>
-                        <p className="text-[11px] font-khmer text-slate-400">{item.khmer}</p>
+                  {(() => {
+                    const lowItems = realInventoryItems.filter(
+                      (i) => i.status === "low" || i.status === "out" || (i.stock !== undefined && i.threshold !== undefined && i.stock <= i.threshold)
+                    );
+                    return lowItems.length === 0 ? (
+                      <p className="text-center text-slate-400 py-6 text-sm">All items are well stocked! ✓</p>
+                    ) : lowItems.map((item: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117]/50 dark:bg-white/5">
+                        <div>
+                          <p className="text-[14px] font-semibold text-slate-900 dark:text-white">{item.name}</p>
+                          <p className="text-[11px] font-khmer text-slate-400">{item.khmerName || ""}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[16px] font-bold text-slate-900 dark:text-white">{item.stock}</span>
+                          {item.status === "out" || item.stock === 0 ? (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-[11px] font-bold">Out of Stock</span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[11px] font-bold">Low Stock</span>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[16px] font-bold text-slate-900 dark:text-white">{item.stock}</span>
-                        {item.status === "out" ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-[11px] font-bold">
-                            Out of Stock
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[11px] font-bold">
-                            Low Stock
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  {inventoryData.lowStockItems.length === 0 && (
-                    <p className="text-center text-slate-400 py-6 text-sm">All items are well stocked! ✓</p>
+                    ));
+                  })()}
+                  {realInventoryItems.length === 0 && (
+                    <p className="text-center text-slate-400 py-6 text-sm">No inventory items found. Add items to track stock.</p>
                   )}
                 </div>
                 <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117]">
@@ -619,8 +725,8 @@ export default function ProReportsPage() {
                   </table>
                 </div>
                 <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] flex items-center justify-between text-[13px]">
-                  <span className="text-slate-500 dark:text-[#7d8590] font-medium">Total Products: <strong className="text-slate-900 dark:text-white">{inventoryData.totalItems}</strong></span>
-                  <span className="text-slate-500 dark:text-[#7d8590] font-medium">Est. Value: <strong className="text-psar-primary">{inventoryData.totalValue}</strong></span>
+                  <span className="text-slate-500 dark:text-[#7d8590] font-medium">Total Products: <strong className="text-slate-900 dark:text-white">{realInventoryItems.length}</strong></span>
+                  <span className="text-slate-500 dark:text-[#7d8590] font-medium">Est. Value: <strong className="text-psar-primary">${realInventoryItems.reduce((a, i) => a + parseFloat(i.price || "0") * (i.stock || 0), 0).toFixed(2)}</strong></span>
                 </div>
               </div>
             </div>

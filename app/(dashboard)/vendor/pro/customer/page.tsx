@@ -85,11 +85,32 @@ export default function ProCustomerPage() {
   const [crmPhone, setCrmPhone] = useState("");
   const [crmNotes, setCrmNotes] = useState("");
 
+  const [logs, setLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const res = await fetch("/api/vendor/customers");
+        const json = await res.json();
+        if (json.success) {
+          setLogs(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch customers", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCustomers();
+  }, []);
+
+  const totalLogs = logs.reduce((sum, log) => sum + (parseInt(log.count) || 1), 0);
   const summaryData = {
-    todayCount: "42",
-    todayLogs: "12",
+    todayCount: String(totalLogs),
+    todayLogs: String(logs.length),
     avgSpend: "$2.96",
-    weeklyCount: "315",
+    weeklyCount: String(totalLogs),
     weeklyChange: "+12%",
     peakTime: "12:00 PM",
     weeklyCustomers: "85",
@@ -124,25 +145,51 @@ export default function ProCustomerPage() {
     },
   ];
 
-  // Mock recent customer logs (Foot Traffic)
-  const recentLogs = [
-    { id: 1, time: "2:30 PM", count: 2, isPeak: false, loggedBy: "CRM" },
-    { id: 2, time: "1:45 PM", count: 5, isPeak: true, loggedBy: "Manual" },
-    { id: 3, time: "12:15 PM", count: 12, isPeak: true, loggedBy: "Manual" },
-    { id: 4, time: "10:30 AM", count: 3, isPeak: false, loggedBy: "Manual" },
-  ];
-
-  const handleLog = (amount: number) => {
-    console.log(`Logged ${amount} customers`);
+  const handleLog = async (amount: number) => {
+    try {
+      const res = await fetch("/api/vendor/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count: amount }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setLogs(prev => [json.data, ...prev]);
+        setCustomCount(1);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const handleCRMSubmit = (e: React.FormEvent) => {
+  const [crmSubmitting, setCrmSubmitting] = useState(false);
+  const [crmSuccess, setCrmSuccess] = useState(false);
+
+  const handleCRMSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`Saved CRM profile: ${crmName}`);
-    setCrmName("");
-    setCrmPhone("");
-    setCrmNotes("");
-    setIsCRMModalOpen(false);
+    if (!crmName.trim() || crmSubmitting) return;
+    setCrmSubmitting(true);
+    try {
+      const res = await fetch("/api/vendor/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: crmName, phone: crmPhone, notes: crmNotes }),
+      });
+      if (res.ok) {
+        setCrmSuccess(true);
+        setTimeout(() => {
+          setCrmSuccess(false);
+          setCrmName("");
+          setCrmPhone("");
+          setCrmNotes("");
+          setIsCRMModalOpen(false);
+        }, 900);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCrmSubmitting(false);
+    }
   };
 
   return (
@@ -250,9 +297,10 @@ export default function ProCustomerPage() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-psar-primary hover:bg-psar-primary text-white font-bold py-3.5 rounded-xl transition-colors mt-2"
+                  disabled={crmSubmitting || !crmName.trim()}
+                  className="w-full bg-psar-primary hover:opacity-90 text-white font-bold py-3.5 rounded-xl transition-colors mt-2 disabled:opacity-60"
                 >
-                  Save Customer Info
+                  {crmSubmitting ? "Saving…" : crmSuccess ? "✓ Saved!" : "Save Customer Info"}
                 </button>
               </form>
             </div>
@@ -334,12 +382,7 @@ export default function ProCustomerPage() {
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-            <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-xl transition-colors min-h-11">
-              Custom...
-            </button>
-            <button className="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors min-h-11">
-              <Plus className="w-4 h-4" />
-            </button>
+
             <button
               onClick={() => handleLog(customCount)}
               className="px-5 py-2 bg-[#29B28D] hover:bg-[#239979] text-white font-bold rounded-xl transition-colors text-sm flex items-center gap-1.5 min-h-11"
@@ -442,7 +485,7 @@ export default function ProCustomerPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                  {recentLogs.map((log) => (
+                  {logs.map((log) => (
                     <tr
                       key={log.id}
                       className="hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117]/50 dark:bg-white/5 transition-colors"
@@ -450,22 +493,22 @@ export default function ProCustomerPage() {
                       <td className="px-5 py-3 whitespace-nowrap">
                         <div className="flex items-center gap-2 text-[13px] font-medium text-slate-600 dark:text-[#9aa4b2]">
                           <Clock className="w-3.5 h-3.5" />
-                          {log.time}
+                          {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </td>
                       <td className="px-5 py-3 whitespace-nowrap">
                         <span className="text-[15px] font-bold text-slate-900 dark:text-white">
-                          +{log.count}
+                          +{log.count || 1}
                         </span>
                       </td>
                       <td className="px-5 py-3 whitespace-nowrap">
-                        {log.isPeak ? (
+                        {parseInt(log.count) >= 5 ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[11px] font-bold">
                             <Flame className="w-3 h-3" /> Peak
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100 text-slate-600 dark:text-[#9aa4b2] text-[11px] font-bold">
-                            {log.loggedBy}
+                            Manual
                           </span>
                         )}
                       </td>

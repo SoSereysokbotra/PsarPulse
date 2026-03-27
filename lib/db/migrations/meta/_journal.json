@@ -29,6 +29,13 @@
       "when": 1774453200000,
       "tag": "0003_payment_transactions",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1774570416366,
+      "tag": "0004_thick_shadowcat",
+      "breakpoints": true
     }
   ]
 }

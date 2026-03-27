@@ -32,14 +32,19 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // Exclude API, auth, or internal routes from Cache-First
+  // Exclude API, auth, internal routes, and HTML navigations from Cache-First
   if (
     url.pathname.startsWith("/api/") ||
     url.pathname.startsWith("/_next/") ||
-    event.request.method !== "GET"
+    event.request.method !== "GET" ||
+    event.request.mode === "navigate"
   ) {
     event.respondWith(
       fetch(event.request).catch(() => {
+        // For navigations, fallback to offline markup or cache if available
+        if (event.request.mode === "navigate") {
+          return caches.match(event.request).then(res => res || caches.match("/"));
+        }
         return caches.match(event.request);
       })
     );

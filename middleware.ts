@@ -40,6 +40,14 @@ const roleProtectedPaths: Record<string, string[]> = {
   "/api/superadmin": ["super_admin"],
 };
 
+// Paths that require specific subscription plans
+// Plan hierarchy: premium > pro > free
+// A premium user can access pro routes, but not vice versa
+const planProtectedPaths: Record<string, string[]> = {
+  "/vendor/pro": ["pro", "premium"],
+  "/vendor/premium": ["premium"],
+};
+
 function isPublicPath(pathname: string): boolean {
   return publicPaths.some(
     (path) => pathname === path || pathname.startsWith(path + "/"),
@@ -53,6 +61,60 @@ function getRequiredRoles(pathname: string): string[] | null {
     }
   }
   return null;
+}
+
+/**
+ * Check if a path requires a specific subscription plan.
+ * Returns the list of allowed plan names, or null if no plan restriction.
+ */
+function getRequiredPlans(pathname: string): string[] | null {
+  for (const [path, plans] of Object.entries(planProtectedPaths)) {
+    if (pathname === path || pathname.startsWith(path + "/")) {
+      return plans;
+    }
+  }
+  return null;
+}
+
+/**
+ * Verify vendor's subscription plan by calling the internal API.
+ * Returns { planName, subscriptionStatus, isVendor } or null on error.
+ */
+async function checkVendorSubscription(
+  request: NextRequest,
+): Promise<{
+  planName: string | null;
+  subscriptionStatus: string | null;
+  isVendor: boolean;
+} | null> {
+  try {
+    const checkUrl = new URL(
+      "/api/vendor/subscription/check",
+      request.nextUrl.origin,
+    );
+
+    const response = await fetch(checkUrl.toString(), {
+      method: "GET",
+      headers: {
+        Cookie: request.headers.get("cookie") || "",
+        "ngrok-skip-browser-warning": "true",
+      },
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const result = await response.json();
+    if (result.success) {
+      return result.data;
+    }
+    return null;
+  } catch (error) {
+    console.error("Middleware subscription check failed:", error);
+    return null;
+  }
 }
 
 export async function middleware(request: NextRequest) {
@@ -107,6 +169,67 @@ export async function middleware(request: NextRequest) {
       // Redirect to appropriate dashboard
       const redirectUrl = new URL("/", request.url);
       return NextResponse.redirect(redirectUrl);
+    }
+
+    // Check plan-based access for vendor routes
+    const requiredPlans = getRequiredPlans(pathname);
+    if (requiredPlans) {
+      const subscriptionData = await checkVendorSubscription(request);
+
+      // If we couldn't verify subscription, deny access (fail-closed)
+      if (!subscriptionData || !subscriptionData.isVendor) {
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: "Forbidden - Vendor account required",
+            },
+            { status: 403 },
+          );
+        }
+        const pricingUrl = new URL("/vendor/pricing", request.url);
+        return NextResponse.redirect(pricingUrl);
+      }
+
+      // Check if subscription is active
+      const activeStatuses = ["active", "trial"];
+      if (
+        !subscriptionData.subscriptionStatus ||
+        !activeStatuses.includes(subscriptionData.subscriptionStatus)
+      ) {
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json(
+            {
+              success: false,
+              message:
+                "Forbidden - Active subscription required. Please renew your plan.",
+            },
+            { status: 403 },
+          );
+        }
+        const pricingUrl = new URL("/vendor/pricing", request.url);
+        pricingUrl.searchParams.set("reason", "expired");
+        return NextResponse.redirect(pricingUrl);
+      }
+
+      // Check if vendor's plan is in the list of allowed plans
+      if (
+        !subscriptionData.planName ||
+        !requiredPlans.includes(subscriptionData.planName)
+      ) {
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: `Forbidden - This feature requires a ${requiredPlans[0]} plan or higher.`,
+            },
+            { status: 403 },
+          );
+        }
+        const pricingUrl = new URL("/vendor/pricing", request.url);
+        pricingUrl.searchParams.set("reason", "upgrade");
+        return NextResponse.redirect(pricingUrl);
+      }
     }
 
     // Inject user info into headers for downstream use

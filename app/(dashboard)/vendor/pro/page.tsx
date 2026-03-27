@@ -137,6 +137,12 @@ export default function ProDashboard() {
         fetch("/api/vendor/customers"),
         fetch("/api/vendor/inventory")
       ]);
+
+      if (salesRes.status === 401 || expRes.status === 401) {
+        window.location.href = "/login?redirect=/vendor/pro";
+        return;
+      }
+
       const [salesData, expData, custData, invData] = await Promise.all([
         salesRes.json(),
         expRes.json(),

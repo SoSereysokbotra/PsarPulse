@@ -39,6 +39,7 @@ const TABS = [
     khmer: "ការព្យាករណ៍វិភាគទិន្នន័យ",
   },
   { id: "log", label: "Customers Log", khmer: "កំណត់ហេតុអតិថិជន" },
+  { id: "crm", label: "Customer CRM", khmer: "ទំនាក់ទំនងអតិថិជន" },
 ];
 
 export default function CustomersPage() {
@@ -50,13 +51,37 @@ export default function CustomersPage() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("analysis");
+  const [activeTab, setActiveTab] = useState("log");
   const [customCount, setCustomCount] = useState(1);
-  const [logHistory, setLogHistory] = useState([
-    { id: 1, time: "2:15 PM", count: 2, status: "Regular" },
-    { id: 2, time: "10:00 AM", count: 2, status: "Peak Traffic" },
-    { id: 3, time: "11:00 AM", count: 12, status: "Peak Traffic" },
+
+  const [logHistory, setLogHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // CRM States
+  const [crmDatabase, setCrmDatabase] = useState<any[]>([
+    { id: 101, name: "Sokha Heng", phone: "012 *** 345", visits: 12, lastVisit: "Today, 2:30 PM", status: "Loyal" },
+    { id: 102, name: "Bopha Sao", phone: "098 *** 123", visits: 3, lastVisit: "Yesterday", status: "New" },
   ]);
+  const [crmName, setCrmName] = useState("");
+  const [crmPhone, setCrmPhone] = useState("");
+  const [crmNotes, setCrmNotes] = useState("");
+  const [crmSubmitting, setCrmSubmitting] = useState(false);
+  const [crmSuccess, setCrmSuccess] = useState(false);
+
+  React.useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        const res = await fetch("/api/vendor/customers");
+        const json = await res.json();
+        if (json.success) setLogHistory(json.data);
+      } catch (error) {
+        console.error("Failed to fetch customer logs", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCustomers();
+  }, []);
 
   const summaryData = {
     todayCount: 48,
@@ -69,27 +94,66 @@ export default function CustomersPage() {
     avgLTV: "$102.02",
   };
 
-  const handleLog = (amount: number) => {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    setLogHistory((prev) => [
-      {
-        id: Date.now(),
-        time: timeStr,
-        count: amount,
-        status: amount >= 10 ? "Peak Traffic" : "Regular",
-      },
-      ...prev,
-    ]);
+  const handleLog = async (amount: number) => {
+    try {
+      const res = await fetch("/api/vendor/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count: amount }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setLogHistory((prev) => [json.data, ...prev]);
+        setCustomCount(1);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCRMSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!crmName.trim() || crmSubmitting) return;
+    setCrmSubmitting(true);
+    try {
+      const res = await fetch("/api/vendor/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: crmName, phone: crmPhone, notes: crmNotes }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setCrmDatabase((prev) => [
+          {
+            id: json.data?.id || Date.now(),
+            name: crmName,
+            phone: crmPhone || "N/A",
+            visits: 1,
+            lastVisit: "Just now",
+            status: "New",
+          },
+          ...prev,
+        ]);
+        setCrmName("");
+        setCrmPhone("");
+        setCrmNotes("");
+        setCrmSuccess(true);
+        setTimeout(() => setCrmSuccess(false), 2000);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCrmSubmitting(false);
+    }
   };
 
   const filtered = logHistory.filter(
-    (l) =>
-      l.time.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      l.status.toLowerCase().includes(searchTerm.toLowerCase()),
+    (l) => {
+      const timeStr = l.time || (l.createdAt ? new Date(l.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "");
+      const statusStr = l.status || (l.count >= 10 ? "Peak Traffic" : "Regular");
+      return timeStr.toLowerCase().includes(searchTerm.toLowerCase()) ||
+             statusStr.toLowerCase().includes(searchTerm.toLowerCase());
+    }
   );
 
   return (
@@ -221,45 +285,49 @@ export default function CustomersPage() {
           </div>
 
           {/* FIXED: 5 Summary Cards (Dynamic dark/light mapping) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <VendorSummaryCard
-              variant={isDark ? "dark" : "light"}
-              title="Today Customer"
-              khmerTitle="អតិថិជនថ្ងៃនេះ"
-              value={summaryData.todayCount}
-              subtext={`${summaryData.todayLogs} logs`}
-            />
-            <VendorSummaryCard
-              variant={isDark ? "dark" : "light"}
-              title="Avg.Spend"
-              khmerTitle="ការចំណាយមធ្យម"
-              value={summaryData.avgSpend}
-              subtext="per customer"
-            />
-            <VendorSummaryCard
-              variant="green"
-              title="Weekly Customer"
-              khmerTitle="អតិថិជនប្រចាំសប្តាហ៍"
-              value={summaryData.weeklyCount}
-              subtext={summaryData.weeklyChange}
-            />
-            <VendorSummaryCard
-              variant={isDark ? "dark" : "light"}
-              title="Peak Time"
-              khmerTitle="ម៉ោងមមាញឹក"
-              value={summaryData.peakTime}
-              subtext={summaryData.weeklyCustomers}
-            />
-            <VendorSummaryCard
-              variant={isDark ? "dark" : "light"}
-              title="Avg.LTV"
-              khmerTitle="តម្លៃអតិថិជន"
-              value={summaryData.avgLTV}
-              subtext="Per Customer"
-            />
-          </div>
+          {activeTab !== "crm" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <VendorSummaryCard
+                variant={isDark ? "dark" : "light"}
+                title="Today Customer"
+                khmerTitle="អតិថិជនថ្ងៃនេះ"
+                value={summaryData.todayCount}
+                subtext={`${summaryData.todayLogs} logs`}
+              />
+              <VendorSummaryCard
+                variant={isDark ? "dark" : "light"}
+                title="Avg.Spend"
+                khmerTitle="ការចំណាយមធ្យម"
+                value={summaryData.avgSpend}
+                subtext="per customer"
+              />
+              <VendorSummaryCard
+                variant="green"
+                title="Weekly Customer"
+                khmerTitle="អតិថិជនប្រចាំសប្តាហ៍"
+                value={summaryData.weeklyCount}
+                subtext={summaryData.weeklyChange}
+              />
+              <VendorSummaryCard
+                variant={isDark ? "dark" : "light"}
+                title="Peak Time"
+                khmerTitle="ម៉ោងមមាញឹក"
+                value={summaryData.peakTime}
+                subtext={summaryData.weeklyCustomers}
+              />
+              <VendorSummaryCard
+                variant={isDark ? "dark" : "light"}
+                title="Avg.LTV"
+                khmerTitle="តម្លៃអតិថិជន"
+                value={summaryData.avgLTV}
+                subtext="Per Customer"
+              />
+            </div>
+          )}
 
-          {/* FIXED: Log Customers Bar */}
+          {activeTab !== "crm" && (
+            <>
+              {/* FIXED: Log Customers Bar */}
           <div
             className={`rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border transition-colors ${
               isDark
@@ -394,7 +462,10 @@ export default function CustomersPage() {
                 <tbody
                   className={`divide-y transition-colors ${isDark ? "divide-white/5" : "divide-slate-100"}`}
                 >
-                  {filtered.map((log) => (
+                  {filtered.map((log) => {
+                    const timeDisp = log.time || (log.createdAt ? new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "");
+                    const statusDisp = log.status || (log.count >= 10 ? "Peak Traffic" : "Regular");
+                    return (
                     <tr
                       key={log.id}
                       className={`transition-colors ${isDark ? "hover:bg-white/5" : "hover:bg-slate-50/50"}`}
@@ -404,7 +475,7 @@ export default function CustomersPage() {
                           className={`flex items-center gap-2 text-[15px] ${isDark ? "text-white" : "text-slate-600"}`}
                         >
                           <Clock className="w-4 h-4 text-slate-400" />
-                          {log.time}
+                          {timeDisp}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -418,7 +489,7 @@ export default function CustomersPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {log.status === "Peak Traffic" ? (
+                        {statusDisp === "Peak Traffic" ? (
                           <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold border border-orange-200">
                             Peak Traffic
                           </span>
@@ -440,7 +511,8 @@ export default function CustomersPage() {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -455,6 +527,68 @@ export default function CustomersPage() {
               </button>
             </div>
           </div>
+          </>
+          )}
+
+          {activeTab === "crm" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* CRM Form */}
+              <div className="bg-white dark:bg-[#0d1117] border border-slate-200 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5">
+                  <h3 className="font-semibold text-[17px] text-slate-900 dark:text-white">Add New Customer</h3>
+                </div>
+                <div className="p-6 flex-1">
+                  <form onSubmit={handleCRMSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">Name</label>
+                      <input type="text" value={crmName} onChange={(e) => setCrmName(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/5 rounded-xl text-[15px] text-slate-900 dark:text-white focus:outline-none focus:border-[#29B28D]" required />
+                    </div>
+                    <div>
+                      <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">Phone Number</label>
+                      <input type="tel" value={crmPhone} onChange={(e) => setCrmPhone(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/5 rounded-xl text-[15px] text-slate-900 dark:text-white focus:outline-none focus:border-[#29B28D]" />
+                    </div>
+                    <div>
+                      <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">Notes / Preferences</label>
+                      <input type="text" value={crmNotes} onChange={(e) => setCrmNotes(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/5 rounded-xl text-[15px] text-slate-900 dark:text-white focus:outline-none focus:border-[#29B28D]" />
+                    </div>
+                    <button type="submit" disabled={crmSubmitting || !crmName.trim()} className="w-full bg-[#29B28D] text-white font-bold py-3.5 rounded-xl mt-2 disabled:opacity-60">{crmSubmitting ? "Saving..." : crmSuccess ? "Saved!" : "Save Customer Info"}</button>
+                  </form>
+                </div>
+              </div>
+
+              {/* CRM Database Table */}
+              <div className="bg-white dark:bg-[#0d1117] border border-slate-200 dark:border-white/5 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5">
+                  <h3 className="font-semibold text-[17px] text-slate-900 dark:text-white">CRM Profiles</h3>
+                </div>
+                <div className="overflow-x-auto flex-1">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 dark:bg-[#161B22] border-b text-[11px] uppercase tracking-wider font-semibold border-slate-100 dark:border-white/5 text-slate-500 dark:text-[#7d8590]">
+                        <th className="px-5 py-3">Customer</th>
+                        <th className="px-5 py-3">Visits</th>
+                        <th className="px-5 py-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                      {crmDatabase.map((customer) => (
+                        <tr key={customer.id} className="hover:bg-slate-50 dark:hover:bg-white/5">
+                          <td className="px-5 py-3">
+                            <div className="text-[14px] font-bold text-slate-900 dark:text-white">{customer.name}</div>
+                            <div className="text-[12px] text-slate-500 dark:text-[#7d8590]">{customer.phone}</div>
+                          </td>
+                          <td className="px-5 py-3 font-bold text-slate-700 dark:text-[#c9d1d9]">{customer.visits}</td>
+                          <td className="px-5 py-3">
+                            <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-white">{customer.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

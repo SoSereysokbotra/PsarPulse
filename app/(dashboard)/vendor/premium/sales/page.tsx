@@ -74,45 +74,7 @@ const PREMIUM_NAV = [
   },
 ];
 
-// ─── Data ──────────────────────────────────────────────────────────
-const transactions = [
-  {
-    id: 1,
-    time: "1:45 PM",
-    amount: "$12.50",
-    item: "2x Iced Coffee, 1x Bread",
-    status: "Logged",
-    aiTagged: true,
-    tag: "Peak Hour",
-  },
-  {
-    id: 2,
-    time: "1:15 PM",
-    amount: "$4.00",
-    item: "1x Hot Latte",
-    status: "Logged",
-    aiTagged: true,
-    tag: "Weather Driven",
-  },
-  {
-    id: 3,
-    time: "12:30 PM",
-    amount: "$15.00",
-    item: "3x Noodle Soup",
-    status: "Logged",
-    aiTagged: false,
-    tag: "",
-  },
-  {
-    id: 4,
-    time: "11:00 AM",
-    amount: "$8.50",
-    item: "AI Auto-Logged Sale",
-    status: "Logged",
-    aiTagged: true,
-    tag: "Smart Log",
-  },
-];
+// Data fetch uses dynamic state
 
 const smartAlerts = [
   {
@@ -147,22 +109,73 @@ const weatherData = {
 export default function PremiumSalesPage() {
   const [quickAmount, setQuickAmount] = useState("");
   const [quickItem, setQuickItem] = useState("");
+  const [quickMethod, setQuickMethod] = useState("Cash");
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
   const [period, setPeriod] = useState<Period>("Day");
 
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  React.useEffect(() => {
+    const fetchSales = async () => {
+      try {
+        const res = await fetch("/api/vendor/sales");
+        const json = await res.json();
+        if (json.success) setTransactions(json.data);
+      } catch (error) {
+        console.error("Failed to fetch sales", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSales();
+  }, []);
+
   const totalRevenue = transactions.reduce(
-    (s, t) => s + parseFloat(t.amount.replace("$", "")),
+    (s, t) => s + parseFloat(t.amount || "0"),
     0,
   );
   const avgSale = totalRevenue / (transactions.length || 1);
 
-  const handleQuickLog = (e: React.FormEvent) => {
+  const handleQuickLog = async (e: React.FormEvent) => {
     e.preventDefault();
-    setQuickAmount("");
-    setQuickItem("");
-    setIsQuickLogModalOpen(false);
+    if (!quickAmount || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/vendor/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(quickAmount),
+          method: quickMethod,
+          items: quickItem || "Smart Log via AI",
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setTransactions((prev) => [json.data, ...prev]);
+        setQuickAmount("");
+        setQuickItem("");
+        setSubmitSuccess(true);
+        setTimeout(() => {
+          setSubmitSuccess(false);
+          setIsQuickLogModalOpen(false);
+        }, 900);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Delete this sale?")) return;
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
   };
 
   return (
@@ -373,17 +386,17 @@ export default function PremiumSalesPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2 text-[14px] font-medium text-[#111827] dark:text-white">
                             <Clock className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590]" />
-                            {txn.time}
+                            {new Date(txn.createdAt || new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-[13.5px] font-medium text-[#374151] dark:text-[#e6edf3]">
-                            {txn.item}
+                            {txn.items || "Sale"}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-[15px] font-bold text-[#3ecf8e] dark:text-[#3ecf8e]">
-                            {txn.amount}
+                            ${parseFloat(txn.amount || "0").toFixed(2)}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -398,8 +411,8 @@ export default function PremiumSalesPage() {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <button className="p-2 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#8b5cf6] dark:hover:text-[#a78bfa] rounded-[8px] hover:bg-[rgba(139,92,246,0.08)] dark:hover:bg-white/5 transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 cursor-pointer bg-transparent">
-                            <MoreVertical className="w-5 h-5 mx-auto" />
+                          <button onClick={() => handleDelete(txn.id)} className="p-2 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#ef4444] dark:hover:text-[#f87171] rounded-[8px] hover:bg-[rgba(239,68,68,0.08)] dark:hover:bg-[rgba(239,68,68,0.15)] transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 cursor-pointer bg-transparent">
+                            <X className="w-5 h-5 mx-auto" />
                           </button>
                         </td>
                       </tr>
@@ -636,9 +649,10 @@ export default function PremiumSalesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold text-[15px] py-4 rounded-[12px] shadow-md transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer"
+                  disabled={isSubmitting || !quickAmount}
+                  className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold text-[15px] py-4 rounded-[12px] shadow-md transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer disabled:opacity-60"
                 >
-                  <Sparkles className="w-5 h-5" /> Log via AI
+                  <Sparkles className="w-5 h-5" /> {isSubmitting ? "Saving…" : submitSuccess ? "✓ Logged" : "Log via AI"}
                 </button>
               </div>
             </form>

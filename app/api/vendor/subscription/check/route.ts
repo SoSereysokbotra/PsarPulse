@@ -43,10 +43,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get the plan name from the vendor's current plan
     const planName = vendor.plan?.name || "free";
     const subscriptionStatus = vendor.subscriptionStatus || "trial";
     const subscriptionEndsAt = vendor.subscriptionEndsAt;
+
+    console.log(`[SubscriptionCheckAPI] Vendor ID: ${vendor.id}, Plan: ${planName}, Status: ${subscriptionStatus}`);
 
     // Check if the subscription has expired
     const isExpired =

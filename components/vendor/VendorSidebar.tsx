@@ -45,7 +45,7 @@ const PLAN_CONFIG = {
     sub: "$3/month · Unlimited Logs",
     icon: Crown,
     cta: "Manage Plan",
-    ctaHref: "/vendor/pricing",
+    ctaHref: "/vendor/pro",
   },
   premium: {
     label: "Premium Plan",
@@ -53,7 +53,7 @@ const PLAN_CONFIG = {
     sub: "$7/month · Unlimited AI Logs",
     icon: Sparkles,
     cta: "Manage Plan",
-    ctaHref: "/vendor/pricing",
+    ctaHref: "/vendor/premium",
   },
 };
 

@@ -27,6 +27,7 @@ const publicPaths = [
   "/api/auth/oauth/facebook/callback",
   "/api/auth/oauth/tiktok",
   "/api/auth/oauth/tiktok/callback",
+  "/api/bakong/webhook",
   "/admin",
   "/sw.js",
   "/manifest.webmanifest",
@@ -175,9 +176,11 @@ export async function middleware(request: NextRequest) {
     const requiredPlans = getRequiredPlans(pathname);
     if (requiredPlans) {
       const subscriptionData = await checkVendorSubscription(request);
+      console.log(`[Middleware] Path: ${pathname}, Plan Data:`, subscriptionData);
 
       // If we couldn't verify subscription, deny access (fail-closed)
       if (!subscriptionData || !subscriptionData.isVendor) {
+        console.log(`[Middleware] Redirecting to pricing: No subscription or not vendor`);
         if (pathname.startsWith("/api/")) {
           return NextResponse.json(
             {
@@ -197,6 +200,7 @@ export async function middleware(request: NextRequest) {
         !subscriptionData.subscriptionStatus ||
         !activeStatuses.includes(subscriptionData.subscriptionStatus)
       ) {
+        console.log(`[Middleware] Redirecting to pricing: Status is ${subscriptionData.subscriptionStatus}`);
         if (pathname.startsWith("/api/")) {
           return NextResponse.json(
             {
@@ -217,6 +221,7 @@ export async function middleware(request: NextRequest) {
         !subscriptionData.planName ||
         !requiredPlans.includes(subscriptionData.planName)
       ) {
+        console.log(`[Middleware] Redirecting to pricing: Plan mismatch. Required: ${requiredPlans.join(",")}, Found: ${subscriptionData.planName}`);
         if (pathname.startsWith("/api/")) {
           return NextResponse.json(
             {
@@ -230,6 +235,7 @@ export async function middleware(request: NextRequest) {
         pricingUrl.searchParams.set("reason", "upgrade");
         return NextResponse.redirect(pricingUrl);
       }
+      console.log(`[Middleware] Access granted to ${pathname}`);
     }
 
     // Inject user info into headers for downstream use

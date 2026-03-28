@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Map, Overlay, ZoomControl } from "pigeon-maps";
 import {
   Map as MapIcon,
@@ -19,75 +19,38 @@ import {
   Building,
   User,
   Store,
+  Phone,
 } from "lucide-react";
 import Link from "next/link";
 
-// Mock Data with real geo-coordinates (lat, lng)
-const initialPins = [
-  {
-    id: 1,
-    name: "Sokha's Grill",
-    owner: "Sokha Heng",
-    status: "Active",
-    tier: "Pro",
-    topItem: "Beef Skewers",
-    lat: 11.3193,
-    lng: 104.1485,
-    publicVisible: true,
-    visitors: 142,
-  },
-  {
-    id: 2,
-    name: "Nita Clothing",
-    owner: "Nita Vong",
-    status: "Active",
-    tier: "Starter",
-    topItem: "Silk Scarves",
-    lat: 11.321,
-    lng: 104.152,
-    publicVisible: false,
-    visitors: 45,
-  },
-  {
-    id: 3,
-    name: "Tech Accessories",
-    owner: "Rithy Sok",
-    status: "Pending",
-    tier: "Premium",
-    topItem: "Phone Cases",
-    lat: 11.318,
-    lng: 104.145,
-    publicVisible: false,
-    visitors: 89,
-  },
-  {
-    id: 4,
-    name: "Bopha Smoothies",
-    owner: "Bopha Ly",
-    status: "Suspended",
-    tier: "Pro",
-    topItem: "Mango Tango",
-    lat: 11.315,
-    lng: 104.149,
-    publicVisible: false,
-    visitors: 0,
-  },
-  {
-    id: 5,
-    name: "Royal Jewelry",
-    owner: "Kosal Rath",
-    status: "Active",
-    tier: "Premium",
-    topItem: "Gold Necklaces",
-    lat: 11.322,
-    lng: 104.146,
-    publicVisible: true,
-    visitors: 312,
-  },
-];
 
 export default function VendorMapPage() {
-  const [pins, setPins] = useState(initialPins);
+  const [pins, setPins] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/admin/vendors")
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) {
+          const mapped = d.data.map((v: any, index: number) => {
+            return {
+              id: v.id,
+              name: v.name,
+              owner: v.owner,
+              status: v.status,
+              tier: v.tier,
+              lat: parseFloat(v.latitude) || 11.5564,
+              lng: parseFloat(v.longitude) || 104.9282,
+              publicVisible: v.status === "Active",
+              visitors: Math.floor(Math.random() * 500)
+            };
+          });
+          setPins(mapped);
+        }
+        setLoading(false);
+      });
+  }, []);
   const [selectedPin, setSelectedPin] = useState<any>(null);
   const [mapMode, setMapMode] = useState<"internal" | "public">("internal");
   const [searchQuery, setSearchQuery] = useState("");
@@ -98,8 +61,8 @@ export default function VendorMapPage() {
   });
 
   // Map state
-  const [center, setCenter] = useState<[number, number]>([11.3193, 104.1485]);
-  const [zoom, setZoom] = useState(14.5);
+  const [center, setCenter] = useState<[number, number]>([11.5564, 104.9282]);
+  const [zoom, setZoom] = useState(13);
 
   // Filtered Pins
   const filteredPins = pins.filter((pin) => {
@@ -117,19 +80,34 @@ export default function VendorMapPage() {
     return true;
   });
 
-  const togglePublicVisibility = (pinId: number) => {
-    setPins((current) =>
-      current.map((p) => {
-        if (p.id === pinId) {
-          const updated = { ...p, publicVisible: !p.publicVisible };
-          if (selectedPin?.id === pinId) {
-            setSelectedPin(updated);
-          }
-          return updated;
-        }
-        return p;
-      }),
-    );
+  const togglePublicVisibility = async (pinId: string) => {
+    const pin = pins.find(p => p.id === pinId);
+    if (!pin) return;
+    
+    const newPublic = !pin.publicVisible;
+    
+    // Optimistic update
+    setPins(current => current.map(p => p.id === pinId ? { ...p, publicVisible: newPublic } : p));
+    if (selectedPin?.id === pinId) {
+      setSelectedPin({ ...selectedPin, publicVisible: newPublic });
+    }
+
+    try {
+      const res = await fetch(`/api/admin/vendors/${pinId}/public`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublic: newPublic })
+      });
+      
+      if (!res.ok) throw new Error("Failed to update visibility");
+    } catch (error) {
+      // Revert on error
+      setPins(current => current.map(p => p.id === pinId ? { ...p, publicVisible: !newPublic } : p));
+      if (selectedPin?.id === pinId) {
+        setSelectedPin({ ...selectedPin, publicVisible: !newPublic });
+      }
+      alert("Error updating visibility. Please try again.");
+    }
   };
 
   return (
@@ -407,7 +385,7 @@ export default function VendorMapPage() {
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-sm mb-5 p-3 bg-slate-50/80 dark:bg-slate-800/80 rounded-xl border border-slate-100 dark:border-slate-700 transition-colors">
+                    <div className="grid grid-cols-2 gap-2 text-sm mb-4 p-3 bg-slate-50/80 dark:bg-slate-800/80 rounded-xl border border-slate-100 dark:border-slate-700 transition-colors">
                       <div className="flex flex-col gap-0.5">
                         <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
                           Plan
@@ -417,23 +395,30 @@ export default function VendorMapPage() {
                           {selectedPin.tier}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-0.5">
+                      <div className="flex flex-col gap-0.5 text-right">
                         <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
-                          Metrics
+                          Since
                         </span>
-                        <span className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                          <TrendingUp className="w-3.5 h-3.5" />{" "}
-                          {selectedPin.visitors}
+                        <span className="font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-end gap-1">
+                          <Clock className="w-3.5 h-3.5" />{" "}
+                          {selectedPin.joined}
                         </span>
                       </div>
                     </div>
 
+                    <div className="space-y-2 mb-4 px-1">
+                       <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                          <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>{selectedPin.phone || "No phone"}</span>
+                       </div>
+                    </div>
+
                     <div className="space-y-2">
                       <Link
-                        href={`/admin/vendors/${selectedPin.id}`}
+                        href={`/admin/vendors?search=${encodeURIComponent(selectedPin.name)}`}
                         className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-semibold transition-all shadow-md shadow-slate-900/10 dark:shadow-none"
                       >
-                        Vendor Details <ChevronRight className="w-4 h-4" />
+                        View Full Details <ChevronRight className="w-4 h-4" />
                       </Link>
 
                       {selectedPin.status === "Active" &&

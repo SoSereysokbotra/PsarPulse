@@ -120,6 +120,8 @@ export async function PATCH(
         planId: vendorPlanRecord.id,
         subscriptionStatus: "active",
         status: "active",
+        latitude: existingReq.latitude,
+        longitude: existingReq.longitude,
       });
 
       // Ensure user role is vendor

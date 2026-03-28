@@ -28,6 +28,8 @@ class AuthClient {
     businessAddress?: string;
     description?: string;
     token?: string;
+    latitude?: string;
+    longitude?: string;
   }) {
     return this.jsonRequest("/signup", {
       method: "POST",

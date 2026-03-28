@@ -21,6 +21,7 @@ import {
   Loader2,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
@@ -31,16 +32,33 @@ export default function AdminDashboardPage() {
   const isDark = resolvedTheme === "dark";
 
   const [vendorRequests, setVendorRequests] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    activeVendors: 0,
+    activeSubs: 0,
+    monthlyRevenue: 0,
+    pendingRequests: 0,
+    subscriptionsBreakdown: { free: 0, paid: 0 }
+  });
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchRequests() {
       try {
-        const response = await fetch("/api/admin/vendor-requests");
-        if (response.ok) {
-          const json = await response.json();
-          if (json.success) {
-            setVendorRequests(json.data);
+        const [reqRes, statsRes] = await Promise.all([
+          fetch("/api/admin/vendor-requests"),
+          fetch("/api/admin/stats")
+        ]);
+
+        if (reqRes.ok) {
+          const json = await reqRes.json();
+          if (json.success) setVendorRequests(json.data);
+        }
+        
+        if (statsRes.ok) {
+          const json = await statsRes.json();
+          if (json.success && json.data) {
+            setStats(json.data);
           }
         }
       } catch (error) {
@@ -78,6 +96,44 @@ export default function AdminDashboardPage() {
       }
     } catch (e) {
       alert("Failed to connect to the server.");
+    }
+  };
+
+  const filteredRequests = vendorRequests.filter(req => 
+    req.businessName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    req.businessEmail?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleExport = async () => {
+    try {
+      const res = await fetch("/api/admin/vendors");
+      const json = await res.json();
+      if (json.success) {
+        const data = json.data;
+        const csvRows = [
+          ["ID", "Name", "Owner", "Phone", "Tier", "Status", "Joined"],
+          ...data.map((v: any) => [
+            v.id,
+            v.name,
+            v.owner,
+            v.phone,
+            v.tier,
+            v.status,
+            v.joined
+          ])
+        ];
+        const csvContent = "data:text/csv;charset=utf-8," 
+          + csvRows.map(e => e.join(",")).join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `vendors_export_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error("Export failed", error);
     }
   };
 
@@ -148,6 +204,8 @@ export default function AdminDashboardPage() {
                 ? "ស្វែងរកអាជីវករ ម្ចាស់តូប ឬលេខទូរស័ព្ទ..."
                 : "Search vendors, stall owners, or phone numbers..."
             }
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className={`w-full pl-9 pr-12 py-2.5 border-none rounded-lg text-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all ${
               isDark ? "bg-white/5 text-white" : "bg-slate-50/50 text-slate-900"
             }`}
@@ -160,21 +218,20 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 px-2 md:px-0">
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg text-sm font-medium transition-all shadow-sm whitespace-nowrap">
-            <UserPlus className="h-4 w-4" />
-            {isKhmer ? "ចុះឈ្មោះអាជីវករ" : "Onboard Vendor"}
-          </button>
+          <Link href="/admin/vendor-requests">
+            <button
+              className={`flex items-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-medium transition-all shadow-sm whitespace-nowrap ${
+                isDark
+                  ? "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+                  : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+              }`}
+            >
+              <FileText className="h-4 w-4 text-slate-400" />
+              {isKhmer ? "ពិនិត្យតូប" : "Review Stalls"}
+            </button>
+          </Link>
           <button
-            className={`flex items-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-medium transition-all shadow-sm whitespace-nowrap ${
-              isDark
-                ? "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
-                : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
-            }`}
-          >
-            <FileText className="h-4 w-4 text-slate-400" />
-            {isKhmer ? "ពិនិត្យតូប" : "Review Stalls"}
-          </button>
-          <button
+            onClick={handleExport}
             className={`flex items-center gap-2 px-4 py-2.5 border rounded-lg text-sm font-medium transition-all shadow-sm whitespace-nowrap ${
               isDark
                 ? "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
@@ -191,8 +248,8 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         <StatCard
           title={isKhmer ? "អាជីវករដែលបានចុះឈ្មោះ" : "Registered Vendors"}
-          value="1,248"
-          trend="+12%"
+          value={stats.activeVendors.toString()}
+          trend=""
           trendUp={true}
           icon={<Users className="h-5 w-5 text-blue-600" />}
           iconBg="bg-blue-50 ring-1 ring-blue-100"
@@ -212,7 +269,7 @@ export default function AdminDashboardPage() {
               <p
                 className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}
               >
-                892
+                {stats.activeSubs}
               </p>
             </div>
             <div className="bg-emerald-50 ring-1 ring-emerald-100 p-2.5 rounded-lg">
@@ -223,24 +280,21 @@ export default function AdminDashboardPage() {
           <div className="space-y-2 mt-4">
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-500">Free</span>
-              <span className="font-medium text-slate-700">356</span>
+              <span className="font-medium text-slate-700">{stats.subscriptionsBreakdown?.free || 0}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-emerald-600 font-medium">Pro</span>
-              <span className="font-medium text-slate-700">244</span>
+              <span className="text-emerald-600 font-medium">Paid</span>
+              <span className="font-medium text-slate-700">{stats.subscriptionsBreakdown?.paid || 0}</span>
             </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-indigo-600 font-medium">Premium</span>
-              <span className="font-medium text-slate-700">292</span>
-            </div>
+
           </div>
         </div>
 
         <StatCard
-          title={isKhmer ? "ចំណូលទីផ្សារ" : "Market Revenue"}
-          value="$14,500"
-          subtext={isKhmer ? "ខែនេះ" : "This Month"}
-          trend="-2%"
+          title={isKhmer ? "ចំណូលទីផ្សារអតិបរមា" : "Market Revenue"}
+          value={`$${stats.monthlyRevenue}`}
+          subtext={isKhmer ? "សរុប" : "Total Generated"}
+          trend=""
           trendUp={false}
           icon={<CircleDollarSign className="h-5 w-5 text-indigo-600" />}
           iconBg="bg-indigo-50 ring-1 ring-indigo-100"
@@ -296,23 +350,79 @@ export default function AdminDashboardPage() {
             </select>
           </div>
           <div
-            className={`h-75 w-full border border-dashed rounded-xl flex items-center justify-center flex-col text-slate-400 ${
-              isDark
-                ? "bg-white/5 border-white/10"
-                : "bg-slate-50/50 border-slate-200/50"
+            className={`h-72 w-full flex items-end justify-between gap-2 px-2 pb-8 pt-4 relative ${
+              isDark ? "bg-white/0" : "bg-slate-50/0"
             }`}
           >
-            <TrendingUp className="h-8 w-8 mb-3 text-slate-300" />
-            <p className="text-sm font-medium">
-              {isKhmer
-                ? "ការដាក់បញ្ចូលតារាងចំណូល"
-                : "Revenue Chart Integration"}
-            </p>
-            <p className="text-xs mt-1 text-slate-400">
-              {isKhmer
-                ? "បញ្ចូលសមាសភាគ Recharts ឬ Chart.js នៅទីនេះ"
-                : "Insert Recharts or Chart.js component here"}
-            </p>
+            {/* Y-Axis Labels */}
+            <div className="absolute left-0 h-full flex flex-col justify-between text-[10px] text-slate-400 pb-8 pr-2 border-r border-slate-100 dark:border-white/5">
+              <span>$2k</span>
+              <span>$1.5k</span>
+              <span>$1k</span>
+              <span>$500</span>
+              <span>0</span>
+            </div>
+
+            {/* Grid Lines */}
+            <div className="absolute inset-0 ml-8 mb-8 flex flex-col justify-between pointer-events-none">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div key={i} className="w-full border-t border-slate-100 dark:border-white/5 h-0" />
+              ))}
+            </div>
+
+            {/* Bars */}
+            <div className="flex-1 ml-8 h-full flex items-end justify-around gap-2 pb-1 relative z-10">
+              {[
+                { day: "Mon", rev: 1200, foot: 450 },
+                { day: "Tue", rev: 1500, foot: 520 },
+                { day: "Wed", rev: 900, foot: 380 },
+                { day: "Thu", rev: 1800, foot: 610 },
+                { day: "Fri", rev: 2100, foot: 740 },
+                { day: "Sat", rev: 2400, foot: 890 },
+                { day: "Sun", rev: 1900, foot: 650 },
+              ].map((data, i) => {
+                const revHeight = (data.rev / 2500) * 100;
+                const footHeight = (data.foot / 1000) * 100;
+                return (
+                  <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
+                    {/* Tooltip Content (Hover) */}
+                    <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] p-2 rounded shadow-lg z-20 whitespace-nowrap pointer-events-none">
+                      <div className="font-bold">{data.day}</div>
+                      <div>Revenue: ${data.rev}</div>
+                      <div>Footfall: {data.foot}</div>
+                    </div>
+                    
+                    <div className="w-full flex justify-center gap-1 h-full items-end">
+                      {/* Revenue Bar */}
+                      <div 
+                        className="w-3 sm:w-5 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-sm transition-all duration-500 hover:brightness-110"
+                        style={{ height: `${revHeight}%` }}
+                      ></div>
+                      {/* Footfall Bar */}
+                      <div 
+                        className="w-1.5 sm:w-2 bg-gradient-to-t from-indigo-500 to-indigo-300 rounded-t-sm transition-all duration-500 hover:brightness-110 opacity-60"
+                        style={{ height: `${footHeight}%` }}
+                      ></div>
+                    </div>
+                    
+                    {/* X-Axis Label */}
+                    <span className="absolute -bottom-6 text-[10px] font-medium text-slate-500">{data.day}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Legend */}
+            <div className="absolute bottom-1 right-2 flex gap-4 text-[10px] font-medium">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="text-slate-500">{isKhmer ? "ចំណូល" : "Revenue"}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-indigo-400" />
+                <span className="text-slate-500">{isKhmer ? "ចំនួនអ្នកដើរ" : "Footfall"}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -338,14 +448,14 @@ export default function AdminDashboardPage() {
               <div className="flex items-center justify-center h-full p-6 text-slate-400">
                 <Loader2 className="h-6 w-6 animate-spin" />
               </div>
-            ) : vendorRequests.length === 0 ? (
+            ) : filteredRequests.length === 0 ? (
               <div className="flex items-center justify-center h-full p-6 text-slate-400 text-sm">
                 {isKhmer
                   ? "មិនមានការអនុម័តដែលកំពុងរង់ចាំទេ"
                   : "No pending approvals"}
               </div>
             ) : (
-              vendorRequests.map((req) => (
+              filteredRequests.map((req) => (
                 <div
                   key={req.id}
                   className="p-3 hover:bg-slate-50 rounded-lg transition-colors border border-transparent hover:border-slate-100 mb-1 group"

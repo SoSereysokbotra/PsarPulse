@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   User, 
   Bell, 
@@ -30,16 +30,39 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile");
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Form states for demonstration
   const [personalInfo, setPersonalInfo] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@psarpulse.com",
-    role: "System Administrator",
+    firstName: "",
+    lastName: "",
+    email: "",
+    role: "Administrator",
     language: "English (US)",
-    timezone: "(UTC-05:00) Eastern Time (US & Canada)"
+    timezone: "(UTC+07:00) Indochina Time"
   });
+
+  useEffect(() => {
+    async function fetchMe() {
+      try {
+        const res = await fetch("/api/admin/me");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data?.personalInfo) {
+            setPersonalInfo(prev => ({
+              ...prev,
+              ...json.data.personalInfo
+            }));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch personal info", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchMe();
+  }, []);
 
   const handleSave = () => {
     setIsSaving(true);
@@ -141,10 +164,16 @@ export default function SettingsPage() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-6 mb-8">
+                  {isLoading ? (
+                    <div className="w-full flex justify-center py-8">
+                      <div className="w-8 h-8 rounded-full border-4 border-slate-200 border-t-indigo-600 animate-spin" />
+                    </div>
+                  ) : (
+                    <>
                   <div className="shrink-0">
                     <div className="relative group">
-                      <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-100 to-blue-50 border-4 border-white shadow-md flex items-center justify-center text-indigo-600 text-3xl font-bold overflow-hidden">
-                        JD
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-100 to-blue-50 border-4 border-white shadow-md flex items-center justify-center text-indigo-600 text-3xl font-bold overflow-hidden uppercase">
+                        {personalInfo.firstName[0] || ""}{personalInfo.lastName[0] || ""}
                       </div>
                       <button className="absolute inset-0 bg-slate-900/40 rounded-full flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
                         <Paintbrush className="w-5 h-5 mb-1" />
@@ -210,6 +239,8 @@ export default function SettingsPage() {
                       </p>
                     </div>
                   </div>
+                  </>
+                  )}
                 </div>
               </div>
 

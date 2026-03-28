@@ -11,6 +11,8 @@ export const signupSchema = z.object({
   phone: z.string().optional(),
   businessAddress: z.string().optional(),
   description: z.string().optional(),
+  latitude: z.string().optional(),
+  longitude: z.string().optional(),
 });
 
 export const loginSchema = z.object({

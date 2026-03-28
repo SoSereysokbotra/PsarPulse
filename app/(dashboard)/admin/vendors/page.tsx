@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Search, 
   Filter, 
@@ -10,19 +10,18 @@ import {
   ShieldAlert,
   MapPin,
   Camera,
-  Eye
+  Eye,
+  Trash2,
+  RefreshCcw,
+  X,
+  Store,
+  Phone,
+  Clock
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
-// Mock Data
-const vendors = [
-  { id: 1, name: "Sokha's Grill", owner: "Sokha Heng", phone: "012-345-678", role: "Vendor", tier: "Pro", status: "Active", joined: "Oct 12, 2025" },
-  { id: 2, name: "Nita Clothing", owner: "Nita Vong", phone: "098-765-432", role: "Vendor", tier: "Starter", status: "Active", joined: "Nov 01, 2025" },
-  { id: 3, name: "Tech Accessories", owner: "Rithy Sok", phone: "011-222-333", role: "Vendor", tier: "Premium", status: "Pending", joined: "Just Now", documentUrl: "#" },
-  { id: 4, name: "Bopha Smoothies", owner: "Bopha Ly", phone: "010-999-888", role: "Vendor", tier: "Pro", status: "Suspended", joined: "Aug 05, 2025" },
-  { id: 5, name: "Admin Dashboard", owner: "Admin User", phone: "015-000-000", role: "Admin", tier: "N/A", status: "Active", joined: "Jan 01, 2025" },
-];
+// Mock Data fallback if needed, but we'll fetch from API
 
 export default function VendorDirectoryPage() {
   const { language } = useLanguage();
@@ -32,7 +31,79 @@ export default function VendorDirectoryPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDocs, setSelectedDocs] = useState<any>(null); // For verification modal
+  const [selectedVendor, setSelectedVendor] = useState<any>(null); // For details modal
+  const [vendors, setVendors] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchVendors() {
+      try {
+        const response = await fetch("/api/admin/vendors");
+        if (response.ok) {
+          const json = await response.json();
+          if (json.success) {
+            setVendors(json.data);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch vendors", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchVendors();
+  }, []);
   
+  const filteredVendors = vendors.filter(v => 
+    v.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    v.owner?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    v.phone?.includes(searchQuery)
+  );
+
+  const fetchVendors = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/admin/vendors");
+      if (response.ok) {
+        const json = await response.json();
+        if (json.success) setVendors(json.data);
+      }
+    } catch (error) {
+       console.error("Failed to fetch vendors", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async (vendorId: string, currentStatus: string) => {
+    const newStatus = currentStatus === "Active" ? "blocked" : "active";
+    if (!confirm(`Are you sure you want to ${newStatus === 'blocked' ? 'Suspend' : 'Reactivate'} this vendor?`)) return;
+
+    try {
+      const res = await fetch(`/api/admin/vendors/${vendorId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+      });
+      if (res.ok) fetchVendors();
+    } catch (error) {
+      alert("Failed to update status");
+    }
+  };
+
+  const handleDeleteVendor = async (vendorId: string) => {
+    if (!confirm("Are you sure you want to DELETE this vendor? This action cannot be undone.")) return;
+
+    try {
+      const res = await fetch(`/api/admin/vendors/${vendorId}`, {
+        method: "DELETE"
+      });
+      if (res.ok) fetchVendors();
+    } catch (error) {
+      alert("Failed to delete vendor");
+    }
+  };
+
   return (
     <div className={`space-y-6 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -110,7 +181,29 @@ export default function VendorDirectoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              {vendors.map((vendor) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                    <div className="flex justify-center items-center">
+                      <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                      {isKhmer ? "កំពុងផ្ទុកទិន្នន័យ..." : "Loading vendors..."}
+                    </div>
+                  </td>
+                </tr>
+              ) : vendors.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                    {isKhmer ? "មិនមានអាជីវករទេ" : "No vendors found"}
+                  </td>
+                </tr>
+              ) : filteredVendors.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-slate-500">
+                    No vendors found matching "{searchQuery}"
+                  </td>
+                </tr>
+              ) : (
+                filteredVendors.map((vendor) => (
                 <tr key={vendor.id} className={`transition-colors ${isDark ? "hover:bg-white/5 border-b border-white/5 last:border-0" : "hover:bg-slate-50 border-b border-slate-100 last:border-0"}`}>
                   <td className="px-6 py-4">
                     <div className={`font-medium ${isDark ? "text-white" : "text-slate-900"}`}>{vendor.name}</div>
@@ -148,29 +241,115 @@ export default function VendorDirectoryPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2 text-slate-400">
-                      <button className="p-1 hover:text-blue-600 transition-colors" title={isKhmer ? "មើលព័ត៌មានលម្អិត" : "View Details"}>
+                      <button 
+                        className="p-1 hover:text-blue-600 transition-colors" 
+                        title={isKhmer ? "មើលព័ត៌មានលម្អិត" : "View Details"}
+                        onClick={() => setSelectedVendor(vendor)}
+                      >
                         <Eye className="h-5 w-5" />
                       </button>
-                      {vendor.status === 'Pending' ? (
-                        <button className="p-1 hover:text-emerald-600 transition-colors" title={isKhmer ? "អនុម័ត" : "Approve"}>
-                          <CheckCircle2 className="h-5 w-5" />
-                        </button>
-                      ) : (
-                        <button className="p-1 hover:text-red-600 transition-colors" title={isKhmer ? "ផ្អាក" : "Suspend"}>
-                          <ShieldAlert className="h-5 w-5" />
-                        </button>
-                      )}
-                      <button className={`p-1 transition-colors flex items-center ${isDark ? "hover:text-white" : "hover:text-slate-900"}`}>
-                        <MoreVertical className="h-5 w-5" />
+                      
+                      <button 
+                        className={`p-1 transition-colors ${vendor.status === 'Suspended' ? 'hover:text-emerald-600' : 'hover:text-amber-600'}`} 
+                        title={vendor.status === 'Suspended' ? (isKhmer ? "ធ្វើឱ្យសកម្មឡើងវិញ" : "Reactivate") : (isKhmer ? "ផ្អាក" : "Suspend")}
+                        onClick={() => handleToggleStatus(vendor.id, vendor.status)}
+                      >
+                        {vendor.status === 'Suspended' ? <RefreshCcw className="h-5 w-5" /> : <ShieldAlert className="h-5 w-5" />}
+                      </button>
+
+                      <button 
+                        className="p-1 hover:text-red-600 transition-colors" 
+                        title={isKhmer ? "លុប" : "Delete"}
+                        onClick={() => handleDeleteVendor(vendor.id)}
+                      >
+                        <Trash2 className="h-5 w-5" />
                       </button>
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Vendor Details Modal */}
+      {selectedVendor && (
+        <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+          <div className={`rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 border ${isDark ? "bg-[#0d1117] border-white/10" : "bg-white border-slate-200"}`}>
+            <div className="p-8">
+              <div className="flex justify-between items-start mb-8">
+                <div className="flex items-center gap-4">
+                  <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${isDark ? "bg-white/5" : "bg-slate-100"}`}>
+                    <Store className={`h-8 w-8 ${isDark ? "text-psar-primary" : "text-psar-primary"}`} />
+                  </div>
+                  <div>
+                    <h3 className={`text-2xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{selectedVendor.name}</h3>
+                    <p className="text-slate-500 font-medium">{selectedVendor.owner}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedVendor(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className={`p-4 rounded-2xl border ${isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-100"}`}>
+                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Status</p>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold
+                    ${selectedVendor.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : ''}
+                    ${selectedVendor.status === 'Pending' ? 'bg-amber-100 text-amber-700' : ''}
+                    ${selectedVendor.status === 'Suspended' ? 'bg-red-100 text-red-700' : ''}
+                  `}>
+                    {selectedVendor.status}
+                  </span>
+                </div>
+                <div className={`p-4 rounded-2xl border ${isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-100"}`}>
+                  <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Plan</p>
+                  <p className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{selectedVendor.tier}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center gap-3 text-sm">
+                   <Phone className="h-4 w-4 text-emerald-500" />
+                   <span className={isDark ? "text-slate-300" : "text-slate-600"}>{selectedVendor.phone}</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                   <Clock className="h-4 w-4 text-blue-500" />
+                   <span className={isDark ? "text-slate-300" : "text-slate-600"}>{isKhmer ? "ចូលរួមនៅ៖" : "Joined on:"} {selectedVendor.joined}</span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                   <MapPin className="h-4 w-4 text-psar-primary" />
+                   <span className={isDark ? "text-slate-300" : "text-slate-600"}>{selectedVendor.latitude}, {selectedVendor.longitude}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => handleToggleStatus(selectedVendor.id, selectedVendor.status)}
+                  className={`flex-1 py-3 px-4 rounded-2xl font-bold text-sm transition-all ${
+                    selectedVendor.status === 'Suspended' 
+                    ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20" 
+                    : "bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20"
+                  }`}
+                >
+                  {selectedVendor.status === 'Suspended' ? (isKhmer ? "ធ្វើឱ្យសកម្មឡើងវិញ" : "Reactivate") : (isKhmer ? "ផ្អាក" : "Suspend Vendor")}
+                </button>
+                <button 
+                  onClick={() => {
+                    handleDeleteVendor(selectedVendor.id);
+                    setSelectedVendor(null);
+                  }}
+                  className={`py-3 px-4 rounded-2xl font-bold text-sm transition-all ${isDark ? "bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20" : "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100"}`}
+                >
+                  <Trash2 className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Verification Modal overlay mockup */}
       {selectedDocs && (

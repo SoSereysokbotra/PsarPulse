@@ -11,7 +11,9 @@ import {
   MapPin,
   FileText,
   Loader2,
+  Navigation,
 } from "lucide-react";
+import { Map, Overlay } from "pigeon-maps";
 import { AuthLayout, LeftPanelContent, FormInput } from "@/components/auth";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -32,9 +34,10 @@ export default function VendorRegisterPage() {
     email: "",
     phone: "",
     storeName: "",
-    businessAddress: "",
     description: "",
     password: "",
+    latitude: "11.5564",
+    longitude: "104.9282",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -61,8 +64,9 @@ export default function VendorRegisterPage() {
         businessName: formData.storeName,
         businessEmail: formData.email,
         phone: formData.phone,
-        businessAddress: formData.businessAddress,
         description: formData.description,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
       })) as SignupResponse;
 
       if (!result.success) {
@@ -192,18 +196,45 @@ export default function VendorRegisterPage() {
           disabled={isLoading}
         />
 
-        <FormInput
-          id="businessAddress"
-          name="businessAddress"
-          type="text"
-          label={t("auth.register.businessAddress")}
-          icon={MapPin}
-          placeholder={t("auth.register.addressPlaceholder")}
-          value={formData.businessAddress}
-          onChange={handleInputChange}
-          required
-          disabled={isLoading}
-        />
+        <div className="space-y-3">
+          <label className={`block text-sm font-bold mb-2 flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            <Navigation className="w-4 h-4 text-psar-primary" />
+            {isKhmer ? "កំណត់ទីតាំងតូបនៅលើផែនទី" : "Pin Stall Location on Map"}
+          </label>
+          <div className={`h-56 w-full rounded-2xl overflow-hidden border shadow-inner ${isDark ? "border-dark-border bg-slate-900" : "border-slate-200 bg-slate-100"}`}>
+            <Map 
+              height={224}
+              defaultCenter={[11.5564, 104.9282]} 
+              defaultZoom={13}
+              onClick={({ latLng }) => {
+                setFormData(prev => ({ 
+                  ...prev, 
+                  latitude: latLng[0].toFixed(8), 
+                  longitude: latLng[1].toFixed(8) 
+                }));
+              }}
+            >
+              <Overlay anchor={[parseFloat(formData.latitude), parseFloat(formData.longitude)]}>
+                <div className="relative flex flex-col items-center">
+                  <div className="w-10 h-10 bg-psar-primary rounded-full border-4 border-white dark:border-slate-800 shadow-xl flex items-center justify-center animate-bounce">
+                    <Store className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="w-3 h-1 bg-black/20 rounded-full mt-1 blur-[1px]" />
+                </div>
+              </Overlay>
+            </Map>
+          </div>
+          <div className="flex justify-between items-center px-1">
+            <p className="text-[10px] text-slate-400 italic">
+              {isKhmer 
+                ? "សូមចុចលើផែនទីដើម្បីកំណត់ទីតាំងពិតប្រាកដរបស់តូបអ្នក" 
+                : "Click on the map to mark the exact location of your stall"}
+            </p>
+            <div className="text-[10px] font-mono text-slate-400">
+              {parseFloat(formData.latitude).toFixed(4)}, {parseFloat(formData.longitude).toFixed(4)}
+            </div>
+          </div>
+        </div>
 
         <FormInput
           id="description"

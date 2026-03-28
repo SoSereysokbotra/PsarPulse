@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { vendorPlans, vendors, vendorSubscriptions } from "@/lib/db/schema";
-import { count, eq } from "drizzle-orm";
+import { count, eq, desc } from "drizzle-orm";
 
 async function verifyAdminOrSuper(request: NextRequest): Promise<boolean> {
   const { jwtVerify } = await import("jose");
@@ -33,7 +33,29 @@ export async function GET(request: NextRequest) {
       };
     }));
 
-    return NextResponse.json({ success: true, data: planSummary });
+    // Fetch recent subscriptions
+    const recentSubscriptions = await db
+      .select({
+        id: vendorSubscriptions.id,
+        businessName: vendors.businessName,
+        planName: vendorPlans.name,
+        amount: vendorSubscriptions.amount,
+        status: vendorSubscriptions.status,
+        createdAt: vendorSubscriptions.createdAt,
+      })
+      .from(vendorSubscriptions)
+      .leftJoin(vendors, eq(vendorSubscriptions.vendorId, vendors.id))
+      .leftJoin(vendorPlans, eq(vendorSubscriptions.planId, vendorPlans.id))
+      .orderBy(desc(vendorSubscriptions.createdAt))
+      .limit(10);
+
+    return NextResponse.json({ 
+      success: true, 
+      data: {
+        plans: planSummary,
+        recentTransactions: recentSubscriptions
+      } 
+    });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });

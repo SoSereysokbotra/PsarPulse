@@ -26,6 +26,8 @@ export interface SignupRequest {
   phone?: string;
   businessAddress?: string;
   description?: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 export interface LoginRequest {

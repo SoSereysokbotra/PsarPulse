@@ -8,11 +8,15 @@ export default function AdminBillingPage() {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
   const [plans, setPlans] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/admin/billing").then(r => r.json()).then(d => {
-      if (d.success) setPlans(d.data);
+      if (d.success) {
+        setPlans(d.data.plans);
+        setTransactions(d.data.recentTransactions);
+      }
       setLoading(false);
     });
   }, []);
@@ -53,26 +57,59 @@ export default function AdminBillingPage() {
       {loading ? (
         <div className="flex justify-center py-12"><Loader2 className="animate-spin text-slate-400 w-5 h-5" /></div>
       ) : (
-        <div className="space-y-4">
-          {plans.map((plan) => {
-            const colors = planColors[plan.name] || planColors.free;
-            const pct = totalVendors > 0 ? Math.round((plan.activeVendors / totalVendors) * 100) : 0;
-            return (
-              <div key={plan.id} className={`rounded-xl border p-5 ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold capitalize ${colors.bg} ${colors.text}`}>{plan.name}</span>
-                  <div className="text-right">
-                    <p className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}>${plan.monthlyPrice ?? "0"}/mo per vendor</p>
-                    <p className="text-xs text-slate-500">{plan.activeVendors} active vendor{plan.activeVendors !== 1 ? "s" : ""}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <h2 className={`text-lg font-bold ${isDark ? "text-white" : "text-slate-800"}`}>Plan Distribution</h2>
+            {plans.map((plan) => {
+              const colors = planColors[plan.name] || planColors.free;
+              const pct = totalVendors > 0 ? Math.round((plan.activeVendors / totalVendors) * 100) : 0;
+              return (
+                <div key={plan.id} className={`rounded-xl border p-5 ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold capitalize ${colors.bg} ${colors.text}`}>{plan.name}</span>
+                    <div className="text-right">
+                      <p className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}>${plan.monthlyPrice ?? "0"}/mo per vendor</p>
+                      <p className="text-xs text-slate-500">{plan.activeVendors} active vendor{plan.activeVendors !== 1 ? "s" : ""}</p>
+                    </div>
                   </div>
+                  <div className={`h-2 rounded-full ${isDark ? "bg-white/10" : "bg-slate-100"}`}>
+                    <div className={`h-2 rounded-full transition-all ${colors.bar}`} style={{ width: `${pct}%` }} />
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1.5">{pct}% of all vendors</p>
                 </div>
-                <div className={`h-2 rounded-full ${isDark ? "bg-white/10" : "bg-slate-100"}`}>
-                  <div className={`h-2 rounded-full transition-all ${colors.bar}`} style={{ width: `${pct}%` }} />
-                </div>
-                <p className="text-xs text-slate-400 mt-1.5">{pct}% of all vendors</p>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
+          <div className="space-y-4">
+            <h2 className={`text-lg font-bold ${isDark ? "text-white" : "text-slate-800"}`}>Recent Transactions</h2>
+            <div className={`rounded-xl border overflow-hidden ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
+              <table className="w-full text-sm text-left">
+                <thead className={isDark ? "bg-white/5 text-slate-400" : "bg-slate-50 text-slate-500"}>
+                  <tr>
+                    <th className="px-4 py-3 font-semibold">Vendor</th>
+                    <th className="px-4 py-3 font-semibold">Plan</th>
+                    <th className="px-4 py-3 font-semibold">Amount</th>
+                    <th className="px-4 py-3 font-semibold">Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                  {transactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-8 text-center text-slate-500">No recent transactions</td>
+                    </tr>
+                  ) : transactions.map((tx) => (
+                    <tr key={tx.id} className={isDark ? "hover:bg-white/5 text-slate-300" : "hover:bg-slate-50 text-slate-700"}>
+                      <td className="px-4 py-3 font-medium">{tx.businessName || "Unknown Vendor"}</td>
+                      <td className="px-4 py-3 capitalize">{tx.planName}</td>
+                      <td className="px-4 py-3 font-bold">${tx.amount}</td>
+                      <td className="px-4 py-3 text-xs text-slate-400">{new Date(tx.createdAt).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>

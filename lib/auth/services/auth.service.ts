@@ -157,6 +157,8 @@ export class AuthService {
         businessPhone: request.phone,
         businessAddress: request.businessAddress,
         businessDescription: request.description,
+        latitude: request.latitude,
+        longitude: request.longitude,
       };
 
       if (pendingRequest) {

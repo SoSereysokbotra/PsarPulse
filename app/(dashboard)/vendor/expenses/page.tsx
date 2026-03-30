@@ -17,13 +17,15 @@ import {
   TrendingDown,
   Clock,
   Filter,
-  MoreVertical,
   Pencil,
   Trash2,
+  Package
 } from "lucide-react";
+import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useUser } from "@/components/providers/UserProvider";
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
@@ -48,6 +50,7 @@ export type ToastT = {
 export interface Expense {
   id: string;
   time: string;
+  date: string;
   category: Category;
   note: string;
   amount: number;
@@ -57,16 +60,15 @@ export interface Expense {
 // ─── Constants ────────────────────────────────────────────────────
 const CATEGORIES: {
   value: Category;
-  label: string;
-  khmer: string;
+  labelKey: string;
   color: string;
 }[] = [
-  { value: "Ingredients", label: "Ingredients", khmer: "គ្រឿងផ្សំ", color: "#3ecf8e" },
-  { value: "Rent", label: "Rent", khmer: "ថ្លៃជួល", color: "#3b82f6" },
-  { value: "Transport", label: "Transport", khmer: "ការធ្វើដំណើរ", color: "#8b5cf6" },
-  { value: "Electricity", label: "Electricity", khmer: "អគ្គិសនី", color: "#f59e0b" },
-  { value: "Labor", label: "Labor", khmer: "កម្លាំងពលកម្ម", color: "#ef4444" },
-  { value: "Others", label: "Others", khmer: "ផ្សេងៗ", color: "#6366f1" },
+  { value: "Ingredients", labelKey: "dashboard.categories.ingredients", color: "#3ecf8e" },
+  { value: "Rent", labelKey: "dashboard.categories.rent", color: "#3b82f6" },
+  { value: "Transport", labelKey: "dashboard.categories.transport", color: "#8b5cf6" },
+  { value: "Electricity", labelKey: "dashboard.categories.electricity", color: "#f59e0b" },
+  { value: "Labor", labelKey: "dashboard.categories.labor", color: "#ef4444" },
+  { value: "Others", labelKey: "dashboard.categories.others", color: "#6366f1" },
 ];
 
 const CAT_BADGE: Record<string, string> = {
@@ -82,6 +84,7 @@ const CAT_BADGE: Record<string, string> = {
 export default function ExpensesPage() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
+  const { vendor } = useUser();
   const isKhmer = language === "km";
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -118,7 +121,8 @@ export default function ExpensesPage() {
         if (data.success) {
           const mapped = data.data.map((e: any) => ({
             id: e.id,
-            time: new Date(e.expenseDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+            time: new Date(e.expenseDate).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+            date: new Date(e.expenseDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
             category: e.category as Category,
             note: e.description || "",
             amount: parseFloat(e.amount),
@@ -194,7 +198,8 @@ export default function ExpensesPage() {
       if (result.success) {
         const mappedExp: Expense = {
           id: result.data.id,
-          time: editTarget ? editTarget.time : "Just now",
+          time: editTarget ? editTarget.time : new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+          date: editTarget ? editTarget.date : new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
           category: result.data.category as Category,
           note: result.data.description || "",
           amount: parseFloat(result.data.amount),
@@ -202,10 +207,10 @@ export default function ExpensesPage() {
         
         if (editTarget) {
           setExpenses((p) => p.map((x) => x.id === editTarget.id ? mappedExp : x));
-          showToast("Expense updated");
+          showToast(t("dashboard.status.logged"));
         } else {
           setExpenses((p) => [mappedExp, ...p]);
-          showToast("Expense logged successfully");
+          showToast(t("dashboard.status.logged"));
         }
         closeModal();
       }
@@ -250,16 +255,17 @@ export default function ExpensesPage() {
         ))}
       </div>
 
-      <VendorSidebar plan="free" currentPath="/vendor/expenses" navLinks={[
+      <VendorSidebar plan={(vendor?.plan?.name as any) || "free"} currentPath="/vendor/expenses" navLinks={[
         { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
         { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/sales" },
         { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/expenses" },
         { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/customer" },
+        { icon: Package, title: "Inventory", khmerTitle: "ស្តុក", href: "/vendor/inventory" },
       ]} />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         <VendorTopbar
-          title="Expenses"
+          title={t("dashboard.expenses")}
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
           setIsMobileSidebarOpen={setIsSidebarOpen}
@@ -271,7 +277,7 @@ export default function ExpensesPage() {
               ))}
             </div>
             <button onClick={openAdd} className="flex items-center gap-2 bg-[#0d1117] text-[#3ecf8e] px-4 py-[9px] rounded-[10px] font-bold text-[13px] border border-[#3ecf8e]/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:bg-black transition-all">
-              <Plus size={14} /> Add Expense
+              <Plus size={14} /> {t("dashboard.actions.addExpense")}
             </button>
           </>
         } />
@@ -279,31 +285,29 @@ export default function ExpensesPage() {
         <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px]">
           <div className="max-w-[1400px] mx-auto flex flex-col gap-6">
             <div>
-              <h1 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}>My Expenses</h1>
-              <p className={`text-sm mt-0.5 text-slate-500`}>Track and manage your spending · តាមដាន និងគ្រប់គ្រងចំណាយ</p>
+              <h1 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{t("dashboard.titles.myExpenses")}</h1>
+              <p className={`text-sm mt-0.5 text-slate-500`}>{t("dashboard.titles.expensesSubtitle")}</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <VendorSummaryCard variant="dark" title="Total Expenses" khmerTitle="ចំណាយសរុប" value={`$${totalExpense.toFixed(2)}`} icon={Receipt} />
-              <VendorSummaryCard title="Categories" khmerTitle="ប្រភេទ" value={new Set(expenses.map(e => e.category)).size} icon={PieChart} variant={isDark ? "dark" : "light"} />
-              <VendorSummaryCard title="Avg. Expense" khmerTitle="មធ្យមចំណាយ" value={`$${avgExpense.toFixed(2)}`} icon={TrendingDown} variant={isDark ? "dark" : "light"} />
-              <VendorSummaryCard title="Today's Count" khmerTitle="ចំនួនថ្ងៃនេះ" value={expenses.length} icon={Clock} highlight variant={isDark ? "dark" : "light"} />
+              <VendorSummaryCard variant="dark" title={t("dashboard.metrics.totalExpensesMetric")} khmerTitle={t("dashboard.metrics.totalExpensesMetric")} value={`$${totalExpense.toFixed(2)}`} icon={Receipt} />
+              <VendorSummaryCard title={t("dashboard.metrics.categories")} khmerTitle={t("dashboard.metrics.categories")} value={new Set(expenses.map(e => e.category)).size} icon={PieChart} variant={isDark ? "dark" : "light"} />
+              <VendorSummaryCard title={t("dashboard.metrics.avgExpense")} khmerTitle={t("dashboard.metrics.avgExpense")} value={`$${avgExpense.toFixed(2)}`} icon={TrendingDown} variant={isDark ? "dark" : "light"} />
+              <VendorSummaryCard title={t("dashboard.metrics.todayCount")} khmerTitle={t("dashboard.metrics.todayCount")} value={expenses.length} icon={Clock} highlight variant={isDark ? "dark" : "light"} />
             </div>
 
             {/* Category Breakdown */}
             <div className={`border rounded-[14px] px-[26px] py-[22px] shadow-sm ${isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"}`}>
-              <div className={`text-[14px] font-semibold mb-0.5 ${isDark ? "text-white" : "text-[#111827]"}`}>Breakdown by Category</div>
-              <div className={`text-[11px] text-slate-500 mb-5`}>ចំណាយតាមប្រភេទ</div>
+              <div className={`text-[14px] font-semibold mb-0.5 ${isDark ? "text-white" : "text-[#111827]"}`}>{t("dashboard.titles.categoryBreakdown")}</div>
               <div className="flex flex-col gap-[14px]">
                 {CATEGORIES.map((cat) => {
                   const catTotal = expenses.filter(e => e.category === cat.value).reduce((s, e) => s + e.amount, 0);
                   const pct = totalExpense > 0 ? Math.round((catTotal / totalExpense) * 100) : 0;
-                  return (
-                    <div key={cat.value} className="flex items-center gap-4">
-                      <div className="w-[100px] shrink-0">
-                        <div className={`text-[12.5px] font-medium ${isDark ? "text-white" : "text-slate-900"}`}>{cat.label}</div>
-                        <div className="text-[10.5px] text-slate-400">{cat.khmer}</div>
-                      </div>
+                    return (
+                      <div key={cat.value} className="flex items-center gap-4">
+                        <div className="w-[100px] shrink-0">
+                          <div className={`text-[12.5px] font-medium ${isDark ? "text-white" : "text-slate-900"}`}>{t(cat.labelKey)}</div>
+                        </div>
                       <div className={`flex-1 h-[6px] rounded-full overflow-hidden ${isDark ? "bg-white/10" : "bg-slate-100"}`}>
                         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: cat.color }} />
                       </div>
@@ -318,10 +322,10 @@ export default function ExpensesPage() {
             {/* History Table */}
             <div className={`border rounded-[14px] overflow-hidden shadow-sm ${isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"}`}>
               <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-4">
-                <h3 className="font-semibold text-sm">Spending Trends</h3>
+                <h3 className="font-semibold text-sm">{t("dashboard.titles.spendingTrends")}</h3>
                 <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-60 focus-within:border-[#3ecf8e]/30 focus-within:shadow-[0_0_0_4px_rgba(62,207,142,0.03)] group">
                   <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#3ecf8e]" />
-                  <input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
+                  <input type="text" placeholder={t("dashboard.common.search")} value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
                 </div>
               </div>
 
@@ -329,30 +333,33 @@ export default function ExpensesPage() {
                 <table className="w-full text-left">
                   <thead className="text-[10.5px] uppercase font-bold text-slate-500 border-b border-white/5">
                     <tr>
-                      <th className="px-6 py-3">Time</th>
-                      <th className="px-6 py-3">Category</th>
-                      <th className="px-6 py-3">Note</th>
-                      <th className="px-6 py-3 text-right">Amount</th>
-                      <th className="px-6 py-3 text-center">Actions</th>
+                      <th className="px-6 py-3">{t("dashboard.table.time")}</th>
+                      <th className="px-6 py-3">{t("dashboard.table.category")}</th>
+                      <th className="px-6 py-3">{t("dashboard.table.note")}</th>
+                      <th className="px-6 py-3 text-right">{t("dashboard.table.amount")}</th>
+                      <th className="px-6 py-3 text-center">{t("dashboard.table.actions")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {filtered.map((e) => (
-                      <tr key={e.id} className="group hover:bg-white/5 transition-colors text-[13.5px]">
-                        <td className="px-6 py-4 text-slate-400 flex items-center gap-2"><Clock size={14} /> {e.time}</td>
-                        <td className="px-6 py-4 font-medium">
-                          <span className={`px-2.5 py-1 rounded-md text-[11.5px] font-bold ${CAT_BADGE[e.category]}`}>{e.category}</span>
+                    {filtered.map((exp) => (
+                      <tr key={exp.id} className="group hover:bg-white/5 transition-colors text-[13.5px]">
+                        <td className="px-6 py-4 text-slate-400">
+                          <div className="flex items-center gap-2"><Clock size={14} /> {exp.time}</div>
+                          <div className="text-[11px] text-slate-500 mt-0.5 ml-6">{exp.date}</div>
                         </td>
-                        <td className="px-6 py-4 text-slate-500">{e.note || "—"}</td>
-                        <td className="px-6 py-4 text-right font-bold text-red-500">-${e.amount.toFixed(2)}</td>
+                        <td className="px-6 py-4 font-medium">
+                          <span className={`px-2.5 py-1 rounded-md text-[11.5px] font-bold ${CAT_BADGE[exp.category]}`}>{exp.category}</span>
+                        </td>
+                        <td className="px-6 py-4 text-slate-500">{exp.note || "—"}</td>
+                        <td className="px-6 py-4 text-right font-bold text-red-500">-${exp.amount.toFixed(2)}</td>
                         <td className="px-6 py-4 text-center relative">
-                          <button onClick={(x) => { x.stopPropagation(); setActiveMenuId(activeMenuId === e.id ? null : e.id); }} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
-                            <MoreVertical size={16} className="text-slate-400" />
+                          <button onClick={(x) => { x.stopPropagation(); setActiveMenuId(activeMenuId === exp.id ? null : exp.id); }} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+                            <EllipsisVertical size={16} className="text-slate-400" />
                           </button>
-                          {activeMenuId === e.id && (
+                          {activeMenuId === exp.id && (
                             <div className={`absolute right-full top-1/2 -translate-y-1/2 mr-2 z-20 w-[120px] rounded-xl shadow-2xl border overflow-hidden ${isDark ? "bg-dark-surface border-white/10" : "bg-white border-slate-200"}`}>
-                              <button onClick={() => openEdit(e)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> Edit</button>
-                              <button onClick={() => { setDeleteTarget(e); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> Delete</button>
+                              <button onClick={() => openEdit(exp)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> {t("dashboard.common.edit")}</button>
+                              <button onClick={() => { setDeleteTarget(exp); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> {t("dashboard.common.delete")}</button>
                             </div>
                           )}
                         </td>
@@ -366,33 +373,33 @@ export default function ExpensesPage() {
         </div>
       </main>
 
-      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} title="Delete Expense?" description="This action cannot be undone." previewText={deleteTarget ? `$${deleteTarget.amount.toFixed(2)}` : ""} />
+      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} title={t("dashboard.modals.deleteExpenseTitle")} description={t("dashboard.modals.deleteConfirmDesc")} previewText={deleteTarget ? `$${deleteTarget.amount.toFixed(2)}` : ""} />
 
       {/* Add/Edit Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
           <div className={`w-full max-w-md rounded-[20px] shadow-2xl overflow-hidden ${isDark ? "bg-dark-surface border border-white/10" : "bg-white"}`}>
             <div className="bg-[#0d1117] px-7 py-5 flex items-center justify-between text-[#e6edf3]">
-              <div><div className="text-[18px] font-bold">{editTarget ? "Edit Expense" : "Log New Expense"}</div><div className="text-[12px] text-slate-500">{editTarget ? "កែប្រែចំណាយ" : "កត់ត្រាចំណាយ"}</div></div>
+              <div><div className="text-[18px] font-bold">{editTarget ? t("dashboard.modals.editExpenseTitle") : t("dashboard.modals.addExpenseTitle")}</div></div>
               <button onClick={closeModal}><X size={18} /></button>
             </div>
             <div className="p-7 space-y-5">
-              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Amount *</label>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.amountLabel")} *</label>
                 <div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">$</span>
-                  <input ref={amountRef} type="number" placeholder="0.00" value={fAmount} onChange={(e) => setFAmount(e.target.value)} className="w-full pl-9 pr-4 py-4 rounded-xl text-2xl font-bold border outline-none bg-slate-50 focus:border-[#ef4444]" />
+                  <input ref={amountRef} type="number" placeholder="0.00" value={fAmount} onChange={(e) => setFAmount(e.target.value)} className={`w-full pl-9 pr-4 py-4 rounded-xl text-2xl font-bold border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#ef4444]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#ef4444]"}`} />
                 </div>
               </div>
-              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Category</label>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("dashboard.table.category")}</label>
                 <div className="grid grid-cols-3 gap-2">{CATEGORIES.map(cat => (
-                  <button key={cat.value} onClick={() => setFCategory(cat.value)} className={`py-2.5 rounded-lg text-xs font-bold transition-all border-0 ${fCategory === cat.value ? "text-white shadow-md" : "bg-slate-50 text-slate-500"}`} style={fCategory === cat.value ? { background: cat.color } : {}}>{cat.label}</button>
+                  <button key={cat.value} onClick={() => setFCategory(cat.value)} className={`py-2.5 rounded-lg text-xs font-bold transition-all border ${fCategory === cat.value ? "text-[#0d1117] shadow-md border-transparent" : isDark ? "bg-white/5 text-slate-400 border-white/5 hover:bg-white/10" : "bg-slate-50 text-slate-500 border-transparent hover:bg-slate-100"}`} style={fCategory === cat.value ? { background: cat.color } : {}}>{t(cat.labelKey)}</button>
                 ))}</div>
               </div>
-              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Note (Optional)</label>
-                <input type="text" placeholder="e.g. Market run" value={fNote} onChange={(e) => setFNote(e.target.value)} className="w-full px-4 py-3.5 rounded-xl text-sm border outline-none bg-slate-50 focus:border-[#3ecf8e]" />
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("dashboard.table.note")} ({t("inventory.modal.khmerNameLabel").includes("Optional") ? "Optional" : "ស្រេចចិត្ត"})</label>
+                <input type="text" placeholder={t("dashboard.modals.notePlaceholder")} value={fNote} onChange={(e) => setFNote(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={closeModal} className="flex-1 py-4 rounded-xl bg-slate-100 text-slate-500 font-bold">Cancel</button>
-                <button onClick={handleSave} disabled={!fAmount || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black disabled:opacity-50 transition-all">{saving ? "Saving..." : "Save Log"}</button>
+                <button onClick={closeModal} className={`flex-1 py-4 rounded-xl font-bold transition-all ${isDark ? "bg-white/5 text-slate-400 hover:bg-white/10" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>{t("dashboard.common.cancel")}</button>
+                <button onClick={handleSave} disabled={!fAmount || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black disabled:opacity-50 transition-all">{saving ? t("inventory.modal.saving") : t("inventory.modal.saveLog")}</button>
               </div>
             </div>
           </div>

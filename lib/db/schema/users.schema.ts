@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   role: varchar("role", { length: 50 }).$type<"vendor" | "admin" | "super_admin" | "customer">().default("customer").notNull(),
   status: varchar("status", { length: 50 }).$type<"active" | "pending" | "blocked" | "deleted">().default("pending").notNull(),
   isVerified: boolean("is_verified").default(false).notNull(),
+  avatarUrl: text("avatar_url"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

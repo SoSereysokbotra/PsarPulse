@@ -21,10 +21,18 @@ export class CustomersRepository {
     });
   }
 
-  static async updatePoints(id: string, points: number) {
+  static async update(id: string, data: Partial<typeof vendorCustomers.$inferInsert>) {
     const [result] = await db
       .update(vendorCustomers)
-      .set({ points })
+      .set(data)
+      .where(eq(vendorCustomers.id, id))
+      .returning();
+    return result;
+  }
+
+  static async delete(id: string) {
+    const [result] = await db
+      .delete(vendorCustomers)
       .where(eq(vendorCustomers.id, id))
       .returning();
     return result;

@@ -43,6 +43,8 @@ export async function POST(request: NextRequest) {
       name: body.name,
       phone: body.phone || null,
       email: body.email || null,
+      points: body.points || 0,
+      totalSpent: body.totalSpent || 0,
     });
 
     console.log("Customers POST: Created", customer.id);

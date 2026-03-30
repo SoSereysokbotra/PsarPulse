@@ -1,0 +1,68 @@
+[
+  {
+    "id": "272fb820-9d39-47a3-90f0-1c092234c530",
+    "fullName": "Super Administrator",
+    "email": "admin@psarpulse.com",
+    "role": "admin"
+  },
+  {
+    "id": "75bb2c67-3a57-4c9a-8eb8-0424377b50e1",
+    "fullName": "Super Administrator",
+    "email": "superadmin@psarpulse.com",
+    "role": "super_admin"
+  },
+  {
+    "id": "facf1f76-761e-4b85-8111-05630f49b752",
+    "fullName": "So Sereysokbotra",
+    "email": "soviseth869@gmail.com",
+    "role": "vendor"
+  },
+  {
+    "id": "f5b75e19-98ed-4a26-a519-520ff58be8e4",
+    "fullName": "Sothyroth Tes",
+    "email": "tes.sothyroth25@kit.edu.kh",
+    "role": "admin"
+  },
+  {
+    "id": "5907f0e2-bb72-490f-8c22-3ca14c060d2b",
+    "fullName": "yhg",
+    "email": "sothyroth7@gmail.com",
+    "role": "vendor"
+  },
+  {
+    "id": "c5f667c6-1038-4981-8400-8fcd54697dd3",
+    "fullName": "After You",
+    "email": "122289172256025560@facebook.user",
+    "role": "customer"
+  },
+  {
+    "id": "27a6e02c-1abb-42f1-9041-e50aa0ba5ae8",
+    "fullName": "BROROTH",
+    "email": "sothyroth1234@gmail.com",
+    "role": "vendor"
+  },
+  {
+    "id": "5a8f7138-a6f3-4431-8adf-6f790017248a",
+    "fullName": "So Sereysokbotra",
+    "email": "noiseai508@gmail.com",
+    "role": "vendor"
+  },
+  {
+    "id": "8ee0d31e-a949-47c4-a610-bb5f984f1c63",
+    "fullName": "Admin",
+    "email": "sbot2102@gmail.com",
+    "role": "admin"
+  },
+  {
+    "id": "ac435332-0355-4aba-a78c-b6ea3f7aaa21",
+    "fullName": "Sereysokbotra So",
+    "email": "so.sereysokbotra25@kit.edu.kh",
+    "role": "vendor"
+  },
+  {
+    "id": "07b99987-fbc4-4d0b-9a28-966561aa698c",
+    "fullName": "tratra",
+    "email": "tratra7670@gmail.com",
+    "role": "vendor"
+  }
+]

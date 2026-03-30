@@ -2,27 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { TokenUtil } from "@/lib/auth/utils/token.util";
 import { authConfig } from "@/lib/auth/config";
 import { VendorRepository } from "@/lib/db/repositories/vendor.repository";
-import { InventoryRepository } from "@/lib/db/repositories/inventory.repository";
+import { CustomersRepository } from "@/lib/db/repositories/customers.repository";
 
-export async function GET(request: NextRequest) {
-  const token = request.cookies.get(authConfig.cookies.accessToken)?.value;
-  if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-
-  try {
-    const payload = TokenUtil.verifyAccessToken(token);
-    if (!payload?.id) return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-
-    const vendor = await VendorRepository.findByUserId(payload.id);
-    if (!vendor) return NextResponse.json({ message: "Vendor not found" }, { status: 404 });
-
-    const inventory = await InventoryRepository.findByVendorId(vendor.id);
-    return NextResponse.json({ success: true, data: inventory });
-  } catch (error) {
-    return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
-  }
-}
-
-export async function POST(request: NextRequest) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   const token = request.cookies.get(authConfig.cookies.accessToken)?.value;
   if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
@@ -34,35 +16,48 @@ export async function POST(request: NextRequest) {
     if (!vendor) return NextResponse.json({ message: "Vendor not found" }, { status: 404 });
 
     const body = await request.json();
-    
-    // Check for active Pro/Premium subscription
-    const activeSub = vendor.subscriptions?.find((s: any) => s.status === "active" && s.plan?.name !== "free");
-    const isPro = activeSub || vendor.plan?.name !== "free";
+    console.log(`Customers PUT: Updating ${params.id} for vendor ${vendor.id}`, body);
 
-    // Enforce 30-item limit ONLY for Free Tier (no active Pro/Premium subscription)
-    if (!isPro) {
-      const inventory = await InventoryRepository.findByVendorId(vendor.id);
-      if (inventory.length >= 30) {
-        return NextResponse.json({ 
-          success: false, 
-          message: "Inventory limit reached (30/30). Please upgrade to Pro for unlimited items." 
-        }, { status: 403 });
-      }
+    const customer = await CustomersRepository.findById(params.id);
+    if (!customer || customer.vendorId !== vendor.id) {
+      return NextResponse.json({ success: false, message: "Not authorized" }, { status: 403 });
     }
 
-    const item = await InventoryRepository.create({
-      vendorId: vendor.id,
+    const updated = await CustomersRepository.update(params.id, {
       name: body.name,
-      khmerName: body.khmerName,
-      price: body.price?.toString() || "0",
-      stock: body.stock || 0,
-      threshold: body.threshold || 10,
-      status: body.status || "good",
-      category: body.category,
+      phone: body.phone || null,
+      email: body.email || null,
+      points: body.points ?? customer.points,
+      totalSpent: body.totalSpent ?? customer.totalSpent,
     });
 
-    return NextResponse.json({ success: true, data: item });
+    return NextResponse.json({ success: true, data: updated });
   } catch (error) {
+    console.error("Customers PUT Error:", error);
+    return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const token = request.cookies.get(authConfig.cookies.accessToken)?.value;
+  if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+  try {
+    const payload = TokenUtil.verifyAccessToken(token);
+    if (!payload?.id) return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+
+    const vendor = await VendorRepository.findByUserId(payload.id);
+    if (!vendor) return NextResponse.json({ message: "Vendor not found" }, { status: 404 });
+
+    const customer = await CustomersRepository.findById(params.id);
+    if (!customer || customer.vendorId !== vendor.id) {
+      return NextResponse.json({ success: false, message: "Not authorized" }, { status: 403 });
+    }
+
+    await CustomersRepository.delete(params.id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Customers DELETE Error:", error);
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
 }

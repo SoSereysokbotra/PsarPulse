@@ -10,6 +10,7 @@ interface User {
   role: "vendor" | "admin" | "super_admin" | "customer";
   status: string;
   isVerified: boolean;
+  avatarUrl?: string;
 }
 
 interface UserContextType {

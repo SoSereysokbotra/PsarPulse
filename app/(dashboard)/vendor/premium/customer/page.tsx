@@ -31,21 +31,21 @@ import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 
-const TABS = [
-  { id: "analysis", label: "Customers Analysis", khmer: "វិភាគអតិថិជន" },
-  {
-    id: "forecast",
-    label: "Forecast Analytics Widget",
-    khmer: "ការព្យាករណ៍វិភាគទិន្នន័យ",
-  },
-  { id: "log", label: "Customers Log", khmer: "កំណត់ហេតុអតិថិជន" },
-];
-
 export default function CustomersPage() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
+
+  const TABS = [
+    { id: "analysis", label: t("dashboard.tabs.analysis") || "Customers Analysis", khmer: "វិភាគអតិថិជន" },
+    {
+      id: "forecast",
+      label: t("dashboard.tabs.forecast") || "Forecast Analytics Widget",
+      khmer: "ការព្យាករណ៍វិភាគទិន្នន័យ",
+    },
+    { id: "log", label: t("dashboard.tabs.log") || "Customers Log", khmer: "កំណត់ហេតុអតិថិជន" },
+  ];
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -69,21 +69,29 @@ export default function CustomersPage() {
     avgLTV: "$102.02",
   };
 
-  const handleLog = (amount: number) => {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    setLogHistory((prev) => [
-      {
-        id: Date.now(),
-        time: timeStr,
-        count: amount,
-        status: amount >= 10 ? "Peak Traffic" : "Regular",
-      },
-      ...prev,
-    ]);
+  const handleLog = async (amount: number) => {
+    const status = amount >= 10 ? "Peak Traffic" : "Regular";
+    try {
+      const res = await fetch("/api/vendor/traffic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count: amount, status }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setLogHistory((prev) => [
+          {
+            id: json.data.id,
+            time: new Date(json.data.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+            count: json.data.count,
+            status: json.data.status,
+          },
+          ...prev,
+        ]);
+      }
+    } catch (e) {
+      console.error("Traffic logging error:", e);
+    }
   };
 
   const filtered = logHistory.filter(
@@ -94,9 +102,8 @@ export default function CustomersPage() {
 
   return (
     <div
-      className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white transition-colors duration-200 ${
-        isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"
-      }`}
+      className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white transition-colors duration-200 ${isDark ? "bg-dark-bg text-[#e6edf3]" : "bg-slate-100 text-slate-900"
+        }`}
     >
       <VendorSidebar
         settingsHref="/vendor/premium/settings"
@@ -119,13 +126,13 @@ export default function CustomersPage() {
             title: "Expenses",
             khmerTitle: "ចំណាយ",
             href: "/vendor/premium/expenses",
-            active: true,
           },
           {
             icon: Users,
             title: "Customers",
             khmerTitle: "អតិថិជន",
             href: "/vendor/premium/customer",
+            active: true,
           },
           {
             icon: Package,
@@ -147,24 +154,22 @@ export default function CustomersPage() {
       />
 
       {/* ── MAIN ── */}
-      <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col w-full min-w-0 h-screen overflow-hidden transition-colors">
         <VendorTopbar
-          title={"Customers"}
+          title={t("dashboard.customers")}
           isSidebarCollapsed={isCollapsed}
           setIsSidebarCollapsed={setIsCollapsed}
           setIsMobileSidebarOpen={setIsMobileOpen}
           rightActions={
             <>
-              {/* FIXED: Adaptive Quick Sale button */}
               <button
-                className={`hidden sm:flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-colors ${
-                  isDark
+                className={`hidden sm:flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-xl transition-all shadow-sm cursor-pointer border-0 ${isDark
                     ? "bg-white text-slate-900 hover:bg-slate-100"
                     : "bg-slate-900 text-white hover:bg-slate-800"
-                }`}
+                  }`}
               >
                 <Zap className="w-3.5 h-3.5 text-[#29B28D]" />
-                Quick sale
+                {t("dashboard.actions.quickSale")}
               </button>
             </>
           }
@@ -178,17 +183,21 @@ export default function CustomersPage() {
               <h1
                 className={`text-[26px] font-bold ${isDark ? "text-white" : "text-slate-900"}`}
               >
-                {"My Customers"}
+                {t("dashboard.titles.myCustomers")}
               </h1>
               <p
                 className={`text-sm mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
               >
-                Tracker and Log your daily foot traffic
+                {t("dashboard.titles.customersSubtitle")}
               </p>
             </div>
-            <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#0d1117] transition-all w-56 focus-within:border-[#29B28D] focus-within:ring-1 focus-within:ring-[#29B28D] group">
+            <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-white/5 bg-white dark:bg-[#0d1117] transition-all w-64 focus-within:border-[#29B28D] focus-within:ring-1 focus-within:ring-[#29B28D] group shadow-sm">
               <Search className="w-4 h-4 text-slate-400 dark:text-[#7d8590] transition-colors group-focus-within:text-[#29B28D]" />
-              <input type="text" placeholder="Search Class..." className="bg-transparent border-none outline-none text-sm w-full placeholder:text-slate-400 dark:text-white" />
+              <input 
+                type="text" 
+                placeholder={t("dashboard.common.search")} 
+                className="bg-transparent border-none outline-none text-sm w-full placeholder:text-slate-400 dark:text-white" 
+              />
             </div>
           </div>
 
@@ -200,15 +209,14 @@ export default function CustomersPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`pb-3 flex flex-col items-start transition-colors ${
-                  activeTab === tab.id
+                className={`pb-3 flex flex-col items-start transition-colors border-x-0 border-t-0 bg-transparent cursor-pointer ${activeTab === tab.id
                     ? isDark
                       ? "border-b-2 border-white text-white"
-                      : "border-b-2 border-slate-900 text-slate-900"
+                      : "border-b-2 border-slate-900 text-slate-900 font-bold"
                     : isDark
                       ? "border-b-2 border-transparent text-[#7d8590] hover:text-white"
                       : "border-b-2 border-transparent text-slate-500 hover:text-slate-900"
-                }`}
+                  }`}
               >
                 <span className="font-semibold text-sm">{tab.label}</span>
                 <span
@@ -220,63 +228,62 @@ export default function CustomersPage() {
             ))}
           </div>
 
-          {/* FIXED: 5 Summary Cards (Dynamic dark/light mapping) */}
+          {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <VendorSummaryCard
               variant={isDark ? "dark" : "light"}
-              title="Today Customer"
+              title={t("dashboard.metrics.todayCustomer")}
               khmerTitle="អតិថិជនថ្ងៃនេះ"
               value={summaryData.todayCount}
               subtext={`${summaryData.todayLogs} logs`}
             />
             <VendorSummaryCard
               variant={isDark ? "dark" : "light"}
-              title="Avg.Spend"
+              title={t("dashboard.metrics.avgSpend")}
               khmerTitle="ការចំណាយមធ្យម"
               value={summaryData.avgSpend}
               subtext="per customer"
             />
             <VendorSummaryCard
               variant="green"
-              title="Weekly Customer"
+              title={t("dashboard.metrics.weeklyCustomer")}
               khmerTitle="អតិថិជនប្រចាំសប្តាហ៍"
               value={summaryData.weeklyCount}
               subtext={summaryData.weeklyChange}
             />
             <VendorSummaryCard
               variant={isDark ? "dark" : "light"}
-              title="Peak Time"
+              title={t("dashboard.metrics.peakTime")}
               khmerTitle="ម៉ោងមមាញឹក"
               value={summaryData.peakTime}
               subtext={summaryData.weeklyCustomers}
             />
             <VendorSummaryCard
               variant={isDark ? "dark" : "light"}
-              title="Avg.LTV"
+              title={t("dashboard.metrics.avgLtv")}
               khmerTitle="តម្លៃអតិថិជន"
               value={summaryData.avgLTV}
               subtext="Per Customer"
             />
           </div>
 
-          {/* FIXED: Log Customers Bar */}
+          {/* Log Customers Bar */}
           <div
-            className={`rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border transition-colors ${
-              isDark
+            className={`rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border transition-colors ${isDark
                 ? "bg-[#0d1117] border-white/5"
                 : "bg-white border-slate-200 shadow-sm"
-            }`}
+              }`}
           >
             <div>
               <p
                 className={`font-bold text-[15px] ${isDark ? "text-white" : "text-slate-900"}`}
               >
-                Log Customers
+                {t("dashboard.actions.logTraffic")}
               </p>
               <p
                 className={`text-[11px] font-khmer mt-0.5 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
               >
-                កត់ត្រាអតិថិជន
+                {t("dashboard.actions.logTrafficSub")}
               </p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -284,94 +291,86 @@ export default function CustomersPage() {
                 <button
                   key={n}
                   onClick={() => handleLog(n)}
-                  className="px-4 py-2 bg-[#29B28D] hover:bg-[#239979] text-white text-sm font-bold rounded-xl transition-colors min-h-11 shadow-sm"
+                  className="px-4 py-2 bg-[#29B28D] hover:bg-[#239979] text-white text-sm font-bold rounded-xl transition-all min-h-11 shadow-sm border-0 cursor-pointer hover:scale-[1.02]"
                 >
                   +{n}
                 </button>
               ))}
               <div
-                className={`flex items-center rounded-xl overflow-hidden border transition-colors ${
-                  isDark
+                className={`flex items-center rounded-xl overflow-hidden border transition-colors ${isDark
                     ? "bg-[#161B22] border-white/5"
                     : "bg-slate-50 border-slate-200"
-                }`}
+                  }`}
               >
                 <button
                   onClick={() => setCustomCount((c) => Math.max(1, c - 1))}
-                  className={`px-3 py-2 transition-colors min-h-11 ${
-                    isDark
+                  className={`px-3 py-2 transition-colors min-h-11 border-0 bg-transparent cursor-pointer ${isDark
                       ? "text-white hover:bg-white/5"
                       : "text-slate-600 hover:bg-slate-200"
-                  }`}
+                    }`}
                 >
                   <Minus className="w-4 h-4" />
                 </button>
                 <span
-                  className={`font-bold text-sm w-6 text-center ${isDark ? "text-white" : "text-slate-900"}`}
+                  className={`font-bold text-sm w-8 text-center ${isDark ? "text-white" : "text-slate-900"}`}
                 >
                   {customCount}
                 </span>
                 <button
                   onClick={() => setCustomCount((c) => c + 1)}
-                  className={`px-3 py-2 transition-colors min-h-11 ${
-                    isDark
+                  className={`px-3 py-2 transition-colors min-h-11 border-0 bg-transparent cursor-pointer ${isDark
                       ? "text-white hover:bg-white/5"
                       : "text-slate-600 hover:bg-slate-200"
-                  }`}
+                    }`}
                 >
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
               <button
-                className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors min-h-11 border ${
-                  isDark
+                className={`px-4 py-2 text-sm font-bold rounded-xl transition-all min-h-11 border cursor-pointer ${isDark
                     ? "bg-[#161B22] border-white/5 text-white hover:bg-white/5"
                     : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-                }`}
+                  }`}
               >
-                Custom...
+                {isKhmer ? "កំណត់..." : "Custom..."}
               </button>
               <button
                 onClick={() => handleLog(customCount)}
-                className="px-5 py-2 bg-[#29B28D] hover:bg-[#239979] text-white font-bold rounded-xl transition-colors text-sm flex items-center gap-1.5 min-h-11 shadow-sm"
+                className="px-5 py-2 bg-[#29B28D] hover:bg-[#239979] text-white font-bold rounded-xl transition-all text-sm flex items-center gap-1.5 min-h-11 shadow-sm border-0 cursor-pointer hover:scale-[1.02]"
               >
                 <Plus className="w-4 h-4" />
-                Log {customCount}
+                {isKhmer ? `កត់ត្រា ${customCount}` : `Log ${customCount}`}
               </button>
             </div>
           </div>
 
           {/* Log History Table */}
           <div
-            className={`border rounded-2xl shadow-sm overflow-hidden transition-colors ${
-              isDark
+            className={`border rounded-2xl shadow-sm overflow-hidden transition-colors ${isDark
                 ? "bg-[#0d1117] border-white/5"
                 : "bg-white border-slate-200"
-            }`}
+              }`}
           >
             <div
-              className={`p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${
-                isDark ? "border-white/5" : "border-slate-100"
-              }`}
+              className={`p-5 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${isDark ? "border-white/5" : "border-slate-100"
+                }`}
             >
               <h3
                 className={`font-bold text-[17px] ${isDark ? "text-white" : "text-slate-900"}`}
               >
-                {/* FIXED: Replaced "Expense History" typo */}
-                Customers Log History
+                {t("dashboard.titles.history")}
               </h3>
               <div className="relative w-full sm:w-auto">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder={t("common.search") || "Search Log..."}
+                  placeholder={t("dashboard.placeholders.searchTxn")}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#29B28D] min-h-11 transition-colors ${
-                    isDark
+                  className={`w-full pl-9 pr-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-[#29B28D] min-h-11 transition-colors outline-none ${isDark
                       ? "bg-[#161B22] border-white/5 text-white focus:border-[#29B28D]"
                       : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"
-                  }`}
+                    }`}
                 />
               </div>
             </div>
@@ -379,16 +378,15 @@ export default function CustomersPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr
-                    className={`border-b text-xs uppercase tracking-wider font-semibold transition-colors ${
-                      isDark
+                    className={`border-b text-xs uppercase tracking-wider font-bold transition-colors ${isDark
                         ? "bg-[#161B22] border-white/5 text-[#7d8590]"
                         : "bg-slate-50/50 border-slate-100 text-slate-500"
-                    }`}
+                      }`}
                   >
-                    <th className="px-6 py-4">Time Logged</th>
-                    <th className="px-6 py-4">Count</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-6 py-4">{t("dashboard.table.time")}</th>
+                    <th className="px-6 py-4">{t("dashboard.metrics.todayCount") || "Count"}</th>
+                    <th className="px-6 py-4">{t("dashboard.customerSection.crmStatus") || "Status"}</th>
+                    <th className="px-6 py-4 text-right">{t("dashboard.table.actions")}</th>
                   </tr>
                 </thead>
                 <tbody
@@ -401,7 +399,7 @@ export default function CustomersPage() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div
-                          className={`flex items-center gap-2 text-[15px] ${isDark ? "text-white" : "text-slate-600"}`}
+                          className={`flex items-center gap-2 text-[15px] font-medium ${isDark ? "text-white" : "text-slate-600"}`}
                         >
                           <Clock className="w-4 h-4 text-slate-400" />
                           {log.time}
@@ -419,23 +417,22 @@ export default function CustomersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {log.status === "Peak Traffic" ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold border border-orange-200">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold border border-orange-200 shadow-sm">
                             Peak Traffic
                           </span>
                         ) : (
                           <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${
-                              isDark
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${isDark
                                 ? "bg-white/5 text-white border-white/10"
                                 : "bg-slate-100 text-slate-600 border-slate-200"
-                            }`}
+                              }`}
                           >
                             Regular
                           </span>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <button className="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl tracking-widest transition-colors">
+                        <button className="text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl tracking-widest transition-colors border-0 bg-transparent cursor-pointer px-2">
                           ···
                         </button>
                       </td>
@@ -444,14 +441,12 @@ export default function CustomersPage() {
                 </tbody>
               </table>
             </div>
-            {/* FIXED: Adaptive bottom border color */}
             <div
-              className={`px-6 py-4 border-t text-center transition-colors ${
-                isDark ? "border-white/5" : "border-slate-100"
-              }`}
+              className={`px-6 py-4 border-t text-center transition-colors ${isDark ? "border-white/5" : "border-slate-100"
+                }`}
             >
-              <button className="text-[#29B28D] text-sm font-semibold hover:underline">
-                View Full History
+              <button className="text-[#29B28D] text-sm font-bold hover:underline border-0 bg-transparent cursor-pointer">
+                {t("dashboard.actions.viewAll")}
               </button>
             </div>
           </div>

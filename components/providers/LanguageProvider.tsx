@@ -10,7 +10,7 @@ const locales = { en, km };
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (keyPath: string) => string;
+  t: (keyPath: string, replacements?: Record<string, string | number>) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -38,16 +38,23 @@ export function LanguageProvider({
     setLanguageState(lang);
   };
 
-  const t = (keyPath: string): string => {
+  const t = (keyPath: string, replacements?: Record<string, string | number>): string => {
     const keys = keyPath.split(".");
     let current: any = locales[language];
 
     for (const key of keys) {
-      if (current[key] === undefined) return keyPath;
+      if (!current || current[key] === undefined) return keyPath;
       current = current[key];
     }
 
-    return current as string;
+    let result = current as string;
+    if (replacements) {
+      Object.entries(replacements).forEach(([key, value]) => {
+        result = result.replace(new RegExp(`{{${key}}}`, "g"), String(value));
+      });
+    }
+
+    return result;
   };
 
   return (

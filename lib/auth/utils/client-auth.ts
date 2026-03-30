@@ -119,6 +119,13 @@ class AuthClient {
       body: JSON.stringify({ token }),
     });
   }
+  
+  async updateProfile(data: { fullName?: string; avatarUrl?: string }) {
+    return this.jsonRequest("/profile", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const authClient = new AuthClient();

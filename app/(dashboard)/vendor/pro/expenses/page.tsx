@@ -10,7 +10,7 @@ import {
   Package,
   Settings,
   Plus,
-  TrendingDown,
+  TrendingUp,
   Menu,
   X,
   Bell,
@@ -19,16 +19,17 @@ import {
   Camera,
   Tag,
   Clock,
-  MoreVertical,
   Filter,
   FileBarChart,
   Crown,
   FileText,
   FileSpreadsheet,
 } from "lucide-react";
+import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const PRO_NAV = [
   {
@@ -71,6 +72,7 @@ const PRO_NAV = [
 ];
 
 export default function ProExpensePage() {
+  const { t, language } = useLanguage();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [expenseAmount, setExpenseAmount] = useState("");
   const [expenseCategory, setExpenseCategory] = useState("Ingredients");
@@ -163,69 +165,68 @@ export default function ProExpensePage() {
       plan="pro"
       navLinks={PRO_NAV}
       currentPath="/vendor/pro/expenses"
-      title="Expense Tracking"
+      title={t("dashboard.titles.myExpenses")}
       planBadge={{ label: "PRO", icon: Crown }}
       rightActions={
         <>
           <button className="hidden sm:flex items-center gap-2 bg-psar-dark hover:opacity-90 text-white font-medium px-3.5 py-2 rounded-xl transition-colors text-sm min-h-[40px] cursor-pointer border-0">
-            <FileText className="w-4 h-4" /> Export PDF
+            <FileText className="w-4 h-4" /> {t("dashboard.actions.exportPdf")}
           </button>
         </>
       }
     >
-      {/* Changed to w-full h-full to make it expand fully instead of limiting to max-w-5xl */}
       <div className="flex-1 w-full h-full overflow-y-auto p-6 md:p-8 space-y-7">
         {/* QUICK LOGGING SECTION */}
-        <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors">
           <div>
-            <h2 className="font-bold text-[19px]">Log New Expense</h2>
+            <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">{t("dashboard.modals.addExpenseTitle")}</h2>
             <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
-              កត់ត្រាចំណាយថ្មី
+              {t("dashboard.actions.quickLogSub")}
             </p>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               onClick={() => setShowCustomCategoryModal(true)}
-              className="bg-psar-primary/10 hover:bg-psar-primary/20 text-psar-primary font-bold text-[14px] px-4 py-3.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 flex-1 sm:flex-none min-h-[50px] border border-psar-primary/20"
+              className="bg-psar-primary/10 hover:bg-psar-primary/20 text-psar-primary font-bold text-[14px] px-4 py-3.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 flex-1 sm:flex-none min-h-[50px] border border-psar-primary/20 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Custom Category</span>
+              <span>{t("dashboard.actions.addCategory")}</span>
             </button>
             <button
               onClick={() => setIsQuickLogModalOpen(true)}
-              className="bg-psar-primary hover:bg-psar-primary/90 text-white font-bold text-[16px] px-6 py-3.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 flex-1 sm:flex-none min-h-[50px]"
+              className="bg-psar-primary hover:bg-psar-primary/90 text-white font-bold text-[16px] px-6 py-3.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 flex-1 sm:flex-none min-h-[50px] border-0 cursor-pointer"
             >
               <Plus className="w-5 h-5" />
-              <span>Add Expense</span>
+              <span>{t("dashboard.actions.addExpense")}</span>
             </button>
           </div>
         </div>
 
         {/* QUICK LOGGING MODAL */}
         {isQuickLogModalOpen && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div
               className="absolute inset-0"
               onClick={() => setIsQuickLogModalOpen(false)}
             ></div>
-            <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200">
               <button
                 onClick={() => setIsQuickLogModalOpen(false)}
-                className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] hover:bg-slate-100 p-1.5 rounded-lg transition-colors border-0 bg-transparent cursor-pointer"
+                className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] hover:bg-slate-100 dark:hover:bg-white/5 p-1.5 rounded-lg transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
 
               <div className="mb-6 flex items-center gap-2">
-                <div className="p-2 bg-psar-primary/10 text-psar-primary rounded-lg">
+                <div className="p-2 bg-psar-primary/10 text-psar-primary rounded-lg transition-colors">
                   <Receipt className="w-6 h-6" />
                 </div>
                 <div>
                   <h2 className="font-bold text-[22px] text-slate-900 dark:text-white">
-                    Log New Expense
+                    {t("dashboard.modals.addExpenseTitle")}
                   </h2>
                   <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-1">
-                    កត់ត្រាចំណាយថ្មី
+                    {t("dashboard.actions.quickLogSub")}
                   </p>
                 </div>
               </div>
@@ -244,10 +245,10 @@ export default function ProExpensePage() {
                         value={expenseAmount}
                         onChange={(e) => setExpenseAmount(e.target.value)}
                         required
-                        className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-xl font-bold placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all min-h-[60px]"
+                        className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-xl font-bold placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all min-h-[60px]"
                       />
-                      <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">
-                        Amount <span className="text-red-500">*</span>
+                      <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] transition-colors group-focus-within:text-red-500">
+                        {t("inventory.modal.amountLabel")} <span className="text-red-500">*</span>
                       </div>
                     </div>
                   </div>
@@ -260,7 +261,7 @@ export default function ProExpensePage() {
                       <select
                         value={expenseCategory}
                         onChange={(e) => setExpenseCategory(e.target.value)}
-                        className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all h-full min-h-[60px] appearance-none cursor-pointer"
+                        className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all h-full min-h-[60px] appearance-none cursor-pointer"
                       >
                         {categories.map((cat, idx) => (
                           <option key={idx} value={cat.value}>
@@ -268,8 +269,8 @@ export default function ProExpensePage() {
                           </option>
                         ))}
                       </select>
-                      <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] flex items-center justify-between w-[calc(100%-32px)]">
-                        <span>Category</span>
+                      <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] flex items-center justify-between w-[calc(100%-32px)] transition-colors group-focus-within:text-psar-primary">
+                        <span>{t("dashboard.table.category")}</span>
                         <button
                           type="button"
                           onClick={(e) => {
@@ -277,9 +278,9 @@ export default function ProExpensePage() {
                             setIsQuickLogModalOpen(false);
                             setShowCustomCategoryModal(true);
                           }}
-                          className="text-psar-primary hover:text-psar-primary flex items-center border-0 bg-transparent cursor-pointer"
+                          className="text-psar-primary hover:text-psar-primary/80 flex items-center border-0 bg-transparent cursor-pointer"
                         >
-                          <Plus className="w-3 h-3" /> New
+                          <Plus className="w-3 h-3" /> {t("dashboard.placeholders.searchProduct") === "Search products..." ? "New" : "ថ្មី"}
                         </button>
                       </div>
                     </div>
@@ -296,39 +297,39 @@ export default function ProExpensePage() {
                       placeholder="Supplier or Vendor Name"
                       value={expenseVendor}
                       onChange={(e) => setExpenseVendor(e.target.value)}
-                      className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                      className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
                     />
-                    <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">
-                      Vendor (អ្នកផ្គត់ផ្គង់)
+                    <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] transition-colors group-focus-within:text-psar-primary">
+                      {t("auth.register.storeName") === "Store Name" ? "Vendor" : "អ្នកផ្គត់ផ្គង់"}
                     </div>
                   </div>
 
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="What was this for? (Optional)"
+                      placeholder={t("dashboard.modals.notePlaceholder")}
                       value={expenseNote}
                       onChange={(e) => setExpenseNote(e.target.value)}
-                      className="block w-full px-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                      className="block w-full px-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
                     />
                   </div>
 
                   <div className="flex gap-3 mt-4">
                     <button
                       type="button"
-                      className="flex-1 flex flex-col items-center justify-center gap-1 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 hover:bg-slate-100 text-slate-600 dark:text-[#9aa4b2] font-semibold py-3 rounded-xl transition-all min-h-[56px] cursor-pointer"
+                      className="flex-1 flex flex-col items-center justify-center gap-1 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-[#9aa4b2] font-semibold py-3 rounded-xl transition-all min-h-[56px] cursor-pointer"
                       title="Upload Receipt"
                     >
                       <Camera className="w-5 h-5" />
-                      <span className="text-[12px]">Add Receipt</span>
+                      <span className="text-[12px]">{t("dashboard.placeholders.searchProduct") === "Search products..." ? "Add Receipt" : "បន្ថែមវិក្កយបត្រ"}</span>
                     </button>
 
                     <button
                       type="submit"
-                      className="flex-[2] bg-psar-primary hover:bg-psar-primary/90 text-white font-bold text-[16px] py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer"
+                      className="flex-[2] bg-psar-primary hover:opacity-90 text-white font-bold text-[16px] py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer"
                     >
                       <Plus className="w-5 h-5" />
-                      <span>Save Expense</span>
+                      <span>{t("dashboard.actions.save")}</span>
                     </button>
                   </div>
                 </div>
@@ -339,28 +340,28 @@ export default function ProExpensePage() {
 
         {/* CUSTOM CATEGORY MODAL */}
         {showCustomCategoryModal && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div
               className="absolute inset-0"
               onClick={() => setShowCustomCategoryModal(false)}
             ></div>
-            <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-md p-6 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-md p-6 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200">
               <button
                 onClick={() => setShowCustomCategoryModal(false)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] p-1.5 rounded-lg hover:bg-slate-100 transition-colors border-0 bg-transparent cursor-pointer"
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors border-0 bg-transparent cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
               <div className="flex items-center gap-2 mb-5">
-                <div className="p-2 bg-psar-primary/10 text-psar-primary rounded-lg">
+                <div className="p-2 bg-psar-primary/10 text-psar-primary rounded-lg transition-colors">
                   <Tag className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-bold text-[19px] text-slate-900 dark:text-white">
-                    Add Custom Category
+                    {t("dashboard.actions.addCategory")}
                   </h3>
                   <p className="text-[12px] text-slate-500 dark:text-[#7d8590]">
-                    Create your own expense category tag.
+                     {t("auth.register.businessDesc") === "Business Description" ? "Create your own expense category tag." : "បង្កើតប្រភេទចំណាយផ្ទាល់ខ្លួនរបស់អ្នក។"}
                   </p>
                 </div>
               </div>
@@ -371,15 +372,15 @@ export default function ProExpensePage() {
                     placeholder="e.g., Marketing Ads"
                     value={customCategoryName}
                     onChange={(e) => setCustomCategoryName(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[48px]"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[48px]"
                     autoFocus
                   />
                 </div>
                 <button
                   onClick={handleCreateCustomCategory}
-                  className="w-full bg-psar-primary hover:bg-psar-primary/90 text-white font-bold py-3 rounded-xl transition-colors min-h-[48px] border-0 cursor-pointer"
+                  className="w-full bg-psar-primary hover:opacity-90 text-white font-bold py-3 rounded-xl transition-colors min-h-[48px] border-0 cursor-pointer shadow-sm"
                 >
-                  Create Category
+                  {t("common.save") || "Create Category"}
                 </button>
               </div>
             </div>
@@ -389,11 +390,11 @@ export default function ProExpensePage() {
         {/* Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <VendorSummaryCard
-            title="Today's Expenses"
+            title={t("dashboard.metrics.todayTotal") || "Today's Expenses"}
             khmerTitle="ចំណាយថ្ងៃនេះ"
             value={summaryData.todayTotal}
             icon={Receipt}
-            trend="4 Transactions"
+            trend={`${expenses.length} Transactions`}
             isPositive={false}
             highlight
           />
@@ -420,11 +421,11 @@ export default function ProExpensePage() {
         </div>
 
         {/* Expense History Log */}
-        <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden flex flex-col transition-colors">
           <div className="p-5 md:p-6 border-b border-slate-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">
-                Expense History
+                {t("dashboard.titles.history")}
               </h3>
               <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
                 ប្រវត្តិការចំណាយ
@@ -436,11 +437,11 @@ export default function ProExpensePage() {
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Search expenses..."
-                  className="w-full sm:w-auto pl-9 pr-4 py-2 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 min-h-[40px]"
+                  placeholder={t("dashboard.placeholders.searchExp")}
+                  className="w-full sm:w-auto pl-9 pr-4 py-2 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/5 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 min-h-[40px] dark:text-white outline-none transition-all"
                 />
               </div>
-              <button className="p-2 border border-slate-200 rounded-xl text-slate-500 dark:text-[#7d8590] hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117] transition-colors min-h-[40px] cursor-pointer bg-white dark:bg-dark-surface">
+              <button className="p-2 border border-slate-200 dark:border-white/5 rounded-xl text-slate-500 dark:text-[#7d8590] hover:bg-slate-50 dark:hover:bg-white/5 bg-white dark:bg-dark-surface transition-colors min-h-[40px] cursor-pointer">
                 <Filter className="w-4 h-4" />
               </button>
             </div>
@@ -450,18 +451,18 @@ export default function ProExpensePage() {
             <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="bg-slate-50 dark:bg-[#0d1117] border-b border-slate-100 dark:border-white/5 text-[13px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
-                  <th className="px-6 py-4">Time</th>
-                  <th className="px-6 py-4">Category</th>
-                  <th className="px-6 py-4">Note / Receipt</th>
-                  <th className="px-6 py-4">Amount</th>
-                  <th className="px-6 py-4 text-center">Actions</th>
+                  <th className="px-6 py-4">{t("dashboard.table.time")}</th>
+                  <th className="px-6 py-4">{t("dashboard.table.category")}</th>
+                  <th className="px-6 py-4">{t("dashboard.table.note")} / Receipt</th>
+                  <th className="px-6 py-4">{t("dashboard.table.amount")}</th>
+                  <th className="px-6 py-4 text-center">{t("dashboard.table.actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                 {expenses.map((exp) => (
                   <tr
                     key={exp.id}
-                    className="hover:bg-psar-primary/10/30 transition-colors group"
+                    className="hover:bg-psar-primary/5 transition-colors group"
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900 dark:text-white">
@@ -472,12 +473,12 @@ export default function ProExpensePage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-bold border ${exp.isCustom ? "bg-psar-primary/10 text-psar-primary border-psar-primary/20" : "bg-slate-100 text-slate-700 dark:text-[#c9d1d9] border-slate-200"}`}
+                          className={`inline-flex items-center px-2.5 py-1 rounded-md text-[13px] font-bold border ${exp.isCustom ? "bg-psar-primary/10 text-psar-primary border-psar-primary/20" : "bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-[#c9d1d9] border-slate-200 dark:border-white/5"}`}
                         >
                           {exp.category}
                         </span>
                         {exp.isCustom && (
-                          <span className="text-[9px] font-bold text-psar-primary uppercase tracking-wider bg-white dark:bg-dark-surface px-1.5 py-0.5 rounded border border-psar-primary/20 shadow-sm">
+                          <span className="text-[9px] font-bold text-psar-primary uppercase tracking-wider bg-white dark:bg-dark-surface px-1.5 py-0.5 rounded border border-psar-primary/20 shadow-sm transition-colors">
                             Custom
                           </span>
                         )}
@@ -504,8 +505,8 @@ export default function ProExpensePage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <button className="p-2 text-slate-400 hover:text-psar-primary rounded-lg hover:bg-psar-primary/10 transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 bg-transparent cursor-pointer">
-                        <MoreVertical className="w-5 h-5 mx-auto" />
+                      <button className="p-2 text-slate-400 hover:text-psar-primary dark:hover:text-white rounded-lg hover:bg-psar-primary/10 dark:hover:bg-white/5 transition-all opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 bg-transparent cursor-pointer">
+                        <EllipsisVertical className="w-5 h-5 mx-auto" />
                       </button>
                     </td>
                   </tr>
@@ -514,9 +515,9 @@ export default function ProExpensePage() {
             </table>
           </div>
 
-          <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center">
-            <button className="text-[14px] font-semibold text-psar-primary hover:text-psar-primary hover:underline min-h-[40px] px-4 border-0 bg-transparent cursor-pointer">
-              View All Pro Expenses
+          <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center transition-colors">
+            <button className="text-[14px] font-semibold text-psar-primary hover:underline min-h-[40px] px-4 border-0 bg-transparent cursor-pointer transition-all">
+              {t("dashboard.actions.viewAll")} Pro Expenses
             </button>
           </div>
         </div>

@@ -349,11 +349,10 @@ export default function PremiumReportsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3 text-[13.5px] font-medium border-b-2 -mb-px flex flex-col items-start gap-0.5 bg-transparent border-x-0 border-t-0 cursor-pointer transition-colors whitespace-nowrap ${
-                activeTab === tab.id
+              className={`px-5 py-3 text-[13.5px] font-medium border-b-2 -mb-px flex flex-col items-start gap-0.5 bg-transparent border-x-0 border-t-0 cursor-pointer transition-colors whitespace-nowrap ${activeTab === tab.id
                   ? "border-b-[#111827] dark:border-b-white text-[#111827] dark:text-white font-semibold"
                   : "border-b-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white"
-              }`}
+                }`}
             >
               <span>{tab.label}</span>
               <span className="text-[10px] text-[#9ca3af] dark:text-[#6b7280]">
@@ -857,11 +856,10 @@ export default function PremiumReportsPage() {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[80%] px-4 py-3 rounded-[14px] text-[13px] leading-relaxed transition-colors ${
-                    msg.role === "user"
+                  className={`max-w-[80%] px-4 py-3 rounded-[14px] text-[13px] leading-relaxed transition-colors ${msg.role === "user"
                       ? "bg-[#0d1117] dark:bg-gradient-to-r dark:from-[#8b5cf6] dark:to-[#3ecf8e] text-[#e6edf3] dark:text-white rounded-br-[4px]"
                       : "bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 text-[#374151] dark:text-[#e6edf3] rounded-bl-[4px] shadow-sm"
-                  }`}
+                    }`}
                 >
                   {msg.text}
                 </div>
@@ -915,11 +913,10 @@ function PLCard({
 }) {
   return (
     <div
-      className={`p-5 rounded-2xl border transition-colors ${
-        highlight
+      className={`p-5 rounded-2xl border transition-colors ${highlight
           ? "bg-[#3ecf8e] text-white border-transparent shadow-md"
           : "bg-white dark:bg-[#0d1117] border-[#e8eaed] dark:border-white/10 shadow-[0_1px_4px_rgba(0,0,0,0.06)]"
-      }`}
+        }`}
     >
       <div className="flex justify-between items-start mb-4">
         <div>
@@ -947,13 +944,12 @@ function PLCard({
           {value}
         </div>
         <div
-          className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-            highlight
+          className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${highlight
               ? "bg-white/20 text-white"
               : isPositive
                 ? "bg-[rgba(62,207,142,0.1)] dark:bg-[rgba(62,207,142,0.15)] text-[#3ecf8e] dark:text-[#4dd49a]"
                 : "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400"
-          }`}
+            }`}
         >
           {trend}
         </div>

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { 
   Search, 
   Filter, 
-  MoreVertical, 
   CheckCircle2, 
   XCircle, 
   ShieldAlert,
@@ -18,6 +17,7 @@ import {
   Phone,
   Clock
 } from "lucide-react";
+import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { Select } from "@/components/ui/Select";
@@ -271,14 +271,19 @@ export default function VendorDirectoryPage() {
                       >
                         <Eye className="h-5 w-5" />
                       </button>
-                      
-                      <button 
-                        className={`p-1 transition-colors ${vendor.status === 'Suspended' ? 'hover:text-emerald-600' : 'hover:text-amber-600'}`} 
-                        title={vendor.status === 'Suspended' ? (isKhmer ? "ធ្វើឱ្យសកម្មឡើងវិញ" : "Reactivate") : (isKhmer ? "ផ្អាក" : "Suspend")}
-                        onClick={() => handleToggleStatus(vendor.id, vendor.status)}
-                      >
-                        {vendor.status === 'Suspended' ? <RefreshCcw className="h-5 w-5" /> : <ShieldAlert className="h-5 w-5" />}
-                      </button>
+                      {vendor.status === 'Pending' ? (
+                        <button className="p-1 hover:text-emerald-600 transition-colors" title={isKhmer ? "អនុម័ត" : "Approve"}>
+                          <CheckCircle2 className="h-5 w-5" />
+                        </button>
+                      ) : (
+                        <button 
+                          className={`p-1 transition-colors ${vendor.status === 'Suspended' ? 'hover:text-emerald-600' : 'hover:text-amber-600'}`} 
+                          title={vendor.status === 'Suspended' ? (isKhmer ? "ធ្វើឱ្យសកម្មឡើងវិញ" : "Reactivate") : (isKhmer ? "ផ្អាក" : "Suspend")}
+                          onClick={() => handleToggleStatus(vendor.id, vendor.status)}
+                        >
+                          {vendor.status === 'Suspended' ? <RefreshCcw className="h-5 w-5" /> : <ShieldAlert className="h-5 w-5" />}
+                        </button>
+                      )}
 
                       <button 
                         className="p-1 hover:text-red-600 transition-colors" 
@@ -286,6 +291,9 @@ export default function VendorDirectoryPage() {
                         onClick={() => handleDeleteVendor(vendor.id)}
                       >
                         <Trash2 className="h-5 w-5" />
+                      </button>
+                      <button className={`p-1 transition-colors flex items-center ${isDark ? "hover:text-white" : "hover:text-slate-900"}`}>
+                        <EllipsisVertical className="h-5 w-5" />
                       </button>
                     </div>
                   </td>

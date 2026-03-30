@@ -86,7 +86,7 @@ export default function MarketPulsePage() {
   const t = {
     en: {
       back: "Back Home",
-      title: "Market Pulse",
+      title: "Psar Pulse",
       desc: "Discover stalls and shops across Cambodia's vibrant markets.",
       searchPlaceholder: "Search for stalls or products...",
       noResults: "No vendors found.",
@@ -100,7 +100,7 @@ export default function MarketPulsePage() {
     },
     km: {
       back: "ត្រឡប់",
-      title: "Market Pulse",
+      title: "Psar Pulse",
       desc: "ស្វែងរកស្តង់ និងហាងនៅទូទាំងទីផ្សារកម្ពុជា។",
       searchPlaceholder: "ស្វែងរកស្តង់ ហាង...",
       noResults: "រកមិនឃើញអ្នកលក់ទេ។",
@@ -497,7 +497,7 @@ export default function MarketPulsePage() {
 
                     <div className="flex items-center gap-3">
                       <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${selectedVendor.lat},${selectedVendor.lng}`}
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${selectedVendor.lat},${selectedVendor.lng}${userLocation ? `&origin=${userLocation[0]},${userLocation[1]}` : ''}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`

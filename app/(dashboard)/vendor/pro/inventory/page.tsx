@@ -27,6 +27,7 @@ import {
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const PRO_NAV = [
   { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor/pro" },
@@ -38,6 +39,7 @@ const PRO_NAV = [
 ];
 
 export default function ProInventoryPage() {
+  const { t, language } = useLanguage();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -76,7 +78,7 @@ export default function ProInventoryPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if(!window.confirm("Are you sure?")) return;
+    if(!window.confirm(t("dashboard.modals.deleteConfirmDesc"))) return;
     try {
       const res = await fetch(`/api/vendor/inventory/${id}`, { method: "DELETE" });
       if (res.ok) fetchInventory();
@@ -127,7 +129,7 @@ export default function ProInventoryPage() {
       plan="pro"
       navLinks={PRO_NAV}
       currentPath="/vendor/pro/inventory"
-      title="Inventory Management"
+      title={t("inventory.title")}
       planBadge={{ label: "PRO", icon: Crown }}
       rightActions={
         <>
@@ -135,7 +137,7 @@ export default function ProInventoryPage() {
             onClick={handleExportCSV}
             className="hidden sm:flex items-center gap-2 bg-psar-dark hover:opacity-90 text-white font-medium px-4 py-2 rounded-xl transition-colors text-[13px] min-h-[40px] cursor-pointer border-0"
           >
-            <Download className="w-4 h-4" /> Export CSV
+            <Download className="w-4 h-4" /> {t("dashboard.actions.exportCsv")}
           </button>
         </>
       }
@@ -144,11 +146,11 @@ export default function ProInventoryPage() {
           {/* ══ INVENTORY HEADER ══════════════════════════════════════ */}
           <div className="pt-1 pb-2">
             <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
-              My Inventory
+              {t("dashboard.customerSection.title") === "My Customers" ? "My Inventory" : "ស្តុករបស់ខ្ញុំ"}
             </h2>
             <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-              Track and manage your product inventory ·{" "}
-              <span className="text-[#9ca3af]">
+              {t("inventory.subtitle")} ·{" "}
+              <span className="text-[#9ca3af] font-khmer">
                 តាមដាន និងគ្រប់គ្រងស្តុកទំនិញ
               </span>
             </p>
@@ -156,41 +158,41 @@ export default function ProInventoryPage() {
 
           {/* FR-26: Dynamic Low Stock Alert Banner */}
           {lowStockItems.length > 0 ? (
-          <div className="bg-orange-50 rounded-2xl p-5 md:p-6 border border-orange-200 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden">
-            <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-orange-100 pointer-events-none" />
+          <div className="bg-orange-50 dark:bg-orange-500/10 rounded-2xl p-5 md:p-6 border border-orange-200 dark:border-orange-500/20 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden transition-colors">
+            <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-orange-100 dark:from-orange-500/10 pointer-events-none" />
             <div className="flex items-start gap-4 z-10">
-              <div className="p-3 bg-white dark:bg-dark-surface border border-orange-200 rounded-xl shrink-0 shadow-sm">
-                <AlertTriangle className="w-6 h-6 text-orange-600" />
+              <div className="p-3 bg-white dark:bg-dark-surface border border-orange-200 dark:border-orange-500/20 rounded-xl shrink-0 shadow-sm transition-colors">
+                <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-500" />
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
-                  <h3 className="font-bold text-[16px] text-orange-900">
-                    Low Stock Alert ({lowStockItems.length} Item{lowStockItems.length !== 1 ? "s" : ""})
+                  <h3 className="font-bold text-[16px] text-orange-900 dark:text-orange-400">
+                    {t("inventory.alerts.lowStockTitle")} ({lowStockItems.length} {t("dashboard.table.items")})
                   </h3>
                 </div>
-                <p className="text-orange-800 text-[14px] leading-relaxed max-w-2xl">
-                  <strong>{lowStockItems.map((i) => i.name).join(", ")}</strong>{" "}
-                  {lowStockItems.length === 1 ? "is" : "are"} running low. Tap below to review and restock.
+                <p className="text-orange-800 dark:text-orange-300/80 text-[14px] leading-relaxed max-w-2xl">
+                  <strong>{lowStockItems.map((i) => language === 'km' && i.khmerName ? i.khmerName : i.name).join(", ")}</strong>{" "}
+                  {t("inventory.alerts.lowStockDesc")}
                 </p>
               </div>
             </div>
             <button className="w-full md:w-auto px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-colors text-sm shadow-sm min-h-[44px] z-10 flex items-center justify-center gap-2">
-              <FileText className="w-4 h-4" /> Create PO
+              <FileText className="w-4 h-4" /> {t("inventory.alerts.createPo")}
             </button>
           </div>
           ) : (
-          <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-200 flex items-center gap-3">
-            <div className="p-2 bg-white border border-emerald-200 rounded-xl">
-              <AlertTriangle className="w-5 h-5 text-emerald-600" />
+          <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl p-5 border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-3 transition-colors">
+            <div className="p-2 bg-white dark:bg-dark-surface border border-emerald-200 dark:border-emerald-500/20 rounded-xl transition-colors">
+              <AlertTriangle className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
             </div>
-            <p className="text-emerald-800 text-[14px] font-medium">All items are well stocked ✓</p>
+            <p className="text-emerald-800 dark:text-emerald-400 text-[14px] font-medium">{t("inventory.alerts.wellStocked")} ✓</p>
           </div>
           )}
 
           {/* Metric Cards - Pro introduces wider range of metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
             <VendorSummaryCard
-              title="Total Products"
+              title={t("inventory.metrics.totalProducts")}
               khmerTitle="ផលិតផលសរុប"
               value={summaryData.totalItems}
               icon={Package}
@@ -198,7 +200,7 @@ export default function ProInventoryPage() {
               trend="Unlimited"
             />
             <VendorSummaryCard
-              title="Low Stock"
+              title={t("inventory.metrics.lowStock")}
               khmerTitle="ស្តុកជិតអស់"
               value={summaryData.lowStock}
               icon={AlertTriangle}
@@ -206,13 +208,13 @@ export default function ProInventoryPage() {
               isPositive={false}
             />
             <VendorSummaryCard
-              title="Inventory Value"
+              title={t("inventory.metrics.inventoryValue")}
               khmerTitle="តម្លៃស្តុក"
               value={summaryData.totalValue}
               icon={CircleDollarSign}
             />
             <VendorSummaryCard
-              title="Top Seller"
+              title={t("inventory.metrics.topSeller")}
               khmerTitle="លក់ដាច់បំផុត"
               value={summaryData.mostSold}
               icon={TrendingUp}
@@ -220,7 +222,7 @@ export default function ProInventoryPage() {
             />
             {/* Pro Specific */}
             <VendorSummaryCard
-              title="Turnover Rate"
+              title={t("dashboard.metrics.turnover")}
               khmerTitle="អត្រាលក់ចេញ"
               value={summaryData.stockTurnover}
               icon={ArrowUpRight}
@@ -235,7 +237,7 @@ export default function ProInventoryPage() {
             <div className="p-5 md:p-6 border-b border-slate-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">
-                  Master Product List
+                  {t("inventory.table.masterList")}
                 </h3>
                 <p className="text-[13px] font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
                   បញ្ជីផលិតផលមេ
@@ -247,15 +249,15 @@ export default function ProInventoryPage() {
                   <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Search items..."
+                    placeholder={t("inventory.searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[44px]"
+                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[44px] transition-colors"
                   />
                 </div>
-                <button onClick={openAdd} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-psar-primary text-white font-medium px-4 py-2.5 rounded-xl hover:bg-psar-primary transition-colors min-h-[44px]">
+                <button onClick={openAdd} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-psar-primary text-white font-medium px-4 py-2.5 rounded-xl hover:opacity-90 transition-colors min-h-[44px]">
                   <Plus className="w-4 h-4" />
-                  <span className="text-sm">Add Item</span>
+                  <span className="text-sm">{t("inventory.addProduct")}</span>
                 </button>
               </div>
             </div>
@@ -264,12 +266,12 @@ export default function ProInventoryPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-[#0d1117] border-b border-slate-100 dark:border-white/5 text-[11px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
-                    <th className="px-6 py-4">Product Details</th>
-                    <th className="px-6 py-4">Price / Cost</th>
-                    <th className="px-6 py-4">Stock Level</th>
-                    <th className="px-6 py-4">Last Restock</th>
-                    <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    <th className="px-6 py-4">{t("inventory.table.productInfo")}</th>
+                    <th className="px-6 py-4">{t("inventory.table.price")}</th>
+                    <th className="px-6 py-4">{t("inventory.table.stockLevel")}</th>
+                    <th className="px-6 py-4">{t("inventory.table.lastRestock")}</th>
+                    <th className="px-6 py-4">{t("inventory.table.status")}</th>
+                    <th className="px-6 py-4 text-right">{t("inventory.table.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -281,7 +283,7 @@ export default function ProInventoryPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
                           <span className="text-[14px] font-bold text-slate-900 dark:text-white">
-                            {item.name}
+                            {language === 'km' && item.khmerName ? item.khmerName : item.name}
                           </span>
                           <span className="text-[12px] font-khmer text-slate-500 dark:text-[#7d8590]">
                             {item.khmerName}
@@ -301,7 +303,7 @@ export default function ProInventoryPage() {
                           <span className="text-[15px] font-bold text-slate-900 dark:text-white w-6">
                             {item.stock}
                           </span>
-                          <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="w-24 h-1.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden transition-colors">
                             <div
                               className={`h-full rounded-full ${item.status === "out" ? "bg-red-500" : item.status === "low" ? "bg-orange-500" : "bg-psar-primary"}`}
                               style={{
@@ -316,16 +318,16 @@ export default function ProInventoryPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {item.status === "out" ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-red-100 text-red-700 text-[11px] font-bold">
-                            Out of Stock
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-[11px] font-bold transition-colors">
+                            {t("inventory.status.outOutOfStock") || t("inventory.status.out")}
                           </span>
                         ) : item.status === "low" ? (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-orange-100 text-orange-700 text-[11px] font-bold">
-                            Low Stock
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 text-[11px] font-bold transition-colors">
+                            {t("inventory.status.lowStock")}
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700 text-[11px] font-bold">
-                            In Stock
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold transition-colors">
+                            {t("inventory.status.good")}
                           </span>
                         )}
                       </td>
@@ -333,15 +335,15 @@ export default function ProInventoryPage() {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
-                            title="Delete Product"
+                            className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors border-0 bg-transparent cursor-pointer"
+                            title={t("dashboard.common.delete")}
                           >
                             <X className="w-4 h-4 mx-auto" />
                           </button>
                           <button
                             onClick={() => openEdit(item)}
-                            className="p-2 text-slate-400 hover:text-slate-900 dark:text-white rounded-lg hover:bg-slate-100 transition-colors"
-                            title="Edit Product"
+                            className="p-2 text-slate-400 hover:text-slate-900 dark:text-white rounded-lg hover:bg-slate-100 transition-colors border-0 bg-transparent cursor-pointer"
+                            title={t("dashboard.actions.edit") || t("dashboard.actions.save")}
                           >
                             <Edit2 className="w-4 h-4 mx-auto" />
                           </button>
@@ -352,45 +354,67 @@ export default function ProInventoryPage() {
                 </tbody>
               </table>
             </div>
-            <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center">
-              <button className="text-[13px] font-semibold text-psar-primary hover:underline">
-                View All {summaryData.totalItems} Items
+            <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center transition-colors">
+              <button className="text-[13px] font-semibold text-psar-primary hover:underline border-0 bg-transparent cursor-pointer">
+                {t("dashboard.actions.viewAll")} {summaryData.totalItems} {t("dashboard.table.items")}
               </button>
             </div>
           </div>
-        </div>
+      </div>
         
         {/* Modals */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="bg-white dark:bg-[#161B22] p-6 rounded-2xl shadow-xl w-full max-w-md">
-              <h3 className="text-xl font-bold mb-4">{editingItem ? "Edit Item" : "Add New Item"}</h3>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-all animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-[#161B22] p-6 rounded-2xl shadow-xl w-full max-w-md relative animate-in zoom-in-95 duration-200">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:text-[#c9d1d9] transition-colors border-0 bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-white">
+                {editingItem ? t("inventory.modal.editTitle") : t("inventory.modal.addTitle")}
+              </h3>
               <form onSubmit={handleSave} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Name</label>
-                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-[#0d1117] dark:border-white/10" />
+                  <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
+                    {t("inventory.modal.nameLabel")}
+                  </label>
+                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-[15px] focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Khmer Name</label>
-                  <input value={formData.khmerName} onChange={e => setFormData({...formData, khmerName: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-[#0d1117] dark:border-white/10" />
+                  <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
+                    {t("inventory.modal.khmerNameLabel")}
+                  </label>
+                  <input placeholder={t("inventory.modal.khmerNamePlaceholder")} value={formData.khmerName} onChange={e => setFormData({...formData, khmerName: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-[15px] focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Price ($)</label>
-                  <input type="number" step="0.01" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full border rounded-lg p-2 dark:bg-[#0d1117] dark:border-white/10" />
+                  <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
+                    {t("inventory.modal.priceLabel")}
+                  </label>
+                  <input type="number" step="0.01" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-[15px] focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all" />
                 </div>
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-medium mb-1">Stock</label>
-                    <input type="number" required value={formData.stock} onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} className="w-full border rounded-lg p-2 dark:bg-[#0d1117] dark:border-white/10" />
+                    <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
+                      {t("inventory.table.stockLevel")}
+                    </label>
+                    <input type="number" required value={formData.stock} onChange={e => setFormData({...formData, stock: parseInt(e.target.value)})} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-[15px] focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all" />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-sm font-medium mb-1">Threshold</label>
-                    <input type="number" required value={formData.threshold} onChange={e => setFormData({...formData, threshold: parseInt(e.target.value)})} className="w-full border rounded-lg p-2 dark:bg-[#0d1117] dark:border-white/10" />
+                    <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
+                      Threshold
+                    </label>
+                    <input type="number" required value={formData.threshold} onChange={e => setFormData({...formData, threshold: parseInt(e.target.value)})} className="w-full px-4 py-3 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-[15px] focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all" />
                   </div>
                 </div>
                 <div className="flex justify-end gap-3 mt-6">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg">Cancel</button>
-                  <button type="submit" className="px-4 py-2 bg-psar-primary text-white rounded-lg">Save</button>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#0d1117] dark:hover:bg-white/5 text-slate-700 dark:text-[#c9d1d9] font-bold rounded-xl transition-all border-0 cursor-pointer">
+                    {t("dashboard.actions.cancel")}
+                  </button>
+                  <button type="submit" className="px-5 py-2.5 bg-psar-primary hover:opacity-90 text-white font-bold rounded-xl transition-all shadow-sm border-0 cursor-pointer">
+                    {t("dashboard.actions.save")}
+                  </button>
                 </div>
               </form>
             </div>

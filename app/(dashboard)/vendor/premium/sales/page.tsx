@@ -9,7 +9,6 @@ import {
   Package,
   Plus,
   Search,
-  MoreVertical,
   X,
   Clock,
   Filter,
@@ -28,10 +27,12 @@ import {
   Send,
   Megaphone,
 } from "lucide-react";
+import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { Period } from "../../expenses/page";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Navigation ────────────────────────────────────────────────────
 const PREMIUM_NAV = [
@@ -117,14 +118,14 @@ const transactions = [
 const smartAlerts = [
   {
     type: "opportunity",
-    message:
-      "Rain starting! Demand for Hot Lattes is spiking. Suggest moving cups to the front.",
+    message: "Rain starting! Demand for Hot Lattes is spiking. Suggest moving cups to the front.",
+    khmerMessage: "មេឃចាប់ផ្តើមភ្លៀង! តម្រូវការឡាតេក្តៅកំពុងកើនឡើង។ គួរដាក់កែវនៅខាងមុខ។",
     time: "10 min ago",
   },
   {
     type: "warning",
-    message:
-      "Sales dropped 15% in the last hour compared to historical average.",
+    message: "Sales dropped 15% in the last hour compared to historical average.",
+    khmerMessage: "ការលក់បានធ្លាក់ចុះ ១៥% ក្នុងម៉ោងចុងក្រោយ បើធៀបនឹងមធ្យមភាគប្រវត្តិសាស្ត្រ។",
     time: "1 hour ago",
   },
 ];
@@ -139,12 +140,16 @@ const weatherData = {
       product: "Mango Sticky Rice",
       change: "+20%",
       reason: "Comfort food demand rises in rain",
+      khmerReason: "តម្រូវការអាហារកក់ក្តៅកើនឡើងពេលមានភ្លៀង",
     },
   ],
 };
 
 // ═══════════════════════════════════════════════════════════════════
 export default function PremiumSalesPage() {
+  const { t, language } = useLanguage();
+  const isKhmer = language === 'km';
+  
   const [quickAmount, setQuickAmount] = useState("");
   const [quickItem, setQuickItem] = useState("");
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
@@ -171,7 +176,7 @@ export default function PremiumSalesPage() {
       plan="premium"
       navLinks={PREMIUM_NAV}
       currentPath="/vendor/premium/sales"
-      title="Sales"
+      title={t("dashboard.sales")}
       planBadge={{ label: "PREMIUM", icon: Sparkles }}
       rightActions={
         <>
@@ -181,42 +186,41 @@ export default function PremiumSalesPage() {
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${
-                  period === p
-                    ? "bg-white dark:bg-[#0d1117] text-[#111827] dark:text-white shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
+                className={`px-4 py-[7px] rounded-[8px] text-[13px] font-bold border-0 cursor-pointer transition-all ${period === p
+                    ? "bg-white dark:bg-[#0d1117] text-[#111827] dark:text-white shadow-sm"
                     : "bg-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white"
-                }`}
+                  }`}
               >
-                {p}
+                {isKhmer ? (p === "Day" ? "ថ្ងៃ" : p === "Week" ? "សប្តាហ៍" : "ខែ") : p}
               </button>
             ))}
           </div>
           {/* Export buttons */}
-          <button className="hidden sm:flex items-center gap-2 bg-[#0d1117] dark:bg-white hover:opacity-90 text-white dark:text-[#0d1117] font-medium px-4 py-[9px] rounded-[10px] transition-colors text-[13px] cursor-pointer border-0">
+          <button className="hidden sm:flex items-center gap-2 bg-[#0d1117] dark:bg-white hover:opacity-90 text-white dark:text-[#0d1117] font-bold px-4 py-[9px] rounded-[10px] transition-colors text-[13px] cursor-pointer border-0">
             <FileText className="w-4 h-4" /> Export PDF
           </button>
-          <button className="hidden sm:flex items-center gap-2 bg-white dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 hover:bg-[#f0f2f5] dark:hover:bg-white/5 text-[#111827] dark:text-white font-medium px-4 py-[9px] rounded-[10px] transition-colors text-[13px] cursor-pointer">
+          <button className="hidden sm:flex items-center gap-2 bg-white dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 hover:bg-[#f0f2f5] dark:hover:bg-white/5 text-[#111827] dark:text-white font-bold px-4 py-[9px] rounded-[10px] transition-colors text-[13px] cursor-pointer shadow-sm">
             <FileSpreadsheet className="w-4 h-4" /> Export Excel
           </button>
           {/* Smart Add Sale button */}
           <button
             onClick={() => setIsQuickLogModalOpen(true)}
-            className="flex items-center gap-[7px] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] text-white border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(139,92,246,0.3)] hover:opacity-90 transition-opacity"
+            className="flex items-center gap-[7px] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] text-white border-0 rounded-[10px] px-4 py-[9px] font-extrabold text-[13px] cursor-pointer shadow-[0_4px_14px_rgba(139,92,246,0.3)] hover:opacity-90 transition-all hover:scale-[1.02]"
           >
-            <Sparkles size={14} /> Smart Add
+            <Sparkles size={14} /> {t("dashboard.actions.smartLog") || "Smart Add"}
           </button>
         </>
       }
     >
-      <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7">
+      <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7 transition-colors">
         {/* ── Page Header ── */}
         <div className="pt-1 pb-2">
           <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
-            My Sales
+            {t("dashboard.titles.mySales")}
           </h2>
           <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-            AI-powered sales tracking ·{" "}
-            <span className="text-[#9ca3af] dark:text-[#4d5562]">
+            {t("dashboard.titles.salesSubtitle")} ·{" "}
+            <span className="text-[#9ca3af] dark:text-[#4d5562] font-khmer">
               តាមដាន និងគ្រប់គ្រងការលក់
             </span>
           </p>
@@ -227,11 +231,10 @@ export default function PremiumSalesPage() {
           {smartAlerts.map((alert, i) => (
             <div
               key={i}
-              className={`flex items-center gap-4 p-4 rounded-[14px] border transition-colors ${
-                alert.type === "warning"
-                  ? "bg-[rgba(245,158,11,0.06)] dark:bg-[rgba(245,158,11,0.1)] border-[rgba(245,158,11,0.2)] dark:border-[rgba(245,158,11,0.2)]"
-                  : "bg-[rgba(139,92,246,0.05)] dark:bg-[rgba(139,92,246,0.1)] border-[rgba(139,92,246,0.18)] dark:border-[rgba(139,92,246,0.2)]"
-              }`}
+              className={`flex items-center gap-4 p-4 rounded-[14px] border transition-all hover:shadow-sm ${alert.type === "warning"
+                  ? "bg-[rgba(245,158,11,0.06)] dark:bg-[rgba(245,158,11,0.1)] border-[rgba(245,158,11,0.2)]"
+                  : "bg-[rgba(139,92,246,0.05)] dark:bg-[rgba(139,92,246,0.1)] border-[rgba(139,92,246,0.18)]"
+                }`}
             >
               <div
                 className={`p-2 rounded-[10px] ${alert.type === "warning" ? "bg-[rgba(245,158,11,0.12)]" : "bg-[rgba(139,92,246,0.1)]"}`}
@@ -248,8 +251,8 @@ export default function PremiumSalesPage() {
                     className={`text-[14px] font-bold ${alert.type === "warning" ? "text-[#92400e] dark:text-[#fbbf24]" : "text-[#5b21b6] dark:text-[#d8b4fe]"}`}
                   >
                     {alert.type === "opportunity"
-                      ? "AI Smart Alert"
-                      : "Automated Warning"}
+                      ? (isKhmer ? "ការជូនដំណឹង AI" : "AI Smart Alert")
+                      : (isKhmer ? "ការព្រមានស្វ័យប្រវត្តិ" : "Automated Warning")}
                   </p>
                   <span className="text-[11px] text-[#9ca3af] dark:text-[#7d8590]">
                     {alert.time}
@@ -258,11 +261,11 @@ export default function PremiumSalesPage() {
                 <p
                   className={`text-[13px] font-medium mt-0.5 ${alert.type === "warning" ? "text-[#b45309] dark:text-[#fcd34d]" : "text-[#7c3aed] dark:text-[#e9d5ff]"}`}
                 >
-                  {alert.message}
+                  {isKhmer ? alert.khmerMessage : alert.message}
                 </p>
               </div>
-              <button className="text-[12px] font-bold text-[#9ca3af] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white px-3 py-1.5 rounded-[8px] hover:bg-[#f0f2f5] dark:hover:bg-white/10 transition-colors border-0 cursor-pointer bg-transparent">
-                Dismiss
+              <button className="text-[12px] font-bold text-[#9ca3af] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white px-3 py-1.5 rounded-[8px] hover:bg-slate-100 dark:hover:bg-white/10 transition-colors border-0 cursor-pointer bg-transparent">
+                {t("common.dismiss") || "Dismiss"}
               </button>
             </div>
           ))}
@@ -272,20 +275,20 @@ export default function PremiumSalesPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <VendorSummaryCard
             variant="dark"
-            title={`${period}'s Revenue`}
+            title={t("dashboard.metrics.periodRevenue", { period: isKhmer ? (period === "Day" ? "ថ្ងៃនេះ" : period === "Week" ? "សប្តាហ៍នេះ" : "ខែនេះ") : period })}
             khmerTitle="ចំណូលប្រចាំ"
             value={`$${totalRevenue.toFixed(2)}`}
             icon={CircleDollarSign}
           />
           <VendorSummaryCard
-            title="Transactions"
+            title={t("dashboard.metrics.transactions")}
             khmerTitle="ប្រតិបត្តិការ"
             value={transactions.length}
             icon={Receipt}
             subtext="sales today"
           />
           <VendorSummaryCard
-            title="Avg. Sale Value"
+            title={t("dashboard.metrics.avgSaleValue")}
             khmerTitle="តម្លៃលក់មធ្យម"
             value={`$${avgSale.toFixed(2)}`}
             icon={TrendingUp}
@@ -293,7 +296,7 @@ export default function PremiumSalesPage() {
           />
           {/* Premium exclusive — AI Next-Week Forecast */}
           <VendorSummaryCard
-            title="AI Next-Week"
+            title={t("dashboard.metrics.aiForecast") || "AI Next-Week"}
             khmerTitle="ការព្យាករណ៍ AI"
             value="$3,120"
             icon={Sparkles}
@@ -308,46 +311,45 @@ export default function PremiumSalesPage() {
           {/* Left: Quick Log Banner + Transaction Table */}
           <div className="lg:col-span-2 space-y-6">
             {/* Quick Log Banner */}
-            <div className="bg-white dark:bg-[#0d1117] rounded-[14px] border border-[#e8eaed] dark:border-white/10 shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative overflow-hidden transition-colors">
+            <div className="bg-white dark:bg-[#0d1117] rounded-[14px] border border-[#e8eaed] dark:border-white/10 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative overflow-hidden transition-colors">
               <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[rgba(139,92,246,0.05)] to-[rgba(62,207,142,0.05)] dark:from-[rgba(139,92,246,0.1)] dark:to-[rgba(62,207,142,0.1)] rounded-full blur-3xl -z-10 -translate-y-1/2 translate-x-1/2" />
               <div>
                 <h2 className="font-bold text-[19px] text-[#111827] dark:text-white flex items-center gap-2">
-                  Unlimited Quick Logging{" "}
-                  <Sparkles className="w-5 h-5 text-[#8b5cf6]" />
+                  {t("dashboard.titles.unlimitedLog")} <Sparkles className="w-5 h-5 text-[#8b5cf6]" />
                 </h2>
-                <p className="text-[13px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                  កត់ត្រាការលក់ឥតកំណត់
+                <p className="text-[13px] text-[#6b7280] dark:text-[#7d8590] mt-0.5 font-khmer">
+                  {t("dashboard.titles.unlimitedLogSub")}
                 </p>
               </div>
               <button
                 onClick={() => setIsQuickLogModalOpen(true)}
-                className="bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold text-[15px] px-6 py-3.5 rounded-[12px] shadow-md transition-all flex items-center gap-2 w-full sm:w-auto min-h-[50px] border-0 cursor-pointer"
+                className="bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-extrabold text-[15px] px-6 py-3.5 rounded-[12px] shadow-sm transition-all flex items-center gap-2 w-full sm:w-auto min-h-[50px] border-0 cursor-pointer hover:scale-[1.02]"
               >
-                <Sparkles className="w-5 h-5" /> Smart Add
+                <Sparkles className="w-5 h-5" /> {t("dashboard.actions.smartLog") || "Smart Add"}
               </button>
             </div>
 
             {/* Transaction Table */}
-            <div className="bg-white dark:bg-[#0d1117] rounded-[14px] border border-[#e8eaed] dark:border-white/10 shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col transition-colors">
+            <div className="bg-white dark:bg-[#0d1117] rounded-[14px] border border-[#e8eaed] dark:border-white/10 shadow-sm overflow-hidden flex flex-col transition-colors">
               <div className="p-5 md:p-6 border-b border-[#f0f2f5] dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
-                    Smart Transaction History
+                    {t("dashboard.titles.smartHistory")}
                   </h3>
-                  <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
+                  <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5 font-khmer">
                     ប្រវត្តិប្រតិបត្តិការឆ្លាតវៃ
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-colors group focus-within:border-[#3ecf8e] w-64">
+                  <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-all group focus-within:border-[#3ecf8e] w-64 shadow-sm">
                     <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#3ecf8e] transition-colors" />
                     <input
                       type="text"
-                      placeholder="Search unlimited logs..."
+                      placeholder={t("dashboard.placeholders.searchLog")}
                       className="bg-transparent border-none outline-none text-[13px] text-[#111827] dark:text-white w-full placeholder:text-[#9ca3af]"
                     />
                   </div>
-                  <button className="p-2 border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[#6b7280] dark:text-[#7d8590] hover:bg-[#f0f2f5] dark:hover:bg-white/5 transition-colors min-h-[40px] bg-white dark:bg-[#161B22] cursor-pointer">
+                  <button className="p-2 border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[#6b7280] dark:text-[#7d8590] hover:bg-slate-100 dark:hover:bg-white/5 transition-colors min-h-[40px] bg-white dark:bg-[#161B22] cursor-pointer shadow-sm">
                     <Filter className="w-4 h-4" />
                   </button>
                 </div>
@@ -357,18 +359,18 @@ export default function PremiumSalesPage() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#f7f8fa] dark:bg-[#161B22] border-b border-[#f0f2f5] dark:border-white/5 text-[11px] text-[#9ca3af] dark:text-[#7d8590] uppercase tracking-wider font-bold transition-colors">
-                      <th className="px-6 py-4">Time</th>
-                      <th className="px-6 py-4">Item Breakdown</th>
-                      <th className="px-6 py-4">Amount</th>
-                      <th className="px-6 py-4">Smart Tag</th>
-                      <th className="px-6 py-4 text-center">Actions</th>
+                      <th className="px-6 py-4">{t("dashboard.table.time")}</th>
+                      <th className="px-6 py-4">{t("dashboard.table.itemBreakdown")}</th>
+                      <th className="px-6 py-4">{t("dashboard.table.amount")}</th>
+                      <th className="px-6 py-4">{t("dashboard.table.smartTag")}</th>
+                      <th className="px-6 py-4 text-center">{t("dashboard.table.actions")}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#f0f2f5] dark:divide-white/5">
+                  <tbody className="divide-y divide-[#f0f2f5] dark:divide-white/5 transition-colors">
                     {transactions.map((txn) => (
                       <tr
                         key={txn.id}
-                        className="hover:bg-[#f7f8fa] dark:hover:bg-white/5 transition-colors group"
+                        className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2 text-[14px] font-medium text-[#111827] dark:text-white">
@@ -382,13 +384,13 @@ export default function PremiumSalesPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-[15px] font-bold text-[#3ecf8e] dark:text-[#3ecf8e]">
+                          <span className="text-[15px] font-bold text-[#3ecf8e]">
                             {txn.amount}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {txn.aiTagged && txn.tag ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(139,92,246,0.08)] dark:bg-[rgba(139,92,246,0.15)] text-[#8b5cf6] dark:text-[#d8b4fe] text-[11px] font-bold rounded-[6px] border border-[rgba(139,92,246,0.2)] dark:border-[rgba(139,92,246,0.3)]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(139,92,246,0.08)] dark:bg-[rgba(139,92,246,0.15)] text-[#8b5cf6] dark:text-[#d8b4fe] text-[11px] font-bold rounded-[6px] border border-[rgba(139,92,246,0.2)]">
                               <Brain className="w-3 h-3" /> {txn.tag}
                             </span>
                           ) : (
@@ -398,8 +400,8 @@ export default function PremiumSalesPage() {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <button className="p-2 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#8b5cf6] dark:hover:text-[#a78bfa] rounded-[8px] hover:bg-[rgba(139,92,246,0.08)] dark:hover:bg-white/5 transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 cursor-pointer bg-transparent">
-                            <MoreVertical className="w-5 h-5 mx-auto" />
+                          <button className="p-2 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#8b5cf6] dark:hover:text-[#a78bfa] rounded-[8px] hover:bg-[rgba(139,92,246,0.08)] transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 cursor-pointer bg-transparent">
+                            <EllipsisVertical className="w-5 h-5 mx-auto" />
                           </button>
                         </td>
                       </tr>
@@ -408,8 +410,8 @@ export default function PremiumSalesPage() {
                 </table>
               </div>
               <div className="p-4 border-t border-[#f0f2f5] dark:border-white/5 bg-[#f7f8fa] dark:bg-[#161B22] text-center transition-colors">
-                <button className="text-[13.5px] font-semibold text-[#3ecf8e] hover:underline border-0 bg-transparent cursor-pointer">
-                  Load More Logs
+                <button className="text-[13.5px] font-bold text-[#3ecf8e] hover:underline border-0 bg-transparent cursor-pointer">
+                  {t("dashboard.actions.loadMore")}
                 </button>
               </div>
             </div>
@@ -418,26 +420,28 @@ export default function PremiumSalesPage() {
           {/* Right: AI Panels (premium exclusive) */}
           <div className="space-y-6">
             {/* AI Sales Forecaster */}
-            <div className="bg-gradient-to-br from-[rgba(139,92,246,0.06)] to-[rgba(62,207,142,0.06)] dark:from-[rgba(139,92,246,0.1)] dark:to-[rgba(62,207,142,0.1)] border border-[rgba(139,92,246,0.15)] dark:border-[rgba(139,92,246,0.2)] rounded-[14px] p-5 transition-colors">
+            <div className="bg-gradient-to-br from-[rgba(139,92,246,0.06)] to-[rgba(62,207,142,0.06)] dark:from-[rgba(139,92,246,0.1)] dark:to-[rgba(62,207,142,0.1)] border border-[rgba(139,92,246,0.15)] rounded-[14px] p-5 transition-all hover:shadow-sm">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-white dark:bg-[#161B22] rounded-[10px] shadow-sm">
                   <Sparkles className="w-5 h-5 text-[#8b5cf6] dark:text-[#a78bfa]" />
                 </div>
                 <div>
                   <h3 className="font-bold text-[15px] text-[#5b21b6] dark:text-[#d8b4fe]">
-                    AI Sales Forecaster
+                    {isKhmer ? "ការព្យាករណ៍ AI" : "AI Sales Forecaster"}
                   </h3>
-                  <p className="text-[11px] text-[#8b5cf6] dark:text-[#c084fc] mt-0.5">
+                  <p className="text-[11px] text-[#8b5cf6] dark:text-[#c084fc] mt-0.5 font-khmer">
                     ការព្យាករណ៍ការលក់ AI
                   </p>
                 </div>
-                <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-[#161B22] text-[#8b5cf6] dark:text-[#d8b4fe] text-[10px] font-bold rounded-full shadow-sm transition-colors">
+                <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-[#161B22] text-[#8b5cf6] dark:text-[#d8b4fe] text-[10px] font-bold rounded-full shadow-sm">
                   <Brain className="w-3 h-3" /> Gemini
                 </span>
               </div>
 
-              <p className="text-[13px] text-[#7c3aed] dark:text-[#c084fc] mb-4 font-medium">
-                Next-week revenue prediction based on trends &amp; weather:
+              <p className="text-[13px] text-[#7c3aed] dark:text-[#c084fc] mb-4 font-bold leading-relaxed">
+                {isKhmer 
+                  ? "ការព្យាករណ៍ចំណូលសប្តាហ៍ក្រោយផ្អែកលើនិន្នាការ និងអាកាសធាតុ៖"
+                  : "Next-week revenue prediction based on trends & weather:"}
               </p>
 
               {/* Mini forecast bar chart */}
@@ -454,7 +458,7 @@ export default function PremiumSalesPage() {
                       className="flex-1 flex flex-col items-center gap-0.5"
                     >
                       <div
-                        className={`w-full rounded-t-sm ${isForecast ? "opacity-50" : ""}`}
+                        className={`w-full rounded-t-sm transition-all duration-700 ${isForecast ? "opacity-50" : ""}`}
                         style={{
                           height: `${(h / 110) * 56}px`,
                           background: isForecast
@@ -470,31 +474,32 @@ export default function PremiumSalesPage() {
                 })}
               </div>
               <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center gap-1.5 text-[11px] text-[#6b7280] dark:text-[#7d8590]">
-                  <div className="w-2.5 h-2.5 rounded-sm bg-[#7c3aed]" /> Actual
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#6b7280] dark:text-[#7d8590]">
+                  <div className="w-2.5 h-2.5 rounded-sm bg-[#7c3aed]" /> {t("dashboard.common.actual") || "Actual"}
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] text-[#6b7280] dark:text-[#7d8590]">
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#6b7280] dark:text-[#7d8590]">
                   <div className="w-2.5 h-2.5 rounded-sm bg-[#f0abfc]" />{" "}
-                  Forecast
+                  {t("dashboard.common.forecast") || "Forecast"}
                 </div>
               </div>
-              <div className="bg-white dark:bg-[#161B22] rounded-[10px] p-3 border border-[rgba(139,92,246,0.15)] dark:border-[rgba(139,92,246,0.2)] transition-colors">
-                <p className="text-[12px] text-[#7c3aed] dark:text-[#d8b4fe] font-semibold flex items-center gap-1.5">
+              <div className="bg-white dark:bg-[#161B22] rounded-[10px] p-3 border border-[rgba(139,92,246,0.15)] shadow-sm">
+                <p className="text-[12px] text-[#7c3aed] dark:text-[#d8b4fe] font-bold flex items-center gap-1.5">
                   <ArrowUpRight className="w-3.5 h-3.5" />
-                  Predicted:{" "}
-                  <span className="text-[#5b21b6] dark:text-[#e9d5ff] font-bold">
-                    $3,120 next week
+                  {isKhmer ? "ការព្យាករណ៍៖" : "Predicted:"}{" "}
+                  <span className="text-[#5b21b6] dark:text-[#e9d5ff] font-extrabold">
+                    $3,120 {isKhmer ? "សប្តាហ៍ក្រោយ" : "next week"}
                   </span>
                 </p>
-                <p className="text-[11px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-                  Rain expected Fri–Sat. Hot beverages may outsell iced drinks
-                  by 35%.
+                <p className="text-[11px] text-[#6b7280] dark:text-[#7d8590] mt-1 leading-relaxed">
+                  {isKhmer 
+                    ? "រំពឹងថាមានភ្លៀងនៅថ្ងៃសុក្រ-សៅរ៍។ ភេសជ្ជៈក្តៅអាចលក់ដាច់ជាងភេសជ្ជៈត្រជាក់ ៣៥%។"
+                    : "Rain expected Fri–Sat. Hot beverages may outsell iced drinks by 35%."}
                 </p>
               </div>
             </div>
 
             {/* Weather Intelligence (premium exclusive) */}
-            <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-[14px] shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden transition-colors">
+            <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-[14px] shadow-sm overflow-hidden transition-all hover:shadow-md">
               <div className="px-6 py-5 border-b border-[#f0f2f5] dark:border-white/5 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-[rgba(59,130,246,0.08)] dark:bg-[rgba(59,130,246,0.15)] rounded-[10px]">
@@ -502,51 +507,51 @@ export default function PremiumSalesPage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-[15px] text-[#111827] dark:text-white">
-                      Weather Intelligence
+                      {isKhmer ? "ព័ត៌មានអាកាសធាតុ" : "Weather Intelligence"}
                     </h3>
-                    <p className="text-[11px] text-[#9ca3af] dark:text-[#7d8590] mt-0.5">
+                    <p className="text-[11px] text-[#9ca3af] dark:text-[#7d8590] mt-0.5 font-khmer">
                       ព័ត៌មានអាកាសធាតុ
                     </p>
                   </div>
                 </div>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(59,130,246,0.08)] dark:bg-[rgba(59,130,246,0.15)] text-[#3b82f6] dark:text-[#93c5fd] text-[10px] font-bold rounded-full">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(59,130,246,0.08)] text-[#3b82f6] dark:text-[#93c5fd] text-[10px] font-bold rounded-full">
                   <Brain className="w-3 h-3" /> AI
                 </span>
               </div>
               <div className="p-5">
-                <div className="flex items-center gap-4 p-4 bg-[rgba(59,130,246,0.04)] dark:bg-[rgba(59,130,246,0.1)] rounded-[12px] border border-[rgba(59,130,246,0.12)] dark:border-[rgba(59,130,246,0.2)] mb-5">
+                <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-[#161B22] rounded-[12px] border border-slate-100 dark:border-white/5 mb-5 shadow-sm">
                   <span className="text-4xl">{weatherData.icon}</span>
                   <div>
                     <p className="text-[15px] font-bold text-[#111827] dark:text-white">
-                      {weatherData.condition}
+                      {isKhmer ? (weatherData.condition === "Rainy Evening" ? "ល្ងាចមានភ្លៀង" : weatherData.condition) : weatherData.condition}
                     </p>
-                    <p className="text-[13px] text-[#6b7280] dark:text-[#7d8590]">
-                      {weatherData.temp} · Expected to be{" "}
+                    <p className="text-[13px] font-medium text-[#6b7280] dark:text-[#7d8590]">
+                      {weatherData.temp} · {isKhmer ? "រំពឹងថានឹង" : "Expected to be"}{" "}
                       <strong className="text-[#8b5cf6] dark:text-[#c084fc]">
-                        {weatherData.impact}
+                        {isKhmer ? "មមាញឹក" : weatherData.impact}
                       </strong>
                     </p>
                   </div>
                 </div>
                 <h4 className="text-[11px] font-bold text-[#9ca3af] dark:text-[#7d8590] uppercase tracking-wider mb-3">
-                  Predicted Impact on Products
+                  {isKhmer ? "ផលប៉ះពាល់ដែលបានព្យាករលើផលិតផល" : "Predicted Impact on Products"}
                 </h4>
                 <div className="space-y-3">
                   {weatherData.suggestions.map((s, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-3 rounded-[10px] bg-[#f7f8fa] dark:bg-[#161B22] border border-[#f0f2f5] dark:border-white/5 transition-colors"
+                      className="flex items-center justify-between p-3 rounded-[10px] bg-slate-50 dark:bg-[#161B22] border border-slate-100 dark:border-white/5 transition-all hover:bg-white dark:hover:bg-[#0d1117] hover:shadow-sm"
                     >
-                      <div>
-                        <p className="text-[13.5px] font-semibold text-[#111827] dark:text-white">
-                          {s.product}
+                      <div className="flex-1">
+                        <p className="text-[13.5px] font-bold text-[#111827] dark:text-white">
+                          {isKhmer && s.product === "Mango Sticky Rice" ? "បាយដំណើបស្វាយ" : s.product}
                         </p>
-                        <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590]">
-                          {s.reason}
+                        <p className="text-[12px] font-medium text-[#6b7280] dark:text-[#7d8590] leading-relaxed">
+                          {isKhmer ? s.khmerReason : s.reason}
                         </p>
                       </div>
                       <span
-                        className={`text-[15px] font-bold ${s.change.startsWith("+") ? "text-[#3ecf8e]" : "text-[#ef4444]"}`}
+                        className={`text-[15px] font-extrabold ml-3 ${s.change.startsWith("+") ? "text-[#3ecf8e]" : "text-[#ef4444]"}`}
                       >
                         {s.change}
                       </span>
@@ -566,24 +571,24 @@ export default function PremiumSalesPage() {
             className="absolute inset-0"
             onClick={() => setIsQuickLogModalOpen(false)}
           />
-          <div className="bg-white dark:bg-[#0d1117] rounded-[24px] w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 border border-[#e8eaed] dark:border-white/10 overflow-hidden transition-colors">
+          <div className="bg-white dark:bg-[#0d1117] rounded-[24px] w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 border border-[#e8eaed] dark:border-white/10 overflow-hidden transition-all slide-up">
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e]" />
             <button
               onClick={() => setIsQuickLogModalOpen(false)}
-              className="absolute top-5 right-5 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white hover:bg-[#f0f2f5] dark:hover:bg-white/5 p-1.5 rounded-[8px] transition-colors border-0 cursor-pointer bg-transparent"
+              className="absolute top-5 right-5 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 p-1.5 rounded-[8px] transition-colors border-0 cursor-pointer bg-transparent"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="mb-6 flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-[rgba(139,92,246,0.12)] to-[rgba(62,207,142,0.12)] dark:from-[rgba(139,92,246,0.2)] dark:to-[rgba(62,207,142,0.2)] rounded-[12px] border border-[rgba(139,92,246,0.2)] dark:border-[rgba(139,92,246,0.3)]">
+              <div className="p-2.5 bg-gradient-to-br from-[rgba(139,92,246,0.12)] to-[rgba(62,207,142,0.12)] rounded-[12px] border border-[rgba(139,92,246,0.2)]">
                 <Brain className="w-6 h-6 text-[#8b5cf6] dark:text-[#c084fc]" />
               </div>
               <div>
                 <h2 className="font-bold text-[22px] text-[#111827] dark:text-white">
-                  Smart Log Sale
+                  {t("dashboard.actions.smartLog") || "Smart Log Sale"}
                 </h2>
-                <p className="text-[13px] text-[#6b7280] dark:text-[#7d8590] flex items-center gap-1">
+                <p className="text-[13px] font-medium text-[#6b7280] dark:text-[#7d8590] flex items-center gap-1">
                   Powered by Gemini{" "}
                   <Sparkles className="w-3.5 h-3.5 text-[#8b5cf6] dark:text-[#c084fc]" />
                 </p>
@@ -591,11 +596,12 @@ export default function PremiumSalesPage() {
             </div>
 
             {/* AI hint banner */}
-            <div className="bg-[rgba(139,92,246,0.06)] dark:bg-[rgba(139,92,246,0.1)] p-3 rounded-[12px] mb-5 flex items-start gap-2 border border-[rgba(139,92,246,0.15)] dark:border-[rgba(139,92,246,0.2)] transition-colors">
+            <div className="bg-[rgba(139,92,246,0.06)] dark:bg-[rgba(139,92,246,0.1)] p-4 rounded-[12px] mb-5 flex items-start gap-3 border border-[rgba(139,92,246,0.15)]">
               <Sparkles className="w-4 h-4 text-[#8b5cf6] dark:text-[#d8b4fe] shrink-0 mt-0.5" />
-              <p className="text-[12px] text-[#7c3aed] dark:text-[#d8b4fe]">
-                Type naturally, e.g., "Sold 2 iced coffee for 4 dollars". AI
-                will auto-categorize and deduct inventory correctly.
+              <p className="text-[12.5px] font-medium text-[#7c3aed] dark:text-[#d8b4fe] leading-relaxed">
+                {isKhmer 
+                  ? "វាយតាមធម្មជាតិ ឧទាហរណ៍ 'លក់អាហារ ២ ឈុត អស់ ៤ ដុល្លារ'។ AI នឹងបែងចែកប្រភេទ និងដកស្តុកដោយស្វ័យប្រវត្តិ។"
+                  : 'Type naturally, e.g., "Sold 2 iced coffee for 4 dollars". AI will auto-categorize and deduct inventory correctly.'}
               </p>
             </div>
 
@@ -603,26 +609,26 @@ export default function PremiumSalesPage() {
               <div className="relative group">
                 <input
                   type="text"
-                  placeholder='e.g., "3 Noodle soups and 1 iced coffee"'
+                  placeholder={isKhmer ? 'ឧទាហរណ៍ "គុយទាវ ៣ ចាន និងកាហ្វេ ១ កែវ"' : 'e.g., "3 Noodle soups and 1 iced coffee"'}
                   value={quickItem}
                   onChange={(e) => setQuickItem(e.target.value)}
-                  className="block w-full px-4 py-4 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white text-[15px] placeholder-[#9ca3af] dark:placeholder-[#7d8590] focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#8b5cf6] dark:focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6] outline-none transition-all min-h-[60px]"
+                  className="block w-full px-4 py-4 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white text-[15px] placeholder-[#9ca3af] focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6] outline-none transition-all min-h-[60px] shadow-sm"
                 />
               </div>
 
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <span className="text-[#9ca3af] dark:text-[#7d8590] font-bold">
+                  <span className="text-[#9ca3af] font-bold">
                     $
                   </span>
                 </div>
                 <input
                   type="number"
                   step="0.01"
-                  placeholder="Amount (AI will auto-fill if empty)"
+                  placeholder={isKhmer ? "ចំនួនទឹកប្រាក់ (AI នឹងបំពេញស្វ័យប្រវត្តិ)" : "Amount (AI will auto-fill if empty)"}
                   value={quickAmount}
                   onChange={(e) => setQuickAmount(e.target.value)}
-                  className="block w-full pl-10 pr-4 py-4 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white text-[16px] font-bold placeholder-[#9ca3af] dark:placeholder-[#7d8590] focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#8b5cf6] dark:focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6] outline-none transition-all min-h-[60px]"
+                  className="block w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white text-[16px] font-extrabold placeholder-[#9ca3af] focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6] outline-none transition-all min-h-[60px] shadow-sm"
                 />
               </div>
 
@@ -630,15 +636,15 @@ export default function PremiumSalesPage() {
                 <button
                   type="button"
                   onClick={() => setIsQuickLogModalOpen(false)}
-                  className="flex-1 bg-[#f0f2f5] dark:bg-white/5 hover:bg-[#e8eaed] dark:hover:bg-white/10 text-[#374151] dark:text-[#e6edf3] font-bold text-[15px] py-4 rounded-[12px] transition-all min-h-[56px] border-0 cursor-pointer"
+                  className="flex-1 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-[#374151] dark:text-[#e6edf3] font-bold text-[15px] py-4 rounded-[12px] transition-all min-h-[56px] border-0 cursor-pointer shadow-sm"
                 >
-                  Cancel
+                  {t("common.cancel") || "Cancel"}
                 </button>
                 <button
                   type="submit"
-                  className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold text-[15px] py-4 rounded-[12px] shadow-md transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer"
+                  className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-extrabold text-[15px] py-4 rounded-[12px] shadow-md transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer hover:scale-[1.02]"
                 >
-                  <Sparkles className="w-5 h-5" /> Log via AI
+                  <Sparkles className="w-5 h-5" /> {isKhmer ? "កត់ត្រាតាម AI" : "Log via AI"}
                 </button>
               </div>
             </form>
@@ -656,7 +662,7 @@ export default function PremiumSalesPage() {
         </button>
       )}
       {isChatOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[520px] bg-white dark:bg-[#0d1117] rounded-[20px] shadow-[0_24px_64px_rgba(0,0,0,0.2)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)] border border-[#e8eaed] dark:border-white/10 flex flex-col overflow-hidden transition-colors">
+        <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[520px] bg-white dark:bg-[#0d1117] rounded-[20px] shadow-2xl border border-[#e8eaed] dark:border-white/10 flex flex-col overflow-hidden transition-all slide-up">
           <div className="px-5 py-4 bg-[#0d1117] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-full flex items-center justify-center">
@@ -664,10 +670,10 @@ export default function PremiumSalesPage() {
               </div>
               <div>
                 <p className="font-bold text-[13.5px] text-[#e6edf3]">
-                  Gemini Sales Assistant
+                  {isKhmer ? "ជំនួយការលក់ Gemini" : "Gemini Sales Assistant"}
                 </p>
-                <p className="text-[11px] text-[#4d5562]">
-                  Online · Ready to predict
+                <p className="text-[11px] font-medium text-[#4d5562]">
+                  {isKhmer ? "កំពុងអនឡាញ · ត្រៀមខ្លួនព្យាករណ៍" : "Online · Ready to predict"}
                 </p>
               </div>
             </div>
@@ -679,25 +685,21 @@ export default function PremiumSalesPage() {
             </button>
           </div>
           <div
-            className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-[#f7f8fa] dark:bg-[#161B22] transition-colors"
+            className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50 dark:bg-[#161B22] transition-colors"
             style={{ minHeight: "260px" }}
           >
             <div className="flex justify-start">
-              <div className="max-w-[85%] px-4 py-3 bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 text-[#374151] dark:text-[#e6edf3] rounded-[14px] rounded-bl-[4px] shadow-sm text-[13px] leading-relaxed transition-colors">
-                Hi! I notice sales for Iced Coffee dropped 10% today — it's
-                raining. Do you want me to pause the automated restock order for
-                ice tomorrow?
+              <div className="max-w-[85%] px-4 py-3 bg-white dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 text-[#374151] dark:text-[#e6edf3] rounded-[14px] rounded-bl-[4px] shadow-sm text-[13px] font-medium leading-relaxed">
+                {isKhmer 
+                  ? "សួស្តី! ខ្ញុំកត់សម្គាល់ឃើញថាការលក់កាហ្វេទឹកកកបានធ្លាក់ចុះ ១០% នៅថ្ងៃនេះ - ដោយសារមានភ្លៀង។ តើអ្នកចង់ឱ្យខ្ញុំផ្អាកការបញ្ជាទិញទឹកកកស្វ័យប្រវត្តិនាថ្ងៃស្អែកដែរឬទេ?"
+                  : "Hi! I notice sales for Iced Coffee dropped 10% today — it's raining. Do you want me to pause the automated restock order for ice tomorrow?"}
               </div>
             </div>
             <div className="flex justify-end">
-              <div className="max-w-[85%] px-4 py-3 bg-[#0d1117] dark:bg-gradient-to-r dark:from-[#8b5cf6] dark:to-[#3ecf8e] text-[#e6edf3] dark:text-white rounded-[14px] rounded-br-[4px] text-[13px] leading-relaxed transition-colors">
-                Yes, pause it and increase Hot Chocolate cups instead.
-              </div>
-            </div>
-            <div className="flex justify-start">
-              <div className="max-w-[85%] px-4 py-3 bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 text-[#374151] dark:text-[#e6edf3] rounded-[14px] rounded-bl-[4px] shadow-sm text-[13px] leading-relaxed transition-colors">
-                Done! Inventory logic updated. Re-routed $15 from ice budget to
-                hot cups. Forecast says we'll clear that stock by 8 PM tomorrow.
+              <div className="max-w-[85%] px-4 py-3 bg-slate-900 dark:bg-gradient-to-r dark:from-[#8b5cf6] dark:to-[#3ecf8e] text-white rounded-[14px] rounded-br-[4px] text-[13px] font-bold leading-relaxed shadow-sm">
+                {isKhmer 
+                  ? "បាទ ផ្អាកវា ហើយបង្កើនចំនួនកែវសូកូឡាក្តៅជំនួសវិញ។"
+                  : "Yes, pause it and increase Hot Chocolate cups instead."}
               </div>
             </div>
           </div>
@@ -705,12 +707,12 @@ export default function PremiumSalesPage() {
             <div className="flex items-center gap-2">
               <input
                 type="text"
-                placeholder="Message your business assistant..."
+                placeholder={isKhmer ? "ផ្ញើសារទៅកាន់ជំនួយការអាជីវកម្មរបស់អ្នក..." : "Message your business assistant..."}
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
-                className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#3ecf8e] dark:focus:border-[#3ecf8e] transition-colors"
+                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/10 rounded-[10px] text-[13px] font-medium outline-none text-[#111827] dark:text-white focus:border-[#3ecf8e] shadow-sm"
               />
-              <button className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] text-white rounded-[10px] border-0 cursor-pointer hover:opacity-90">
+              <button className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] text-white rounded-[10px] border-0 cursor-pointer hover:opacity-90 shadow-sm transition-transform hover:scale-105">
                 <Send size={15} />
               </button>
             </div>

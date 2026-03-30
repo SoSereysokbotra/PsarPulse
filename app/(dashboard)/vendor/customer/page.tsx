@@ -11,17 +11,19 @@ import {
   Plus,
   Minus,
   Zap,
-  MoreVertical,
   Pencil,
   Trash2,
   X,
   CheckCircle2,
   AlertCircle,
   Clock,
+  Package,
 } from "lucide-react";
+import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useUser } from "@/components/providers/UserProvider";
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
@@ -30,6 +32,7 @@ import { ConfirmModal } from "@/components/ConfirmModal";
 export default function CustomersPage() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
+  const { vendor } = useUser();
   const isKhmer = language === "km";
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -40,6 +43,7 @@ export default function CustomersPage() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [customCount, setCustomCount] = useState(1);
+  const [qExpAmount, setQExpAmount] = useState("");
 
   // Data state
   const [customers, setCustomers] = useState<any[]>([]);
@@ -53,6 +57,7 @@ export default function CustomersPage() {
   const [fName, setFName] = useState("");
   const [fPhone, setFPhone] = useState("");
   const [fEmail, setFEmail] = useState("");
+  const [fSpent, setFSpent] = useState("0");
   const [saving, setSaving] = useState(false);
 
   // Delete State
@@ -101,9 +106,13 @@ export default function CustomersPage() {
     fetchTraffic();
   }, []);
 
-  // Click-away
+  // Click-away for action menus
   useEffect(() => {
-    const handleClick = () => setActiveMenuId(null);
+    const handleClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest(".action-menu-container")) {
+        setActiveMenuId(null);
+      }
+    };
     window.addEventListener("click", handleClick);
     return () => window.removeEventListener("click", handleClick);
   }, []);
@@ -157,10 +166,32 @@ export default function CustomersPage() {
           },
           ...prev,
         ]);
-        showToast("Traffic logged");
+        showToast(t("dashboard.status.logged"));
       }
     } catch (e) {
       showToast("Failed to log traffic", "error");
+    }
+  };
+
+  const handleLogQuickExpense = async (amt?: number) => {
+    if (typeof amt !== "number" && (!qExpAmount || isNaN(Number(qExpAmount)))) return;
+    try {
+      const res = await fetch("/api/vendor/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: typeof amt === "number" ? amt : parseFloat(qExpAmount),
+          category: "Others",
+          description: "Quick log from dashboard",
+          expenseDate: new Date().toISOString(),
+        }),
+      });
+      if (res.ok) {
+        showToast(t("dashboard.status.logged"));
+        setQExpAmount("");
+      }
+    } catch (e) {
+      showToast("Failed to log expense", "error");
     }
   };
 
@@ -171,6 +202,7 @@ export default function CustomersPage() {
       name: formData.get("name"),
       phone: formData.get("phone"),
       email: formData.get("email"),
+      totalSpent: parseFloat(formData.get("totalSpent") as string || "0"),
     };
     try {
       const res = await fetch("/api/vendor/customers", {
@@ -181,7 +213,7 @@ export default function CustomersPage() {
       const result = await res.json();
       if (result.success) {
         setCustomers(p => [result.data, ...p]);
-        showToast("Customer added to directory");
+        showToast(t("dashboard.status.logged"));
         (e.target as HTMLFormElement).reset();
       }
     } catch (err) {
@@ -194,6 +226,7 @@ export default function CustomersPage() {
     setFName(c.name);
     setFPhone(c.phone || "");
     setFEmail(c.email || "");
+    setFSpent(c.totalSpent?.toString() || "0");
     setModalOpen(true);
     setActiveMenuId(null);
   };
@@ -205,12 +238,17 @@ export default function CustomersPage() {
       const res = await fetch(`/api/vendor/customers/${editTarget.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: fName, phone: fPhone, email: fEmail }),
+        body: JSON.stringify({ 
+          name: fName, 
+          phone: fPhone, 
+          email: fEmail,
+          totalSpent: parseFloat(fSpent)
+        }),
       });
       const result = await res.json();
       if (result.success) {
         setCustomers(p => p.map(x => x.id === editTarget.id ? result.data : x));
-        showToast("Customer updated");
+        showToast(t("dashboard.status.logged"));
         setModalOpen(false);
       }
     } catch (e) {
@@ -227,7 +265,7 @@ export default function CustomersPage() {
       const result = await res.json();
       if (result.success) {
         setCustomers(p => p.filter(x => x.id !== deleteTarget.id));
-        showToast("Customer deleted");
+        showToast(t("dashboard.status.logged"));
       }
     } catch (e) {
       showToast("Error deleting", "error");
@@ -254,66 +292,93 @@ export default function CustomersPage() {
         ))}
       </div>
 
-      <VendorSidebar plan="free" currentPath="/vendor/customer" navLinks={[
+      <VendorSidebar plan={(vendor?.plan?.name as any) || "free"} currentPath="/vendor/customer" navLinks={[
         { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
         { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/sales" },
         { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/expenses" },
         { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/customer" },
+        { icon: Package, title: "Inventory", khmerTitle: "ស្តុក", href: "/vendor/inventory" },
       ]} />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <VendorTopbar title="Customers" isSidebarCollapsed={isCollapsed} setIsSidebarCollapsed={setIsCollapsed} setIsMobileSidebarOpen={setIsMobileOpen} />
+        <VendorTopbar title={t("dashboard.customers")} isSidebarCollapsed={isCollapsed} setIsSidebarCollapsed={setIsCollapsed} setIsMobileSidebarOpen={setIsMobileOpen} />
 
         <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px] space-y-6">
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <div>
-              <h1 className="text-[26px] font-bold">My Customers</h1>
-              <p className="text-sm text-slate-500 mt-0.5">Tracker and Log your daily foot traffic</p>
+              <h1 className="text-[26px] font-bold">{t("dashboard.titles.myCustomers")}</h1>
+              <p className="text-sm text-slate-500 mt-0.5">{t("dashboard.titles.customersSubtitle")}</p>
             </div>
             <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-64 focus-within:border-[#29B28D]/30 focus-within:shadow-[0_0_0_4px_rgba(41,178,141,0.03)] group">
               <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#29B28D]" />
-              <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
+              <input type="text" placeholder={t("dashboard.common.search")} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <VendorSummaryCard variant="dark" title="Today Customer" khmerTitle="អតិថិជនថ្ងៃនេះ" value={summaryData.todayCount} subtext={`${summaryData.todayLogs} logs`} />
-            <VendorSummaryCard title="Avg.Spend" khmerTitle="មធ្យមចាយ" value={summaryData.avgSpend} variant={isDark ? "dark" : "light"} />
-            <VendorSummaryCard variant="green" title="Weekly Customer" khmerTitle="អតិថិជនប្រចាំសប្តាហ៍" value={summaryData.weeklyCount} subtext={summaryData.weeklyChange} />
-            <VendorSummaryCard title="Avg.LTV" khmerTitle="តម្លៃអតិថិជនមធ្យម" value={summaryData.avgLTV} variant={isDark ? "dark" : "light"} />
+            <VendorSummaryCard variant="dark" title={t("dashboard.metrics.todayCustomer")} khmerTitle={t("dashboard.metrics.todayCustomer")} value={summaryData.todayCount} subtext={`${summaryData.todayLogs} logs`} />
+            <VendorSummaryCard title={t("dashboard.metrics.avgSpend")} khmerTitle={t("dashboard.metrics.avgSpend")} value={summaryData.avgSpend} variant={isDark ? "dark" : "light"} />
+            <VendorSummaryCard variant="green" title={t("dashboard.metrics.weeklyCustomer")} khmerTitle={t("dashboard.metrics.weeklyCustomer")} value={summaryData.weeklyCount} subtext={summaryData.weeklyChange} />
+            <VendorSummaryCard title={t("dashboard.metrics.avgLtv")} khmerTitle={t("dashboard.metrics.avgLtv")} value={summaryData.avgLTV} variant={isDark ? "dark" : "light"} />
           </div>
 
           {/* Log Traffic Bar */}
           <div className="bg-[#0d1117] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 border border-[#3ecf8e]/10">
-            <div><p className="font-bold text-white text-[15px]">Log Customers</p><p className="text-[11px] text-slate-400 mt-0.5">កត់ត្រាអតិថិជន</p></div>
+            <div><p className="font-bold text-white text-[15px]">{t("dashboard.actions.logTraffic")}</p><p className="text-[11px] text-slate-400 mt-0.5">{t("dashboard.actions.logTrafficSub")}</p></div>
             <div className="flex items-center gap-2 flex-wrap">
               {[1, 5, 10].map(n => <button key={n} onClick={() => handleLogTraffic(n)} className="px-4 py-2 bg-[#1a1a1a] text-[#3ecf8e] text-sm font-bold rounded-xl border border-[#3ecf8e]/20 min-h-11 hover:bg-black transition-all">+{n}</button>)}
               <div className="flex items-center bg-white/10 rounded-xl px-2 py-1"><button onClick={() => setCustomCount(c => Math.max(1, c - 1))} className="text-white"><Minus size={14} /></button><span className="text-white font-bold mx-3">{customCount}</span><button onClick={() => setCustomCount(c => c + 1)} className="text-white"><Plus size={14} /></button></div>
-              <button onClick={() => handleLogTraffic(customCount)} className="px-5 py-2 bg-[#3ecf8e] text-[#0d1117] font-bold rounded-xl text-sm min-h-11 hover:bg-[#4dd49a] transition-colors flex items-center gap-1.5"><Plus size={14} /> Log {customCount}</button>
+              <button onClick={() => handleLogTraffic(customCount)} className="px-5 py-2 bg-[#3ecf8e] text-[#0d1117] font-bold rounded-xl text-sm min-h-11 hover:bg-[#4dd49a] transition-colors flex items-center gap-1.5"><Plus size={14} /> {t("dashboard.actions.log")} {customCount}</button>
+            </div>
+          </div>
+
+          {/* Quick Expense Bar */}
+          <div className="bg-[#161B22] rounded-2xl p-5 flex flex-col lg:flex-row items-center justify-between gap-4 border border-red-500/10">
+            <div className="flex items-center gap-3">
+              <div className="bg-red-500/10 p-2 rounded-lg"><Receipt className="w-5 h-5 text-red-400" /></div>
+              <div><p className="font-bold text-white text-[15px]">{t("dashboard.actions.quickLogExpense")}</p><p className="text-[11px] text-slate-400 mt-0.5">{t("dashboard.actions.quickLogSub")}</p></div>
+            </div>
+            <div className="flex flex-1 items-center gap-2 w-full lg:max-w-2xl justify-end">
+               <div className="flex items-center gap-2 mr-2">
+                 {[1, 5, 10].map(n => (
+                   <button key={n} onClick={() => handleLogQuickExpense(n)} className="px-4 py-2 bg-red-500/5 text-red-400 text-sm font-bold rounded-xl border border-red-500/10 min-h-11 hover:bg-red-500/10 transition-all">
+                     ${n}
+                   </button>
+                 ))}
+               </div>
+               <div className="relative w-32">
+                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+                 <input type="number" placeholder="0.00" value={qExpAmount} onChange={e => setQExpAmount(e.target.value)} className="w-full bg-[#0d1117] border border-white/10 rounded-xl pl-6 pr-3 py-2.5 text-sm text-white outline-none focus:border-red-500/30 transition-all" />
+               </div>
+               <button onClick={() => handleLogQuickExpense()} disabled={!qExpAmount} className="bg-red-500/20 hover:bg-red-500/30 text-red-400 font-bold px-5 py-2.5 rounded-xl text-sm transition-all border border-red-500/20 disabled:opacity-50">{t("dashboard.actions.log")}</button>
             </div>
           </div>
 
           {/* Inline Form (Restored) */}
-          <div className={`${isDark ? "bg-dark-surface border-white/5" : "bg-white border-slate-200"} border rounded-2xl p-6 shadow-sm`}>
+          <div className={`${isDark ? "bg-[#0d1117] border-white/10" : "bg-white border-slate-200"} border rounded-2xl p-6 shadow-sm`}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold">Add Customer to Directory</h3>
+              <h3 className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{t("dashboard.modals.addCustomerTitle")}</h3>
               <Users className="w-5 h-5 text-[#29B28D]" />
             </div>
-            <form ref={addFormRef} onSubmit={handleCreateCustomer} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            <form ref={addFormRef} onSubmit={handleCreateCustomer} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Name <span className="text-red-500">*</span></label>
-                <input name="name" required className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#29B28D]" placeholder="John Doe" />
+                <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Name *</label>
+                <input name="name" required className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} placeholder="John Doe" />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Phone (Optional)</label>
-                <input name="phone" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#29B28D]" placeholder="012 345 678" />
+                <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Phone</label>
+                <input name="phone" className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} placeholder="012 345 678" />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email (Optional)</label>
-                <input name="email" type="email" className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#29B28D]" placeholder="john@example.com" />
+                <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Email</label>
+                <input name="email" type="email" className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} placeholder="john@example.com" />
               </div>
-              <button type="submit" className="bg-[#0d1117] text-[#3ecf8e] font-bold py-2.5 rounded-xl text-sm border border-[#3ecf8e]/20 hover:bg-black transition-all">
-                Add Customer
+              <div>
+                <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Spent ($)</label>
+                <input name="totalSpent" type="number" step="0.01" defaultValue="0.00" className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
+              </div>
+              <button type="submit" className="bg-[#3ecf8e] text-[#0d1117] font-bold py-2.5 rounded-xl text-sm border border-[#3ecf8e]/20 hover:bg-[#4dd49a] transition-all shadow-lg">
+                {t("dashboard.actions.addCustomer")}
               </button>
             </form>
           </div>
@@ -321,35 +386,40 @@ export default function CustomersPage() {
           {/* Table */}
           <div className={`border rounded-2xl overflow-hidden shadow-sm ${isDark ? "bg-dark-surface border-white/5" : "bg-white border-slate-200"}`}>
             <div className="px-6 py-4 border-b border-white/5">
-              <h3 className="font-bold text-sm">Customer Directory</h3>
+              <h3 className="font-bold text-sm">{t("dashboard.titles.customerDirectory")}</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="text-[10.5px] uppercase font-bold text-slate-500 border-b border-white/5">
-                  <tr><th className="px-6 py-3">Customer</th><th className="px-6 py-3">Phone</th><th className="px-6 py-3">Status</th><th className="px-6 py-3 text-right">Total Spent</th><th className="px-6 py-3 text-center">Actions</th></tr>
+                  <tr><th className="px-6 py-3">{t("dashboard.table.customer")}</th><th className="px-6 py-3">{t("dashboard.table.phone")}</th><th className="px-6 py-3">{t("dashboard.table.spent")}</th><th className="px-6 py-3">{t("dashboard.table.joined")}</th><th className="px-6 py-3 text-center">{t("dashboard.table.actions")}</th></tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-[13.5px]">
-                  {filteredItems.map(c => (
-                    <tr key={c.id} className="group hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4"><div className="font-bold">{c.name}</div><div className="text-[11px] text-slate-400">{c.email || "No email"}</div></td>
-                      <td className="px-6 py-4 text-slate-500">{c.phone || "—"}</td>
-                      <td className="px-6 py-4"><span className="px-2.5 py-[3px] rounded-full bg-slate-100 text-slate-600 text-[11px] font-bold">{c.points} Points</span></td>
-                      <td className="px-6 py-4 text-right font-bold text-[#29B28D]">${parseFloat(c.totalSpent).toFixed(2)}</td>
-                      <td className="px-6 py-4 text-center relative">
-                        <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === c.id ? null : c.id); }} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
-                          <MoreVertical size={16} className="text-slate-400" />
+                  {filteredItems.map(cust => (
+                    <tr key={cust.id} className="group hover:bg-white/5 transition-colors">
+                      <td className="px-6 py-4"><div className="font-bold">{cust.name}</div><div className="text-[11px] text-slate-400">{cust.email || (isKhmer ? "គ្មានអ៊ីមែល" : "No email")}</div></td>
+                      <td className="px-6 py-4 text-slate-500">{cust.phone || "—"}</td>
+                      <td className="px-6 py-4 font-bold text-[#29B28D] text-[15px]">${parseFloat(cust.totalSpent).toFixed(2)}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1.5 text-slate-500">
+                          <Clock size={12} className="opacity-50" />
+                          <span className="text-[12px]">{new Date(cust.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center relative action-menu-container">
+                        <button onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === cust.id ? null : cust.id); }} className="p-1.5 rounded-lg hover:bg-white/10 transition-colors">
+                          <EllipsisVertical size={16} className="text-slate-400" />
                         </button>
-                        {activeMenuId === c.id && (
+                        {activeMenuId === cust.id && (
                           <div className={`absolute right-[80%] top-1/2 -translate-y-1/2 mr-2 z-20 w-[120px] rounded-xl shadow-2xl border overflow-hidden ${isDark ? "bg-dark-surface border-white/10" : "bg-white border-slate-200"}`}>
-                            <button onClick={() => openEdit(c)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> Edit</button>
-                            <button onClick={() => { setDeleteTarget(c); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> Delete</button>
+                            <button onClick={() => openEdit(cust)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> {t("dashboard.common.edit")}</button>
+                            <button onClick={() => { setDeleteTarget(cust); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> {t("dashboard.common.delete")}</button>
                           </div>
                         )}
                       </td>
                     </tr>
                   ))}
                   {!filteredItems.length && (
-                    <tr><td colSpan={5} className="px-6 py-10 text-center text-slate-400 italic">No customers found</td></tr>
+                    <tr><td colSpan={5} className="px-6 py-10 text-center text-slate-400 italic">{isKhmer ? "រកមិនឃើញអតិថិជនទេ" : "No customers found"}</td></tr>
                   )}
                 </tbody>
               </table>
@@ -358,23 +428,31 @@ export default function CustomersPage() {
         </div>
       </main>
 
-      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} title="Delete Customer?" description="Permanently remove customer from directory." previewText={deleteTarget?.name} />
+      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete} title={t("dashboard.modals.deleteCustomerTitle")} description={t("dashboard.modals.deleteCustomerDesc")} previewText={deleteTarget?.name} />
 
-      {/* Edit Modal Only */}
       {modalOpen && (
         <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-[20px] shadow-2xl overflow-hidden">
+          <div className={`w-full max-w-md rounded-[20px] shadow-2xl overflow-hidden ${isDark ? "bg-dark-surface border border-white/5" : "bg-white"}`}>
             <div className="bg-[#0d1117] px-7 py-5 flex items-center justify-between text-white">
-              <div><div className="text-[18px] font-bold">Edit Customer</div><div className="text-[12px] text-slate-500">កែប្រែព័ត៌មានអតិថិជន</div></div>
+              <div><div className="text-[18px] font-bold">{t("dashboard.modals.editCustomerTitle")}</div></div>
               <button onClick={() => setModalOpen(false)}><X size={18} /></button>
             </div>
             <div className="p-7 space-y-5">
-              <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-2 block">Name *</label><input value={fName} onChange={e => setFName(e.target.value)} className="w-full px-4 py-3 rounded-xl border bg-slate-50 focus:border-[#29B28D] outline-none" /></div>
-              <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-2 block">Phone (Optional)</label><input value={fPhone} onChange={e => setFPhone(e.target.value)} className="w-full px-4 py-3 rounded-xl border bg-slate-50 focus:border-[#29B28D] outline-none" /></div>
-              <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-2 block">Email (Optional)</label><input type="email" value={fEmail} onChange={e => setFEmail(e.target.value)} className="w-full px-4 py-3 rounded-xl border bg-slate-50 focus:border-[#29B28D] outline-none" /></div>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-2 block">Name *</label>
+                <input value={fName} onChange={e => setFName(e.target.value)} className={`w-full px-4 py-3 rounded-xl border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
+              </div>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-2 block">Phone (Optional)</label>
+                <input value={fPhone} onChange={e => setFPhone(e.target.value)} className={`w-full px-4 py-3 rounded-xl border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
+              </div>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-2 block">Email (Optional)</label>
+                <input type="email" value={fEmail} onChange={e => setFEmail(e.target.value)} className={`w-full px-4 py-3 rounded-xl border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} placeholder="email@example.com" />
+              </div>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase mb-2 block">Total Spent ($)</label>
+                <input type="number" step="0.01" value={fSpent} onChange={e => setFSpent(e.target.value)} className={`w-full px-4 py-3 rounded-xl border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
+              </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={() => setModalOpen(false)} className="flex-1 py-4 rounded-xl bg-slate-100 text-slate-500 font-bold">Cancel</button>
-                <button onClick={handleSaveEdit} disabled={!fName || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black transition-all">{saving ? "Saving..." : "Save Changes"}</button>
+                <button onClick={() => setModalOpen(false)} className={`flex-1 py-4 rounded-xl font-bold transition-all ${isDark ? "bg-white/5 text-slate-400 hover:bg-white/10" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>{t("dashboard.common.cancel")}</button>
+                <button onClick={handleSaveEdit} disabled={!fName || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black transition-all">{saving ? t("inventory.modal.saving") : t("dashboard.common.save")}</button>
               </div>
             </div>
           </div>

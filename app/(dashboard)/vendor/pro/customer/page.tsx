@@ -32,6 +32,7 @@ import {
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const PRO_NAV = [
   {
@@ -75,9 +76,11 @@ const PRO_NAV = [
 
 export default function ProCustomerPage() {
   const { resolvedTheme } = useTheme();
+  const { t, language } = useLanguage();
   const isDark = resolvedTheme === "dark";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [customCount, setCustomCount] = useState(1);
+  const [qExpAmount, setQExpAmount] = useState("");
   const [isCRMModalOpen, setIsCRMModalOpen] = useState(false);
 
   // Pro-level CRM form states
@@ -105,12 +108,12 @@ export default function ProCustomerPage() {
     fetchCustomers();
   }, []);
 
-  const totalLogs = logs.reduce((sum, log) => sum + (parseInt(log.count) || 1), 0);
+  const totalLogsCount = logs.reduce((sum, logEntry) => sum + (parseInt(logEntry.count) || 1), 0);
   const summaryData = {
-    todayCount: String(totalLogs),
+    todayCount: String(totalLogsCount),
     todayLogs: String(logs.length),
     avgSpend: "$2.96",
-    weeklyCount: String(totalLogs),
+    weeklyCount: String(totalLogsCount),
     weeklyChange: "+12%",
     peakTime: "12:00 PM",
     weeklyCustomers: "85",
@@ -146,16 +149,37 @@ export default function ProCustomerPage() {
   ];
 
   const handleLog = async (amount: number) => {
+    const status = amount >= 10 ? "Peak Traffic" : "Regular";
     try {
-      const res = await fetch("/api/vendor/customers", {
+      const res = await fetch("/api/vendor/traffic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ count: amount }),
+        body: JSON.stringify({ count: amount, status }),
       });
       if (res.ok) {
-        const json = await res.json();
-        setLogs(prev => [json.data, ...prev]);
-        setCustomCount(1);
+        window.location.reload();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleLogQuickExpense = async (amt?: number) => {
+    if (typeof amt !== "number" && (!qExpAmount || isNaN(Number(qExpAmount)))) return;
+    try {
+      const res = await fetch("/api/vendor/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: typeof amt === "number" ? amt : parseFloat(qExpAmount),
+          category: "Others",
+          description: "Quick log from pro dashboard",
+          expenseDate: new Date().toISOString(),
+        }),
+      });
+      if (res.ok) {
+        setQExpAmount("");
+        window.location.reload();
       }
     } catch (e) {
       console.error(e);
@@ -198,21 +222,21 @@ export default function ProCustomerPage() {
       plan="pro"
       navLinks={PRO_NAV}
       currentPath="/vendor/pro/customer"
-      title="Customer & CRM"
+      title={t("dashboard.customerSection.title")}
       planBadge={{ label: "PRO", icon: Crown }}
       rightActions={
         <>
           <button className="hidden sm:flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
             <Zap className="w-3.5 h-3.5 text-[#29B28D]" />
-            Quick sale
+            {t("dashboard.actions.quickSale")}
           </button>
           <button className="hidden sm:flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
             <FileText className="w-3.5 h-3.5" />
-            Export PDF
+            {t("dashboard.actions.exportPdf")}
           </button>
           <button className="hidden sm:flex items-center gap-1.5 border border-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117] text-slate-700 dark:text-[#c9d1d9] text-sm font-medium px-4 py-2 rounded-xl transition-colors">
             <FileSpreadsheet className="w-3.5 h-3.5" />
-            Export Excel
+            {t("dashboard.actions.exportExcel")}
           </button>
         </>
       }
@@ -221,11 +245,11 @@ export default function ProCustomerPage() {
         {/* ── Page header ── */}
         <div className="pt-1 pb-2">
           <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
-            My Customers
+            {t("dashboard.customerSection.title")}
           </h2>
           <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-            Track and log your daily foot traffic ·{" "}
-            <span className="text-[#9ca3af]">តាមដាន និងកត់ត្រាអតិថិជន</span>
+            {t("dashboard.customerSection.subtitle")} ·{" "}
+            <span className="text-[#9ca3af] font-khmer">តាមដាន និងកត់ត្រាអតិថិជន</span>
           </p>
         </div>
 
@@ -249,10 +273,10 @@ export default function ProCustomerPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-[19px] text-slate-900 dark:text-white">
-                    Add Customer Profile
+                    {t("dashboard.customerSection.crmTitle")}
                   </h3>
                   <p className="text-[12px] text-slate-500 dark:text-[#7d8590]">
-                    Save details for loyalty tracking.
+                    {t("dashboard.customerSection.crmSubtitle")}
                   </p>
                 </div>
               </div>
@@ -260,7 +284,7 @@ export default function ProCustomerPage() {
               <form onSubmit={handleCRMSubmit} className="space-y-4">
                 <div>
                   <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
-                    Name (ឈ្មោះ)
+                    {t("dashboard.customerSection.crmName")}
                   </label>
                   <input
                     type="text"
@@ -273,7 +297,7 @@ export default function ProCustomerPage() {
                 </div>
                 <div>
                   <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
-                    Phone Number (ទូរស័ព្ទ)
+                    {t("dashboard.customerSection.crmPhone")}
                   </label>
                   <input
                     type="tel"
@@ -285,7 +309,7 @@ export default function ProCustomerPage() {
                 </div>
                 <div>
                   <label className="block text-[12px] font-bold text-slate-500 dark:text-[#7d8590] mb-1.5 ml-1">
-                    Notes / Preferences
+                    {t("dashboard.customerSection.crmNotes")}
                   </label>
                   <input
                     type="text"
@@ -300,7 +324,7 @@ export default function ProCustomerPage() {
                   disabled={crmSubmitting || !crmName.trim()}
                   className="w-full bg-psar-primary hover:opacity-90 text-white font-bold py-3.5 rounded-xl transition-colors mt-2 disabled:opacity-60"
                 >
-                  {crmSubmitting ? "Saving…" : crmSuccess ? "✓ Saved!" : "Save Customer Info"}
+                  {crmSubmitting ? t("dashboard.customerSection.crmSaving") : crmSuccess ? `✓ ${t("dashboard.customerSection.crmSaved")}` : t("dashboard.customerSection.crmSave")}
                 </button>
               </form>
             </div>
@@ -308,17 +332,16 @@ export default function ProCustomerPage() {
         )}
 
         {/* 5 Summary Cards */}
-        {/* 5 Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <VendorSummaryCard
             variant="dark"
-            title="Today Customer"
+            title={t("dashboard.metrics.todayCustomer")}
             khmerTitle="អតិថិជនថ្ងៃនេះ"
             value={summaryData.todayCount}
             subtext={`${summaryData.todayLogs} logs`}
           />
           <VendorSummaryCard
-            title="Avg.Spend"
+            title={t("dashboard.metrics.avgSpend")}
             khmerTitle="កាន់ឈ្នួលការចាយ"
             value={summaryData.avgSpend}
             subtext="per customer"
@@ -326,20 +349,20 @@ export default function ProCustomerPage() {
           />
           <VendorSummaryCard
             variant="green"
-            title="Weekly Customer"
+            title={t("dashboard.metrics.weeklyCustomer")}
             khmerTitle="អតិថិជនច្រើនជាងក្នុងរូប"
             value={summaryData.weeklyCount}
             subtext={summaryData.weeklyChange}
           />
           <VendorSummaryCard
-            title="Peak Time"
+            title={t("dashboard.metrics.peakTime")}
             khmerTitle="ណែនាំការប្រា"
             value={summaryData.peakTime}
             subtext={summaryData.weeklyCustomers}
             variant={isDark ? "dark" : "light"}
           />
           <VendorSummaryCard
-            title="Avg.LTV"
+            title={t("dashboard.metrics.avgLtv")}
             khmerTitle="ភ្លេចអតិថិជន"
             value={summaryData.avgLTV}
             subtext="Per Customer"
@@ -350,9 +373,9 @@ export default function ProCustomerPage() {
         {/* Log Customers Bar */}
         <div className="bg-slate-900 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <p className="font-bold text-white text-[15px]">Log Customers</p>
+            <p className="font-bold text-white text-[15px]">{t("dashboard.actions.logTraffic")}</p>
             <p className="text-[11px] font-khmer text-slate-400 mt-0.5">
-              កត់ត្រាអតិថិជន
+              {t("dashboard.actions.logTrafficSub")}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -382,14 +405,38 @@ export default function ProCustomerPage() {
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-
             <button
               onClick={() => handleLog(customCount)}
               className="px-5 py-2 bg-[#29B28D] hover:bg-[#239979] text-white font-bold rounded-xl transition-colors text-sm flex items-center gap-1.5 min-h-11"
             >
               <Plus className="w-4 h-4" />
-              Log {customCount}
+              {t("dashboard.actions.log")} {customCount}
             </button>
+          </div>
+        </div>
+
+        {/* Quick Expense Bar (Pro) */}
+        <div className="bg-white dark:bg-[#161B22] border border-slate-200 dark:border-white/5 rounded-2xl p-5 flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm mb-6">
+          <div className="flex items-center gap-3">
+            <div className="bg-red-500/10 p-2 rounded-lg"><Receipt className="w-5 h-5 text-red-500" /></div>
+            <div>
+              <p className="font-bold text-slate-900 dark:text-white text-[15px]">{t("dashboard.actions.quickLogExpense")}</p>
+              <p className="text-[11px] text-slate-500 dark:text-[#7d8590] mt-0.5">{t("dashboard.actions.quickLogSub")}</p>
+            </div>
+          </div>
+          <div className="flex flex-1 items-center gap-2 w-full lg:max-w-xl justify-end">
+             <div className="flex items-center gap-2 mr-2">
+               {[1, 5, 10].map(n => (
+                 <button key={n} onClick={() => handleLogQuickExpense(n)} className="px-4 py-2 bg-red-500/5 text-red-500 text-sm font-bold rounded-xl border border-red-500/10 min-h-11 hover:bg-red-500/10 transition-all">
+                   ${n}
+                 </button>
+               ))}
+             </div>
+             <div className="relative w-32">
+               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+               <input type="number" placeholder="0.00" value={qExpAmount} onChange={e => setQExpAmount(e.target.value)} className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl pl-6 pr-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-red-500 transition-all" />
+             </div>
+             <button onClick={() => handleLogQuickExpense()} disabled={!qExpAmount} className="bg-[#0d1117] dark:bg-red-500/20 hover:bg-black dark:hover:bg-red-500/30 text-white dark:text-red-400 font-bold px-5 py-2.5 rounded-xl text-sm transition-all border border-transparent dark:border-red-500/20 disabled:opacity-50">{t("dashboard.actions.log")}</button>
           </div>
         </div>
 
@@ -399,10 +446,10 @@ export default function ProCustomerPage() {
             <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-[17px] text-slate-900 dark:text-white">
-                  CRM Profiles
+                  {t("dashboard.customerSection.crmDatabase")}
                 </h3>
                 <p className="text-[13px] text-slate-500 dark:text-[#7d8590] mt-0.5">
-                  Known customer database
+                  {t("dashboard.customerSection.crmDatabaseSub")}
                 </p>
               </div>
               <Search className="w-4 h-4 text-slate-400" />
@@ -412,9 +459,9 @@ export default function ProCustomerPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-[#0d1117]/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 text-[11px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
-                    <th className="px-5 py-3">Customer</th>
-                    <th className="px-5 py-3">Visits</th>
-                    <th className="px-5 py-3">Status</th>
+                    <th className="px-5 py-3">{t("dashboard.customerSection.crmCustomer")}</th>
+                    <th className="px-5 py-3">{t("dashboard.customerSection.crmVisits")}</th>
+                    <th className="px-5 py-3">{t("dashboard.customerSection.crmStatus")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -456,7 +503,7 @@ export default function ProCustomerPage() {
             </div>
             <div className="p-3 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center">
               <button className="text-[13px] font-semibold text-psar-primary hover:underline">
-                View All CRM Data
+                {t("dashboard.customerSection.crmViewAll")}
               </button>
             </div>
           </div>
@@ -466,10 +513,10 @@ export default function ProCustomerPage() {
             <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-[17px] text-slate-900 dark:text-white">
-                  Foot Traffic Logs
+                  {t("dashboard.traffic.title")}
                 </h3>
                 <p className="text-[13px] text-slate-500 dark:text-[#7d8590] mt-0.5">
-                  Today&apos;s raw store visits
+                  {t("dashboard.traffic.subtitle")}
                 </p>
               </div>
               <Filter className="w-4 h-4 text-slate-400" />
@@ -479,30 +526,30 @@ export default function ProCustomerPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-[#0d1117]/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 text-[11px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
-                    <th className="px-5 py-3">Time</th>
-                    <th className="px-5 py-3">Count</th>
-                    <th className="px-5 py-3">Type</th>
+                    <th className="px-5 py-3">{t("dashboard.traffic.time")}</th>
+                    <th className="px-5 py-3">{t("dashboard.traffic.count")}</th>
+                    <th className="px-5 py-3">{t("dashboard.traffic.type")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                  {logs.map((log) => (
+                  {logs.map((logEntry) => (
                     <tr
-                      key={log.id}
+                      key={logEntry.id}
                       className="hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117]/50 dark:bg-white/5 transition-colors"
                     >
                       <td className="px-5 py-3 whitespace-nowrap">
                         <div className="flex items-center gap-2 text-[13px] font-medium text-slate-600 dark:text-[#9aa4b2]">
                           <Clock className="w-3.5 h-3.5" />
-                          {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(logEntry.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </td>
                       <td className="px-5 py-3 whitespace-nowrap">
                         <span className="text-[15px] font-bold text-slate-900 dark:text-white">
-                          +{log.count || 1}
+                          +{logEntry.count || 1}
                         </span>
                       </td>
                       <td className="px-5 py-3 whitespace-nowrap">
-                        {parseInt(log.count) >= 5 ? (
+                        {parseInt(logEntry.count) >= 5 ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-orange-100 text-orange-700 text-[11px] font-bold">
                             <Flame className="w-3 h-3" /> Peak
                           </span>
@@ -519,7 +566,7 @@ export default function ProCustomerPage() {
             </div>
             <div className="p-3 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] text-center">
               <button className="text-[13px] font-semibold text-[#29B28D] hover:underline">
-                View All Log History
+                {t("dashboard.traffic.viewHistory")}
               </button>
             </div>
           </div>

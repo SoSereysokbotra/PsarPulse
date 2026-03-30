@@ -2,10 +2,12 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Settings, ChevronRight, X, Crown, Sparkles, LogOut, User, CreditCard as BillingIcon } from "lucide-react";
 import VendorNavItem from "./VendorNavItem";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useUser } from "@/components/providers/UserProvider";
+import { authClient } from "@/lib/auth/utils/client-auth";
 
 interface NavLink {
   icon: React.ElementType;
@@ -32,27 +34,24 @@ interface VendorSidebarProps {
 
 const PLAN_CONFIG = {
   free: {
-    label: "Free Plan",
-    labelKh: "ឥតគិតថ្លៃ",
-    sub: null,
+    labelKey: "settings.freePlan",
+    subKey: null,
     icon: null,
-    cta: "Upgrade Plan ↗",
+    ctaKey: "settings.upgradePlan",
     ctaHref: "/vendor/pricing",
   },
   pro: {
-    label: "Pro Plan",
-    labelKh: "ផែនការ Pro",
-    sub: "$3/month · Unlimited Logs",
+    labelKey: "settings.proPlan",
+    subKey: "settings.proSub",
     icon: Crown,
-    cta: "Manage Plan",
+    ctaKey: "settings.managePlan",
     ctaHref: "/vendor/pro",
   },
   premium: {
-    label: "Premium Plan",
-    labelKh: "ផែនការ Premium",
-    sub: "$7/month · Unlimited AI Logs",
+    labelKey: "settings.premiumPlan",
+    subKey: "settings.premiumSub",
     icon: Sparkles,
-    cta: "Manage Plan",
+    ctaKey: "settings.managePlan",
     ctaHref: "/vendor/premium",
   },
 };
@@ -73,6 +72,7 @@ export default function VendorSidebar({
 }: VendorSidebarProps) {
   const { language, t } = useLanguage();
   const { user, loading } = useUser();
+  const router = useRouter();
   const isKhmer = language === "km";
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -85,8 +85,17 @@ export default function VendorSidebar({
     }
     return name.trim().slice(0, 2).toUpperCase();
   };
+  
+  const handleLogout = async () => {
+    try {
+      await authClient.logout();
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
-  const userName = propUserName || user?.fullName || (loading ? "..." : (isKhmer ? "អ្នកប្រើប្រាស់" : "User"));
+  const userName = propUserName || user?.fullName || (loading ? "..." : t("settings.userLabel"));
   const userInitials = propUserInitials || (user?.fullName ? getInitials(user.fullName) : (loading ? ".." : "U"));
   const userEmail = propUserEmail || user?.email || (loading ? "..." : "");
   const config = PLAN_CONFIG[plan];
@@ -166,23 +175,18 @@ export default function VendorSidebar({
               <div className="flex items-center gap-1.5 mb-1">
                 {PlanIcon && <PlanIcon size={14} className="text-[#29B28D]" />}
                 <span className="text-[13px] font-semibold text-[#e6edf3]">
-                  {config.label}
+                  {t(config.labelKey)}
                 </span>
-                {config.labelKh && (
-                  <span className="text-[11px] font-bold text-[#7d8590] ml-auto">
-                    {config.labelKh}
-                  </span>
-                )}
               </div>
-              {config.sub && (
-                <p className="text-[11px] text-[#7d8590] mb-2">{config.sub}</p>
+              {config.subKey && (
+                <p className="text-[11px] text-[#7d8590] mb-2">{t(config.subKey)}</p>
               )}
               <Link
                 href={config.ctaHref}
                 className={`block text-center text-[13px] font-bold py-2 rounded-[8px] no-underline transition-colors text-[#29B28D] bg-[rgba(41,178,141,0.12)] hover:bg-[rgba(41,178,141,0.18)] dark:text-[#3ecf8e] dark:bg-[#3ecf8e]/10 dark:hover:bg-[#3ecf8e]/20`}
               >
                 <span suppressHydrationWarning>
-                  {plan === "free" ? t("settings.subscribe") : (isKhmer ? "បានជាវ" : "Subscribed")}
+                  {plan === "free" ? t(config.ctaKey) : t("settings.subscribed")}
                 </span>
               </Link>
             </div>
@@ -233,9 +237,12 @@ export default function VendorSidebar({
                         <BillingIcon size={16} className="text-[#6b7280]" />
                         {t("settings.subscriptions")}
                       </Link>
-                      <button className="w-full flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] bg-transparent border-0 cursor-pointer hover:bg-[#f7f8fa] transition-colors text-left">
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] bg-transparent border-0 cursor-pointer hover:bg-[#f7f8fa] transition-colors text-left"
+                      >
                         <LogOut size={16} className="text-[#6b7280]" />
-                        Logout
+                        {t("settings.logout")}
                       </button>
                     </div>
                   </div>

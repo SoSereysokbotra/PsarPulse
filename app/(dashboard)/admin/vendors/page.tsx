@@ -4,7 +4,6 @@ import { useState } from "react";
 import { 
   Search, 
   Filter, 
-  MoreVertical, 
   CheckCircle2, 
   XCircle, 
   ShieldAlert,
@@ -12,6 +11,7 @@ import {
   Camera,
   Eye
 } from "lucide-react";
+import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
@@ -161,7 +161,7 @@ export default function VendorDirectoryPage() {
                         </button>
                       )}
                       <button className={`p-1 transition-colors flex items-center ${isDark ? "hover:text-white" : "hover:text-slate-900"}`}>
-                        <MoreVertical className="h-5 w-5" />
+                        <EllipsisVertical className="h-5 w-5" />
                       </button>
                     </div>
                   </td>

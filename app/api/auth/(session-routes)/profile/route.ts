@@ -43,12 +43,52 @@ export async function GET(request: NextRequest) {
         user: {
           ...safeUserData,
           fullName: (safeUserData as any).fullName || (safeUserData as any).full_name,
+          avatarUrl: (safeUserData as any).avatarUrl || (safeUserData as any).avatar_url,
         },
         vendor: vendorData 
       },
     });
   } catch (error) {
     console.error("Get profile error:", error);
+    return NextResponse.json(
+      { success: false, message: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  const token = request.cookies.get(authConfig.cookies.accessToken)?.value;
+
+  if (!token) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const payload = TokenUtil.verifyAccessToken(token);
+    if (!payload || !payload.id) {
+      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+    }
+
+    const { fullName, avatarUrl } = await request.json();
+
+    const updateData: any = {};
+    if (fullName !== undefined) updateData.fullName = fullName;
+    if (avatarUrl !== undefined) updateData.avatarUrl = avatarUrl;
+
+    const updatedUser = await UserRepository.update(payload.id, updateData);
+
+    if (!updatedUser) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Profile updated successfully",
+      data: { user: updatedUser },
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 },

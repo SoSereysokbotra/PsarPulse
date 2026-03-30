@@ -17,13 +17,17 @@ import {
   BarChart3,
   CreditCard,
   TrendingUp,
-  MoreVertical,
   Pencil,
   Trash2,
+  Package,
+  Clock
 } from "lucide-react";
+import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 
+import Link from "next/link";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useUser } from "@/components/providers/UserProvider";
 import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
@@ -41,6 +45,7 @@ export type ToastT = {
 export interface Transaction {
   id: string;
   time: string;
+  date: string;
   items: string;
   amount: number;
   method: Method;
@@ -65,6 +70,7 @@ const METHOD_BADGE: Record<Method, string> = {
 export default function SalesDashboard() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
+  const { vendor } = useUser();
   const isKhmer = language === "km";
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -77,8 +83,6 @@ export default function SalesDashboard() {
   const [search, setSearch] = useState("");
 
   // Data state
-  const [txns, setTxns] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
   const [toasts, setToasts] = useState<ToastT[]>([]);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
@@ -96,17 +100,35 @@ export default function SalesDashboard() {
   const amountRef = useRef<HTMLInputElement>(null);
 
   // Fetch sales on mount
+  const [txns, setTxns] = useState<Transaction[]>([]);
+  const [inventory, setInventory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchSales = async () => {
       try {
-        const res = await fetch("/api/vendor/sales");
-        const data = await res.json();
-        if (data.success) {
-          const mapped = data.data.map((s: any) => ({
+        const [salesRes, invRes] = await Promise.all([
+          fetch("/api/vendor/sales"),
+          fetch("/api/vendor/inventory")
+        ]);
+        const salesData = await salesRes.json();
+        const invData = await invRes.json();
+        
+        if (invData.success) {
+          setInventory(invData.data);
+        }
+
+        if (salesData.success) {
+          const mapped = salesData.data.map((s: any) => ({
             id: s.id,
             time: new Date(s.createdAt).toLocaleTimeString("en-US", {
               hour: "numeric",
               minute: "2-digit",
+            }),
+            date: new Date(s.createdAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric"
             }),
             items: s.items || "",
             amount: parseFloat(s.amount),
@@ -184,17 +206,22 @@ export default function SalesDashboard() {
         const mappedTxn: Transaction = {
           id: result.data.id,
           time: editTarget ? editTarget.time : now(),
+          date: editTarget ? editTarget.date : new Date().toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+          }),
           items: result.data.items || "",
           amount: parseFloat(result.data.amount),
           method: result.data.method,
         };
-        
+               
         if (editTarget) {
           setTxns((p) => p.map((x) => x.id === editTarget.id ? mappedTxn : x));
-          showToast("Sale updated");
+          showToast(t("dashboard.status.logged")); // Simplified
         } else {
           setTxns((p) => [mappedTxn, ...p]);
-          showToast("Sale logged successfully");
+          showToast(t("dashboard.status.logged"));
         }
         closeModal();
       }
@@ -242,16 +269,17 @@ export default function SalesDashboard() {
         ))}
       </div>
 
-      <VendorSidebar plan="free" currentPath="/vendor/sales" navLinks={[
+      <VendorSidebar plan={(vendor?.plan?.name as any) || "free"} currentPath="/vendor/sales" navLinks={[
         { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor" },
         { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/sales" },
         { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/expenses" },
         { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/customer" },
+        { icon: Package, title: "Inventory", khmerTitle: "ស្តុក", href: "/vendor/inventory" },
       ]} />
 
       <main className="flex-1 flex flex-col w-full h-screen overflow-hidden">
         <VendorTopbar
-          title="Sales"
+          title={t("dashboard.sales")}
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
           setIsMobileSidebarOpen={setIsSidebarOpen}
@@ -263,7 +291,7 @@ export default function SalesDashboard() {
               ))}
             </div>
             <button onClick={openAdd} className="flex items-center gap-[7px] bg-[#0d1117] text-[#3ecf8e] border border-[#3ecf8e]/20 rounded-[10px] px-4 py-[9px] font-bold text-[13px] shadow-[0_2px_14px_rgba(0,0,0,0.15)] hover:bg-black transition-all">
-              <Plus size={14} /> Add Sale
+              <Plus size={14} /> {t("dashboard.actions.addSale")}
             </button>
           </>
         } />
@@ -271,22 +299,22 @@ export default function SalesDashboard() {
         <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px]">
           <div className="max-w-[1400px] mx-auto flex flex-col gap-5">
             <div>
-              <h1 className="text-[26px] font-bold">My Sales</h1>
-              <p className="text-sm text-slate-500 mt-0.5">Track and manage your daily sales · តាមដាន និងគ្រប់គ្រងការលក់</p>
+              <h1 className="text-[26px] font-bold">{t("dashboard.titles.mySales")}</h1>
+              <p className="text-sm text-slate-500 mt-0.5">{t("dashboard.titles.salesSubtitle")}</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <VendorSummaryCard variant="dark" title="Revenue" khmerTitle="ចំណូលប្រចាំ" value={`$${totalRevenue.toFixed(2)}`} />
-              <VendorSummaryCard title="Transactions" khmerTitle="ប្រតិបត្តិការ" value={txns.length} variant={isDark ? "dark" : "light"} />
-              <VendorSummaryCard title="Avg. Sale" khmerTitle="មធ្យមលក់" value={`$${avgSale.toFixed(2)}`} variant={isDark ? "dark" : "light"} />
+              <VendorSummaryCard variant="dark" title={t("dashboard.metrics.revenue")} khmerTitle={t("dashboard.metrics.revenue")} value={`$${totalRevenue.toFixed(2)}`} />
+              <VendorSummaryCard title={t("dashboard.metrics.sales")} khmerTitle={t("dashboard.metrics.sales")} value={txns.length} variant={isDark ? "dark" : "light"} />
+              <VendorSummaryCard title={t("dashboard.metrics.avgSale")} khmerTitle={t("dashboard.metrics.avgSale")} value={`$${avgSale.toFixed(2)}`} variant={isDark ? "dark" : "light"} />
             </div>
 
             <div className={`border rounded-[14px] overflow-hidden shadow-sm ${isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"}`}>
               <div className="px-[22px] py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-3">
-                <h3 className="font-semibold text-[14px]">Transaction History</h3>
+                <h3 className="font-semibold text-[14px]">{t("dashboard.titles.history")}</h3>
                 <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-64 focus-within:border-[#3ecf8e]/30 focus-within:shadow-[0_0_0_4px_rgba(62,207,142,0.03)] group">
                   <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#3ecf8e]" />
-                  <input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
+                  <input type="text" placeholder={t("dashboard.common.search")} value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
                 </div>
               </div>
 
@@ -294,33 +322,36 @@ export default function SalesDashboard() {
                 <table className="w-full text-left">
                   <thead className="text-[10.5px] uppercase font-bold text-slate-500 border-b border-white/5">
                     <tr>
-                      <th className="px-[22px] py-[11px]">Time</th>
-                      <th className="px-[22px] py-[11px]">Items</th>
-                      <th className="px-[22px] py-[11px]">Method</th>
-                      <th className="px-[22px] py-[11px] text-right">Amount</th>
-                      <th className="px-[22px] py-[11px] text-center">Actions</th>
+                      <th className="px-[22px] py-[11px]">{t("dashboard.table.time")}</th>
+                      <th className="px-[22px] py-[11px]">{t("dashboard.table.items")}</th>
+                      <th className="px-[22px] py-[11px]">{t("dashboard.table.method")}</th>
+                      <th className="px-[22px] py-[11px] text-right">{t("dashboard.table.amount")}</th>
+                      <th className="px-[22px] py-[11px] text-center">{t("dashboard.table.actions")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {filtered.map((t) => (
-                      <tr key={t.id} className="group hover:bg-white/5 transition-colors text-[13px]">
-                        <td className="px-[22px] py-[14px] text-slate-400">{t.time}</td>
-                        <td className="px-[22px] py-[14px] font-medium">{t.items || "—"}</td>
+                    {filtered.map((txn) => (
+                      <tr key={txn.id} className="group hover:bg-white/5 transition-colors text-[13px]">
                         <td className="px-[22px] py-[14px]">
-                          <span className={`px-2.5 py-[3px] rounded-full text-[11px] font-bold ${METHOD_BADGE[t.method]}`}>{t.method}</span>
+                          <div className="text-white font-medium">{txn.time}</div>
+                          <div className="text-[11px] text-slate-500 mt-0.5">{txn.date}</div>
                         </td>
-                        <td className="px-[22px] py-[14px] text-right font-bold text-[#3ecf8e]">+${t.amount.toFixed(2)}</td>
+                        <td className="px-[22px] py-[14px] font-medium">{txn.items || "—"}</td>
+                        <td className="px-[22px] py-[14px]">
+                          <span className={`px-2.5 py-[3px] rounded-full text-[11px] font-bold ${METHOD_BADGE[txn.method]}`}>{txn.method}</span>
+                        </td>
+                        <td className="px-[22px] py-[14px] text-right font-bold text-[#3ecf8e]">+${txn.amount.toFixed(2)}</td>
                         <td className="px-[22px] py-[14px] text-center relative">
                           <button 
-                            onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === t.id ? null : t.id); }}
-                            className={`p-1.5 rounded-lg hover:bg-white/10 transition-colors ${activeMenuId === t.id ? "bg-white/10" : ""}`}
+                            onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === txn.id ? null : txn.id); }}
+                            className={`p-1.5 rounded-lg hover:bg-white/10 transition-colors ${activeMenuId === txn.id ? "bg-white/10" : ""}`}
                           >
-                            <MoreVertical size={16} className="text-slate-400" />
+                            <EllipsisVertical size={16} className="text-slate-400" />
                           </button>
-                          {activeMenuId === t.id && (
+                          {activeMenuId === txn.id && (
                             <div className={`absolute right-full top-1/2 -translate-y-1/2 mr-2 z-20 w-[120px] rounded-xl shadow-2xl border overflow-hidden ${isDark ? "bg-dark-surface border-white/10" : "bg-white border-slate-200"}`}>
-                              <button onClick={() => openEdit(t)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> Edit</button>
-                              <button onClick={() => { setDeleteTarget(t); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> Delete</button>
+                              <button onClick={() => openEdit(txn)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> {t("dashboard.common.edit")}</button>
+                              <button onClick={() => { setDeleteTarget(txn); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> {t("dashboard.common.delete")}</button>
                             </div>
                           )}
                         </td>
@@ -336,7 +367,7 @@ export default function SalesDashboard() {
 
       <ConfirmModal 
         isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleConfirmDelete}
-        title="Delete Sale?" description="This action cannot be undone." previewText={deleteTarget ? `$${deleteTarget.amount.toFixed(2)}` : ""}
+        title={t("dashboard.modals.deleteSaleTitle")} description={t("dashboard.modals.deleteConfirmDesc")} previewText={deleteTarget ? `$${deleteTarget.amount.toFixed(2)}` : ""}
       />
 
       {/* ── Add/Edit Modal ── */}
@@ -344,26 +375,60 @@ export default function SalesDashboard() {
         <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
           <div className={`w-full max-w-md rounded-[20px] shadow-2xl overflow-hidden ${isDark ? "bg-dark-surface border border-white/5" : "bg-white"}`}>
             <div className="bg-[#0d1117] px-7 py-5 flex items-center justify-between text-[#e6edf3]">
-              <div><div className="text-[18px] font-bold">{editTarget ? "Edit Sale" : "Log New Sale"}</div><div className="text-[12px] text-slate-500">{editTarget ? "កែប្រែការលក់" : "កត់ត្រាការលក់"}</div></div>
+              <div><div className="text-[18px] font-bold">{editTarget ? t("dashboard.modals.editSaleTitle") : t("dashboard.modals.addSaleTitle")}</div></div>
               <button onClick={closeModal}><X size={18} /></button>
             </div>
             <div className="p-7 space-y-5">
-              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Amount *</label>
+              {/* Inventory Picker */}
+              {!editTarget && (
+                <div>
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3 block">{t("inventory.modal.pickLabel")} {isKhmer ? "(ជ្រើសរើសពីស្តុក)" : ""}</label>
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                    {inventory.length > 0 ? (
+                      inventory.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setFAmount(item.price.toString());
+                            setFItems(item.name);
+                          }}
+                          className={`shrink-0 px-4 py-2.5 rounded-xl border text-[13px] font-bold transition-all flex flex-col items-start gap-1 min-w-[120px] ${
+                            fItems === item.name 
+                              ? "bg-[#3ecf8e] border-[#3ecf8e] text-[#0d1117] shadow-md" 
+                              : isDark ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-slate-50 border-slate-200 text-slate-900 hover:bg-slate-100"
+                          }`}
+                        >
+                          <span className="truncate w-full text-left">{item.name}</span>
+                          <span className={`text-[11px] ${fItems === item.name ? "text-[#0d1117]/70" : "text-slate-500"}`}>${parseFloat(item.price).toFixed(2)}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <Link href="/vendor/inventory" className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 dark:border-white/10 text-slate-500 text-xs no-underline hover:border-[#3ecf8e] transition-all">
+                        <Package size={14} /> {t("inventory.modal.quickPickEmpty")}
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.amountLabel")} *</label>
                 <div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">$</span>
-                  <input ref={amountRef} type="number" placeholder="0.00" value={fAmount} onChange={(e) => setFAmount(e.target.value)} className="w-full pl-9 pr-4 py-4 rounded-xl text-2xl font-bold border outline-none bg-slate-50 focus:border-[#3ecf8e]" />
+                  <input ref={amountRef} type="number" placeholder="0.00" value={fAmount} onChange={(e) => setFAmount(e.target.value)} className={`w-full pl-9 pr-4 py-4 rounded-xl text-2xl font-bold border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
                 </div>
               </div>
-              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Items (Optional)</label>
-                <input type="text" placeholder="e.g. 2x Coffee" value={fItems} onChange={(e) => setFItems(e.target.value)} className="w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none bg-slate-50 focus:border-[#3ecf8e]" />
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.itemsLabel")}</label>
+                <input type="text" placeholder="e.g. 2x Coffee" value={fItems} onChange={(e) => setFItems(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
               </div>
-              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">Payment Method</label>
+              <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.paymentMethodLabel")}</label>
                 <div className="grid grid-cols-3 gap-2">{(["Cash", "ABA/KHQR", "Other"] as Method[]).map((m) => (
-                  <button key={m} onClick={() => setFMethod(m)} className={`py-3 rounded-[10px] text-[13px] font-bold transition-all ${fMethod === m ? "bg-[#3ecf8e] text-[#0d1117] shadow-lg" : "bg-slate-50 text-slate-500"}`}>{m}</button>
+                  <button key={m} onClick={() => setFMethod(m)} className={`py-3 rounded-[10px] text-[13px] font-bold transition-all ${fMethod === m ? "bg-[#3ecf8e] text-[#0d1117] shadow-lg" : isDark ? "bg-white/5 text-slate-400 border border-white/5 hover:bg-white/10" : "bg-slate-50 text-slate-500 border border-transparent hover:bg-slate-100"}`}>
+                    {m === "Cash" ? t("dashboard.methods.cash") : m === "ABA/KHQR" ? t("dashboard.methods.qr") : t("dashboard.methods.other")}
+                  </button>
                 ))}</div>
               </div>
               <div className="flex gap-3 pt-2">
-                <button onClick={closeModal} className="flex-1 py-4 rounded-xl bg-slate-100 text-slate-500 font-bold">Cancel</button>
-                <button onClick={handleSave} disabled={!fAmount || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black transition-all">{saving ? "Saving..." : "Save Log"}</button>
+                <button onClick={closeModal} className={`flex-1 py-4 rounded-xl font-bold transition-all ${isDark ? "bg-white/5 text-slate-400 hover:bg-white/10" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>{t("dashboard.actions.cancel")}</button>
+                <button onClick={handleSave} disabled={!fAmount || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black transition-all">{saving ? t("inventory.modal.saving") : t("inventory.modal.saveLog")}</button>
               </div>
             </div>
           </div>

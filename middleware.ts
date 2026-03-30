@@ -30,6 +30,8 @@ const publicPaths = [
   "/admin",
   "/sw.js",
   "/manifest.webmanifest",
+  "/explore",
+  "/api/public",
 ];
 
 // Paths that require specific roles

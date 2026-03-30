@@ -37,6 +37,7 @@ export default function LandingPage() {
       signupCustomer: "I'm a Customer",
       signupCustomerDesc: "Browse & follow stalls",
       tryDemo: "Try Demo →",
+      exploreMap: "Explore Market Pulse",
       whyChoose: "Why Choose PsarPulse for Your Business?",
       feature1Title: "Gemini-Powered AI Forecasting",
       feature1Desc:
@@ -141,6 +142,7 @@ export default function LandingPage() {
       signupCustomer: "ខ្ញុំជាអតិថិជន",
       signupCustomerDesc: "ស្វែងរក និងតាមដានស្តង់",
       tryDemo: "សាកល្បង Demo →",
+      exploreMap: "ស្វែងរក Market Pulse",
       whyChoose: "ហេតុអ្វីបានជាជ្រើសរើស PsarPulse សម្រាប់អាជីវកម្មរបស់អ្នក?",
       feature1Title: "ការព្យាករណ៍ AI ដំណើរការដោយ Gemini",
       feature1Desc:
@@ -585,18 +587,34 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        {/* Guest link */}
-        <Link
-          href="/guest"
-          className={`fade-in-3 mb-28 text-[13px] transition-colors underline underline-offset-2 relative z-10 ${resolvedTheme === "light" ? "text-slate-400 hover:text-slate-600" : "text-white/30 hover:text-white/60"}`}
-          style={
-            lang === "km"
-              ? { fontFamily: "var(--font-suwannaphum)", fontSize: "14px" }
-              : {}
-          }
-        >
-          {t[lang].btnDemo}
-        </Link>
+        <div className="fade-in-3 mb-28 flex flex-col items-center gap-4 relative z-10 mt-2">
+          {/* Market Pulse Link */}
+          <Link
+            href="/explore"
+            className={`flex items-center gap-2 px-6 py-3 rounded-full text-[15px] font-semibold transition-all shadow-md group border ${
+              resolvedTheme === "light" 
+                ? "bg-white text-slate-800 hover:text-brand-primary hover:shadow-lg border-slate-200" 
+                : "bg-[#1f2833] text-white hover:text-[#66fcf1] border-white/10 hover:border-[#66fcf1]/30 shadow-black/80"
+            }`}
+            style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}}
+          >
+            <span className="text-xl">🗺️</span> {t[lang].exploreMap}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform ml-1"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </Link>
+
+          {/* Guest link */}
+          <Link
+            href="/guest"
+            className={`text-[13px] transition-colors underline underline-offset-2 ${resolvedTheme === "light" ? "text-slate-400 hover:text-slate-600" : "text-white/40 hover:text-white/80"}`}
+            style={
+              lang === "km"
+                ? { fontFamily: "var(--font-suwannaphum)", fontSize: "14px" }
+                : {}
+            }
+          >
+            {t[lang].btnDemo}
+          </Link>
+        </div>
       </section>
 
       {/* ========================================

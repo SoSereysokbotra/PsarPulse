@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { Select } from "@/components/ui/Select";
 
 // Mock Data fallback if needed, but we'll fetch from API
 
@@ -34,6 +35,11 @@ export default function VendorDirectoryPage() {
   const [selectedVendor, setSelectedVendor] = useState<any>(null); // For details modal
   const [vendors, setVendors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Filter States
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [tierFilter, setTierFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     async function fetchVendors() {
@@ -53,12 +59,18 @@ export default function VendorDirectoryPage() {
     }
     fetchVendors();
   }, []);
-  
-  const filteredVendors = vendors.filter(v => 
-    v.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    v.owner?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    v.phone?.includes(searchQuery)
-  );
+    const filteredVendors = vendors.filter(v => {
+    const matchesSearch = 
+      v.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      v.owner?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      v.phone?.includes(searchQuery);
+    
+    const matchesRole = roleFilter === "all" || v.role === roleFilter;
+    const matchesTier = tierFilter === "all" || v.tier === tierFilter;
+    const matchesStatus = statusFilter === "all" || v.status === statusFilter;
+
+    return matchesSearch && matchesRole && matchesTier && matchesStatus;
+  });
 
   const fetchVendors = async () => {
     setLoading(true);
@@ -106,7 +118,7 @@ export default function VendorDirectoryPage() {
 
   return (
     <div className={`space-y-6 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 fade-in">
         <div>
           <h1 className={`text-3xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
             {isKhmer ? "បញ្ជីអាជីវករ" : "Vendor Directory"}
@@ -121,7 +133,7 @@ export default function VendorDirectoryPage() {
       </div>
 
       {/* Filters and Search */}
-      <div className={`p-4 rounded-xl border shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
+      <div className={`p-4 rounded-xl border shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center fade-in-1 ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
         <div className="relative w-full max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
           <input 
@@ -134,32 +146,43 @@ export default function VendorDirectoryPage() {
             }`}
           />
         </div>
-        <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-          <select className={`px-3 py-2 border text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
-            isDark ? "bg-[#161b22] border-white/10 text-slate-300" : "bg-white border-slate-200 text-slate-600"
-          }`}>
-            <option>{isKhmer ? "គ្រប់តួនាទី" : "All Roles"}</option>
-            <option>{isKhmer ? "អាជីវករ" : "Vendor"}</option>
-            <option>{isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin"}</option>
-          </select>
-          <select className={`px-3 py-2 border text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
-            isDark ? "bg-[#161b22] border-white/10 text-slate-300" : "bg-white border-slate-200 text-slate-600"
-          }`}>
-            <option>{isKhmer ? "គ្រប់កម្រិត" : "All Tiers"}</option>
-            <option>{isKhmer ? "កម្រិតចាប់ផ្តើម" : "Starter"}</option>
-            <option>{isKhmer ? "កម្រិតឈ្លាសវៃ (Pro)" : "Smart (Pro)"}</option>
-            <option>{isKhmer ? "កម្រិតបញ្ញាសិប្បនិម្មិត (Premium)" : "AI Assistant (Premium)"}</option>
-          </select>
-          <select className={`px-3 py-2 border text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${
-            isDark ? "bg-[#161b22] border-white/10 text-slate-300" : "bg-white border-slate-200 text-slate-600"
-          }`}>
-            <option>{isKhmer ? "គ្រប់ស្ថានភាព" : "All Statuses"}</option>
-            <option>{isKhmer ? "សកម្ម" : "Active"}</option>
-            <option>{isKhmer ? "កំពុងរង់ចាំ" : "Pending"}</option>
-            <option>{isKhmer ? "ត្រូវបានផ្អាក" : "Suspended"}</option>
-          </select>
-          <button className={`p-2 border rounded-lg transition-colors ${
-            isDark ? "border-white/10 text-slate-500 hover:bg-white/5" : "border-slate-200 text-slate-500 hover:bg-slate-50"
+        <div className="flex gap-3 w-full md:w-auto items-center overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
+          <Select 
+            value={roleFilter}
+            onChange={setRoleFilter}
+            isDark={isDark}
+            options={[
+              { value: "all", label: isKhmer ? "គ្រប់តួនាទី" : "All Roles" },
+              { value: "Vendor", label: isKhmer ? "អាជីវករ" : "Vendor" },
+              { value: "Admin", label: isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin" }
+            ]}
+          />
+          <Select 
+            value={tierFilter}
+            onChange={setTierFilter}
+            isDark={isDark}
+            options={[
+              { value: "all", label: isKhmer ? "គ្រប់កម្រិត" : "All Tiers" },
+              { value: "Starter", label: isKhmer ? "កម្រិតចាប់ផ្តើម" : "Starter" },
+              { value: "Smart (Pro)", label: isKhmer ? "កម្រិតឈ្លាសវៃ (Pro)" : "Smart (Pro)" },
+              { value: "AI Assistant (Premium)", label: isKhmer ? "កម្រិតបញ្ញាសិប្បនិម្មិត (Premium)" : "AI Assistant (Premium)" }
+            ]}
+          />
+          <Select 
+            value={statusFilter}
+            onChange={setStatusFilter}
+            isDark={isDark}
+            options={[
+              { value: "all", label: isKhmer ? "គ្រប់ស្ថានភាព" : "All Statuses" },
+              { value: "Active", label: isKhmer ? "សកម្ម" : "Active" },
+              { value: "Pending", label: isKhmer ? "កំពុងរង់ចាំ" : "Pending" },
+              { value: "Suspended", label: isKhmer ? "ត្រូវបានផ្អាក" : "Suspended" }
+            ]}
+          />
+          <button className={`p-2.5 rounded-xl border transition-all flex items-center justify-center min-w-[42px] ${
+            isDark 
+              ? "bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10" 
+              : "bg-white border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 shadow-sm"
           }`}>
             <Filter className="h-5 w-5" />
           </button>
@@ -167,7 +190,7 @@ export default function VendorDirectoryPage() {
       </div>
 
       {/* Vendor Table */}
-      <div className={`rounded-xl border shadow-sm overflow-hidden ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
+      <div className={`rounded-xl border shadow-sm overflow-hidden fade-in-2 ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200"}`}>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

@@ -24,6 +24,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { Select } from "@/components/ui/Select";
 
 export default function AdminDashboardPage() {
   const { language } = useLanguage();
@@ -37,38 +38,58 @@ export default function AdminDashboardPage() {
     activeSubs: 0,
     monthlyRevenue: 0,
     pendingRequests: 0,
-    subscriptionsBreakdown: { free: 0, paid: 0 }
+    subscriptionsBreakdown: { free: 0, paid: 0 },
   });
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [trendsLoading, setTrendsLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState("7d");
+  const [trendData, setTrendData] = useState<any[]>([]);
+
+  async function fetchRequests() {
+    try {
+      const [reqRes, statsRes] = await Promise.all([
+        fetch("/api/admin/vendor-requests"),
+        fetch("/api/admin/stats"),
+      ]);
+
+      if (reqRes.ok) {
+        const json = await reqRes.json();
+        if (json.success) setVendorRequests(json.data);
+      }
+
+      if (statsRes.ok) {
+        const json = await statsRes.json();
+        if (json.success && json.data) {
+          setStats(json.data);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch pending requests", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchTrends(rangeValue: string) {
+    setTrendsLoading(true);
+    try {
+      const res = await fetch(`/api/admin/trends?range=${rangeValue}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) setTrendData(json.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch trends", error);
+    } finally {
+      setTrendsLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function fetchRequests() {
-      try {
-        const [reqRes, statsRes] = await Promise.all([
-          fetch("/api/admin/vendor-requests"),
-          fetch("/api/admin/stats")
-        ]);
-
-        if (reqRes.ok) {
-          const json = await reqRes.json();
-          if (json.success) setVendorRequests(json.data);
-        }
-        
-        if (statsRes.ok) {
-          const json = await statsRes.json();
-          if (json.success && json.data) {
-            setStats(json.data);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to fetch pending requests", error);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchRequests();
-  }, []);
+    fetchTrends(timeRange);
+  }, [timeRange]);
 
   const handleAction = async (id: string, status: "approved" | "rejected") => {
     if (
@@ -99,9 +120,10 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const filteredRequests = vendorRequests.filter(req => 
-    req.businessName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    req.businessEmail?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredRequests = vendorRequests.filter(
+    (req) =>
+      req.businessName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      req.businessEmail?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleExport = async () => {
@@ -119,15 +141,19 @@ export default function AdminDashboardPage() {
             v.phone,
             v.tier,
             v.status,
-            v.joined
-          ])
+            v.joined,
+          ]),
         ];
-        const csvContent = "data:text/csv;charset=utf-8," 
-          + csvRows.map(e => e.join(",")).join("\n");
+        const csvContent =
+          "data:text/csv;charset=utf-8," +
+          csvRows.map((e) => e.join(",")).join("\n");
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `vendors_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute(
+          "download",
+          `vendors_export_${new Date().toISOString().split("T")[0]}.csv`,
+        );
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -142,7 +168,7 @@ export default function AdminDashboardPage() {
       className={`space-y-8 font-sans ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}
     >
       {/* Header & Context Bar */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 fade-in">
         <div>
           <h1
             className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}
@@ -193,7 +219,7 @@ export default function AdminDashboardPage() {
 
       {/* Global Search & Quick Actions */}
       <div
-        className={`p-2 rounded-xl border shadow-sm flex flex-col md:flex-row gap-2 justify-between items-center ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200/60"}`}
+        className={`p-2 rounded-xl border shadow-sm flex flex-col md:flex-row gap-2 justify-between items-center fade-in-1 ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200/60"}`}
       >
         <div className="relative w-full md:max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -245,7 +271,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Quick Statistics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 fade-in-2">
         <StatCard
           title={isKhmer ? "អាជីវករដែលបានចុះឈ្មោះ" : "Registered Vendors"}
           value={stats.activeVendors.toString()}
@@ -280,13 +306,16 @@ export default function AdminDashboardPage() {
           <div className="space-y-2 mt-4">
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-500">Free</span>
-              <span className="font-medium text-slate-700">{stats.subscriptionsBreakdown?.free || 0}</span>
+              <span className="font-medium text-slate-700">
+                {stats.subscriptionsBreakdown?.free || 0}
+              </span>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-emerald-600 font-medium">Paid</span>
-              <span className="font-medium text-slate-700">{stats.subscriptionsBreakdown?.paid || 0}</span>
+              <span className="font-medium text-slate-700">
+                {stats.subscriptionsBreakdown?.paid || 0}
+              </span>
             </div>
-
           </div>
         </div>
 
@@ -317,12 +346,12 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Bottom Section: Chart & Action List */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 fade-in-3">
         {/* Revenue Chart Placeholder */}
         <div
           className={`lg:col-span-2 rounded-xl border shadow-sm p-6 ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200/60"}`}
         >
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-13">
             <div>
               <h2
                 className={`text-base font-semibold ${isDark ? "text-white" : "text-slate-900"}`}
@@ -337,17 +366,16 @@ export default function AdminDashboardPage() {
                   : "Correlation between weather patterns and digital payments."}
               </p>
             </div>
-            <select
-              className={`border text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all ${
-                isDark
-                  ? "bg-white/5 border-white/10 text-slate-300"
-                  : "bg-slate-50 border-slate-200 text-slate-700"
-              }`}
-            >
-              <option>{isKhmer ? "៧ ថ្ងៃចុងក្រោយ" : "Last 7 Days"}</option>
-              <option>{isKhmer ? "៣០ ថ្ងៃចុងក្រោយ" : "Last 30 Days"}</option>
-              <option>{isKhmer ? "ឆ្នាំនេះ" : "This Year"}</option>
-            </select>
+            <Select
+              value={timeRange}
+              onChange={setTimeRange}
+              isDark={isDark}
+              options={[
+                { value: "7d", label: isKhmer ? "៧ ថ្ងៃចុងក្រោយ" : "Last 7 Days" },
+                { value: "30d", label: isKhmer ? "៣០ ថ្ងៃចុងក្រោយ" : "Last 30 Days" },
+                { value: "1y", label: isKhmer ? "ឆ្នាំនេះ" : "This Year" }
+              ]}
+            />
           </div>
           <div
             className={`h-72 w-full flex items-end justify-between gap-2 px-2 pb-8 pt-4 relative ${
@@ -356,71 +384,103 @@ export default function AdminDashboardPage() {
           >
             {/* Y-Axis Labels */}
             <div className="absolute left-0 h-full flex flex-col justify-between text-[10px] text-slate-400 pb-8 pr-2 border-r border-slate-100 dark:border-white/5">
-              <span>$2k</span>
-              <span>$1.5k</span>
-              <span>$1k</span>
-              <span>$500</span>
+              <span>${Math.max(...trendData.map((d) => d.revenue), 1000)}</span>
+              <span>
+                ${Math.max(...trendData.map((d) => d.revenue), 1000) * 0.75}
+              </span>
+              <span>
+                ${Math.max(...trendData.map((d) => d.revenue), 1000) * 0.5}
+              </span>
+              <span>
+                ${Math.max(...trendData.map((d) => d.revenue), 1000) * 0.25}
+              </span>
               <span>0</span>
             </div>
 
             {/* Grid Lines */}
             <div className="absolute inset-0 ml-8 mb-8 flex flex-col justify-between pointer-events-none">
               {[0, 1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-full border-t border-slate-100 dark:border-white/5 h-0" />
+                <div
+                  key={i}
+                  className="w-full border-t border-slate-100 dark:border-white/5 h-0"
+                />
               ))}
             </div>
 
             {/* Bars */}
             <div className="flex-1 ml-8 h-full flex items-end justify-around gap-2 pb-1 relative z-10">
-              {[
-                { day: "Mon", rev: 1200, foot: 450 },
-                { day: "Tue", rev: 1500, foot: 520 },
-                { day: "Wed", rev: 900, foot: 380 },
-                { day: "Thu", rev: 1800, foot: 610 },
-                { day: "Fri", rev: 2100, foot: 740 },
-                { day: "Sat", rev: 2400, foot: 890 },
-                { day: "Sun", rev: 1900, foot: 650 },
-              ].map((data, i) => {
-                const revHeight = (data.rev / 2500) * 100;
-                const footHeight = (data.foot / 1000) * 100;
-                return (
-                  <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
-                    {/* Tooltip Content (Hover) */}
-                    <div className="absolute -top-12 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] p-2 rounded shadow-lg z-20 whitespace-nowrap pointer-events-none">
-                      <div className="font-bold">{data.day}</div>
-                      <div>Revenue: ${data.rev}</div>
-                      <div>Footfall: {data.foot}</div>
+              {trendsLoading ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+                </div>
+              ) : trendData.length === 0 ? (
+                <div className="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">
+                  {isKhmer ? "មិនមានទិន្នន័យ" : "No trend data available"}
+                </div>
+              ) : (
+                trendData.map((data, i) => {
+                  const maxRevenue =
+                    Math.max(...trendData.map((d) => d.revenue), 1) || 1000;
+                  const maxFootfall =
+                    Math.max(...trendData.map((d) => d.footfall), 1) || 500;
+                  const revHeight = (data.revenue / maxRevenue) * 100;
+                  const footHeight = (data.footfall / maxFootfall) * 100;
+                  return (
+                    <div
+                      key={i}
+                      className="flex-1 flex flex-col items-center group relative h-full justify-end"
+                    >
+                      {/* Tooltip Content (Hover) */}
+                      <div className="absolute -top-14 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] p-2 rounded shadow-lg z-20 whitespace-nowrap pointer-events-none">
+                        <div className="font-bold border-b border-white/20 pb-1 mb-1">
+                          {data.label} ({data.date})
+                        </div>
+                        <div className="flex items-center gap-1.5 overflow-hidden">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                          Revenue: ${data.revenue.toLocaleString()}
+                        </div>
+                        <div className="flex items-center gap-1.5 overflow-hidden">
+                          <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
+                          Footfall: {data.footfall.toLocaleString()}
+                        </div>
+                      </div>
+
+                      <div className="w-full flex justify-center gap-1 h-full items-end">
+                        {/* Revenue Bar */}
+                        <div
+                          className="w-1.5 sm:w-2.5 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-sm transition-all duration-500 hover:brightness-110"
+                          style={{ height: `${revHeight}%` }}
+                        ></div>
+                        {/* Footfall Bar */}
+                        <div
+                          className="w-0.5 sm:w-1 bg-gradient-to-t from-indigo-500 to-indigo-300 rounded-t-sm transition-all duration-500 hover:brightness-110 opacity-60"
+                          style={{ height: `${footHeight}%` }}
+                        ></div>
+                      </div>
+
+                      {/* X-Axis Label */}
+                      <span className="absolute -bottom-6 text-[10px] font-medium text-slate-500">
+                        {data.label}
+                      </span>
                     </div>
-                    
-                    <div className="w-full flex justify-center gap-1 h-full items-end">
-                      {/* Revenue Bar */}
-                      <div 
-                        className="w-3 sm:w-5 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-sm transition-all duration-500 hover:brightness-110"
-                        style={{ height: `${revHeight}%` }}
-                      ></div>
-                      {/* Footfall Bar */}
-                      <div 
-                        className="w-1.5 sm:w-2 bg-gradient-to-t from-indigo-500 to-indigo-300 rounded-t-sm transition-all duration-500 hover:brightness-110 opacity-60"
-                        style={{ height: `${footHeight}%` }}
-                      ></div>
-                    </div>
-                    
-                    {/* X-Axis Label */}
-                    <span className="absolute -bottom-6 text-[10px] font-medium text-slate-500">{data.day}</span>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
 
             {/* Legend */}
             <div className="absolute bottom-1 right-2 flex gap-4 text-[10px] font-medium">
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-slate-500">{isKhmer ? "ចំណូល" : "Revenue"}</span>
+                <span className="text-slate-500">
+                  {isKhmer ? "ចំណូល" : "Revenue"}
+                </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 rounded-full bg-indigo-400" />
-                <span className="text-slate-500">{isKhmer ? "ចំនួនអ្នកដើរ" : "Footfall"}</span>
+                <span className="text-slate-500">
+                  {isKhmer ? "ចំនួនអ្នកដើរ" : "Footfall"}
+                </span>
               </div>
             </div>
           </div>

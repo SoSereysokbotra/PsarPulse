@@ -156,43 +156,10 @@ export default function ProInventoryPage() {
             </p>
           </div>
 
-          {/* FR-26: Dynamic Low Stock Alert Banner */}
-          {lowStockItems.length > 0 ? (
-          <div className="bg-orange-50 dark:bg-orange-500/10 rounded-2xl p-5 md:p-6 border border-orange-200 dark:border-orange-500/20 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5 relative overflow-hidden transition-colors">
-            <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-orange-100 dark:from-orange-500/10 pointer-events-none" />
-            <div className="flex items-start gap-4 z-10">
-              <div className="p-3 bg-white dark:bg-dark-surface border border-orange-200 dark:border-orange-500/20 rounded-xl shrink-0 shadow-sm transition-colors">
-                <AlertTriangle className="w-6 h-6 text-orange-600 dark:text-orange-500" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <h3 className="font-bold text-[16px] text-orange-900 dark:text-orange-400">
-                    {t("inventory.alerts.lowStockTitle")} ({lowStockItems.length} {t("dashboard.table.items")})
-                  </h3>
-                </div>
-                <p className="text-orange-800 dark:text-orange-300/80 text-[14px] leading-relaxed max-w-2xl">
-                  <strong>{lowStockItems.map((i) => language === 'km' && i.khmerName ? i.khmerName : i.name).join(", ")}</strong>{" "}
-                  {t("inventory.alerts.lowStockDesc")}
-                </p>
-              </div>
-            </div>
-            <button className="w-full md:w-auto px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-colors text-sm shadow-sm min-h-[44px] z-10 flex items-center justify-center gap-2">
-              <FileText className="w-4 h-4" /> {t("inventory.alerts.createPo")}
-            </button>
-          </div>
-          ) : (
-          <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl p-5 border border-emerald-200 dark:border-emerald-500/20 flex items-center gap-3 transition-colors">
-            <div className="p-2 bg-white dark:bg-dark-surface border border-emerald-200 dark:border-emerald-500/20 rounded-xl transition-colors">
-              <AlertTriangle className="w-5 h-5 text-emerald-600 dark:text-emerald-500" />
-            </div>
-            <p className="text-emerald-800 dark:text-emerald-400 text-[14px] font-medium">{t("inventory.alerts.wellStocked")} ✓</p>
-          </div>
-          )}
-
           {/* Metric Cards - Pro introduces wider range of metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
             <VendorSummaryCard
-              title={t("inventory.metrics.totalProducts")}
+              title={t("TotalProducts")}
               khmerTitle="ផលិតផលសរុប"
               value={summaryData.totalItems}
               icon={Package}
@@ -200,7 +167,7 @@ export default function ProInventoryPage() {
               trend="Unlimited"
             />
             <VendorSummaryCard
-              title={t("inventory.metrics.lowStock")}
+              title={t("LowStock")}
               khmerTitle="ស្តុកជិតអស់"
               value={summaryData.lowStock}
               icon={AlertTriangle}
@@ -208,13 +175,13 @@ export default function ProInventoryPage() {
               isPositive={false}
             />
             <VendorSummaryCard
-              title={t("inventory.metrics.inventoryValue")}
+              title={t("InventoryValue")}
               khmerTitle="តម្លៃស្តុក"
               value={summaryData.totalValue}
               icon={CircleDollarSign}
             />
             <VendorSummaryCard
-              title={t("inventory.metrics.topSeller")}
+              title={t("TopSeller")}
               khmerTitle="លក់ដាច់បំផុត"
               value={summaryData.mostSold}
               icon={TrendingUp}

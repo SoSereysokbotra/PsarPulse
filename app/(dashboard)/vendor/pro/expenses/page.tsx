@@ -178,7 +178,7 @@ export default function ProExpensePage() {
     >
       <div className="flex-1 w-full h-full overflow-y-auto p-6 md:p-8 space-y-7">
         {/* QUICK LOGGING SECTION */}
-        <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors">
+        <div className="bg-white dark:bg-dark-surface rounded-2xl border-slate-200 dark:border-white/5 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors">
           <div>
             <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">{t("dashboard.modals.addExpenseTitle")}</h2>
             <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">

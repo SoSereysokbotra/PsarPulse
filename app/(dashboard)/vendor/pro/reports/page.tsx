@@ -760,7 +760,7 @@ function PLCard({
   highlight?: boolean;
 }) {
   return (
-    <div className={`p-5 rounded-2xl border ${highlight ? "bg-psar-primary text-white border-transparent shadow-md" : "bg-white dark:bg-dark-surface border-slate-200 shadow-sm"}`}>
+    <div className={`p-5 rounded-2xl ${highlight ? "bg-psar-primary text-white border-transparent shadow-md" : "bg-white dark:bg-dark-surface border-slate-200 shadow-sm"}`}>
       <div className="flex justify-between items-start mb-4">
         <div>
           <h4 className={`text-sm font-semibold ${highlight ? "text-white/90" : "text-slate-500 dark:text-[#7d8590]"}`}>{title}</h4>

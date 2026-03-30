@@ -24,6 +24,7 @@ import {
   Crown,
   FileText,
   FileSpreadsheet,
+  TrendingDown,
 } from "lucide-react";
 import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 

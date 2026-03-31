@@ -17,7 +17,10 @@ import {
   ArrowUpRight,
   FileBarChart,
   X,
+<<<<<<< HEAD
   FileText,
+=======
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
 } from "lucide-react";
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
@@ -73,6 +76,7 @@ export default function InventoryPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [filterStatus, setFilterStatus] = useState<"all" | "low" | "in_stock" | "out_of_stock">("all");
 
+<<<<<<< HEAD
   const fetchInventory = async () => {
     try {
       const res = await fetch("/api/vendor/premium/inventory");
@@ -80,6 +84,19 @@ export default function InventoryPage() {
       if (data.success) {
         setInventoryItems(data.data);
       }
+=======
+  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [formData, setFormData] = useState({ name: "", khmerName: "", price: "", stock: 0, threshold: 10 });
+
+  const fetchInventory = async () => {
+    try {
+      const res = await fetch("/api/vendor/inventory");
+      const data = await res.json();
+      if (data.success) setInventoryItems(data.data);
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
     } catch (e) {
       console.error(e);
     } finally {
@@ -93,9 +110,14 @@ export default function InventoryPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+<<<<<<< HEAD
     const url = editingItem ? `/api/vendor/premium/inventory/${editingItem.id}` : "/api/vendor/premium/inventory";
     const method = editingItem ? "PUT" : "POST";
     setIsSaving(true);
+=======
+    const url = editingItem ? `/api/vendor/inventory/${editingItem.id}` : "/api/vendor/inventory";
+    const method = editingItem ? "PUT" : "POST";
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
     try {
       const res = await fetch(url, {
         method,
@@ -105,19 +127,30 @@ export default function InventoryPage() {
       if (res.ok) {
         setIsModalOpen(false);
         setEditingItem(null);
+<<<<<<< HEAD
         await fetchInventory();
       }
     } catch (error) {
       console.error(error);
     } finally {
       setIsSaving(false);
+=======
+        fetchInventory();
+      }
+    } catch (error) {
+      console.error(error);
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
     try {
+<<<<<<< HEAD
       const res = await fetch(`/api/vendor/premium/inventory/${id}`, { method: "DELETE" });
+=======
+      const res = await fetch(`/api/vendor/inventory/${id}`, { method: "DELETE" });
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
       if (res.ok) fetchInventory();
     } catch (error) {
       console.error(error);
@@ -129,7 +162,11 @@ export default function InventoryPage() {
     setEditingItem(null);
     setIsModalOpen(true);
   };
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
   const openEdit = (item: any) => {
     setFormData({
       name: item.name,
@@ -142,6 +179,7 @@ export default function InventoryPage() {
     setIsModalOpen(true);
   };
 
+<<<<<<< HEAD
   const handleExportCSV = () => {
     const rows = [
       ["Name", "Khmer Name", "Price", "Stock", "Status", "Threshold"],
@@ -195,11 +233,16 @@ export default function InventoryPage() {
       i.status === "low" ||
       i.status === "out" ||
       (typeof i.stock === "number" && typeof i.threshold === "number" && i.stock <= i.threshold)
+=======
+  const lowStockItems = inventoryItems.filter(
+    (i) => i.status === "low" || i.status === "out" || (typeof i.stock === "number" && typeof i.threshold === "number" && i.stock <= i.threshold)
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
   );
 
   const summaryData = {
     totalItems: inventoryItems.length.toString(),
     lowStock: lowStockItems.length.toString(),
+<<<<<<< HEAD
     totalValue: "$" + inventoryItems.reduce((acc, curr) => acc + parseFloat(curr.price) * curr.stock, 0).toFixed(2),
     mostSold: inventoryItems.length > 0 ? inventoryItems[0].name : "-",
     stockTurnover: "2.8x", // Premium exclusive stat highlight
@@ -217,6 +260,12 @@ export default function InventoryPage() {
     
     return matchesSearch;
   });
+=======
+    totalValue: "$" + inventoryItems.reduce((acc, curr) => acc + (parseFloat(curr.price) * curr.stock), 0).toFixed(2),
+    mostSold: inventoryItems.length > 0 ? inventoryItems[0].name : "-",
+    stockTurnover: "2.1x",
+  };
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
 
   return (
     <VendorDashboardLayout
@@ -266,6 +315,13 @@ export default function InventoryPage() {
                   {lowStockItems.length === 1 ? "is" : "are"} running low. Consider restocking soon.
                 </p>
               </div>
+<<<<<<< HEAD
+=======
+              <p className="text-orange-800 dark:text-orange-300/80 text-[14px] leading-relaxed max-w-2xl">
+                {lowStockItems.map(i => i.name).join(", ") || "Some items"} {lowStockItems.length === 1 ? "is" : "are"} running low. Consider
+                restocking soon to avoid stockouts.
+              </p>
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
             </div>
             <button 
               onClick={handleCreatePO}
@@ -354,7 +410,11 @@ export default function InventoryPage() {
                   className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/5 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6] min-h-[44px] transition-colors placeholder:text-slate-400 dark:placeholder:text-[#7d8590]"
                 />
               </div>
+<<<<<<< HEAD
               <button onClick={openAdd} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] text-white font-medium px-4 py-2.5 rounded-xl hover:opacity-90 transition-colors cursor-pointer min-h-[44px] border-0 shadow-sm">
+=======
+              <button onClick={openAdd} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-psar-primary text-white font-medium px-4 py-2.5 rounded-xl hover:bg-psar-primary/90 transition-colors min-h-[44px]">
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
                 <Plus className="w-4 h-4" />
                 <span className="text-sm">Add Item</span>
               </button>
@@ -374,9 +434,86 @@ export default function InventoryPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5 transition-colors">
+<<<<<<< HEAD
                 {loading ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-slate-400">Loading inventory...</td>
+=======
+                {inventoryItems.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-psar-primary/10 dark:hover:bg-white/5 transition-colors group"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="text-[14px] font-bold text-slate-900 dark:text-white">
+                          {item.name}
+                        </span>
+                        <span className="text-[12px] font-khmer text-slate-500 dark:text-[#7d8590]">
+                          {item.khmerName}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="text-[15px] font-bold text-slate-700 dark:text-[#e6edf3]">
+                        {item.price}
+                      </span>
+                      <div className="text-[11px] text-slate-400 dark:text-[#7d8590] mt-0.5">
+                        Cost: $1.00
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[15px] font-bold text-slate-900 dark:text-white w-6">
+                          {item.stock}
+                        </span>
+                        <div className="w-24 h-1.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden transition-colors">
+                          <div
+                            className={`h-full rounded-full ${item.status === "out" ? "bg-red-500" : item.status === "low" ? "bg-orange-500" : "bg-psar-primary"}`}
+                            style={{
+                              width: `${Math.min((item.stock / (item.threshold * 2)) * 100, 100)}%`,
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-[13px] font-medium text-slate-600 dark:text-[#e6edf3]">
+                      {item.lastRestock}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {item.status === "out" ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 text-[11px] font-bold transition-colors">
+                          Out of Stock
+                        </span>
+                      ) : item.status === "low" ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 text-[11px] font-bold transition-colors">
+                          Low Stock
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold transition-colors">
+                          In Stock
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-2 text-slate-400 dark:text-[#7d8590] hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer border-0 bg-transparent"
+                          title="Delete Product"
+                        >
+                          <X className="w-4 h-4 mx-auto" />
+                        </button>
+                        <button
+                          onClick={() => openEdit(item)}
+                          className="p-2 text-slate-400 dark:text-[#7d8590] hover:text-[#3ecf8e] dark:hover:text-[#3ecf8e] rounded-lg hover:bg-[rgba(62,207,142,0.1)] dark:hover:bg-white/5 transition-colors cursor-pointer border-0 bg-transparent"
+                          title="Edit Product"
+                        >
+                          <Edit2 className="w-4 h-4 mx-auto" />
+                        </button>
+                      </div>
+                    </td>
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
                   </tr>
                 ) : filteredItems.length === 0 ? (
                   <tr>
@@ -475,6 +612,43 @@ export default function InventoryPage() {
             </div>
           )}
         </div>
+
+        {/* Modals */}
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-white dark:bg-[#161B22] p-6 rounded-2xl shadow-xl w-full max-w-md border border-slate-200 dark:border-white/10">
+              <h3 className="text-xl font-bold mb-4 dark:text-white text-slate-900">{editingItem ? "Edit Item" : "Add New Item"}</h3>
+              <form onSubmit={handleSave} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1 dark:text-[#7d8590] text-slate-600">Name</label>
+                  <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full border border-slate-200 dark:border-white/10 rounded-lg p-3 dark:bg-[#0d1117] dark:text-white outline-none focus:border-psar-primary" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 dark:text-[#7d8590] text-slate-600">Khmer Name (Optional)</label>
+                  <input value={formData.khmerName} onChange={e => setFormData({...formData, khmerName: e.target.value})} className="w-full border border-slate-200 dark:border-white/10 rounded-lg p-3 dark:bg-[#0d1117] dark:text-white outline-none focus:border-psar-primary" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 dark:text-[#7d8590] text-slate-600">Price ($)</label>
+                  <input type="number" step="0.01" required value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="w-full border border-slate-200 dark:border-white/10 rounded-lg p-3 dark:bg-[#0d1117] dark:text-white outline-none focus:border-psar-primary" />
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1 dark:text-[#7d8590] text-slate-600">Stock</label>
+                    <input type="number" required value={formData.stock} onChange={e => setFormData({...formData, stock: parseInt(e.target.value) || 0})} className="w-full border border-slate-200 dark:border-white/10 rounded-lg p-3 dark:bg-[#0d1117] dark:text-white outline-none focus:border-psar-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium mb-1 dark:text-[#7d8590] text-slate-600">Threshold</label>
+                    <input type="number" required value={formData.threshold} onChange={e => setFormData({...formData, threshold: parseInt(e.target.value) || 0})} className="w-full border border-slate-200 dark:border-white/10 rounded-lg p-3 dark:bg-[#0d1117] dark:text-white outline-none focus:border-psar-primary" />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 mt-6">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 font-bold hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors dark:text-[#e6edf3] text-slate-700 border-0 cursor-pointer bg-transparent">Cancel</button>
+                  <button type="submit" className="px-5 py-2.5 font-bold bg-psar-primary hover:opacity-90 text-white rounded-xl transition-opacity border-0 cursor-pointer">Save</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
       
       {/* ══ Add/Edit Modal ══ */}

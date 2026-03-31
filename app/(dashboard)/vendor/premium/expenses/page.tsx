@@ -483,6 +483,88 @@ export default function PremiumExpensesPage() {
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>(initChat);
   const [dismissed, setDismissed] = useState<number[]>([]);
 
+  // Real API states
+  const [expenseAmount, setExpenseAmount] = useState("");
+  const [expenseCategory, setExpenseCategory] = useState("Ingredients");
+  const [expenseNote, setExpenseNote] = useState("");
+  const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
+  const [showCustomCategoryModal, setShowCustomCategoryModal] = useState(false);
+  const [customCategoryName, setCustomCategoryName] = useState("");
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [formCategories, setFormCategories] = useState([
+    { value: "Ingredients", label: "Ingredients (គ្រឿងផ្សំ)", isCustom: false },
+    { value: "Rent", label: "Rent (ថ្លៃជួល)", isCustom: false },
+    { value: "Transport", label: "Transport (ការធ្វើដំណើរ)", isCustom: false },
+    { value: "Electricity", label: "Electricity (អគ្គិសនី)", isCustom: false },
+    { value: "Labor", label: "Labor (កម្លាំងពលកម្ម)", isCustom: false },
+    { value: "Others", label: "Others (ផ្សេងៗ)", isCustom: false },
+  ]);
+
+  React.useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const res = await fetch("/api/vendor/expenses");
+        const json = await res.json();
+        if (json.success) setExpenses(json.data);
+      } catch (error) {
+        console.error("Failed to fetch expenses", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExpenses();
+  }, []);
+
+  const handleQuickLog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!expenseAmount) return;
+    try {
+      const res = await fetch("/api/vendor/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(expenseAmount),
+          category: expenseCategory,
+          description: expenseNote,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setExpenses((prev) => [json.data, ...prev]);
+        setExpenseAmount("");
+        setExpenseNote("");
+        setIsQuickLogModalOpen(false);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleCreateCustomCategory = () => {
+    if (!customCategoryName.trim()) return;
+    setFormCategories((prev) => [
+      ...prev.slice(0, prev.length - 1),
+      { value: customCategoryName, label: customCategoryName, isCustom: true },
+      prev[prev.length - 1],
+    ]);
+    setExpenseCategory(customCategoryName);
+    setCustomCategoryName("");
+    setShowCustomCategoryModal(false);
+  };
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm("Delete this expense?")) return;
+    try {
+      const res = await fetch(`/api/vendor/expenses/${id}`, { method: "DELETE" });
+      if (res.ok) setExpenses((prev) => prev.filter((exp) => exp.id !== id));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const visibleAlerts = pushAlerts.filter((_, i) => !dismissed.includes(i));
 
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
@@ -564,6 +646,7 @@ export default function PremiumExpensesPage() {
     }
   };
 
+<<<<<<< HEAD
   const handleDeleteExpense = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!confirm("Delete this expense?")) return;
@@ -610,6 +693,8 @@ export default function PremiumExpensesPage() {
     }
   };
 
+=======
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
   const filteredHistory = expenses.filter(
     (e) =>
       (e.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -814,7 +899,11 @@ export default function PremiumExpensesPage() {
           <VendorSummaryCard
             title="Monthly Total"
             khmerTitle="សរុបប្រចាំខែ"
+<<<<<<< HEAD
             value={`$${stats.month.toFixed(2)}`}
+=======
+            value={`$${expenses.reduce((s, e) => s + parseFloat(e.amount || "0"), 0).toFixed(2)}`}
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
             subtext="this month"
           />
           <VendorSummaryCard
@@ -1246,6 +1335,7 @@ export default function PremiumExpensesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#f0f2f5] dark:divide-white/5 transition-colors">
+<<<<<<< HEAD
                   {loading ? (
                     <tr>
                       <td colSpan={5} className="px-[20px] py-12 text-center text-[#9ca3af]">Loading…</td>
@@ -1292,6 +1382,50 @@ export default function PremiumExpensesPage() {
                       );
                     })
                   )}
+=======
+                  {filteredHistory.map((exp, i) => {
+                    const c = catColorMap[exp.categoryColor?.toLowerCase() as CatColor] || catColorMap["slate"];
+                    return (
+                      <tr
+                        key={exp.id || i}
+                        className="group transition-colors hover:bg-[#f7f8fa] dark:hover:bg-white/5 cursor-pointer"
+                      >
+                        <td className="px-[20px] py-[14px]">
+                          <div className="flex items-center gap-1.5 text-[13px] text-[#6b7280] dark:text-[#7d8590]">
+                            {exp.date ? new Date(exp.date).toLocaleDateString() : "Just now"}
+                          </div>
+                        </td>
+                        <td className="px-[20px] py-[14px]">
+                          <span
+                            className={`inline-flex px-2.5 py-[3px] rounded-full text-[11.5px] font-semibold ${c.badge}`}
+                          >
+                            {exp.category}
+                          </span>
+                        </td>
+                        <td className="px-[20px] py-[14px] text-[13px] font-medium text-[#111827] dark:text-white">
+                          {exp.description || "-"}
+                        </td>
+                        <td className="px-[20px] py-[14px]">
+                          <span className="text-[12px] text-[#d1d5db] dark:text-[#4d5562]">
+                            —
+                          </span>
+                        </td>
+                        <td className="px-[20px] py-[14px] text-right flex items-center justify-end gap-3">
+                          <span className="text-[14px] font-bold text-[#111827] dark:text-white">
+                            ${parseFloat(exp.amount || 0).toFixed(2)}
+                          </span>
+                          <button
+                           onClick={(e) => handleDelete(exp.id, e)}
+                           className="opacity-0 group-hover:opacity-100 p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                           title="Delete Expense"
+                          >
+                           <X className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
                 </tbody>
               </table>
             </div>
@@ -1299,6 +1433,7 @@ export default function PremiumExpensesPage() {
         )}
       </div>
 
+<<<<<<< HEAD
       {isQuickLogModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0d1117]/60 backdrop-blur-sm p-4">
           <div className="absolute inset-0" onClick={() => setIsQuickLogModalOpen(false)}></div>
@@ -1346,11 +1481,76 @@ export default function PremiumExpensesPage() {
                   <button type="submit" disabled={!expenseAmount} className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold text-[16px] py-4 rounded-xl transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer disabled:opacity-60"><Plus className="w-5 h-5" /> <span>Save Expense</span></button>
                 </div>
               </div>
+=======
+      {/* ── MODALS ── */}
+      {isQuickLogModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-[#161B22] p-8 rounded-[24px] shadow-xl w-full max-w-md border border-slate-200 dark:border-white/10 relative">
+            <button
+              onClick={() => setIsQuickLogModalOpen(false)}
+              className="absolute top-6 right-6 p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full text-slate-500 transition-colors border-0 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <h3 className="font-extrabold text-[22px] text-slate-900 dark:text-white mb-6">Add New Expense</h3>
+            <form onSubmit={handleQuickLog} className="space-y-5">
+              <div>
+                <label className="block text-[13px] font-bold text-slate-700 dark:text-[#7d8590] mb-2">Category ប្រភេទ</label>
+                <div className="flex gap-2">
+                  <select
+                    value={expenseCategory}
+                    onChange={(e) => setExpenseCategory(e.target.value)}
+                    className="flex-1 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white text-sm outline-none focus:border-psar-primary transition-colors appearance-none font-medium"
+                  >
+                    {formCategories.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomCategoryModal(true)}
+                    className="bg-psar-primary/10 text-psar-primary hover:bg-psar-primary hover:text-white border-0 px-4 rounded-xl transition-colors shrink-0 flex items-center justify-center cursor-pointer"
+                    title="Add Custom Category"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[13px] font-bold text-slate-700 dark:text-[#7d8590] mb-2">Amount ($) ចំនួនទឹកប្រាក់</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={expenseAmount}
+                  onChange={(e) => setExpenseAmount(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white text-sm outline-none focus:border-psar-primary transition-colors font-medium placeholder:text-slate-400"
+                  placeholder="e.g. 15.00"
+                />
+              </div>
+              <div>
+                <label className="block text-[13px] font-bold text-slate-700 dark:text-[#7d8590] mb-2">Note ភាគីយោង (Optional)</label>
+                <input
+                  type="text"
+                  value={expenseNote}
+                  onChange={(e) => setExpenseNote(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white text-sm outline-none focus:border-psar-primary transition-colors font-medium placeholder:text-slate-400"
+                  placeholder="What was this for?"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-psar-primary hover:bg-psar-primary/90 text-white font-bold text-[15px] py-4 rounded-xl shadow-[0_4px_20px_rgba(62,207,142,0.25)] transition-all cursor-pointer border-0 mt-2"
+              >
+                Log Expense
+              </button>
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
             </form>
           </div>
         </div>
       )}
 
+<<<<<<< HEAD
       {/* CUSTOM CATEGORY MODAL */}
       {showCustomCategoryModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0d1117]/60 backdrop-blur-sm p-4">
@@ -1367,6 +1567,33 @@ export default function PremiumExpensesPage() {
             <div className="space-y-4">
               <input type="text" placeholder="e.g., Shop Decor" value={customCategoryName} onChange={(e) => setCustomCategoryName(e.target.value)} className="w-full px-4 py-3 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[14px] focus:border-[#3ecf8e] outline-none transition-all text-[#111827] dark:text-white" autoFocus />
               <button onClick={handleCreateCustomCategory} className="w-full bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold py-3 rounded-xl transition-colors border-0 cursor-pointer">Create Category</button>
+=======
+      {showCustomCategoryModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-[#161B22] p-8 rounded-[24px] shadow-xl w-full max-w-sm border border-slate-200 dark:border-white/10">
+            <h3 className="font-extrabold text-[20px] text-slate-900 dark:text-white mb-2">New Custom Category</h3>
+            <p className="text-sm text-slate-500 mb-6">Create a specific tracking category</p>
+            <input
+              autoFocus
+              value={customCategoryName}
+              onChange={(e) => setCustomCategoryName(e.target.value)}
+              placeholder="e.g. Meta Ads, Cleaning..."
+              className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white text-sm outline-none focus:border-psar-primary transition-colors font-medium mb-6"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowCustomCategoryModal(false); setCustomCategoryName(""); }}
+                className="flex-1 py-3.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-white font-bold rounded-xl transition-colors border-0 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateCustomCategory}
+                className="flex-1 py-3.5 bg-psar-primary hover:bg-psar-primary/90 text-white font-bold rounded-xl transition-colors border-0 cursor-pointer"
+              >
+                Create
+              </button>
+>>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
             </div>
           </div>
         </div>

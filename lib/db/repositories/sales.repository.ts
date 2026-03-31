@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { db } from "../index";
 import { vendorSales } from "../schema/sales.schema";
 
@@ -19,5 +19,13 @@ export class SalesRepository {
     return await db.query.vendorSales.findFirst({
       where: eq(vendorSales.id, id),
     });
+  }
+
+  static async delete(id: string, vendorId: string) {
+    const [result] = await db
+      .delete(vendorSales)
+      .where(and(eq(vendorSales.id, id), eq(vendorSales.vendorId, vendorId)))
+      .returning();
+    return result;
   }
 }

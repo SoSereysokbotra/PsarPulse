@@ -14,7 +14,6 @@ import {
   X,
   Bell,
   Crown,
-  Lock,
   CheckCircle2,
   ArrowUpRight,
   FileSpreadsheet,
@@ -38,6 +37,7 @@ import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useUser } from "@/components/providers/UserProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { PremiumAnalytics } from "@/lib/analytics/premium.analytics";
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface Product {
@@ -60,7 +60,7 @@ const GOAL_DATA = {
   label: "Daily Revenue Goal",
   khmer: "គោលដៅចំណូលប្រចាំថ្ងៃ",
   current: 0,
-  target: 500,
+  target: 1000, // Premium: 2× the Pro goal target
 };
 
 const PREMIUM_NAV = [
@@ -113,11 +113,120 @@ export default function PremiumDashboard() {
     setMounted(true);
   }, []);
 
-  const [isDayLocked, setIsDayLocked] = useState(false);
+  // Premium: records auto-save continuously — no manual day-lock needed
+  const [isChatSending, setIsChatSending] = useState(false);
+  const [dashChatMessages, setDashChatMessages] = useState<{role:string,text:string}[]>([
+    { role: "assistant", text: "សួស្តី! I'm your Gemini Business Assistant. How can I help optimize your business today?" },
+    { role: "assistant", text: "I can analyze your sales trends, inventory levels, and help forecast revenue. Just ask!" },
+  ]);
+  const [dashChatInput, setDashChatInput] = useState("");
   const [showCustomCategoryModal, setShowCustomCategoryModal] = useState(false);
   const [customCategoryName, setCustomCategoryName] = useState("");
+  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+  const [salesRaw, setSalesRaw] = useState<any[]>([]);
+  const [expensesRaw, setExpensesRaw] = useState<any[]>([]);
 
-  const hasData = false; // Empty state for new user
+  const [stats, setStats] = useState({
+    sales: 0,
+    expenses: 0,
+    customers: 0,
+    transactions: 0
+  });
+
+  const [dailyGoalValue, setDailyGoalValue] = useState(1000);
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [newGoalInput, setNewGoalInput] = useState("1000");
+  const [isUpdatingGoal, setIsUpdatingGoal] = useState(false);
+  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [aiSavings, setAiSavings] = useState<{ potentialSavings: number; period: string }>({
+    potentialSavings: 0,
+    period: "Weekly",
+  });
+
+  const fetchGoal = useCallback(async () => {
+    try {
+      const res = await fetch("/api/vendor/goal");
+      const json = await res.json();
+      if (json.success && json.data) {
+        setDailyGoalValue(parseFloat(json.data.targetAmount));
+        setNewGoalInput(json.data.targetAmount);
+      }
+    } catch (err) {
+      console.error("Dashboard fetch goal error:", err);
+    }
+  }, []);
+
+  const fetchAllData = useCallback(async () => {
+    try {
+      const [salesRes, expRes, custRes, invRes] = await Promise.all([
+        fetch("/api/vendor/sales"),
+        fetch("/api/vendor/expenses"),
+        fetch("/api/vendor/customers"),
+        fetch("/api/vendor/inventory")
+      ]);
+
+      if (salesRes.status === 401 || expRes.status === 401) {
+        window.location.href = "/login?redirect=/vendor/premium";
+        return;
+      }
+
+      const [salesData, expData, custData, invData] = await Promise.all([
+        salesRes.json(),
+        expRes.json(),
+        custRes.json(),
+        invRes.json()
+      ]);
+
+      if (salesData.success) {
+        const raw: any[] = salesData.data;
+        setSalesRaw(raw);
+        const totalSales = raw.reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
+        setStats(prev => ({ ...prev, sales: totalSales, transactions: raw.length }));
+      }
+      if (expData.success) {
+        const raw: any[] = expData.data;
+        setExpensesRaw(raw);
+        const totalExp = raw.reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
+        setStats(prev => ({ ...prev, expenses: totalExp }));
+      }
+      if (custData.success) {
+        setStats(prev => ({ ...prev, customers: custData.data.length }));
+      }
+      if (invData.success) {
+        setInventoryItems(invData.data);
+      }
+    } catch (e) {
+      console.error("Dashboard fetch error:", e);
+    }
+  }, []);
+
+  const fetchAiSavings = useCallback(async () => {
+    try {
+      const res = await fetch("/api/vendor/ai/savings");
+      const json = await res.json();
+      if (json.success) {
+        setAiSavings(json.data);
+      }
+    } catch (err) {
+      console.error("Dashboard fetch AI savings error:", err);
+    }
+  }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchAllData();
+    fetchGoal();
+    fetchAiSavings();
+  }, [fetchAllData, fetchGoal, fetchAiSavings]);
+
+  // Re-fetch whenever the tab becomes visible again
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === "visible") fetchAllData(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [fetchAllData]);
+
+  const hasData = stats.transactions > 0 || stats.expenses > 0 || stats.customers > 0;
 
   // Initials logic
   const getInitials = (name: string) => {
@@ -176,11 +285,32 @@ export default function PremiumDashboard() {
   const { greeting, greetingKh, dateStr } = greetingState;
 
   // Goal ring logic
-  const GOAL = hasData ? GOAL_DATA : { ...GOAL_DATA, current: 0 };
+  const GOAL = hasData ? { ...GOAL_DATA, current: stats.sales, target: dailyGoalValue } : { ...GOAL_DATA, current: 0, target: dailyGoalValue };
   const goalPct = Math.min((GOAL.current / GOAL.target) * 100, 100);
   const radius = 38;
   const circum = 2 * Math.PI * radius;
   const strokeDash = (goalPct / 100) * circum;
+
+  const handleUpdateGoal = async () => {
+    if (!newGoalInput || isUpdatingGoal) return;
+    setIsUpdatingGoal(true);
+    try {
+      const res = await fetch("/api/vendor/goal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetAmount: parseFloat(newGoalInput) }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setDailyGoalValue(parseFloat(json.data.targetAmount));
+        setShowGoalModal(false);
+      }
+    } catch (err) {
+      console.error("Failed to update goal:", err);
+    } finally {
+      setIsUpdatingGoal(false);
+    }
+  };
 
   useEffect(() => {
     if (quickSaleOpen) setTimeout(() => searchRef.current?.focus(), 120);
@@ -213,7 +343,7 @@ export default function PremiumDashboard() {
     return () => document.removeEventListener("mousedown", fn);
   }, [quickSaleOpen, closeQuickSale]);
 
-  const filteredProducts = PRODUCT_LIBRARY.filter((p) =>
+  const filteredProducts = inventoryItems.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
@@ -239,113 +369,176 @@ export default function PremiumDashboard() {
 
   const cartTotal = cart.reduce((sum, i) => sum + i.product.price * i.qty, 0);
   const cartItems = cart.reduce((sum, i) => sum + i.qty, 0);
-  const completeSale = () => {
-    setCart([]);
-    setCustomers(1);
-    setSearchQuery("");
-    setQuickSaleOpen(false);
-  };
 
-
-
-  const summaryData = hasData ? {
-    sales: "$524.50",
-    expenses: "$145.00",
-    profit: "$379.50",
-    customers: "124",
-    profitMargin: "72.3%",
-    trends: {
-      sales: "+24%",
-      profit: "+32%",
-      margin: "+5.1%",
-      customers: "+18%"
-    }
-  } : {
-    sales: "$0.00",
-    expenses: "$0.00",
-    profit: "$0.00",
-    customers: "0",
-    profitMargin: "0.0%",
-    trends: {
-      sales: "",
-      profit: "",
-      margin: "",
-      customers: ""
+  const completeSale = async () => {
+    if (!cart.length) return;
+    try {
+      const itemsStr = cart.map(i => `${i.qty}x ${i.product.name}`).join(", ");
+      const res = await fetch("/api/vendor/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: cartTotal, method: "Cash", items: itemsStr }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        // Optimistically update raw sales so all charts refresh immediately
+        setSalesRaw(prev => [json.data, ...prev]);
+        setStats(prev => ({ ...prev, sales: prev.sales + cartTotal, transactions: prev.transactions + 1 }));
+        setCart([]);
+        setCustomers(1);
+        setSearchQuery("");
+        setQuickSaleOpen(false);
+      }
+    } catch (error) {
+      console.error("Failed to complete quick sale:", error);
     }
   };
 
+  // ── Summary card data ──
+  const summaryData = {
+    sales: `$${stats.sales.toFixed(2)}`,
+    expenses: `$${stats.expenses.toFixed(2)}`,
+    profit: `$${(stats.sales - stats.expenses).toFixed(2)}`,
+    aiSavings: `$${aiSavings.potentialSavings.toFixed(2)}`,
+    customers: String(stats.customers),
+    avgCustomer: stats.transactions > 0 ? `$${(stats.sales / stats.transactions).toFixed(2)}` : "$0.00",
+    bestSelling: "-",
+    profitMargin: stats.sales > 0 ? `${(((stats.sales - stats.expenses) / stats.sales) * 100).toFixed(1)}%` : "0%",
+    trends: { sales: "", profit: "", margin: "", customers: "", savings: "Optimization" },
+  };
 
+  // ── Stats computations ──
+  const EXPENSE_COLORS = [
+    "#29B28D", "#6366f1", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#94a3b8",
+  ];
 
-  const weeklyData = [65, 88, 55, 110, 80, 145, 105];
   const weeklyLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const monthlyData = [580, 720, 680, 810];
+  const weeklyData = React.useMemo(() => {
+    const now = new Date();
+    const buckets = [0, 0, 0, 0, 0, 0, 0];
+    salesRaw.forEach((t) => {
+      const d = new Date(t.createdAt);
+      const diffMs = now.getTime() - d.getTime();
+      const diffDays = Math.floor(diffMs / 86400000);
+      if (diffDays < 7) {
+        const dow = (d.getDay() + 6) % 7;
+        buckets[dow] += parseFloat(t.amount || "0");
+      }
+    });
+    return buckets;
+  }, [salesRaw]);
+
+  const maxWeekly = React.useMemo(() => PremiumAnalytics.getDynamicMax(weeklyData, 1000), [weeklyData]);
+
   const monthlyLabels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+  const monthlyData = React.useMemo(() => {
+    const buckets = [0, 0, 0, 0];
+    salesRaw.forEach((t) => {
+      const d = new Date(t.createdAt);
+      const weekIdx = Math.min(3, Math.floor((d.getDate() - 1) / 7));
+      buckets[weekIdx] += parseFloat(t.amount || "0");
+    });
+    return buckets;
+  }, [salesRaw]);
 
-  const bestSellingProducts = [
-    {
-      name: "Iced Coffee",
-      khmer: "កាហ្វេទឹកកក",
-      qty: 62,
-      revenue: "$93.00",
-      pct: 100,
-    },
-    {
-      name: "Noodle Soup",
-      khmer: "គុយទាវ",
-      qty: 45,
-      revenue: "$135.00",
-      pct: 78,
-    },
-    {
-      name: "Hot Latte",
-      khmer: "ឡាតេក្តៅ",
-      qty: 35,
-      revenue: "$70.00",
-      pct: 62,
-    },
-    { name: "Green Tea", khmer: "តែបៃតង", qty: 28, revenue: "$42.00", pct: 50 },
-  ];
+  const maxMonthly = React.useMemo(() => PremiumAnalytics.getDynamicMax(monthlyData, 3000), [monthlyData]);
 
-  const expenseCategories = [
-    { label: "គ្រឿងផ្សំ", value: 35, color: "#29B28D" },
-    { label: "ថ្លៃជួល", value: 25, color: "#6366f1" },
-    { label: "ពលកម្ម", value: 15, color: "#f59e0b" },
-    { label: "ដឹកជញ្ជូន", value: 12, color: "#ef4444" },
-    { label: "អគ្គិសនី", value: 5, color: "#8b5cf6" },
-    { label: "ផ្សេងៗ", value: 8, color: "#94a3b8" },
-  ];
+  const bestSellingProducts = React.useMemo(() => {
+    if (inventoryItems.length > 0) {
+      const soldMap: Record<string, number> = {};
+      salesRaw.forEach((t) => {
+        const itemStr: string = t.items || "";
+        const parts = itemStr.split(",").map((s: string) => s.trim());
+        parts.forEach((part) => {
+          const match = part.match(/^(\d+)x?\s+(.+)$/i);
+          if (match) {
+            const qty = parseInt(match[1], 10);
+            const name = match[2].trim();
+            soldMap[name] = (soldMap[name] || 0) + qty;
+          }
+        });
+      });
+      const sorted = Object.entries(soldMap)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 4);
+      const maxQty = sorted[0]?.[1] || 1;
+      return sorted.map(([name, qty], i) => {
+        const invItem = inventoryItems.find((inv: any) => inv.name.toLowerCase() === name.toLowerCase());
+        return {
+          name,
+          khmer: invItem?.khmerName || "",
+          qty,
+          revenue: `$${(invItem ? parseFloat(invItem.price || "0") * qty : 0).toFixed(2)}`,
+          pct: Math.round((qty / maxQty) * 100),
+        };
+      });
+    }
+    return [];
+  }, [salesRaw, inventoryItems]);
 
-  const inventoryItems = [
-    { id: 1, name: "Iced Coffee", stock: 45, status: "good" },
-    { id: 2, name: "Hot Latte", stock: 3, status: "low" },
-    { id: 3, name: "Mango Sticky Rice", stock: 0, status: "out" },
-    { id: 4, name: "Noodle Soup", stock: 24, status: "good" },
-    { id: 5, name: "Green Tea", stock: 12, status: "good" },
-  ];
+  const expenseCategories = React.useMemo(() => {
+    const map: Record<string, number> = {};
+    expensesRaw.forEach((e) => {
+      const cat = e.category || "Others";
+      map[cat] = (map[cat] || 0) + parseFloat(e.amount || "0");
+    });
+    const total = Object.values(map).reduce((a, b) => a + b, 0);
+    return Object.entries(map).map(([label, value], idx) => ({
+      label,
+      value: total > 0 ? Math.round((value / total) * 100) : 0,
+      amount: value,
+      color: EXPENSE_COLORS[idx % EXPENSE_COLORS.length],
+    }));
+  }, [expensesRaw]);
 
-  const smartAlerts = [
-    {
-      type: "opportunity",
-      message: "Nearby event detected: +40% foot traffic expected tonight",
-      time: "30 min ago",
-    },
-    {
-      type: "warning",
-      message: "Trending Drop: Green Tea sales are down 15% today",
-      time: "2 hours ago",
-    },
-  ];
+  const [smartAlerts, setSmartAlerts] = useState<any[]>([]);
 
-  const chatMessages = [
-    {
-      role: "assistant",
-      text: "សួស្តី! I'm your AI assistant. How can I help you today?",
-    },
-    {
-      role: "assistant",
-      text: "I can help with sales analysis, inventory advice, and more. Just ask!",
-    },
-  ];
+  React.useEffect(() => {
+    const alerts: any[] = [];
+    const lowStockItems = inventoryItems.filter(i => i.stock <= (i.threshold || 10));
+    if (lowStockItems.length > 0) {
+      if (!dismissedAlerts.has("low_stock")) {
+        alerts.push({
+          id: "low_stock",
+          type: "warning",
+          message: `Low Stock Alert: ${lowStockItems.length} items (${lowStockItems.slice(0, 2).map(i => i.name).join(", ")}${lowStockItems.length > 2 ? "..." : ""}) are running low.`,
+          time: "Just now",
+        });
+      }
+    }
+    if (salesRaw.length > 0) {
+      if (!dismissedAlerts.has("opportunity")) {
+        alerts.push({
+          id: "opportunity",
+          type: "opportunity",
+          message: "Your sales are trending well! Consider running a flash promotion.",
+          time: "1 hour ago",
+        });
+      }
+    }
+    setSmartAlerts(alerts);
+  }, [inventoryItems, salesRaw, dismissedAlerts]);
+
+  const handleDashChatSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dashChatInput || isChatSending) return;
+    const msg = dashChatInput;
+    setDashChatInput("");
+    setDashChatMessages(prev => [...prev, { role: "user", text: msg }]);
+    setIsChatSending(true);
+    try {
+      const res = await fetch("/api/vendor/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg, context: "dashboard" }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setDashChatMessages(prev => [...prev, { role: "assistant", text: json.response }]);
+      }
+    } catch(err) { console.error(err); }
+    finally { setIsChatSending(false); }
+  };
 
   return (
     <VendorDashboardLayout
@@ -448,8 +641,8 @@ export default function PremiumDashboard() {
                         Tap to add
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
-                        {hasData ? (
-                          PRODUCT_LIBRARY.map((p) => {
+                        {inventoryItems.length > 0 ? (
+                          inventoryItems.map((p) => {
                             const inCart = cart.find(
                               (i) => i.product.id === p.id,
                             );
@@ -596,7 +789,25 @@ export default function PremiumDashboard() {
             )}
           </div>
 
-          <button className="hidden sm:flex items-center gap-2 bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 hover:bg-[#f7f8fa] dark:hover:bg-white/5 text-[#111827] dark:text-white font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer">
+          <button onClick={() => {
+            const rows = [
+              ["Date", "Amount", "Method", "Items"],
+              ...salesRaw.map((s) => [
+                new Date(s.createdAt).toLocaleString(),
+                s.amount,
+                s.method || "Cash",
+                `"${(s.items || "").replace(/"/g, '""')}"`
+              ]),
+            ];
+            const csv = rows.map((r) => r.join(",")).join("\n");
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "premium_dashboard_export.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+          }} className="hidden sm:flex items-center gap-2 bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 hover:bg-[#f7f8fa] dark:hover:bg-white/5 text-[#111827] dark:text-white font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer">
             <FileSpreadsheet className="w-4 h-4" /> Export Excel
           </button>
         </>
@@ -609,7 +820,7 @@ export default function PremiumDashboard() {
           <div className="space-y-3">
             {smartAlerts.map((alert, i) => (
               <div
-                key={i}
+                key={alert.id || i}
                 className={`flex items-center gap-4 p-4 rounded-[11px] border shadow-sm transition-all hover:shadow-md ${
                   alert.type === "warning"
                     ? "bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20"
@@ -635,7 +846,12 @@ export default function PremiumDashboard() {
                     {alert.time}
                   </p>
                 </div>
-                <button className="text-[12px] font-bold text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white px-3 py-1.5 rounded-[8px] hover:bg-white dark:hover:bg-white/10 transition-colors bg-transparent border-0 cursor-pointer">
+                <button onClick={() => {
+                  if (alert.id) {
+                    setDismissedAlerts(prev => new Set(prev).add(alert.id));
+                  }
+                  setSmartAlerts(prev => prev.filter(a => a.id !== alert.id));
+                }} className="text-[12px] font-bold text-[#4b5563] dark:text-[#abb4be] hover:text-[#111827] dark:hover:text-white px-3 py-1.5 rounded-[8px] hover:bg-white dark:hover:bg-white/10 transition-colors bg-transparent border-0 cursor-pointer">
                   Dismiss
                 </button>
               </div>
@@ -656,11 +872,11 @@ export default function PremiumDashboard() {
               <span className="text-[22px] font-extrabold text-white tracking-tight" suppressHydrationWarning>
                 {greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName} 👋
               </span>
-              <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2" suppressHydrationWarning>
-                <span>{greetingKh}</span>
+              <div className="text-[11px] text-[#abb4be] mt-0.5 flex items-center gap-2" suppressHydrationWarning>
+                <span className="font-medium text-white/90">{greetingKh}</span>
                 <span className="w-[3px] h-[3px] rounded-full bg-[#4d5562] inline-block" />
-                <Clock size={10} className="inline-block" />
-                <span>{dateStr}</span>
+                <Clock size={10} className="inline-block text-[#29B28D]" />
+                <span className="text-white/80">{dateStr}</span>
               </div>
             </div>
           </div>
@@ -716,8 +932,15 @@ export default function PremiumDashboard() {
                   style={{ width: `${goalPct}%` }}
                 />
               </div>
-              <div className="text-[11px] text-[#7d8590] mt-1.5">
-                {GOAL.khmer}
+              <div className="text-[11px] text-[#7d8590] mt-1.5 flex items-center justify-between">
+                <span>{GOAL.khmer}</span>
+                <button
+                  onClick={() => setShowGoalModal(true)}
+                  className="bg-transparent border-0 p-0 text-[#29B28D] hover:underline text-[10px] font-bold cursor-pointer flex items-center gap-1"
+                >
+                  <Plus className="w-2.5 h-2.5" />
+                  {isKhmer ? "កំណត់គោលដៅ" : "Set Goal"}
+                </button>
               </div>
             </div>
           </div>
@@ -743,11 +966,11 @@ export default function PremiumDashboard() {
             highlight
           />
           <VendorSummaryCard
-            title="Profit Margin"
-            khmerTitle="អត្រាចំណេញ"
-            value={summaryData.profitMargin}
-            icon={ArrowUpRight}
-            trend={summaryData.trends.margin}
+            title="AI Savings"
+            khmerTitle="ការសន្សំដោយ AI"
+            value={summaryData.aiSavings}
+            icon={Sparkles}
+            trend={summaryData.trends.savings}
             isPositive
           />
           <VendorSummaryCard
@@ -770,26 +993,23 @@ export default function PremiumDashboard() {
               ចំណូលប្រចាំសប្តាហ៍
             </p>
             <div className="h-40 flex items-end gap-1.5">
-              {hasData ? (
-                weeklyData.map((height, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 flex flex-col items-center gap-1"
-                  >
-                    <div
-                      className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group"
-                      style={{ height: "120px" }}
-                    >
-                      <div
-                        className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
-                        style={{ height: `${height}%` }}
-                      />
+              {stats.transactions > 0 || hasData ? (
+                weeklyData.map((amount, i) => {
+                    const height = Math.round((amount / maxWeekly) * 100);
+                    return (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                        <div className="w-full bg-[rgba(41,178,141,0.12)] rounded-t-[7px] relative group" style={{ height: "120px" }}>
+                          <div
+                            className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
+                            style={{ height: `${Math.max(height, 5)}%` }}
+                          />
+                        </div>
+                      <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
+                        {weeklyLabels[i]}
+                      </span>
                     </div>
-                    <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
-                      {weeklyLabels[i]}
-                    </span>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="w-full h-full flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10">
                   <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">No data. Add item</span>
@@ -821,7 +1041,7 @@ export default function PremiumDashboard() {
                     >
                       <div
                         className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
-                        style={{ height: `${(val / 900) * 100}%` }}
+                        style={{ height: `${Math.max((val / maxMonthly) * 100, 5)}%` }}
                       />
                     </div>
                     <span className="text-[10px] text-[#6b7280] dark:text-[#7d8590]">
@@ -987,14 +1207,12 @@ export default function PremiumDashboard() {
                 End-of-Day AI Summary
               </h3>
               <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                សង្ខេបចុងថ្ងៃរហ័ស
+                សង្ខេបចុងថ្ងៃរហ័ស · Real-time
               </p>
             </div>
-            {isDayLocked && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[12px] font-bold border border-[rgba(41,178,141,0.2)]">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Day Locked
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[12px] font-bold border border-[rgba(41,178,141,0.2)]">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Auto-Saved
+            </span>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-3 gap-4 mb-6">
@@ -1046,9 +1264,13 @@ export default function PremiumDashboard() {
               <p className="text-[14px] text-[#111827] dark:text-white leading-relaxed">
                 {hasData ? (
                   <>
-                    📊 <strong>Incredible day!</strong> Revenue increased by +24%
-                    vs. yesterday. Iced Coffee remains your top seller. Watch your
-                    Hot Latte stock though, it&apos;s critically low!
+                    📊 <strong>Great performance!</strong> You have logged {stats.transactions} sales today. 
+                    {bestSellingProducts.length > 0 && (
+                      <> <strong>{bestSellingProducts[0].name}</strong> is your top performer.</>
+                    )}
+                    {inventoryItems.some(i => i.stock <= i.threshold) && (
+                      <> Watch your stock levels! Some items are running low and need restocking.</>
+                    )}
                   </>
                 ) : (
                   <>Not enough data yet. Start making sales to generate your AI daily summary.</>
@@ -1063,20 +1285,11 @@ export default function PremiumDashboard() {
               </strong>
             </div>
 
-            {!isDayLocked ? (
-              <button
-                onClick={() => setIsDayLocked(true)}
-                className="w-full flex items-center justify-center gap-2.5 bg-[#29B28D] hover:opacity-90 text-[#0E1319] font-bold text-[16px] py-4 rounded-[11px] border-0 cursor-pointer transition-all shadow-[0_4px_22px_rgba(41,178,141,0.28)] min-h-[56px]"
-              >
-                <Lock className="w-5 h-5" />
-                <span>Confirm &amp; Lock Day (បញ្ជាក់ និងចាក់សោ)</span>
-              </button>
-            ) : (
-              <div className="w-full flex items-center justify-center gap-2.5 bg-[#f7f8fa] dark:bg-[#161B22] text-[#6b7280] dark:text-[#7d8590] font-bold text-[16px] py-4 rounded-[11px] border border-[#e8eaed] dark:border-white/5 min-h-[56px] transition-colors">
-                <CheckCircle2 className="w-5 h-5 text-[#29B28D]" />
-                <span>Day Locked — Records Finalized</span>
-              </div>
-            )}
+            {/* Premium: always-on continuous auto-save — no manual locking required */}
+            <div className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[rgba(41,178,141,0.08)] to-[rgba(139,92,246,0.08)] text-[#29B28D] font-bold text-[16px] py-4 rounded-[11px] border border-[rgba(41,178,141,0.2)] min-h-[56px] transition-colors">
+              <Sparkles className="w-5 h-5 text-[#8b5cf6]" />
+              <span>Premium Auto-Save — Records Sync Continuously</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1166,7 +1379,7 @@ export default function PremiumDashboard() {
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#f7f8fa] dark:bg-[#161B22] min-h-[280px] transition-colors">
-            {chatMessages.map((msg, i) => (
+            {dashChatMessages.map((msg, i) => (
               <div
                 key={i}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
@@ -1185,24 +1398,120 @@ export default function PremiumDashboard() {
                 </div>
               </div>
             ))}
+            {isChatSending && (
+              <div className="flex justify-start">
+                <div className="px-4 py-3 bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 text-[#6b7280] dark:text-[#7d8590] rounded-[12px] rounded-tl-sm text-[13px] italic">
+                  Analyzing your data...
+                </div>
+              </div>
+            )}
           </div>
           <div className="p-3 border-t border-[#e8eaed] dark:border-white/10 bg-white dark:bg-[#0d1117] transition-colors">
-            <div className="flex items-center gap-2">
+            <form onSubmit={handleDashChatSubmit} className="flex items-center gap-2">
               <input
                 type="text"
-                placeholder="Ask your assistant..."
-                value={chatMessage}
-                onChange={(e) => setChatMessage(e.target.value)}
+                placeholder="Ask your Gemini assistant..."
+                value={dashChatInput}
+                onChange={(e) => setDashChatInput(e.target.value)}
                 className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] text-[#111827] dark:text-white focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#29B28D] dark:focus:border-[#29B28D] outline-none transition-all placeholder:text-[#6b7280] dark:placeholder:text-[#7d8590]"
                 style={{ fontFamily: "inherit" }}
               />
-              <button className="p-2.5 bg-[#29B28D] text-[#0E1319] rounded-[10px] hover:opacity-90 transition-opacity shadow-sm border-0 cursor-pointer">
+              <button type="submit" disabled={isChatSending || !dashChatInput} className="p-2.5 bg-[#29B28D] text-[#0E1319] rounded-[10px] hover:opacity-90 transition-opacity shadow-sm border-0 cursor-pointer disabled:opacity-50">
                 <Send className="w-4 h-4" />
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Goal Setting Modal */}
+      {showGoalModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0E1319]/40 backdrop-blur-sm p-4">
+          <div
+            className="absolute inset-0"
+            onClick={() => setShowGoalModal(false)}
+          />
+          <div className="bg-white dark:bg-[#0d1117] rounded-[18px] w-full max-w-sm p-6 shadow-2xl relative z-10 border dark:border-white/10 transition-colors">
+            <button
+              onClick={() => setShowGoalModal(false)}
+              className="absolute top-4 right-4 text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white p-1.5 rounded-[8px] hover:bg-[#f7f8fa] dark:hover:bg-white/5 transition-colors bg-transparent border-0 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-[rgba(41,178,141,0.1)] flex items-center justify-center">
+                <Target className="w-5 h-5 text-[#29B28D]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-[18px] text-[#111827] dark:text-white leading-tight">
+                  Set Revenue Goal
+                </h3>
+                <p className="text-[11px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
+                  គោលដៅចំណូលប្រចាំថ្ងៃ
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <label className="block text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-wider mb-2">
+                  Daily Target Amount (USD)
+                </label>
+                <div className="relative">
+                  <CircleDollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280] dark:text-[#7d8590]" />
+                  <input
+                    type="number"
+                    value={newGoalInput}
+                    onChange={(e) => setNewGoalInput(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[16px] text-[#111827] dark:text-white font-bold focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#29B28D] dark:focus:border-[#29B28D] outline-none transition-all placeholder:text-[#6b7280]"
+                    placeholder="Enter amount..."
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {[200, 500, 1000].map(val => (
+                    <button
+                      key={val}
+                      onClick={() => setNewGoalInput(val.toString())}
+                      className={`py-2 px-3 rounded-lg border text-[11px] font-bold transition-all cursor-pointer ${
+                        newGoalInput === val.toString()
+                          ? "bg-[#29B28D] text-[#0E1319] border-[#29B28D]"
+                          : "bg-transparent text-[#6b7280] border-[#e8eaed] dark:border-white/10 hover:border-[#29B28D]"
+                      }`}
+                    >
+                      ${val}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowGoalModal(false)}
+                  className="flex-1 py-3 font-bold text-[13px] rounded-xl border border-[#e8eaed] dark:border-white/10 bg-transparent text-[#6b7280] dark:text-[#7d8590] hover:bg-[#f7f8fa] dark:hover:bg-white/5 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateGoal}
+                  disabled={isUpdatingGoal || !newGoalInput || parseFloat(newGoalInput) <= 0}
+                  className="flex-[2] bg-[#29B28D] text-[#0E1319] font-extrabold text-[13px] py-3 rounded-xl hover:opacity-90 disabled:opacity-50 transition-all border-0 cursor-pointer shadow-[0_4px_12px_rgba(41,178,141,0.2)]"
+                >
+                  {isUpdatingGoal ? "Updating..." : "Save Goal"}
+                </button>
+              </div>
+            </div>
+            
+            {/* History Link / Table mention */}
+            <div className="mt-6 pt-5 border-t border-[#f0f2f5] dark:border-white/5">
+              <p className="text-[10px] text-[#6b7280] dark:text-[#7d8590] text-center italic">
+                Your goals are tracked in a dedicated table for premium reporting.
+              </p>
             </div>
           </div>
         </div>
       )}
+
     </VendorDashboardLayout>
   );
 }

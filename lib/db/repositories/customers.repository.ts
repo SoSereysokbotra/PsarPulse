@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 import { db } from "../index";
 import { vendorCustomers } from "../schema/customers.schema";
 
@@ -29,4 +29,50 @@ export class CustomersRepository {
       .returning();
     return result;
   }
+
+  static async getAvgLTV(vendorId: string) {
+    const result = await db
+      .select({
+        avgLtv: sql<string>`avg(${vendorCustomers.totalSpent})`,
+      })
+      .from(vendorCustomers)
+      .where(eq(vendorCustomers.vendorId, vendorId));
+
+    return parseFloat(result[0]?.avgLtv || "0");
+  }
+
+  static async findTopCustomers(vendorId: string, limit: number = 3) {
+    return await db.query.vendorCustomers.findMany({
+      where: eq(vendorCustomers.vendorId, vendorId),
+      orderBy: [desc(vendorCustomers.totalSpent)],
+      limit,
+    });
+  }
+
+  static async countByVendorId(vendorId: string): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(vendorCustomers)
+      .where(eq(vendorCustomers.vendorId, vendorId));
+    return Number(result[0]?.count || 0);
+  }
+
+  static async update(id: string, vendorId: string, data: Partial<typeof vendorCustomers.$inferInsert>) {
+    const [result] = await db
+      .update(vendorCustomers)
+      .set(data)
+      .where(and(eq(vendorCustomers.id, id), eq(vendorCustomers.vendorId, vendorId)))
+      .returning();
+    return result;
+  }
+
+  static async delete(id: string, vendorId: string) {
+    const [result] = await db
+      .delete(vendorCustomers)
+      .where(and(eq(vendorCustomers.id, id), eq(vendorCustomers.vendorId, vendorId)))
+      .returning();
+    return result;
+  }
 }
+
+

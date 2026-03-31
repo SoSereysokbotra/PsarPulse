@@ -64,8 +64,21 @@ export const vendors = pgTable("vendors", {
     .$type<"pending" | "approved" | "rejected">()
     .default("pending"),
   status: varchar("status", { length: 50 })
-    .$type<"active" | "inactive" | "blocked">()
+    .$type<"active" | "inactive" | "blocked" >()
     .default("active"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Vendor Goals
+export const vendorGoals = pgTable("vendor_goals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  vendorId: uuid("vendor_id")
+    .references(() => vendors.id, { onDelete: "cascade" })
+    .notNull(),
+  targetAmount: decimal("target_amount", { precision: 10, scale: 2 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull().default("daily_revenue"),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -212,6 +225,14 @@ export const vendorsRelations = relations(vendors, ({ one, many }) => ({
   subscriptions: many(vendorSubscriptions),
   teamMembers: many(vendorTeamMembers),
   requests: many(vendorRequests),
+  goals: many(vendorGoals),
+}));
+
+export const vendorGoalsRelations = relations(vendorGoals, ({ one }) => ({
+  vendor: one(vendors, {
+    fields: [vendorGoals.vendorId],
+    references: [vendors.id],
+  }),
 }));
 
 export const vendorSubscriptionsRelations = relations(

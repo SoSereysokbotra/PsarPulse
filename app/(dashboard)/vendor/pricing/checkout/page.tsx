@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Shield,
@@ -27,7 +27,7 @@ type CheckoutStep = "selection" | "details" | "success";
 
 // ─── MAIN COMPONENT ────────────────────────────────────────────────────────────
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const planParam = searchParams.get("plan") as PlanId;
@@ -159,6 +159,16 @@ export default function CheckoutPage() {
           setStep("success");
           setIsRedirecting(true);
 
+          // Refresh JWT so the new role=vendor and plan are encoded in the access token cookie.
+          // This ensures middleware and API routes see the updated session immediately.
+          try {
+            await authClient.refreshToken();
+          } catch (refreshErr) {
+            // Non-fatal — the subscription check API reads live DB, so plan protection
+            // will still work even if the token refresh fails.
+            console.warn("Token refresh after payment failed:", refreshErr);
+          }
+
           setTimeout(() => {
             window.location.href =
               planId === "premium" ? "/vendor/premium" : "/vendor/pro";
@@ -174,6 +184,7 @@ export default function CheckoutPage() {
 
     return () => clearInterval(intervalId);
   }, [step, transactionId, paymentStatus, router, planId]);
+
 
   const getMethodDetails = (m: PaymentMethod) => {
     switch (m) {
@@ -685,5 +696,17 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+      </div>
+    }>
+      <CheckoutContent />
+    </Suspense>
   );
 }

@@ -47,8 +47,9 @@ export async function POST(request: NextRequest) {
     const sale = await SalesRepository.create({
       vendorId: vendor.id,
       amount: body.amount.toString(), // Ensure string for decimal
-      method: body.method,
+      method: body.method || "Cash",
       items: body.items,
+      category: body.category,
     });
 
     console.log("Sales POST: Created sale", sale.id);

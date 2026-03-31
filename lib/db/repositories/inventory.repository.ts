@@ -1,4 +1,4 @@
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { db } from "../index";
 import { vendorInventory } from "../schema/inventory.schema";
 
@@ -13,6 +13,13 @@ export class InventoryRepository {
       where: eq(vendorInventory.vendorId, vendorId),
       orderBy: [desc(vendorInventory.createdAt)],
     });
+  }
+
+  static async countByVendorId(vendorId: string) {
+    const result = await db.select({ count: sql<number>`count(*)` })
+      .from(vendorInventory)
+      .where(eq(vendorInventory.vendorId, vendorId));
+    return Number(result[0].count);
   }
 
   static async findById(id: string) {

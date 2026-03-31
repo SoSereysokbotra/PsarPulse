@@ -8,7 +8,10 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { authClient } from "@/lib/auth/utils/client-auth";
 
-export default function VendorActivationPage() {
+
+import { Suspense } from "react";
+
+function VendorActivationContent() {
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const router = useRouter();
@@ -121,5 +124,17 @@ export default function VendorActivationPage() {
         )}
       </div>
     </AuthLayout>
+  );
+}
+
+export default function VendorActivationPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen w-screen items-center justify-center bg-[#f0f2f5] dark:bg-dark-bg transition-colors">
+        <Loader2 className="w-8 h-8 animate-spin text-[#29B28D]" />
+      </div>
+    }>
+      <VendorActivationContent />
+    </Suspense>
   );
 }

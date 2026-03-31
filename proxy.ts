@@ -29,6 +29,7 @@ const publicPaths = [
   "/api/auth/oauth/tiktok/callback",
   "/api/bakong/webhook",
   "/admin",
+  "/api/test_db",
   "/sw.js",
   "/manifest.webmanifest",
 ];
@@ -118,7 +119,7 @@ async function checkVendorSubscription(
   }
 }
 
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Skip public paths and static files
@@ -221,12 +222,15 @@ export async function middleware(request: NextRequest) {
         !subscriptionData.planName ||
         !requiredPlans.includes(subscriptionData.planName)
       ) {
-        console.log(`[Middleware] Redirecting to pricing: Plan mismatch. Required: ${requiredPlans.join(",")}, Found: ${subscriptionData.planName}`);
+        console.log(`[Middleware] Redirecting to pricing: Plan mismatch. Required: ${requiredPlans?.join(",")}, Found: ${subscriptionData.planName}`);
+        
+        // If this is an internal data fetch (/api/), return 403 JSON instead of 307 Redirect
+        // to avoid "enqueueModel" hydration errors in the browser.
         if (pathname.startsWith("/api/")) {
           return NextResponse.json(
             {
               success: false,
-              message: `Forbidden - This feature requires a ${requiredPlans[0]} plan or higher.`,
+              message: `Forbidden - This feature requires a ${requiredPlans?.[0] || 'higher'} plan.`,
             },
             { status: 403 },
           );

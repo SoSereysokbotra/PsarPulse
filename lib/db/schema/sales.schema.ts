@@ -18,6 +18,7 @@ export const vendorSales = pgTable("vendor_sales", {
   amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
   method: varchar("method", { length: 50 }).$type<"Cash" | "ABA/KHQR" | "Other">().notNull(),
   items: text("items"), // Simple comma-separated or JSON list of items
+  category: varchar("category", { length: 100 }), // Added for AI categorization
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

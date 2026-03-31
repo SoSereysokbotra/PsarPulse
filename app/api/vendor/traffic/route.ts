@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
     const logs = await TrafficRepository.findByVendorId(vendor.id);
     return NextResponse.json({ success: true, data: logs });
   } catch (error) {
+    console.error("Traffic GET Error:", error);
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
 }
@@ -33,15 +34,20 @@ export async function POST(request: NextRequest) {
     const vendor = await VendorRepository.findByUserId(payload.id);
     if (!vendor) return NextResponse.json({ message: "Vendor not found" }, { status: 404 });
 
-    const body = await request.json();
+    const { count } = await request.json();
+    if (!count || typeof count !== "number") {
+      return NextResponse.json({ message: "Invalid count" }, { status: 400 });
+    }
+
     const log = await TrafficRepository.create({
       vendorId: vendor.id,
-      count: body.count,
-      status: body.status,
+      count,
+      status: count >= 5 ? "Peak Traffic" : "Regular",
     });
 
     return NextResponse.json({ success: true, data: log });
   } catch (error) {
+    console.error("Traffic POST Error:", error);
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
 }

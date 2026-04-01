@@ -79,51 +79,13 @@ const PREMIUM_NAV = [
   },
 ];
 
-<<<<<<< HEAD
-=======
-// Data fetch uses dynamic state
-
-const smartAlerts = [
-  {
-    type: "opportunity",
-    message:
-      "Rain starting! Demand for Hot Lattes is spiking. Suggest moving cups to the front.",
-    time: "10 min ago",
-  },
-  {
-    type: "warning",
-    message:
-      "Sales dropped 15% in the last hour compared to historical average.",
-    time: "1 hour ago",
-  },
-];
-
-const weatherData = {
-  condition: "Rainy Evening",
-  temp: "28°C",
-  icon: "🌧️",
-  impact: "busy",
-  suggestions: [
-    {
-      product: "Mango Sticky Rice",
-      change: "+20%",
-      reason: "Comfort food demand rises in rain",
-    },
-  ],
-};
-
->>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
 // ═══════════════════════════════════════════════════════════════════
 export default function PremiumSalesPage() {
   const [salesRaw, setSalesRaw] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [quickAmount, setQuickAmount] = useState("");
   const [quickItem, setQuickItem] = useState("");
-<<<<<<< HEAD
   const [quickCategory, setQuickCategory] = useState("");
-=======
-  const [quickMethod, setQuickMethod] = useState("Cash");
->>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
@@ -136,7 +98,6 @@ export default function PremiumSalesPage() {
   const [quickMethod, setQuickMethod] = useState<Method>("Cash");
   const [toasts, setToasts] = useState<ToastT[]>([]);
 
-<<<<<<< HEAD
   const showToast = useCallback((msg: string, type: ToastT["type"] = "success") => {
     const id = Date.now();
     setToasts((p) => [...p, { id, msg, type }]);
@@ -271,48 +232,15 @@ export default function PremiumSalesPage() {
     e.preventDefault();
     if (!quickAmount || saving) return;
     setSaving(true);
-=======
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-
-  React.useEffect(() => {
-    const fetchSales = async () => {
-      try {
-        const res = await fetch("/api/vendor/sales");
-        const json = await res.json();
-        if (json.success) setTransactions(json.data);
-      } catch (error) {
-        console.error("Failed to fetch sales", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSales();
-  }, []);
-
-  const totalRevenue = transactions.reduce(
-    (s, t) => s + parseFloat(t.amount || "0"),
-    0,
-  );
-  const avgSale = totalRevenue / (transactions.length || 1);
-
-  const handleQuickLog = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!quickAmount || isSubmitting) return;
-    setIsSubmitting(true);
->>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
     try {
       const res = await fetch("/api/vendor/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: parseFloat(quickAmount),
-<<<<<<< HEAD
           items: quickItem || "Quick Sale",
           category: quickCategory || "Other",
-          method: quickMethod
+          method: quickMethod,
         }),
       });
       const json = await res.json();
@@ -333,33 +261,11 @@ export default function PremiumSalesPage() {
     } finally {
       setSaving(false);
     }
-=======
-          method: quickMethod,
-          items: quickItem || "Smart Log via AI",
-        }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        setTransactions((prev) => [json.data, ...prev]);
-        setQuickAmount("");
-        setQuickItem("");
-        setSubmitSuccess(true);
-        setTimeout(() => {
-          setSubmitSuccess(false);
-          setIsQuickLogModalOpen(false);
-        }, 900);
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Delete this sale?")) return;
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
->>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
+    setSalesRaw((prev) => prev.filter((t) => t.id !== id));
   };
 
   return (
@@ -467,7 +373,6 @@ export default function PremiumSalesPage() {
                 គ្រប់គ្រងប្រវត្តិប្រតិបត្តិការទាំងអស់
               </p>
             </div>
-<<<<<<< HEAD
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-colors group focus-within:border-[#3ecf8e] w-64">
                 <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#3ecf8e] transition-colors" />
@@ -478,93 +383,6 @@ export default function PremiumSalesPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent border-none outline-none text-[13px] text-[#111827] dark:text-white w-full placeholder:text-[#9ca3af]"
                 />
-=======
-
-            {/* Transaction Table */}
-            <div className="bg-white dark:bg-[#0d1117] rounded-[14px] border border-[#e8eaed] dark:border-white/10 shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col transition-colors">
-              <div className="p-5 md:p-6 border-b border-[#f0f2f5] dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
-                    Smart Transaction History
-                  </h3>
-                  <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                    ប្រវត្តិប្រតិបត្តិការឆ្លាតវៃ
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-colors group focus-within:border-[#3ecf8e] w-64">
-                    <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#3ecf8e] transition-colors" />
-                    <input
-                      type="text"
-                      placeholder="Search unlimited logs..."
-                      className="bg-transparent border-none outline-none text-[13px] text-[#111827] dark:text-white w-full placeholder:text-[#9ca3af]"
-                    />
-                  </div>
-                  <button className="p-2 border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[#6b7280] dark:text-[#7d8590] hover:bg-[#f0f2f5] dark:hover:bg-white/5 transition-colors min-h-[40px] bg-white dark:bg-[#161B22] cursor-pointer">
-                    <Filter className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-[#f7f8fa] dark:bg-[#161B22] border-b border-[#f0f2f5] dark:border-white/5 text-[11px] text-[#9ca3af] dark:text-[#7d8590] uppercase tracking-wider font-bold transition-colors">
-                      <th className="px-6 py-4">Time</th>
-                      <th className="px-6 py-4">Item Breakdown</th>
-                      <th className="px-6 py-4">Amount</th>
-                      <th className="px-6 py-4">Smart Tag</th>
-                      <th className="px-6 py-4 text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#f0f2f5] dark:divide-white/5">
-                    {transactions.map((txn) => (
-                      <tr
-                        key={txn.id}
-                        className="hover:bg-[#f7f8fa] dark:hover:bg-white/5 transition-colors group"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2 text-[14px] font-medium text-[#111827] dark:text-white">
-                            <Clock className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590]" />
-                            {new Date(txn.createdAt || new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-[13.5px] font-medium text-[#374151] dark:text-[#e6edf3]">
-                            {txn.items || "Sale"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-[15px] font-bold text-[#3ecf8e] dark:text-[#3ecf8e]">
-                            ${parseFloat(txn.amount || "0").toFixed(2)}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {txn.aiTagged && txn.tag ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(139,92,246,0.08)] dark:bg-[rgba(139,92,246,0.15)] text-[#8b5cf6] dark:text-[#d8b4fe] text-[11px] font-bold rounded-[6px] border border-[rgba(139,92,246,0.2)] dark:border-[rgba(139,92,246,0.3)]">
-                              <Brain className="w-3 h-3" /> {txn.tag}
-                            </span>
-                          ) : (
-                            <span className="text-[12px] text-[#d1d5db] dark:text-[#4d5562]">
-                              —
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <button onClick={() => handleDelete(txn.id)} className="p-2 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#ef4444] dark:hover:text-[#f87171] rounded-[8px] hover:bg-[rgba(239,68,68,0.08)] dark:hover:bg-[rgba(239,68,68,0.15)] transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 cursor-pointer bg-transparent">
-                            <X className="w-5 h-5 mx-auto" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="p-4 border-t border-[#f0f2f5] dark:border-white/5 bg-[#f7f8fa] dark:bg-[#161B22] text-center transition-colors">
-                <button className="text-[13.5px] font-semibold text-[#3ecf8e] hover:underline border-0 bg-transparent cursor-pointer">
-                  Load More Logs
-                </button>
->>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
               </div>
               <button className="p-2 border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[#6b7280] dark:text-[#7d8590] hover:bg-[#f0f2f5] dark:hover:bg-white/5 transition-colors min-h-[40px] bg-white dark:bg-[#161B22] cursor-pointer">
                 <Filter className="w-4 h-4" />
@@ -576,7 +394,7 @@ export default function PremiumSalesPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#f7f8fa] dark:bg-[#161B22] border-b border-[#f0f2f5] dark:border-white/5 text-[11px] text-[#9ca3af] dark:text-[#7d8590] uppercase tracking-wider font-bold transition-colors">
-                  <th className="px-6 py-4">Date & Time</th>
+                  <th className="px-6 py-4">Date &amp; Time</th>
                   <th className="px-6 py-4">Items Sold</th>
                   <th className="px-6 py-4">Total Amount</th>
                   <th className="px-6 py-4">Status</th>
@@ -632,8 +450,11 @@ export default function PremiumSalesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
-                        <button className="p-2 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white rounded-[8px] hover:bg-[#f0f2f5] dark:hover:bg-white/5 transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 cursor-pointer bg-transparent">
-                          <MoreVertical className="w-5 h-5 mx-auto" />
+                        <button
+                          onClick={() => handleDelete(txn.id)}
+                          className="p-2 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#ef4444] dark:hover:text-[#f87171] rounded-[8px] hover:bg-[rgba(239,68,68,0.08)] dark:hover:bg-[rgba(239,68,68,0.15)] transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 cursor-pointer bg-transparent"
+                        >
+                          <X className="w-5 h-5 mx-auto" />
                         </button>
                       </td>
                     </tr>
@@ -696,7 +517,6 @@ export default function PremiumSalesPage() {
                       : "bg-[#8b5cf6] text-white shadow-lg hover:shadow-[#8b5cf6]/30"
                   }`}
                 >
-<<<<<<< HEAD
                   {isParsing ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   ) : (
@@ -704,16 +524,6 @@ export default function PremiumSalesPage() {
                       <Sparkles size={16} /> Parse with Gemini AI
                     </>
                   )}
-=======
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !quickAmount}
-                  className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold text-[15px] py-4 rounded-[12px] shadow-md transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer disabled:opacity-60"
-                >
-                  <Sparkles className="w-5 h-5" /> {isSubmitting ? "Saving…" : submitSuccess ? "✓ Logged" : "Log via AI"}
->>>>>>> d6e65e075a62926dbf0ddbb974c993ff98cc12fd
                 </button>
               </div>
             ) : (

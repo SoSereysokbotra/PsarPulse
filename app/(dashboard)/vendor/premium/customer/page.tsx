@@ -345,25 +345,6 @@ export default function CustomersPage() {
       </div>
 
       <ConfirmModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirm={handleDeleteCustomer} title="Delete Customer Profile?" description="This action cannot be undone. All spending history and loyalty points will be permanently removed." confirmText="Yes, Delete Profile" />
-
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-          <div className="absolute inset-0" onClick={() => setIsAddModalOpen(false)} />
-          <div className="bg-white dark:bg-[#0d1117] p-8 rounded-[32px] shadow-2xl w-full max-w-lg relative z-10 border border-white/10 transition-colors" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setIsAddModalOpen(false)} className="absolute top-6 right-6 text-[#9ca3af] hover:text-white hover:bg-white/5 p-2 rounded-xl transition-colors border-0 bg-transparent cursor-pointer"><X className="w-6 h-6" /></button>
-            <h3 className="text-[24px] font-black mb-8 text-slate-900 dark:text-white">Customer Information</h3>
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 gap-5">
-                 <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wider ml-1">Full Name</label>
-                    <input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 focus:border-psar-primary outline-none transition-all dark:text-white" />
-                 </div>
-                 <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wider ml-1">Contact Details</label>
-                    <input placeholder="Phone or Email" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 focus:border-psar-primary outline-none transition-all dark:text-white" />
-                 </div>
-                 <div className="space-y-2">
-                    <label className="text-[12px] font-bold text-slate-500 uppercase tracking-wider ml-1">Business Notes</label>
                     <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 focus:border-psar-primary outline-none transition-all min-h-[120px] resize-none dark:text-white" />
                  </div>
               </div>

@@ -13,16 +13,16 @@ async function getVendor(request: NextRequest) {
   return await VendorRepository.findByUserId(payload.id);
 }
 
-// PUT /api/vendor/customers/[id] — update a customer (used by regular vendor page)
+// PUT /api/vendor/customers/[id] — update a customer
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const vendor = await getVendor(request);
     if (!vendor) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const { id } = params;
+    const { id } = await params;
     if (!id) return NextResponse.json({ message: "ID is required" }, { status: 400 });
 
     const body = await request.json();
@@ -45,16 +45,16 @@ export async function PUT(
   }
 }
 
-// PATCH /api/vendor/customers/[id] — partial update (alias for PUT)
+// PATCH /api/vendor/customers/[id] — partial update
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const vendor = await getVendor(request);
     if (!vendor) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const { id } = params;
+    const { id } = await params;
     if (!id) return NextResponse.json({ message: "ID is required" }, { status: 400 });
 
     const body = await request.json();
@@ -71,16 +71,16 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/vendor/customers/[id] — delete by path param
+// DELETE /api/vendor/customers/[id]
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const vendor = await getVendor(request);
     if (!vendor) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const { id } = params;
+    const { id } = await params;
     if (!id) return NextResponse.json({ message: "ID is required" }, { status: 400 });
 
     await CustomersRepository.delete(id, vendor.id);
@@ -91,16 +91,16 @@ export async function DELETE(
   }
 }
 
-// GET /api/vendor/customers/[id] — get single customer
+// GET /api/vendor/customers/[id]
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const vendor = await getVendor(request);
     if (!vendor) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const { id } = params;
+    const { id } = await params;
     const customer = await CustomersRepository.findById(id);
 
     if (!customer || customer.vendorId !== vendor.id) {

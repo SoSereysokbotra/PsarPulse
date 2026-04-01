@@ -79,6 +79,36 @@ const PREMIUM_NAV = [
   },
 ];
 
+// Data fetch uses dynamic state
+
+const smartAlerts = [
+  {
+    type: "opportunity",
+    message:
+      "Rain starting! Demand for Hot Lattes is spiking. Suggest moving cups to the front.",
+    time: "10 min ago",
+  },
+  {
+    type: "warning",
+    message:
+      "Sales dropped 15% in the last hour compared to historical average.",
+    time: "1 hour ago",
+  },
+];
+
+const weatherData = {
+  condition: "Rainy Evening",
+  temp: "28°C",
+  icon: "🌧️",
+  impact: "busy",
+  suggestions: [
+    {
+      product: "Mango Sticky Rice",
+      change: "+20%",
+      reason: "Comfort food demand rises in rain",
+    },
+  ],
+};
 // ═══════════════════════════════════════════════════════════════════
 export default function PremiumSalesPage() {
   const [salesRaw, setSalesRaw] = useState<any[]>([]);
@@ -97,6 +127,8 @@ export default function PremiumSalesPage() {
   const [saving, setSaving] = useState(false);
   const [quickMethod, setQuickMethod] = useState<Method>("Cash");
   const [toasts, setToasts] = useState<ToastT[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
 
   const showToast = useCallback((msg: string, type: ToastT["type"] = "success") => {
     const id = Date.now();
@@ -148,7 +180,6 @@ export default function PremiumSalesPage() {
   };
 
   const handleExportPDF = () => {
-    // Premium Export: Simple yet professional print-to-PDF approach
     const printContent = `
       <html>
         <head>
@@ -211,22 +242,83 @@ export default function PremiumSalesPage() {
   };
 
   const filteredSales = useMemo(() => {
+    const now = new Date();
+    const isWithinPeriod = (dateStr: string) => {
+      const d = new Date(dateStr);
+      if (period === "Day") return d.toDateString() === now.toDateString();
+      if (period === "Week") {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return d >= weekAgo;
+      }
+      if (period === "Month") {
+        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        return d >= monthAgo;
+      }
+      return true;
+    };
+
     return salesRaw.filter(
       (s) =>
-        (s.items || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (s.id || "").toString().toLowerCase().includes(searchQuery.toLowerCase())
+        ((s.items || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (s.id || "").toString().toLowerCase().includes(searchQuery.toLowerCase())) &&
+        isWithinPeriod(s.createdAt)
     );
-  }, [salesRaw, searchQuery]);
+  }, [salesRaw, searchQuery, period]);
 
   const stats = useMemo(() => {
-    const totalRevenue = salesRaw.reduce(
+    const now = new Date();
+    const isWithinPeriod = (dateStr: string) => {
+      const d = new Date(dateStr);
+      if (period === "Day") return d.toDateString() === now.toDateString();
+      if (period === "Week") {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return d >= weekAgo;
+      }
+      if (period === "Month") {
+        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        return d >= monthAgo;
+      }
+      return true;
+    };
+
+    const periodSales = salesRaw.filter((s) => isWithinPeriod(s.createdAt));
+    const totalRevenue = periodSales.reduce(
       (s, t) => s + parseFloat(t.amount || "0"),
       0
     );
-    const count = salesRaw.length;
+    const count = periodSales.length;
     const avgSale = count > 0 ? totalRevenue / count : 0;
     return { totalRevenue, avgSale, count };
-  }, [salesRaw]);
+  }, [salesRaw, period]);
+
+  const handleSendMessage = async () => {
+    if (!chatMessage.trim() || isChatLoading) return;
+    const userMsg = { role: "user", content: chatMessage };
+    setMessages((p) => [...p, userMsg]);
+    setChatMessage("");
+    setIsChatLoading(true);
+
+    try {
+      const res = await fetch("/api/vendor/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg.content, context: "sales" }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setMessages((p) => [...p, { role: "assistant", content: json.response }]);
+      } else {
+        setMessages((p) => [
+          ...p,
+          { role: "assistant", content: "Sorry, I encountered an error." },
+        ]);
+      }
+    } catch (err) {
+      console.error("Chat error:", err);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
 
   const handleQuickLog = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,8 +356,21 @@ export default function PremiumSalesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this sale?")) return;
-    setSalesRaw((prev) => prev.filter((t) => t.id !== id));
+    if (!window.confirm("Delete this sale record?")) return;
+    try {
+      // optimistic ui not used here for reliability, but could be added
+      const res = await fetch(`/api/vendor/sales?id=${id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (json.success) {
+        showToast("Sale deleted successfully");
+        setSalesRaw((prev) => prev.filter((t) => t.id !== id));
+      } else {
+        showToast(json.message || "Error deleting sale", "error");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      showToast("Server error occurred", "error");
+    }
   };
 
   return (
@@ -487,12 +592,12 @@ export default function PremiumSalesPage() {
               <X className="w-5 h-5" />
             </button>
             <h2 className="font-bold text-[22px] text-[#111827] dark:text-white mb-2">
-              {isSmartActive ? "AI Smart Add" : "Confirm Sale History"}
+              {isSmartActive ? "AI Smart Add" : "Confirm New Sale"}
             </h2>
             <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mb-6">
               {isSmartActive 
                 ? "Describe your sale naturally and Gemini will parse it." 
-                : "Professional tier: Automated categorization enabled."}
+                : "Verify the parsed details before logging to history."}
             </p>
             {isSmartActive ? (
               <div className="space-y-5">
@@ -631,10 +736,27 @@ export default function PremiumSalesPage() {
               <X size={16} />
             </button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 bg-[#f7f8fa] dark:bg-[#161B22] min-h-[300px]">
-            <div className="bg-white dark:bg-[#0d1117] p-3 rounded-[12px] text-[13px] text-[#374151] dark:text-[#e6edf3] shadow-sm mb-3">
+          <div className="flex-1 overflow-y-auto p-4 bg-[#f7f8fa] dark:bg-[#161B22] min-h-[300px] flex flex-col gap-3">
+            <div className="bg-white dark:bg-[#0d1117] p-3 rounded-[12px] text-[13px] text-[#374151] dark:text-[#e6edf3] shadow-sm">
               I can help you analyze your unlimited sales logs or predict future trends. What would you like to know?
             </div>
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`p-3 rounded-[12px] text-[13px] shadow-sm max-w-[85%] ${
+                  m.role === "user"
+                    ? "bg-[#3ecf8e] text-[#0d1117] self-end rounded-br-none"
+                    : "bg-white dark:bg-[#0d1117] text-[#374151] dark:text-[#e6edf3] self-start rounded-bl-none"
+                }`}
+              >
+                {m.content}
+              </div>
+            ))}
+            {isChatLoading && (
+              <div className="bg-white dark:bg-[#0d1117] p-3 rounded-[12px] text-[13px] text-[#374151] dark:text-[#e6edf3] shadow-sm self-start rounded-bl-none italic">
+                Gemini is thinking...
+              </div>
+            )}
           </div>
           <div className="p-3 bg-white dark:bg-[#0d1117] border-t border-[#e8eaed] dark:border-white/10">
             <div className="flex gap-2">
@@ -644,9 +766,18 @@ export default function PremiumSalesPage() {
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
                 className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#3ecf8e] transition-colors"
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               />
-              <button className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] text-white rounded-[10px] border-0 cursor-pointer">
-                <Send size={15} />
+              <button 
+                onClick={handleSendMessage}
+                disabled={isChatLoading}
+                className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] text-white rounded-[10px] border-0 cursor-pointer disabled:opacity-50"
+              >
+                {isChatLoading ? (
+                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <Send size={15} />
+                )}
               </button>
             </div>
           </div>

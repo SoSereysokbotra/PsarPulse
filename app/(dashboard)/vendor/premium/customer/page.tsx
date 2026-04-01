@@ -22,6 +22,8 @@ import {
   Heart,
   TrendingUp,
   X,
+  PlusCircle,
+  Filter,
 } from "lucide-react";
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
@@ -47,55 +49,98 @@ export default function CustomersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("log");
   const [customCount, setCustomCount] = useState(1);
-  const [logHistory, setLogHistory] = useState([
-    { id: 1, time: "2:15 PM", count: 2, status: "Regular" },
-    { id: 2, time: "10:00 AM", count: 8, status: "Peak Traffic" },
-    { id: 3, time: "11:00 AM", count: 12, status: "Peak Traffic" },
-  ]);
+  const [loading, setLoading] = useState(true);
 
-  // CRM States
+  // Data States
+  const [logHistory, setLogHistory] = useState<any[]>([]);
   const [crmDatabase, setCrmDatabase] = useState<any[]>([]);
+
+  // CRM Form States
   const [crmName, setCrmName] = useState("");
   const [crmPhone, setCrmPhone] = useState("");
   const [crmNotes, setCrmNotes] = useState("");
   const [crmSubmitting, setCrmSubmitting] = useState(false);
   const [crmSuccess, setCrmSuccess] = useState(false);
 
-  // Customer Management States
+  // Modal States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<any>(null);
-  const [formData, setFormData] = useState({ name: "", phone: "", email: "", notes: "" });
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [isLogLogging, setIsLogLogging] = useState(false);
+  const [isLogDeleting, setIsLogDeleting] = useState<string | null>(null);
+  const [todaySales, setTodaySales] = useState(0);
 
   useEffect(() => {
-    const fetchCrm = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const res = await fetch("/api/vendor/customers");
-        const json = await res.json();
-        if (json.success) setCrmDatabase(json.data || []);
-      } catch (e) {
-        console.error(e);
+        const [custRes, salesRes] = await Promise.all([
+          fetch("/api/vendor/customers"),
+          fetch("/api/vendor/sales")
+        ]);
+        const custJson = await custRes.json();
+        const salesJson = await salesRes.json();
+        if (custJson.success) {
+          setLogHistory(custJson.data.trafficLogs || []);
+          setCrmDatabase(custJson.data.customers || []);
+        }
+        if (salesJson.success) {
+          const now = new Date();
+          const todayAmt = salesJson.data
+            .filter((s: any) => new Date(s.createdAt).toDateString() === now.toDateString())
+            .reduce((sum: number, s: any) => sum + parseFloat(s.amount || "0"), 0);
+          setTodaySales(todayAmt);
+        }
+      } catch (error) {
+        console.error("Failed to fetch customer data", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchCrm();
+    fetchData();
   }, []);
 
-  const handleLog = (amount: number) => {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-    setLogHistory((prev) => [
-      {
-        id: Date.now(),
-        time: timeStr,
-        count: amount,
-        status: amount >= 10 ? "Peak Traffic" : "Regular",
-      },
-      ...prev,
-    ]);
+  const handleLog = async (amount: number) => {
+    if (isLogLogging) return;
+    setIsLogLogging(true);
+    try {
+      const res = await fetch("/api/vendor/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count: amount }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setLogHistory((prev) => [json.data, ...prev]);
+        setCustomCount(1);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLogLogging(false);
+    }
+  };
+
+  const handleDeleteLog = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isLogDeleting === id) return;
+    if (!window.confirm("Delete this traffic log?")) return;
+    setIsLogDeleting(id);
+    try {
+      const res = await fetch(`/api/vendor/customers?id=${id}&type=traffic`, { method: "DELETE" });
+      if (res.ok) {
+        setLogHistory((prev) => prev.filter((l) => l.id !== id));
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLogDeleting(null);
+    }
   };
 
   const handleCRMSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!crmName.trim() || crmSubmitting) return;
     setCrmSubmitting(true);
     try {
       const res = await fetch("/api/vendor/customers", {
@@ -104,43 +149,72 @@ export default function CustomersPage() {
         body: JSON.stringify({ name: crmName, phone: crmPhone, notes: crmNotes }),
       });
       if (res.ok) {
-        setCrmSuccess(true);
+        const json = await res.json();
+        setCrmDatabase((prev) => [json.data, ...prev]);
         setCrmName("");
         setCrmPhone("");
         setCrmNotes("");
-        const json = await res.json();
-        setCrmDatabase(prev => [json.data, ...prev]);
-        setTimeout(() => setCrmSuccess(false), 3000);
+        setCrmSuccess(true);
+        setTimeout(() => setCrmSuccess(false), 2000);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
+      console.error(e);
     } finally {
       setCrmSubmitting(false);
     }
   };
 
-  const handleSaveCustomer = async () => {
-    // Logic for updating/saving customer in CRM modal if needed
-    setIsAddModalOpen(false);
-  };
-
   const handleDeleteCustomer = async () => {
-    // Logic for deleting customer
-    setIsDeleteModalOpen(false);
+    if (!selectedCustomer) return;
+    try {
+      const res = await fetch(`/api/vendor/customers/${selectedCustomer.id}`, { method: "DELETE" });
+      if (res.ok) {
+        setCrmDatabase((prev) => prev.filter((c) => c.id !== selectedCustomer.id));
+        setIsDeleteModalOpen(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const filteredLogs = logHistory.filter(
-    (l) => l.time.toLowerCase().includes(searchTerm.toLowerCase()) || l.status.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLogs = logHistory.filter((l) => {
+    const timeStr = l.createdAt ? new Date(l.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "";
+    const statusStr = l.count >= 10 ? "Peak Traffic" : "Regular";
+    return timeStr.toLowerCase().includes(searchTerm.toLowerCase()) || statusStr.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+  const filteredCRM = crmDatabase.filter((c) => 
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (c.phone && c.phone.includes(searchTerm))
   );
 
-  const summaryData = {
-    todayCount: logHistory.reduce((acc, curr) => acc + curr.count, 0),
-    todayLogs: logHistory.length,
-    avgSpend: "$5.45",
-    weeklyCount: 315,
-    peakTime: "12:10 PM",
-    avgLTV: "$102.02",
-  };
+  const summaryData = React.useMemo(() => {
+    const now = new Date();
+    const todayLogs = logHistory.filter(l => new Date(l.createdAt).toDateString() === now.toDateString());
+    const todayCount = todayLogs.reduce((s, l) => s + (l.count || 0), 0);
+
+    // Peak Hour logic
+    const hours: Record<number, number> = {};
+    logHistory.forEach(l => {
+      const h = new Date(l.createdAt).getHours();
+      hours[h] = (hours[h] || 0) + (l.count || 0);
+    });
+    const peakHArr = Object.entries(hours).sort((a,b) => b[1] - a[1]);
+    const peakH = peakHArr[0]?.[0];
+    const peakTime = peakH !== undefined ? `${Number(peakH) % 12 || 12}:00 ${Number(peakH) >= 12 ? 'PM' : 'AM'}` : "-";
+
+    const weeklyCount = logHistory.filter(l => now.getTime() - new Date(l.createdAt).getTime() <= 7 * 24 * 60 * 60 * 1000)
+      .reduce((s, l) => s + (l.count || 0), 0);
+
+    return {
+      todayCount,
+      todayLogs: todayLogs.length,
+      avgSpend: todayCount > 0 ? `$${(todaySales / todayCount).toFixed(2)}` : "$0.00",
+      weeklyCount,
+      peakTime,
+      avgLTV: "$102.02",
+    };
+  }, [logHistory, todaySales]);
 
   return (
     <VendorDashboardLayout
@@ -149,9 +223,10 @@ export default function CustomersPage() {
       navLinks={PREMIUM_NAV}
       currentPath="/vendor/premium/customer"
       title="Customer Management"
+      planBadge={{ label: "PREMIUM", icon: Sparkles }}
       rightActions={
-        <button onClick={() => setIsAddModalOpen(true)} className="hidden sm:flex items-center gap-2 bg-psar-primary text-white font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity border-0 cursor-pointer text-sm min-h-[40px]">
-          <Plus className="w-4 h-4" /> Add Profile
+        <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 bg-[#3ecf8e] hover:bg-[#4dd49a] text-[#0d1117] font-bold px-4 py-2 rounded-[10px] text-sm shadow-[0_2px_14px_rgba(62,207,142,0.28)] transition-colors cursor-pointer border-0">
+          <PlusCircle className="w-4 h-4" /> Add Profile
         </button>
       }
     >
@@ -163,29 +238,29 @@ export default function CustomersPage() {
           </p>
         </div>
 
-        <div className="flex gap-6 border-b border-[#e8eaed] dark:border-white/10 transition-colors">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`pb-3 flex flex-col items-start transition-colors bg-transparent border-x-0 border-t-0 cursor-pointer ${
-                activeTab === tab.id
-                  ? "border-b-2 border-[#111827] dark:border-white text-[#111827] dark:text-white"
-                  : "border-b-2 border-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white"
-              }`}
-            >
-              <span className="font-bold text-[14px]">{tab.label}</span>
-              <span className="text-[10px] mt-0.5 opacity-70">{tab.khmer}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <VendorSummaryCard title="Today Traffic" khmerTitle="អតិថិជនថ្ងៃនេះ" value={summaryData.todayCount} subtext={`${summaryData.todayLogs} log entries`} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <VendorSummaryCard variant="dark" title="Today Traffic" khmerTitle="អតិថិជនថ្ងៃនេះ" value={summaryData.todayCount} subtext={`${summaryData.todayLogs} log entries`} />
           <VendorSummaryCard title="Avg. Spend" khmerTitle="ការចំណាយមធ្យម" value={summaryData.avgSpend} subtext="per visit" />
           <VendorSummaryCard variant="green" title="Weekly Reach" khmerTitle="អតិថិជនសរុប" value={summaryData.weeklyCount} subtext="+12% from last week" />
           <VendorSummaryCard title="Peak Hours" khmerTitle="ម៉ោងមមាញឹក" value={summaryData.peakTime} subtext="Lunch time spike" />
           <VendorSummaryCard title="Customer LTV" khmerTitle="តម្លៃអតិថិជន" value={summaryData.avgLTV} icon={Sparkles} subtext="Lifetime value" />
+        </div>
+
+        <div className="flex items-end gap-0 border-b border-[#e8eaed] dark:border-white/10 transition-colors">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-5 py-3 text-[13.5px] font-medium border-b-2 -mb-px flex flex-col items-start gap-0.5 bg-transparent border-x-0 border-t-0 cursor-pointer transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "border-b-[#111827] dark:border-b-white text-[#111827] dark:text-white font-semibold"
+                  : "border-b-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white"
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className="text-[10px] text-[#9ca3af] dark:text-[#6b7280]">{tab.khmer}</span>
+            </button>
+          ))}
         </div>
 
         {activeTab === "log" && (
@@ -204,7 +279,7 @@ export default function CustomersPage() {
                   <span className="w-10 text-center font-bold text-lg dark:text-white">{customCount}</span>
                   <button onClick={() => setCustomCount(customCount + 1)} className="p-2 text-slate-500 hover:text-psar-primary transition-colors bg-transparent border-0 cursor-pointer"><Plus className="w-5 h-5" /></button>
                 </div>
-                <button onClick={() => handleLog(customCount)} className="h-14 px-6 bg-psar-dark text-white font-bold rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity border-0 cursor-pointer shadow-xl">
+                <button onClick={() => handleLog(customCount)} className="h-14 px-6 bg-[#111827] dark:bg-white text-white dark:text-[#111827] font-bold rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity border-0 cursor-pointer shadow-xl">
                   <User className="w-5 h-5" /> Log {customCount}
                 </button>
               </div>
@@ -229,18 +304,32 @@ export default function CustomersPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5 transition-colors">
-                    {filteredLogs.map((log) => (
-                      <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4"><div className="flex items-center gap-2 text-[14px] font-medium dark:text-white"><Clock className="w-4 h-4 text-slate-400" /> {log.time}</div></td>
-                        <td className="px-6 py-4 font-bold text-[15px] dark:text-white">+{log.count} Persons</td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex px-3 py-1 rounded-full text-[11px] font-bold border ${log.status === "Peak Traffic" ? "bg-orange-50 border-orange-100 text-orange-600" : "bg-emerald-50 border-emerald-100 text-emerald-600"}`}>
-                            {log.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right"><button className="text-slate-400 hover:text-red-500 p-1 transition-colors bg-transparent border-0 cursor-pointer"><Trash2 className="w-4 h-4" /></button></td>
-                      </tr>
-                    ))}
+                    {loading ? (
+                       <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-400">Loading traffic logs...</td></tr>
+                    ) : filteredLogs.length === 0 ? (
+                       <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-400">No logs found.</td></tr>
+                    ) : (
+                      filteredLogs.map((log) => (
+                        <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                          <td className="px-6 py-4"><div className="flex items-center gap-2 text-[14px] font-medium dark:text-white"><Clock className="w-4 h-4 text-slate-400" /> {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></td>
+                          <td className="px-6 py-4 font-bold text-[15px] dark:text-white">+{log.count} Persons</td>
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex px-3 py-1 rounded-full text-[11px] font-bold border ${log.count >= 10 ? "bg-orange-50 border-orange-100 text-orange-600" : "bg-emerald-50 border-emerald-100 text-emerald-600"}`}>
+                              {log.count >= 10 ? "Peak Traffic" : "Regular"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button 
+                              onClick={(e) => handleDeleteLog(log.id, e)} 
+                              disabled={isLogDeleting === log.id}
+                              className="text-slate-400 hover:text-red-500 p-1 transition-colors bg-transparent border-0 cursor-pointer disabled:opacity-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -268,7 +357,7 @@ export default function CustomersPage() {
                   <label className="text-[12px] font-bold text-slate-700 dark:text-[#9aa4b2] ml-1">Preferences / Tags</label>
                   <textarea placeholder="Likes spicy, regular Sunday buyer..." value={crmNotes} onChange={e => setCrmNotes(e.target.value)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-psar-primary transition-colors text-sm h-24 resize-none dark:text-white" />
                 </div>
-                <button type="submit" disabled={crmSubmitting || !crmName.trim()} className="w-full bg-psar-primary text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-psar-primary/20 flex items-center justify-center gap-2 border-0 cursor-pointer disabled:opacity-50">
+                <button type="submit" disabled={crmSubmitting || !crmName.trim()} className="w-full bg-[#3ecf8e] text-[#0d1117] font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#3ecf8e]/20 flex items-center justify-center gap-2 border-0 cursor-pointer disabled:opacity-50">
                   {crmSubmitting ? "Processing..." : crmSuccess ? "Customer Saved ✓" : "Create Profile"}
                 </button>
               </form>
@@ -277,8 +366,9 @@ export default function CustomersPage() {
             <div className="lg:col-span-8 bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-2xl shadow-sm overflow-hidden transition-colors">
               <div className="p-6 border-b border-[#f0f2f5] dark:border-white/5 flex items-center justify-between transition-colors">
                 <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">Customer Database</h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-[12px] text-slate-500 font-medium">{crmDatabase.length} registered profiles</span>
+                <div className="relative w-full sm:w-64">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input type="text" placeholder="Search profiles..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:border-[#29B28D] dark:text-white" />
                 </div>
               </div>
               <div className="overflow-x-auto">
@@ -287,19 +377,21 @@ export default function CustomersPage() {
                     <tr className="bg-slate-50 dark:bg-white/5 text-[11px] uppercase font-bold text-slate-500 dark:text-[#7d8590] transition-colors">
                       <th className="px-6 py-4">Customer Details</th>
                       <th className="px-6 py-4">Loyalty Status</th>
-                      <th className="px-6 py-4">Growth</th>
+                      <th className="px-6 py-4">Recent Growth</th>
                       <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-white/5 transition-colors">
-                    {crmDatabase.length === 0 ? (
+                    {loading ? (
+                       <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-400">Loading profiles...</td></tr>
+                    ) : filteredCRM.length === 0 ? (
                       <tr><td colSpan={4} className="px-6 py-12 text-center text-slate-400">No customers registered yet.</td></tr>
                     ) : (
-                      crmDatabase.map((customer) => (
+                      filteredCRM.map((customer) => (
                         <tr key={customer.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-psar-primary/10 flex items-center justify-center border border-psar-primary/20"><User className="w-5 h-5 text-psar-primary" /></div>
+                              <div className="w-10 h-10 rounded-full bg-[#3ecf8e]/10 flex items-center justify-center border border-[#3ecf8e]/20"><User className="w-5 h-5 text-[#3ecf8e]" /></div>
                               <div>
                                 <p className="font-bold text-[14px] text-slate-900 dark:text-white">{customer.name}</p>
                                 <p className="text-[12px] text-slate-500 flex items-center gap-1"><Phone className="w-3 h-3" /> {customer.phone || "No phone"}</p>
@@ -313,9 +405,9 @@ export default function CustomersPage() {
                             <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-[13px]"><TrendingUp className="w-3.5 h-3.5" /> +5%</div>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                               <button className="p-2 text-slate-400 hover:text-psar-primary transition-colors bg-transparent border-0 cursor-pointer"><Edit className="w-4 h-4" /></button>
-                              <button className="p-2 text-slate-400 hover:text-red-500 transition-colors bg-transparent border-0 cursor-pointer"><Trash2 className="w-4 h-4" /></button>
+                              <button onClick={() => { setSelectedCustomer(customer); setIsDeleteModalOpen(true); }} className="p-2 text-slate-400 hover:text-red-500 transition-colors bg-transparent border-0 cursor-pointer"><Trash2 className="w-4 h-4" /></button>
                             </div>
                           </td>
                         </tr>
@@ -328,7 +420,6 @@ export default function CustomersPage() {
           </div>
         )}
 
-        {/* Analytics Placeholder */}
         {activeTab === "analysis" && (
           <div className="bg-[#0d1117] rounded-3xl p-12 flex flex-col items-center text-center space-y-6 border border-white/10 shadow-2xl">
             <div className="w-20 h-20 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-3xl flex items-center justify-center shadow-lg shadow-[#8b5cf6]/20"><Sparkles className="w-10 h-10 text-white" /></div>
@@ -345,17 +436,6 @@ export default function CustomersPage() {
       </div>
 
       <ConfirmModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirm={handleDeleteCustomer} title="Delete Customer Profile?" description="This action cannot be undone. All spending history and loyalty points will be permanently removed." confirmText="Yes, Delete Profile" />
-                    <textarea value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl px-5 py-4 focus:border-psar-primary outline-none transition-all min-h-[120px] resize-none dark:text-white" />
-                 </div>
-              </div>
-              <div className="flex gap-4 pt-4">
-                 <button onClick={() => setIsAddModalOpen(false)} className="flex-1 py-4 bg-slate-100 dark:bg-white/5 font-bold text-slate-600 dark:text-slate-400 rounded-2xl hover:bg-slate-200 dark:hover:bg-white/10 transition-all border-0 cursor-pointer">Cancel</button>
-                 <button onClick={handleSaveCustomer} className="flex-[2] py-4 bg-psar-primary text-white font-bold rounded-2xl shadow-xl shadow-psar-primary/20 hover:opacity-90 transition-opacity border-0 cursor-pointer">Save Profile</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </VendorDashboardLayout>
   );
 }

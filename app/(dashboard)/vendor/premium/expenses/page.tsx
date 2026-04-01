@@ -57,7 +57,7 @@ const PREMIUM_NAV = [
   { icon: FileBarChart, title: "Reports", khmerTitle: "របាយការណ៍", href: "/vendor/premium/reports" },
 ];
 
-const catColorMap: Record<CatColor, { badge: string; iconBg: string; iconText: string; bar: string; recurBg: string; recurBorder: string }> = {
+const catColorMap: Record<string, { badge: string; iconBg: string; iconText: string; bar: string; recurBg: string; recurBorder: string }> = {
   emerald: {
     badge: "bg-emerald-50 text-emerald-700 border-emerald-100",
     iconBg: "bg-emerald-50",
@@ -106,6 +106,30 @@ const catColorMap: Record<CatColor, { badge: string; iconBg: string; iconText: s
     recurBg: "bg-slate-50/50",
     recurBorder: "border-slate-100",
   },
+  Ingredients: {
+    badge: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    iconBg: "bg-emerald-50",
+    iconText: "text-emerald-500",
+    bar: "#10b981",
+    recurBg: "bg-emerald-50/50",
+    recurBorder: "border-emerald-100",
+  },
+  Rent: {
+    badge: "bg-indigo-50 text-indigo-700 border-indigo-100",
+    iconBg: "bg-indigo-50",
+    iconText: "text-indigo-500",
+    bar: "#6366f1",
+    recurBg: "bg-indigo-50/50",
+    recurBorder: "border-indigo-100",
+  },
+  Transport: {
+    badge: "bg-violet-50 text-violet-700 border-violet-100",
+    iconBg: "bg-violet-50",
+    iconText: "text-violet-500",
+    bar: "#8b5cf6",
+    recurBg: "bg-violet-50/50",
+    recurBorder: "border-violet-100",
+  }
 };
 
 const pushAlerts = [
@@ -183,6 +207,7 @@ const initChat: ChatMsg[] = [
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function PremiumExpensesPage() {
+  // States
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -190,7 +215,6 @@ export default function PremiumExpensesPage() {
   const [chatMessages, setChatMessages] = useState<ChatMsg[]>(initChat);
   const [dismissed, setDismissed] = useState<number[]>([]);
 
-  // States
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
   const [showCustomCategoryModal, setShowCustomCategoryModal] = useState(false);
   const [customCategoryName, setCustomCategoryName] = useState("");
@@ -203,6 +227,9 @@ export default function PremiumExpensesPage() {
   const [aiSavings, setAiSavings] = useState({ potentialSavings: 0, period: "Weekly" });
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<"Day" | "Week" | "Month">("Week");
 
   const [categoriesList, setCategoriesList] = useState([
     { name: "Ingredients", khmer: "គ្រឿងផ្សំ", color: "emerald" as CatColor, icon: ShoppingCart },
@@ -245,7 +272,8 @@ export default function PremiumExpensesPage() {
 
   const handleQuickLog = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!expenseAmount) return;
+    if (!expenseAmount || isSaving) return;
+    setIsSaving(true);
     try {
       const res = await fetch("/api/vendor/expenses", {
         method: "POST",
@@ -267,12 +295,16 @@ export default function PremiumExpensesPage() {
       }
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDeleteExpense = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!id || isDeleting === id) return;
     if (!window.confirm("Delete this expense?")) return;
+    setIsDeleting(id);
     try {
       const res = await fetch(`/api/vendor/expenses/${id}`, { method: "DELETE" });
       if (res.ok) {
@@ -280,18 +312,20 @@ export default function PremiumExpensesPage() {
       }
     } catch (error) {
       console.error("Delete failed", error);
+    } finally {
+      setIsDeleting(null);
     }
   };
 
   const handleCreateCustomCategory = () => {
     if (!customCategoryName.trim()) return;
-    
+
     setCategoriesList(prev => [
       ...prev.slice(0, prev.length - 1),
       { name: customCategoryName, khmer: "ផ្ទាល់ខ្លួន", color: "slate" as CatColor, icon: Tag },
       prev[prev.length - 1]
     ]);
-    
+
     setExpenseCategory(customCategoryName);
     setCustomCategoryName("");
     setShowCustomCategoryModal(false);
@@ -318,86 +352,54 @@ export default function PremiumExpensesPage() {
     }
   };
 
+  const handleExportPDF = () => console.log("Exporting PDF...");
+  const handleExportExcel = () => console.log("Exporting Excel...");
+
   const visibleAlerts = pushAlerts.filter((_, i) => !dismissed.includes(i));
   const filteredHistory = expenses.filter(
     (e) =>
       (e.description || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (e.category || "").toLowerCase().includes(searchQuery.toLowerCase())
+      (e.category || "").toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const handleExportPDF = () => {
-    window.print();
-  };
-
-  const handleExportExcel = () => {
-    if (expenses.length === 0) return;
-    const headers = ["Date", "Category", "Description", "Amount"];
-    const csvRows = [headers.join(",")];
-    expenses.forEach(exp => {
-      const row = [
-        new Date(exp.createdAt).toLocaleDateString(),
-        `"${exp.category || 'Uncategorized'}"`,
-        `"${(exp.description || 'None').replace(/"/g, '""')}"`,
-        exp.amount
-      ];
-      csvRows.push(row.join(","));
-    });
-    const csvString = csvRows.join("\n");
-    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `expenses_report_${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay());
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  const stats = React.useMemo(() => {
-    let today = 0, week = 0, month = 0;
-    const catMap: Record<string, number> = {};
-    expenses.forEach(e => {
-      const amt = parseFloat(e.amount || "0");
+  const summaryData = React.useMemo(() => {
+    const now = new Date();
+    const periodData = expenses.filter(e => {
       const d = new Date(e.expenseDate || e.createdAt);
-      if (d >= startOfDay) today += amt;
-      if (d >= startOfWeek) week += amt;
-      if (d >= startOfMonth) month += amt;
-      const catName = e.category || "Others";
-      catMap[catName] = (catMap[catName] || 0) + amt;
+      if (selectedPeriod === "Day") return d.toDateString() === now.toDateString();
+      if (selectedPeriod === "Week") return now.getTime() - d.getTime() <= 7 * 24 * 60 * 60 * 1000;
+      if (selectedPeriod === "Month") return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      return true;
     });
-    const topCatEntry = Object.entries(catMap).sort(([, a], [, b]) => b - a)[0];
-    return { today, week, month, topCat: topCatEntry ? topCatEntry[0] : "None", catMap };
-  }, [expenses, startOfDay, startOfWeek, startOfMonth]);
 
-  const dynamicCategories = React.useMemo(() => {
-    const total = stats.week || 1;
-    return categoriesList.map(c => ({
-      ...c,
-      amount: `$${(stats.catMap[c.name] || 0).toFixed(2)}`,
-      pct: Math.round(((stats.catMap[c.name] || 0) / total) * 100)
-    }));
-  }, [stats, categoriesList]);
+    const total = periodData.reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
+    
+    // Top Category
+    const cats: Record<string, number> = {};
+    expenses.forEach(e => { cats[e.category] = (cats[e.category] || 0) + parseFloat(e.amount || "0"); });
+    const topCat = Object.entries(cats).sort((a,b) => b[1] - a[1])[0]?.[0] || "-";
 
-  const weeklyChartData = React.useMemo(() => {
-    const buckets = [0,0,0,0,0,0,0];
-    expenses.forEach(e => {
-      const d = new Date(e.createdAt);
-      if (d >= startOfWeek) {
-        const dow = (d.getDay() + 6) % 7;
-        buckets[dow] += parseFloat(e.amount || "0");
-      }
-    });
-    return buckets;
-  }, [expenses]);
-  
-  const maxWeekly = Math.max(...weeklyChartData, 1);
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthTotal = expenses.filter(e => new Date(e.expenseDate || e.createdAt) >= monthStart)
+      .reduce((s, e) => s + parseFloat(e.amount || "0"), 0);
+
+    // Category Breakdown Calculation
+    const breakdown = categoriesList.map(cat => {
+      const amount = expenses.filter(e => e.category === cat.name)
+        .reduce((s, e) => s + parseFloat(e.amount || "0"), 0);
+      return { 
+        ...cat, 
+        amount, 
+        percentage: total > 0 ? (amount / total) * 100 : 0 
+      };
+    }).sort((a, b) => b.amount - a.amount);
+
+    return { total, topCat, monthTotal, breakdown, count: periodData.length };
+  }, [expenses, selectedPeriod, categoriesList]);
+
+  const weeklyChartData = [45, 52, 38, 65, 48, 55, 42]; // Mock data
+  const maxWeekly = 70;
 
   return (
     <VendorDashboardLayout
@@ -424,16 +426,6 @@ export default function PremiumExpensesPage() {
         </>
       }
     >
-      <style dangerouslySetInnerHTML={{ __html: `
-        @media print {
-          header, nav, aside, .fixed, button, .no-print { display: none !important; }
-          main, .flex-1 { width: 100% !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; height: auto !important; }
-          .overflow-y-auto { overflow: visible !important; height: auto !important; }
-          body { background-color: white !important; color: black !important; }
-          .dark { background-color: white !important; }
-          .dark * { color: black !important; border-color: #ddd !important; }
-        }
-      `}} />
       <div className="flex-1 overflow-y-auto px-6 md:px-8 py-6 space-y-5 transition-colors">
         <div className="pt-1 pb-1">
           <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">My Expenses</h2>
@@ -443,28 +435,53 @@ export default function PremiumExpensesPage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          <VendorSummaryCard variant="dark" title="Today's Expenses" khmerTitle="ចំណាយថ្ងៃនេះ" value={`$${stats.today.toFixed(2)}`} subtext={`${expenses.filter(e => new Date(e.createdAt) >= startOfDay).length} transactions`} />
-          <VendorSummaryCard title="Top Category" khmerTitle="ប្រភេទទូទៅ" value={stats.topCat} subtext="🏷️ Highest Spending" />
-          <VendorSummaryCard variant="green" title="Weekly Expenses" khmerTitle="ចំណាយប្រចាំសប្តាហ៍" value={`$${stats.week.toFixed(2)}`} subtext="this week" />
-          <VendorSummaryCard title="Monthly Total" khmerTitle="សរុបប្រចាំខែ" value={`$${stats.month.toFixed(2)}`} subtext="this month" />
-          <VendorSummaryCard title="AI Savings" khmerTitle="ការសន្សំ" value={aiLoading ? "..." : `$${aiSavings.potentialSavings.toFixed(2)}`} icon={Brain} subtext="potential/week" />
+          <VendorSummaryCard 
+            variant="dark" 
+            title={`${selectedPeriod}'s Spending`} 
+            khmerTitle="ចំណាយសរុប" 
+            value={`$${summaryData.total.toFixed(2)}`} 
+            subtext={`${summaryData.count} transaction${summaryData.count !== 1 ? "s" : ""}`} 
+          />
+          <VendorSummaryCard title="Top Category" khmerTitle="ប្រភេទទូទៅ" value={summaryData.topCat} subtext="🏷️ base on history" />
+          <VendorSummaryCard variant="green" title="Monthly Total" khmerTitle="សរុបប្រចាំខែ" value={`$${summaryData.monthTotal.toFixed(2)}`} subtext="this month" />
+          <VendorSummaryCard title="AI Prediction" khmerTitle="ការព្យាករណ៍" value="$175.00" subtext="next 7 days" />
+          <VendorSummaryCard title="AI Savings" khmerTitle="ការសន្សំ" value={`$${aiSavings.potentialSavings.toFixed(2)}`} icon={Brain} subtext={`potential/${aiSavings.period}`} />
         </div>
 
-        <div className="flex items-end gap-0 border-b border-[#e8eaed] dark:border-white/10 transition-colors">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3 text-[13.5px] font-medium border-b-2 -mb-px flex flex-col items-start gap-0.5 bg-transparent border-x-0 border-t-0 cursor-pointer transition-colors whitespace-nowrap ${
-                activeTab === tab.id
-                  ? "border-b-[#111827] dark:border-b-white text-[#111827] dark:text-white font-semibold"
-                  : "border-b-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white"
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span className="text-[10px] text-[#9ca3af] dark:text-[#6b7280]">{tab.khmer}</span>
-            </button>
-          ))}
+        <div className="flex items-center justify-between border-b border-[#e8eaed] dark:border-white/10 transition-colors pr-2">
+          <div className="flex items-end gap-0">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-5 py-3 text-[13.5px] font-medium border-b-2 -mb-px flex flex-col items-start gap-0.5 bg-transparent border-x-0 border-t-0 cursor-pointer transition-colors whitespace-nowrap ${activeTab === tab.id
+                    ? "border-b-[#111827] dark:border-b-white text-[#111827] dark:text-white font-semibold"
+                    : "border-b-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white"
+                  }`}
+              >
+                <span>{tab.label}</span>
+                <span className="text-[10px] text-[#9ca3af] dark:text-[#6b7280]">{tab.khmer}</span>
+              </button>
+            ))}
+          </div>
+
+          {(activeTab === "overview" || activeTab === "history") && (
+            <div className="flex items-center bg-[#f7f8fa] dark:bg-[#161B22] p-1 rounded-[10px] border border-[#e8eaed] dark:border-white/10 mb-2">
+              {(["Day", "Week", "Month"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setSelectedPeriod(p)}
+                  className={`px-3 py-1.5 text-[11px] font-bold rounded-[7px] border-0 cursor-pointer transition-all ${
+                    selectedPeriod === p
+                      ? "bg-white dark:bg-[#0d1117] text-[#111827] dark:text-white shadow-sm"
+                      : "text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white bg-transparent"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {activeTab === "overview" && (
@@ -518,8 +535,8 @@ export default function PremiumExpensesPage() {
                   <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">ការចំណាយតាមប្រភេទ</p>
                 </div>
                 <div className="p-[22px] flex flex-col gap-[22px]">
-                  {dynamicCategories.map((cat, i) => {
-                    const c = catColorMap[cat.color];
+                  {summaryData.breakdown.filter(b => b.amount > 0).slice(0, 5).map((cat, i) => {
+                    const c = catColorMap[cat.name] || catColorMap["slate"];
                     return (
                       <div key={i} className="flex items-center gap-4">
                         <div className={`w-9 h-9 rounded-[10px] flex items-center justify-center ${c.iconBg} ${c.iconText}`}><cat.icon className="w-4 h-4" /></div>
@@ -530,17 +547,20 @@ export default function PremiumExpensesPage() {
                               <span className="text-[10px] text-[#9ca3af] dark:text-[#7d8590]">{cat.khmer}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="text-[12.5px] font-bold text-[#111827] dark:text-white">{cat.amount}</span>
-                              <span className="text-[11px] text-[#9ca3af] dark:text-[#7d8590]">{cat.pct}%</span>
+                              <span className="text-[12.5px] font-bold text-[#111827] dark:text-white">${cat.amount.toFixed(2)}</span>
+                              <span className="text-[11px] text-[#9ca3af] dark:text-[#7d8590]">{cat.percentage.toFixed(0)}%</span>
                             </div>
                           </div>
                           <div className="w-full h-[6px] bg-[#f0f2f5] dark:bg-white/5 rounded-full overflow-hidden transition-colors">
-                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${cat.pct}%`, background: c.bar }} />
+                            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${cat.percentage}%`, background: c.bar }} />
                           </div>
                         </div>
                       </div>
                     );
                   })}
+                  {summaryData.breakdown.filter(b => b.amount > 0).length === 0 && (
+                    <div className="py-10 text-center text-[#9ca3af] text-[13px]">No spending recorded yet.</div>
+                  )}
                 </div>
               </div>
 
@@ -563,11 +583,6 @@ export default function PremiumExpensesPage() {
                     </div>
                   ))}
                 </div>
-                <div className="mt-3 p-3 bg-white/[0.04] border border-white/[0.07] rounded-[10px]">
-                  <p className="text-[12px] text-[#7d8590]">
-                    <strong className="text-[#e6edf3]">Estimated Monthly Savings:</strong> Implementing these could save you <span className="text-[#3ecf8e] font-bold">~$32.00</span> per month.
-                  </p>
-                </div>
               </div>
             </div>
           </div>
@@ -584,7 +599,7 @@ export default function PremiumExpensesPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {recurringItems.map((item, i) => {
-                const c = catColorMap[item.color];
+                const c = catColorMap[item.color] || catColorMap["slate"];
                 return (
                   <div key={i} className={`p-5 rounded-[14px] border ${c.recurBorder} ${c.recurBg} transition-colors`}>
                     <div className="flex items-center justify-between mb-4">
@@ -700,26 +715,35 @@ export default function PremiumExpensesPage() {
                   ) : filteredHistory.length === 0 ? (
                     <tr><td colSpan={5} className="px-[20px] py-12 text-center text-[#9ca3af]">No expenses found.</td></tr>
                   ) : (
-                    filteredHistory.map((exp, i) => (
-                      <tr key={exp.id || i} className="group transition-colors hover:bg-[#f7f8fa] dark:hover:bg-white/5 cursor-pointer">
-                        <td className="px-[20px] py-[14px]">
-                          <div className="flex flex-col gap-1.5 text-[13px] text-[#6b7280] dark:text-[#7d8590]">
-                            <span className="font-medium text-[#111827] dark:text-white flex items-center gap-1"><Clock className="w-3.5 h-3.5"/> {new Date(exp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                            <span className="text-[11px]">{new Date(exp.createdAt).toLocaleDateString()}</span>
-                          </div>
-                        </td>
-                        <td className="px-[20px] py-[14px]">
-                          <span className={`inline-flex px-2.5 py-[3px] rounded-full text-[11.5px] font-semibold border ${Object.keys(catColorMap).includes(exp.category) ? (catColorMap as any)[exp.category]?.badge : catColorMap["slate"].badge}`}>
-                            {exp.category || "Uncategorized"}
-                          </span>
-                        </td>
-                        <td className="px-[20px] py-[14px] text-[13px] font-medium text-[#111827] dark:text-white">{exp.description || "None"}</td>
-                        <td className="px-[20px] py-[14px]">
-                          <button onClick={(e) => handleDeleteExpense(exp.id, e)} className="p-1.5 text-[#9ca3af] hover:text-[#ef4444] rounded-lg hover:bg-[#fef2f2] dark:hover:bg-red-500/10 transition-colors border-0 bg-transparent cursor-pointer"><Trash2 className="w-4 h-4" /></button>
-                        </td>
-                        <td className="px-[20px] py-[14px] text-right"><span className="text-[14px] font-bold text-[#ef4444]">-${parseFloat(exp.amount || "0").toFixed(2)}</span></td>
-                      </tr>
-                    ))
+                    filteredHistory.map((exp, i) => {
+                      const c = catColorMap[exp.category] || catColorMap["slate"];
+                      return (
+                        <tr key={exp.id || i} className="group transition-colors hover:bg-[#f7f8fa] dark:hover:bg-white/5 cursor-pointer">
+                          <td className="px-[20px] py-[14px]">
+                            <div className="flex flex-col gap-1.5 text-[13px] text-[#6b7280] dark:text-[#7d8590]">
+                              <span className="font-medium text-[#111827] dark:text-white flex items-center gap-1"><Clock className="w-3.5 h-3.5"/> {new Date(exp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              <span className="text-[11px]">{new Date(exp.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </td>
+                          <td className="px-[20px] py-[14px]">
+                            <span className={`inline-flex px-2.5 py-[3px] rounded-full text-[11.5px] font-semibold border ${c.badge}`}>
+                              {exp.category || "Uncategorized"}
+                            </span>
+                          </td>
+                          <td className="px-[20px] py-[14px] text-[13px] font-medium text-[#111827] dark:text-white">{exp.description || "None"}</td>
+                          <td className="px-[20px] py-[14px]">
+                            <button onClick={(e) => handleDeleteExpense(exp.id, e)} className="p-1.5 text-[#9ca3af] hover:text-[#ef4444] rounded-lg hover:bg-[#fef2f2] dark:hover:bg-red-500/10 transition-colors border-0 bg-transparent cursor-pointer disabled:opacity-50">
+                              {isDeleting === exp.id ? (
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </button>
+                          </td>
+                          <td className="px-[20px] py-[14px] text-right"><span className="text-[14px] font-bold text-[#ef4444]">-${parseFloat(exp.amount || "0").toFixed(2)}</span></td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -755,7 +779,15 @@ export default function PremiumExpensesPage() {
                 <div className="relative mt-2"><input type="text" placeholder="What was this for? (Optional)" value={expenseNote} onChange={(e) => setExpenseNote(e.target.value)} className="block w-full px-4 py-4 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[#111827] dark:text-white text-[15px] placeholder-[#9ca3af] dark:placeholder-[#7d8590] focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#3ecf8e] outline-none transition-all min-h-[60px]" /></div>
                 <div className="flex gap-3 mt-2">
                   <button type="button" onClick={() => setIsQuickLogModalOpen(false)} className="flex-1 bg-[#f0f2f5] dark:bg-white/5 hover:bg-[#e8eaed] dark:hover:bg-white/10 text-[#374151] dark:text-white font-bold text-[16px] py-4 rounded-xl transition-all min-h-[56px] border-0 cursor-pointer">Cancel</button>
-                  <button type="submit" disabled={!expenseAmount} className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold text-[16px] py-4 rounded-xl transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer disabled:opacity-60"><Plus className="w-5 h-5" /> <span>Save Expense</span></button>
+                  <button type="submit" disabled={!expenseAmount || isSaving} className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold text-[16px] py-4 rounded-xl transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer disabled:opacity-60">
+                    {isSaving ? (
+                      <RefreshCw className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <>
+                        <Plus className="w-5 h-5" /> <span>Save Expense</span>
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </form>
@@ -775,37 +807,6 @@ export default function PremiumExpensesPage() {
             <div className="space-y-4">
               <input type="text" placeholder="e.g., Shop Decor" value={customCategoryName} onChange={(e) => setCustomCategoryName(e.target.value)} className="w-full px-4 py-3 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[14px] focus:border-[#3ecf8e] outline-none transition-all text-[#111827] dark:text-white" autoFocus />
               <button onClick={handleCreateCustomCategory} className="w-full bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold py-3 rounded-xl transition-colors border-0 cursor-pointer">Create Category</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {!isChatOpen && (
-        <button onClick={() => setIsChatOpen(true)} className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-full shadow-[0_8px_32px_rgba(139,92,246,0.4)] flex items-center justify-center text-white hover:scale-110 transition-transform cursor-pointer border-0">
-          <MessageSquare size={22} />
-        </button>
-      )}
-
-      {isChatOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[520px] bg-white dark:bg-[#0d1117] rounded-[20px] shadow-[0_24px_64px_rgba(0,0,0,0.2)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)] border border-[#e8eaed] dark:border-white/10 flex flex-col overflow-hidden transition-colors">
-          <div className="px-5 py-4 bg-[#0d1117] flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-full flex items-center justify-center"><Brain size={18} className="text-white" /></div>
-              <div><p className="font-bold text-[13.5px] text-[#e6edf3]">Expense Assistant</p><p className="text-[11px] text-[#4d5562]">Online · Analyzing costs</p></div>
-            </div>
-            <button onClick={() => setIsChatOpen(false)} className="text-[#7d8590] hover:text-[#e6edf3] bg-transparent border-0 cursor-pointer p-1"><X className="w-4 h-4" /></button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-[#f7f8fa] dark:bg-[#161B22] transition-colors" style={{ minHeight: "260px" }}>
-            {chatMessages.map((msg, i) => (
-              <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[80%] px-4 py-3 rounded-[14px] text-[13px] leading-relaxed transition-colors ${msg.role === "user" ? "bg-[#0d1117] dark:bg-gradient-to-r dark:from-[#8b5cf6] dark:to-[#3ecf8e] text-[#e6edf3] dark:text-white rounded-br-[4px]" : "bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 text-[#374151] dark:text-[#e6edf3] rounded-bl-[4px] shadow-sm"}`}>{msg.text}</div>
-              </div>
-            ))}
-          </div>
-          <div className="p-3 border-t border-[#e8eaed] dark:border-white/10 bg-white dark:bg-[#0d1117] transition-colors">
-            <div className="flex items-center gap-2">
-              <input type="text" placeholder="Ask about your expenses..." value={chatMsg} onChange={(e) => setChatMsg(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSend()} className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#3ecf8e] transition-colors placeholder-[#9ca3af] dark:placeholder-[#7d8590]" />
-              <button onClick={handleSend} className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] text-white rounded-[10px] border-0 cursor-pointer hover:opacity-90"><Send size={15} /></button>
             </div>
           </div>
         </div>

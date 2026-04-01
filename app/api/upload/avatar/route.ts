@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
-import { join } from "path";
-import { mkdir } from "fs/promises";
+import { v2 as cloudinary } from "cloudinary";
 import { TokenUtil } from "@/lib/auth/utils/token.util";
 import { authConfig } from "@/lib/auth/config";
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request: NextRequest) {
   const token = request.cookies.get(authConfig.cookies.accessToken)?.value;
@@ -28,25 +33,32 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadDir = join(process.cwd(), "public", "uploads", "avatars");
-    
-    // Ensure directory exists (again, just in case)
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (e) {}
+    // Upload to Cloudinary using a Promise-wrapped upload_stream
+    const uploadToCloudinary = () => {
+      return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "psarpulse/avatars",
+            public_id: `avatar-${payload.id}-${Date.now()}`,
+            resource_type: "auto",
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        uploadStream.end(buffer);
+      });
+    };
 
-    const fileName = `${payload.id}-${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-    const filePath = join(uploadDir, fileName);
-    const publicPath = `/uploads/avatars/${fileName}`;
-
-    await writeFile(filePath, buffer);
+    const result = (await uploadToCloudinary()) as any;
 
     return NextResponse.json({
       success: true,
-      url: publicPath,
+      url: result.secure_url,
     });
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error("Cloudinary upload error:", error);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }

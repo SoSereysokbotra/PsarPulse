@@ -1,0 +1,28 @@
+{
+  "sales_mae": 68.14367754243302,
+  "traffic_mae": 10.39452313877693,
+  "sales_rmse": 90.99766232843633,
+  "traffic_rmse": 13.049483435594118,
+  "feature_columns": [
+    "weekday",
+    "month",
+    "is_weekend",
+    "is_holiday",
+    "weather_score",
+    "promo_flag",
+    "avg_ticket",
+    "day_of_year",
+    "week_of_year",
+    "day_index",
+    "month_sin",
+    "month_cos",
+    "sales_lag_1",
+    "sales_lag_2",
+    "sales_lag_3",
+    "sales_lag_7",
+    "traffic_lag_1",
+    "traffic_lag_2",
+    "traffic_lag_3",
+    "traffic_lag_7"
+  ]
+}

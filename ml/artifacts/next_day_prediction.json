@@ -1,0 +1,11 @@
+{
+  "date": "2026-04-02",
+  "sales_prediction": 554.7,
+  "traffic_prediction": 124,
+  "model_quality": {
+    "sales_mae": 68.14,
+    "traffic_mae": 10.39,
+    "sales_rmse": 91.0,
+    "traffic_rmse": 13.05
+  }
+}

@@ -1,5 +1,6 @@
 import React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export interface FreeStatCardProps {
   title: string;
@@ -20,6 +21,8 @@ export default function FreeStatCard({
   trend,
   trendDirection,
 }: FreeStatCardProps) {
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
   const explicitDark = variant === "dark";
   const isGreen = variant === "green";
   const isPositiveTrend = trendDirection === "up";
@@ -36,14 +39,15 @@ export default function FreeStatCard({
   return (
     <div className={containerClass}>
       <div>
-        <p className={`text-xs font-semibold ${explicitDark ? "text-slate-400" : isGreen ? "text-white/80" : "text-slate-500 dark:text-slate-400"} leading-tight`}>{title}</p>
-        <p className={`text-[10px] font-khmer mt-0.5 ${explicitDark ? "text-slate-500" : isGreen ? "text-white/60" : "text-slate-400 dark:text-slate-500"}`}>{khmerTitle}</p>
+        <p className={`text-xs font-semibold ${explicitDark ? "text-slate-400" : isGreen ? "text-white/80" : "text-slate-500 dark:text-slate-400"} leading-tight`}>
+          {isKhmer ? khmerTitle : title}
+        </p>
       </div>
       <div>
         <div className="flex items-end justify-between mt-3">
           <div className={`text-[32px] font-bold leading-none ${explicitDark ? "text-white" : isGreen ? "text-white" : "text-slate-900 dark:text-white"}`}>{value}</div>
           {trend && (
-            <div className={`flex items-center gap-1 text-xs font-bold ${isPositiveTrend ? "text-[#3ecf8e]" : "text-[#ef4444]"}`}>
+            <div className={`flex items-center gap-1 text-xs font-bold ${isPositiveTrend ? (isGreen ? "text-white" : "text-[#3ecf8e]") : "text-[#ef4444]"}`}>
               {isPositiveTrend ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
               <span>{trend}</span>
             </div>

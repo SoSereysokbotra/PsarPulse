@@ -166,13 +166,8 @@ export default function VendorSidebar({
               <div className="flex items-center gap-1.5 mb-1">
                 {PlanIcon && <PlanIcon size={14} className="text-[#29B28D]" />}
                 <span className="text-[13px] font-semibold text-[#e6edf3]">
-                  {config.label}
+                  {isKhmer ? config.labelKh : config.label}
                 </span>
-                {config.labelKh && (
-                  <span className="text-[11px] font-bold text-[#7d8590] ml-auto">
-                    {config.labelKh}
-                  </span>
-                )}
               </div>
               {config.sub && (
                 <p className="text-[11px] text-[#7d8590] mb-2">{config.sub}</p>

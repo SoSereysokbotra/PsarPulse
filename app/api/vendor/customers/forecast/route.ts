@@ -3,7 +3,7 @@ import { TokenUtil } from "@/lib/auth/utils/token.util";
 import { authConfig } from "@/lib/auth/config";
 import { VendorRepository } from "@/lib/db/repositories/vendor.repository";
 import { TrafficRepository } from "@/lib/db/repositories/traffic.repository";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get(authConfig.cookies.accessToken)?.value;
@@ -34,12 +34,11 @@ export async function GET(request: NextRequest) {
 
     // 3. Generate AI Insight if API key exists
     let aiInsight = "Record more traffic logs to see personalized AI insights.";
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     
     if (apiKey && patterns.length > 0) {
       try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const openai = new OpenAI({ apiKey });
         
         const prompt = `
           As an AI Business Analyst for PsarPulse, analyze this vendor's hourly foot traffic pattern:
@@ -55,10 +54,13 @@ export async function GET(request: NextRequest) {
           Respond with the plain text advice ONLY.
         `;
         
-        const result = await model.generateContent(prompt);
-        aiInsight = result.response.text().trim();
+        const result = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: prompt }],
+        });
+        aiInsight = (result.choices[0].message.content || "").trim();
       } catch (aiError) {
-        console.error("Gemini Forecast Error:", aiError);
+        console.error("OpenAI Forecast Error:", aiError);
         aiInsight = "Our AI suggests preparing for a typical peak around dinner time. Ensure your best-sellers are stocked.";
       }
     } else if (patterns.length > 0) {

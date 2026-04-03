@@ -2,6 +2,7 @@
 
 import React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export interface VendorSummaryCardProps {
   title: string;
@@ -28,6 +29,8 @@ export default function VendorSummaryCard({
   highlight = false,
   variant = "light",
 }: VendorSummaryCardProps) {
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
   // Determine effective style: `highlight` overrides variant to "green"
   const effectiveVariant = highlight ? "green" : variant;
   const isGreen = effectiveVariant === "green";
@@ -63,18 +66,7 @@ export default function VendorSummaryCard({
                   : "text-[#374151] dark:text-[#abb4be]"
             }`}
           >
-            {title}
-          </div>
-          <div
-            className={`text-[10.5px] mt-0.5 font-medium ${
-              isGreen
-                ? "text-psar-white/90"
-                : explicitDark
-                  ? "text-[#abb4be]"
-                  : "text-[#4b5563] dark:text-[#abb4be]"
-            }`}
-          >
-            {khmerTitle}
+            {isKhmer ? khmerTitle : title}
           </div>
         </div>
         {Icon && (
@@ -96,23 +88,24 @@ export default function VendorSummaryCard({
       </div>
 
       {/* Value + trend */}
-      <div className="flex items-end justify-between gap-3 mt-auto">
+      <div className="flex flex-col gap-0.5 mt-auto">
         <span
-          className={`font-bold text-[28px] md:text-[32px] leading-tight shrink-0 ${
+          className={`font-bold text-[24px] md:text-[28px] leading-tight truncate ${
             isGreen
               ? "text-psar-white"
               : explicitDark
                 ? "text-[#ffffff]"
                 : "text-[#111827] dark:text-[#ffffff]"
           }`}
+          title={typeof value === 'string' ? value : undefined}
         >
           {value}
         </span>
         
-        <div className="flex flex-col items-end text-right min-w-0 pb-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0 pt-0.5 pb-0.5">
           {trend && (
             <span
-              className={`text-[12.5px] font-extrabold flex items-center gap-1 ${
+              className={`text-[12px] font-extrabold flex items-center gap-1 shrink-0 ${
                 isGreen
                   ? "text-psar-white"
                   : resolvedPositive
@@ -127,7 +120,7 @@ export default function VendorSummaryCard({
           )}
           {subtext && (
             <span
-              className={`text-[11.5px] font-bold leading-tight ${
+              className={`text-[11px] font-bold ${
                 isGreen
                   ? "text-psar-white/90"
                   : explicitDark

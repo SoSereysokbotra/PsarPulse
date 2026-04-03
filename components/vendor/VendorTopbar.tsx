@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Menu, PanelLeftClose, PanelLeftOpen, Bell, Sun, Moon } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface VendorTopbarProps {
@@ -27,6 +28,8 @@ export default function VendorTopbar({
   userName,
   userInitials,
 }: VendorTopbarProps) {
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
   const { theme, setTheme } = useTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -99,8 +102,8 @@ export default function VendorTopbar({
             {showNotifications && (
               <div className="absolute right-0 mt-3 w-80 bg-white dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[14px] shadow-lg z-50 overflow-hidden text-left">
                 <div className="p-4 border-b border-[#e8eaed] dark:border-white/10 flex justify-between items-center bg-[#f7f8fa] dark:bg-[#0d1117]">
-                  <h3 className="font-bold text-[15px] text-[#111827] dark:text-white flex items-center gap-2"><Bell className="w-4 h-4"/> Notifications</h3>
-                  <span className="text-[11px] font-bold text-[#3ecf8e] bg-[rgba(62,207,142,0.15)] px-2.5 py-1 rounded-full border border-[rgba(62,207,142,0.3)]">3 New</span>
+                  <h3 className="font-bold text-[15px] text-[#111827] dark:text-white flex items-center gap-2"><Bell className="w-4 h-4"/> {isKhmer ? "ការជូនដំណឹង" : "Notifications"}</h3>
+                  <span className="text-[11px] font-bold text-[#3ecf8e] bg-[rgba(62,207,142,0.15)] px-2.5 py-1 rounded-full border border-[rgba(62,207,142,0.3)]">{isKhmer ? "៣ ថ្មី" : "3 New"}</span>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto">
                   {[
@@ -119,7 +122,7 @@ export default function VendorTopbar({
                   ))}
                 </div>
                 <div className="p-3 text-center bg-[#f7f8fa] dark:bg-[#0d1117] cursor-pointer hover:bg-[#f0f2f5] dark:hover:bg-white/5 transition-colors">
-                  <span className="text-[13px] font-bold text-[#3ecf8e] hover:underline">Mark all as read</span>
+                  <span className="text-[13px] font-bold text-[#3ecf8e] hover:underline">{isKhmer ? "សម្គាល់ថាបានអានទាំងអស់" : "Mark all as read"}</span>
                 </div>
               </div>
             )}

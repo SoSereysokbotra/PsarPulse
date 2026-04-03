@@ -43,8 +43,12 @@ export default function SalesAnalysis() {
       try {
         const res = await fetch("/api/vendor/ai/insights");
         const json = await res.json();
-        if (json.success) {
-          setInsights(json.data);
+        if (json.success && json.data) {
+          if (json.data.insights) {
+            setInsights(json.data.insights);
+          } else if (Array.isArray(json.data)) {
+            setInsights(json.data);
+          }
         }
       } catch (err) {
         console.error("Failed to fetch AI insights:", err);
@@ -98,8 +102,8 @@ export default function SalesAnalysis() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Sparkles size={14} className="text-amber-400" />
-              <span className="text-[11px] text-[#9ca3af] font-medium">Powered by Gemini Pro</span>
+              <Sparkles size={14} className="text-[#8b5cf6]" />
+              <span className="text-[11px] text-[#9ca3af] font-medium border border-[#8b5cf6]/30 bg-[#8b5cf6]/10 px-2 py-0.5 rounded-full">Powered by Custom ML Model</span>
             </div>
           </div>
 

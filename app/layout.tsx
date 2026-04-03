@@ -29,6 +29,7 @@ export default function RootLayout({
       </head>
       <body
         className="antialiased font-sans"
+        suppressHydrationWarning
       >
         <ServiceWorkerProvider>
           <ThemeProvider>

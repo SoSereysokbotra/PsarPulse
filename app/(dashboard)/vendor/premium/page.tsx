@@ -116,8 +116,8 @@ export default function PremiumDashboard() {
   // Premium: records auto-save continuously — no manual day-lock needed
   const [isChatSending, setIsChatSending] = useState(false);
   const [dashChatMessages, setDashChatMessages] = useState<{role:string,text:string}[]>([
-    { role: "assistant", text: "សួស្តី! I'm your Gemini Business Assistant. How can I help optimize your business today?" },
-    { role: "assistant", text: "I can analyze your sales trends, inventory levels, and help forecast revenue. Just ask!" },
+    { role: "assistant", text: isKhmer ? "សួស្តី! ខ្ញុំជាជំនួយការអាជីវកម្ម Gemini របស់អ្នក។ តើខ្ញុំអាចជួយបង្កើនប្រសិទ្ធភាពអាជីវកម្មរបស់អ្នកនៅថ្ងៃនេះដោយរបៀបណា?" : "Hello! I'm your Gemini Business Assistant. How can I help optimize your business today?" },
+    { role: "assistant", text: isKhmer ? "ខ្ញុំអាចវិភាគនិន្នាការលក់ កម្រិតស្តុក និងជួយព្យាករណ៍ចំណូល។ គ្រាន់តែសួរមក!" : "I can analyze your sales trends, inventory levels, and help forecast revenue. Just ask!" },
   ]);
   const [dashChatInput, setDashChatInput] = useState("");
   const [showCustomCategoryModal, setShowCustomCategoryModal] = useState(false);
@@ -440,7 +440,7 @@ export default function PremiumDashboard() {
         profit: profitTrend, 
         margin: "", 
         customers: customerTrend, 
-        savings: "Optimization" 
+        savings: isKhmer ? "ការបង្កើនប្រសិទ្ធភាព" : "Optimization" 
       },
     };
   }, [salesRaw, expensesRaw, stats, aiSavings]);
@@ -450,7 +450,9 @@ export default function PremiumDashboard() {
     "#29B28D", "#6366f1", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#94a3b8",
   ];
 
-  const weeklyLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const weeklyLabels = isKhmer 
+    ? ["ចន្ទ", "អង្គារ", "ពុធ", "ព្រហ", "សុក្រ", "សៅរ៍", "អាទិត្យ"] 
+    : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const weeklyData = React.useMemo(() => {
     const now = new Date();
     const buckets = [0, 0, 0, 0, 0, 0, 0];
@@ -468,7 +470,9 @@ export default function PremiumDashboard() {
 
   const maxWeekly = React.useMemo(() => PremiumAnalytics.getDynamicMax(weeklyData, 1000), [weeklyData]);
 
-  const monthlyLabels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+  const monthlyLabels = isKhmer
+    ? ["សប្តាហ៍ទី ១", "សប្តាហ៍ទី ២", "សប្តាហ៍ទី ៣", "សប្តាហ៍ទី ៤"]
+    : ["Week 1", "Week 2", "Week 3", "Week 4"];
   const monthlyData = React.useMemo(() => {
     const buckets = [0, 0, 0, 0];
     salesRaw.forEach((t) => {
@@ -504,10 +508,10 @@ export default function PremiumDashboard() {
         const invItem = inventoryItems.find((inv: any) => inv.name.toLowerCase() === name.toLowerCase());
         return {
           name,
-          khmer: invItem?.khmerName || "",
           qty,
           revenue: `$${(invItem ? parseFloat(invItem.price || "0") * qty : 0).toFixed(2)}`,
           pct: Math.round((qty / maxQty) * 100),
+          khmer: invItem?.khmerName || name,
         };
       });
     }
@@ -530,32 +534,6 @@ export default function PremiumDashboard() {
   }, [expensesRaw]);
 
   const [smartAlerts, setSmartAlerts] = useState<any[]>([]);
-
-  React.useEffect(() => {
-    const alerts: any[] = [];
-    const lowStockItems = inventoryItems.filter(i => i.stock <= (i.threshold || 10));
-    if (lowStockItems.length > 0) {
-      if (!dismissedAlerts.has("low_stock")) {
-        alerts.push({
-          id: "low_stock",
-          type: "warning",
-          message: `Low Stock Alert: ${lowStockItems.length} items (${lowStockItems.slice(0, 2).map(i => i.name).join(", ")}${lowStockItems.length > 2 ? "..." : ""}) are running low.`,
-          time: "Just now",
-        });
-      }
-    }
-    if (salesRaw.length > 0) {
-      if (!dismissedAlerts.has("opportunity")) {
-        alerts.push({
-          id: "opportunity",
-          type: "opportunity",
-          message: "Your sales are trending well! Consider running a flash promotion.",
-          time: "1 hour ago",
-        });
-      }
-    }
-    setSmartAlerts(alerts);
-  }, [inventoryItems, salesRaw, dismissedAlerts]);
 
   const handleDashChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -602,11 +580,11 @@ export default function PremiumDashboard() {
             >
               {quickSaleOpen ? (
                 <>
-                  <X className="w-4 h-4" /> Cancel
+                  <X className="w-4 h-4" /> {isKhmer ? "បោះបង់" : "Cancel"}
                 </>
               ) : (
                 <>
-                  <Zap className="w-4 h-4" /> Quick Sale
+                  <Zap className="w-4 h-4" /> {isKhmer ? "ការលក់រហ័ស" : "Quick Sale"}
                 </>
               )}
               {cartItems > 0 && !quickSaleOpen && (
@@ -625,10 +603,7 @@ export default function PremiumDashboard() {
                 <div className="flex items-center gap-2 px-[18px] py-[14px] border-b border-[#e8eaed] dark:border-white/10">
                   <ShoppingCart className="w-4 h-4 text-[#29B28D]" />
                   <span className="font-bold text-sm text-[#111827] dark:text-white">
-                    Quick Sale
-                  </span>
-                  <span className="text-[11px] text-[#6b7280] dark:text-[#7d8590] ml-auto">
-                    ការលក់រហ័ស
+                    {isKhmer ? "ការលក់រហ័ស" : "Quick Sale"}
                   </span>
                 </div>
                 <div className="p-[14px_18px] max-h-[60vh] overflow-y-auto">
@@ -638,7 +613,7 @@ export default function PremiumDashboard() {
                       ref={searchRef}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search product..."
+                      placeholder={isKhmer ? "ស្វែងរកផលិតផល..." : "Search product..."}
                       className="w-full pl-[33px] pr-[11px] py-[9px] bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[9px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#29B28D] dark:focus:border-[#29B28D] transition-colors"
                       style={{ fontFamily: "inherit" }}
                     />
@@ -647,6 +622,7 @@ export default function PremiumDashboard() {
                         className="absolute top-full left-0 right-0 bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 border-t-0 rounded-b-[9px] overflow-hidden shadow-lg"
                         style={{ zIndex: 10 }}
                       >
+
                         {filteredProducts.length ? (
                           filteredProducts.map((p) => (
                             <button
@@ -666,7 +642,7 @@ export default function PremiumDashboard() {
                           ))
                         ) : (
                           <div className="px-[13px] py-[10px] text-[12.5px] text-[#6b7280] dark:text-[#7d8590]">
-                            No products found
+                            {isKhmer ? "រកមិនឃើញផលិតផលទេ" : "No products found"}
                           </div>
                         )}
                       </div>
@@ -676,7 +652,7 @@ export default function PremiumDashboard() {
                   {!searchQuery && (
                     <div className="mb-[14px]">
                       <div className="text-[10px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-[0.07em] mb-2">
-                        Tap to add
+                        {isKhmer ? "ប៉ះដើម្បីបន្ថែម" : "Tap to add"}
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
                         {inventoryItems.length > 0 ? (
@@ -718,10 +694,10 @@ export default function PremiumDashboard() {
                         ) : (
                           <div className="col-span-2 py-8 flex flex-col items-center justify-center rounded-lg border border-dashed border-white/10">
                             <span className="text-[13px] font-bold text-white/40">
-                              No data. Add item
+                              {isKhmer ? "មិនមានទិន្នន័យ។ បន្ថែមផលិតផល" : "No data. Add item"}
                             </span>
                             <span className="text-[10px] text-[#7d8590] mt-1 text-center">
-                              Add products to your inventory first
+                              {isKhmer ? "សូមបន្ថែមផលិតផលទៅក្នុងស្តុករបស់អ្នកជាមុនសិន" : "Add products to your inventory first"}
                             </span>
                           </div>
                         )}
@@ -737,7 +713,7 @@ export default function PremiumDashboard() {
                           className="flex items-center gap-2 py-[7px] border-b border-[#f0f2f5] dark:border-white/5"
                         >
                           <span className="text-[12.5px] flex-1 text-[#111827] dark:text-white">
-                            {item.product.name}
+                            {isKhmer ? (item.product as any).khmerName || item.product.name : item.product.name}
                           </span>
                           <div className="flex items-center bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[7px] overflow-hidden shrink-0">
                             <button
@@ -772,7 +748,7 @@ export default function PremiumDashboard() {
 
                   <div className="flex items-center justify-between py-2 border-t border-[#f0f2f5] dark:border-white/5 mb-3 mt-1">
                     <span className="text-xs text-[#6b7280] dark:text-[#7d8590] font-medium">
-                      Customers · អតិថិជន
+                      {isKhmer ? "អតិថិជន" : "Customers"}
                     </span>
                     <div className="flex items-center bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[8px] overflow-hidden">
                       <button
@@ -800,8 +776,8 @@ export default function PremiumDashboard() {
                   </div>
 
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-[#6b7280] dark:text-[#7d8590]">
-                      {cartItems} item{cartItems !== 1 ? "s" : ""}
+                     <span className="text-xs text-[#6b7280] dark:text-[#7d8590]">
+                      {cartItems} {isKhmer ? "មុខ" : "item"}{cartItems !== 1 && !isKhmer ? "s" : ""}
                     </span>
                     <span className="font-extrabold text-xl text-[#29B28D]">
                       ${cartTotal.toFixed(2)}
@@ -824,7 +800,7 @@ export default function PremiumDashboard() {
                        <div className="w-5 h-5 border-2 border-[#0E1319]/30 border-t-[#0E1319] rounded-full animate-spin"></div>
                     ) : (
                       <>
-                        <CheckCircle2 className="w-4 h-4" /> Complete Sale
+                        <CheckCircle2 className="w-4 h-4" /> {isKhmer ? "បញ្ចប់ការលក់" : "Complete Sale"}
                       </>
                     )}
                   </button>
@@ -852,7 +828,7 @@ export default function PremiumDashboard() {
             a.click();
             URL.revokeObjectURL(url);
           }} className="hidden sm:flex items-center gap-2 bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 hover:bg-[#f7f8fa] dark:hover:bg-white/5 text-[#111827] dark:text-white font-medium px-3.5 py-2 rounded-[10px] transition-colors text-sm min-h-[40px] cursor-pointer">
-            <FileSpreadsheet className="w-4 h-4" /> Export Excel
+            <FileSpreadsheet className="w-4 h-4" /> {isKhmer ? "ទាញយកជា Excel" : "Export Excel"}
           </button>
         </>
       }
@@ -896,7 +872,7 @@ export default function PremiumDashboard() {
                   }
                   setSmartAlerts(prev => prev.filter(a => a.id !== alert.id));
                 }} className="text-[12px] font-bold text-[#4b5563] dark:text-[#abb4be] hover:text-[#111827] dark:hover:text-white px-3 py-1.5 rounded-[8px] hover:bg-white dark:hover:bg-white/10 transition-colors bg-transparent border-0 cursor-pointer">
-                  Dismiss
+                  {isKhmer ? "បោះបង់ចោល" : "Dismiss"}
                 </button>
               </div>
             ))}
@@ -914,11 +890,9 @@ export default function PremiumDashboard() {
             </div>
             <div className="space-y-1">
               <span className="text-[22px] font-extrabold text-white tracking-tight" suppressHydrationWarning>
-                {greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName} 👋
+                {isKhmer ? greetingKh : greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName} 👋
               </span>
               <div className="text-[11px] text-[#abb4be] mt-0.5 flex items-center gap-2" suppressHydrationWarning>
-                <span className="font-medium text-white/90">{greetingKh}</span>
-                <span className="w-[3px] h-[3px] rounded-full bg-[#4d5562] inline-block" />
                 <Clock size={10} className="inline-block text-[#29B28D]" />
                 <span className="text-white/80">{dateStr}</span>
               </div>
@@ -953,7 +927,7 @@ export default function PremiumDashboard() {
                   {Math.round(goalPct)}%
                 </span>
                 <span className="text-[9px] text-[#7d8590] mt-0.5">
-                  of goal
+                  {isKhmer ? "នៃគោលដៅ" : "of goal"}
                 </span>
               </div>
             </div>
@@ -961,14 +935,15 @@ export default function PremiumDashboard() {
               <div className="flex items-center gap-1.5 mb-1 text-[#29B28D]">
                 <Target className="w-3.5 h-3.5" />
                 <span className="text-[11px] font-bold uppercase tracking-[0.06em]">
-                  Daily Goal
+                  {isKhmer ? GOAL.khmer : "Daily Goal"}
                 </span>
               </div>
               <div className="text-[24px] font-extrabold text-white leading-none tracking-tight mb-1">
                 ${GOAL.current.toFixed(2)}
               </div>
               <div className="text-[12px] text-[#7d8590] mt-0.5">
-                of ${GOAL.target.toFixed(2)} target
+                {isKhmer ? "នៃគោលដៅ $" : "of $"}
+                {GOAL.target.toFixed(2)} {isKhmer ? "ដែលបានកំណត់" : "target"}
               </div>
               <div className="mt-2.5 w-[140px] h-2 bg-white/10 rounded-full overflow-hidden">
                 <div
@@ -976,8 +951,7 @@ export default function PremiumDashboard() {
                   style={{ width: `${goalPct}%` }}
                 />
               </div>
-              <div className="text-[11px] text-[#7d8590] mt-1.5 flex items-center justify-between">
-                <span>{GOAL.khmer}</span>
+              <div className="text-[11px] text-[#7d8590] mt-1.5 flex items-center justify-end">
                 <button
                   onClick={() => setShowGoalModal(true)}
                   className="bg-transparent border-0 p-0 text-[#29B28D] hover:underline text-[10px] font-bold cursor-pointer flex items-center gap-1"
@@ -1030,12 +1004,9 @@ export default function PremiumDashboard() {
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/5 rounded-[14px] p-6 shadow-sm transition-colors">
-            <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white mb-1">
-              Weekly Revenue
+            <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white mb-5">
+              {isKhmer ? "ចំណូលប្រចាំសប្តាហ៍" : "Weekly Revenue"}
             </h3>
-            <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-5">
-              ចំណូលប្រចាំសប្តាហ៍
-            </p>
             <div className="h-40 flex items-end gap-1.5">
               {stats.transactions > 0 || hasData ? (
                 weeklyData.map((amount, i) => {
@@ -1056,19 +1027,18 @@ export default function PremiumDashboard() {
                 })
               ) : (
                 <div className="w-full h-full flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10">
-                  <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">No data. Add item</span>
+                  <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">
+                    {isKhmer ? "មិនមានទិន្នន័យ។ បន្ថែមផលិតផល" : "No data. Add item"}
+                  </span>
                 </div>
               )}
             </div>
           </div>
 
           <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/5 rounded-[14px] p-6 shadow-sm transition-colors">
-            <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white mb-1">
-              Monthly Revenue
+            <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white mb-5">
+              {isKhmer ? "ចំណូលប្រចាំខែ" : "Monthly Revenue"}
             </h3>
-            <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-5">
-              ចំណូលប្រចាំខែ
-            </p>
             <div className="h-40 flex items-end gap-2">
               {hasData ? (
                 monthlyData.map((val, i) => (
@@ -1095,26 +1065,25 @@ export default function PremiumDashboard() {
                 ))
               ) : (
                 <div className="w-full h-full flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10">
-                  <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">No data. Add item</span>
+                  <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">
+                    {isKhmer ? "មិនមានទិន្នន័យ។ បន្ថែមផលិតផល" : "No data. Add item"}
+                  </span>
                 </div>
               )}
             </div>
           </div>
 
           <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/5 rounded-[14px] p-6 shadow-sm col-span-1 lg:col-span-2 transition-colors">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white">
-                Expenses
+                {isKhmer ? "ការចំណាយ" : "Expenses"}
               </h3>
               {expLogged && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[10px] font-bold border border-[rgba(41,178,141,0.2)] uppercase tracking-wider">
-                  <CheckCircle2 className="w-3 h-3" /> Logged!
+                  <CheckCircle2 className="w-3 h-3" /> {isKhmer ? "បានកត់ត្រា!" : "Logged!"}
                 </span>
               )}
             </div>
-            <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-4">
-              ការចំណាយ
-            </p>
             <div className="space-y-3">
               {hasData ? (
                 expenseCategories.map((item, i) => (
@@ -1147,7 +1116,9 @@ export default function PremiumDashboard() {
                 ))
               ) : (
                 <div className="w-full py-6 flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10">
-                  <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">No data. Add item</span>
+                  <span className="text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">
+                    {isKhmer ? "មិនមានទិន្នន័យ។ បន្ថែមផលិតផល" : "No data. Add item"}
+                  </span>
                 </div>
               )}
             </div>
@@ -1159,14 +1130,11 @@ export default function PremiumDashboard() {
           <div className="px-6 py-5 border-b border-[#f0f2f5] dark:border-white/5 flex items-center justify-between">
             <div>
               <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
-                Best Selling Products
+                {isKhmer ? "ផលិតផលលក់ដាច់ជាងគេ" : "Best Selling Products"}
               </h3>
-              <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                ផលិតផលលក់ដាច់ជាងគេ
-              </p>
             </div>
             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[11px] font-bold rounded-full border border-[rgba(41,178,141,0.2)]">
-              <Crown className="w-3 h-3" /> Premium Analytics
+              <Crown className="w-3 h-3" /> {isKhmer ? "ការវិភាគកម្រិត Premium" : "Premium Analytics"}
             </span>
           </div>
           <div className="p-5 space-y-4">
@@ -1180,10 +1148,7 @@ export default function PremiumDashboard() {
                     <div className="flex items-center justify-between mb-1.5">
                       <div>
                         <span className="text-[14px] font-semibold text-[#111827] dark:text-white">
-                          {item.name}
-                        </span>
-                        <span className="text-[11px] text-[#6b7280] dark:text-[#7d8590] ml-2">
-                          {item.khmer}
+                          {isKhmer ? (item.khmer || item.name) : item.name}
                         </span>
                       </div>
                       <div className="text-right">
@@ -1206,7 +1171,7 @@ export default function PremiumDashboard() {
               ))
             ) : (
               <div className="w-full py-8 flex items-center justify-center rounded-[10px] border border-dashed border-[#e8eaed] dark:border-white/10 text-sm font-medium text-[#6b7280] dark:text-[#7d8590]">
-                No data. Add item
+                {isKhmer ? "មិនមានទិន្នន័យ។ បន្ថែមផលិតផល" : "No data. Add item"}
               </div>
             )}
           </div>
@@ -1218,7 +1183,7 @@ export default function PremiumDashboard() {
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="w-5 h-5 text-orange-500" />
               <h4 className="font-semibold text-[14px] text-orange-800 dark:text-orange-400">
-                Low Stock Alert
+                {isKhmer ? "ការជូនដំណឹងអំពីការអស់ស្តុក" : "Low Stock Alert"}
               </h4>
             </div>
             <div className="space-y-2">
@@ -1230,12 +1195,12 @@ export default function PremiumDashboard() {
                     className="flex items-center justify-between py-2 px-3 bg-white dark:bg-[#161B22] rounded-[10px] border border-orange-100 dark:border-orange-500/10 transition-colors"
                   >
                     <span className="text-[13px] font-medium text-[#111827] dark:text-white">
-                      {item.name}
+                      {isKhmer ? (item.khmerName || item.name) : item.name}
                     </span>
                     <span
                       className={`text-[12px] font-bold ${item.status === "out" ? "text-red-600 dark:text-red-400" : "text-orange-600 dark:text-orange-400"}`}
                     >
-                      {item.stock} left
+                      {item.stock} {isKhmer ? "នៅសល់" : "left"}
                     </span>
                   </div>
                 ))}
@@ -1248,46 +1213,37 @@ export default function PremiumDashboard() {
           <div className="px-6 py-5 border-b border-[#f0f2f5] dark:border-white/5 flex items-center justify-between">
             <div>
               <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
-                End-of-Day AI Summary
+                {isKhmer ? "សង្ខេបចុងថ្ងៃរហ័ស AI" : "End-of-Day AI Summary"}
               </h3>
               <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                សង្ខេបចុងថ្ងៃរហ័ស · Real-time
+                {isKhmer ? "ពេលវេលាជាក់ស្តែង" : "Real-time"}
               </p>
             </div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[12px] font-bold border border-[rgba(41,178,141,0.2)]">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Auto-Saved
+              <CheckCircle2 className="w-3.5 h-3.5" /> {isKhmer ? "រក្សាទុកដោយស្វ័យប្រវត្តិ" : "Auto-Saved"}
             </span>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="p-4 bg-[#f7f8fa] dark:bg-[#161B22] dark:border dark:border-white/5 rounded-[11px] text-center transition-colors">
-                <p className="text-[12px] font-semibold text-[#6b7280] dark:text-[#7d8590] mb-1">
-                  Total Sales
-                </p>
-                <p className="text-[12px] text-[#9ca3af] dark:text-[#7d8590] mb-2">
-                  ការលក់សរុប
+                <p className="text-[12px] font-semibold text-[#6b7280] dark:text-[#7d8590] mb-3">
+                  {isKhmer ? "ការលក់សរុប" : "Total Sales"}
                 </p>
                 <p className="text-[22px] font-bold text-[#111827] dark:text-white">
                   {summaryData.sales}
                 </p>
               </div>
               <div className="p-4 bg-[#f7f8fa] dark:bg-[#161B22] dark:border dark:border-white/5 rounded-[11px] text-center transition-colors">
-                <p className="text-[12px] font-semibold text-[#6b7280] dark:text-[#7d8590] mb-1">
-                  Total Expenses
-                </p>
-                <p className="text-[12px] text-[#9ca3af] dark:text-[#7d8590] mb-2">
-                  ចំណាយសរុប
+                <p className="text-[12px] font-semibold text-[#6b7280] dark:text-[#7d8590] mb-3">
+                  {isKhmer ? "ចំណាយសរុប" : "Total Expenses"}
                 </p>
                 <p className="text-[22px] font-bold text-red-500 dark:text-red-400">
                   {summaryData.expenses}
                 </p>
               </div>
               <div className="p-4 bg-[rgba(41,178,141,0.08)] rounded-[11px] text-center border border-[rgba(41,178,141,0.18)]">
-                <p className="text-[12px] font-semibold text-[#29B28D] mb-1">
-                  Net Profit
-                </p>
-                <p className="text-[12px] text-[#29B28D]/60 mb-2">
-                  ប្រាក់ចំណេញ
+                <p className="text-[12px] font-semibold text-[#29B28D] mb-3">
+                  {isKhmer ? "ប្រាក់ចំណេញ" : "Net Profit"}
                 </p>
                 <p className="text-[22px] font-bold text-[#29B28D]">
                   {summaryData.profit}
@@ -1307,23 +1263,35 @@ export default function PremiumDashboard() {
               </div>
               <p className="text-[14px] text-[#111827] dark:text-white leading-relaxed">
                 {hasData ? (
-                  <>
-                    📊 <strong>Great performance!</strong> You have logged {stats.transactions} sales today. 
-                    {bestSellingProducts.length > 0 && (
-                      <> <strong>{bestSellingProducts[0].name}</strong> is your top performer.</>
-                    )}
-                    {inventoryItems.some(i => i.stock <= i.threshold) && (
-                      <> Watch your stock levels! Some items are running low and need restocking.</>
-                    )}
-                  </>
+                  isKhmer ? (
+                    <>
+                      📊 <strong>ការអនុវត្តល្អណាស់!</strong> អ្នកបានកត់ត្រាការលក់ចំនួន {stats.transactions} នៅថ្ងៃនេះ។ 
+                      {bestSellingProducts.length > 0 && (
+                        <> <strong>{bestSellingProducts[0].khmer || bestSellingProducts[0].name}</strong> គឺជាផលិតផលដែលលក់ដាច់បំផុតរបស់អ្នក។</>
+                      )}
+                      {inventoryItems.some(i => i.stock <= i.threshold) && (
+                        <> សូមពិនិត្យមើលកម្រិតស្តុករបស់អ្នក! មុខទំនិញមួយចំនួនកំពុងថយចុះ ហើយត្រូវការការបំពេញបន្ថែម។</>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      📊 <strong>Great performance!</strong> You have logged {stats.transactions} sales today. 
+                      {bestSellingProducts.length > 0 && (
+                        <> <strong>{bestSellingProducts[0].name}</strong> is your top performer.</>
+                      )}
+                      {inventoryItems.some(i => i.stock <= i.threshold) && (
+                        <> Watch your stock levels! Some items are running low and need restocking.</>
+                      )}
+                    </>
+                  )
                 ) : (
-                  <>Not enough data yet. Start making sales to generate your AI daily summary.</>
+                  <>{isKhmer ? "មិនទាន់មានទិន្នន័យគ្រប់គ្រាន់នៅឡើយទេ។ ចាប់ផ្តើមធ្វើការលក់ដើម្បីបង្កើតការសង្ខេបប្រចាំថ្ងៃដោយ AI របស់អ្នក។" : "Not enough data yet. Start making sales to generate your AI daily summary."}</>
                 )}
               </p>
             </div>
 
             <div className="text-[13px] text-[#6b7280] dark:text-[#7d8590] mb-5">
-              Auto-calculated: {summaryData.sales} − {summaryData.expenses} ={" "}
+              {isKhmer ? "ការគណនាដោយស្វ័យប្រវត្តិ" : "Auto-calculated"}: {summaryData.sales} − {summaryData.expenses} ={" "}
               <strong className="text-[#111827] dark:text-white">
                 {summaryData.profit}
               </strong>
@@ -1332,7 +1300,7 @@ export default function PremiumDashboard() {
             {/* Premium: always-on continuous auto-save — no manual locking required */}
             <div className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[rgba(41,178,141,0.08)] to-[rgba(139,92,246,0.08)] text-[#29B28D] font-bold text-[16px] py-4 rounded-[11px] border border-[rgba(41,178,141,0.2)] min-h-[56px] transition-colors">
               <Sparkles className="w-5 h-5 text-[#8b5cf6]" />
-              <span>Premium Auto-Save — Records Sync Continuously</span>
+              <span>{isKhmer ? "ការរក្សាទុកដោយស្វ័យប្រវត្តិ Premium — ទិន្នន័យត្រូវបានធ្វើសមកាលកម្មជាបន្តបន្ទាប់" : "Premium Auto-Save — Records Sync Continuously"}</span>
             </div>
           </div>
         </div>
@@ -1355,20 +1323,20 @@ export default function PremiumDashboard() {
             <div className="flex items-center gap-2 mb-5">
               <Tag className="w-5 h-5 text-[#29B28D]" />
               <h3 className="font-bold text-[19px] text-[#111827] dark:text-white">
-                Add Custom Category
+                {isKhmer ? "បន្ថែមប្រភេទចំណាយថ្មី" : "Add Custom Category"}
               </h3>
             </div>
             <p className="text-[13px] text-[#6b7280] dark:text-[#7d8590] mb-5">
-              Create your own expense categories beyond the default presets.
+              {isKhmer ? "បង្កើតប្រភេទចំណាយផ្ទាល់ខ្លួនរបស់អ្នក លើសពីអ្វីដែលមានស្រាប់។" : "Create your own expense categories beyond the default presets."}
             </p>
             <div className="space-y-4">
               <div>
                 <label className="block text-[12px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-wider mb-1.5">
-                  Category Name
+                  {isKhmer ? "ឈ្មោះប្រភេទ" : "Category Name"}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g., Marketing (ទីផ្សារ)"
+                  placeholder={isKhmer ? "ឧ. ទីផ្សារ" : "e.g., Marketing"}
                   value={customCategoryName}
                   onChange={(e) => setCustomCategoryName(e.target.value)}
                   className="w-full px-4 py-3 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[15px] text-[#111827] dark:text-white font-medium focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#29B28D] dark:focus:border-[#29B28D] outline-none transition-all min-h-[48px]"
@@ -1382,7 +1350,7 @@ export default function PremiumDashboard() {
                 }}
                 className="w-full bg-[#29B28D] hover:opacity-90 text-[#0E1319] font-bold py-3 rounded-[10px] transition-colors min-h-[48px] border-0 cursor-pointer"
               >
-                Create Category
+                {isKhmer ? "បង្កើតប្រភេទ" : "Create Category"}
               </button>
             </div>
           </div>
@@ -1408,10 +1376,10 @@ export default function PremiumDashboard() {
               </div>
               <div>
                 <p className="font-bold text-[14px]">
-                  Gemini Business Assistant
+                  {isKhmer ? "ជំនួយការអាជីវកម្ម Gemini" : "Gemini Business Assistant"}
                 </p>
                 <p className="text-[11px] text-[#29B28D]">
-                  Online · Dashboard Hub
+                  {isKhmer ? "អនឡាញ · មជ្ឈមណ្ឌលផ្ទះ" : "Online · Dashboard Hub"}
                 </p>
               </div>
             </div>
@@ -1445,7 +1413,7 @@ export default function PremiumDashboard() {
             {isChatSending && (
               <div className="flex justify-start">
                 <div className="px-4 py-3 bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 text-[#6b7280] dark:text-[#7d8590] rounded-[12px] rounded-tl-sm text-[13px] italic">
-                  Analyzing your data...
+                  {isKhmer ? "កំពុងវិភាគទិន្នន័យរបស់អ្នក..." : "Analyzing your data..."}
                 </div>
               </div>
             )}
@@ -1454,7 +1422,7 @@ export default function PremiumDashboard() {
             <form onSubmit={handleDashChatSubmit} className="flex items-center gap-2">
               <input
                 type="text"
-                placeholder="Ask your Gemini assistant..."
+                placeholder={isKhmer ? "សួរជំនួយការ Gemini របស់អ្នក..." : "Ask your Gemini assistant..."}
                 value={dashChatInput}
                 onChange={(e) => setDashChatInput(e.target.value)}
                 className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] text-[#111827] dark:text-white focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#29B28D] dark:focus:border-[#29B28D] outline-none transition-all placeholder:text-[#6b7280] dark:placeholder:text-[#7d8590]"
@@ -1487,18 +1455,15 @@ export default function PremiumDashboard() {
               </div>
               <div>
                 <h3 className="font-bold text-[18px] text-[#111827] dark:text-white leading-tight">
-                  Set Revenue Goal
+                  {isKhmer ? "កំណត់គោលដៅចំណូល" : "Set Revenue Goal"}
                 </h3>
-                <p className="text-[11px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                  គោលដៅចំណូលប្រចាំថ្ងៃ
-                </p>
               </div>
             </div>
 
             <div className="space-y-5">
               <div>
                 <label className="block text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-wider mb-2">
-                  Daily Target Amount (USD)
+                  {isKhmer ? "ចំនួនគោលដៅប្រចាំថ្ងៃ (USD)" : "Daily Target Amount (USD)"}
                 </label>
                 <div className="relative">
                   <CircleDollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6b7280] dark:text-[#7d8590]" />
@@ -1507,7 +1472,7 @@ export default function PremiumDashboard() {
                     value={newGoalInput}
                     onChange={(e) => setNewGoalInput(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[16px] text-[#111827] dark:text-white font-bold focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#29B28D] dark:focus:border-[#29B28D] outline-none transition-all placeholder:text-[#6b7280]"
-                    placeholder="Enter amount..."
+                    placeholder={isKhmer ? "បញ្ជាក់ចំនួន..." : "Enter amount..."}
                     min="0"
                     step="0.01"
                   />
@@ -1534,7 +1499,7 @@ export default function PremiumDashboard() {
                   onClick={() => setShowGoalModal(false)}
                   className="flex-1 py-3 font-bold text-[13px] rounded-xl border border-[#e8eaed] dark:border-white/10 bg-transparent text-[#6b7280] dark:text-[#7d8590] hover:bg-[#f7f8fa] dark:hover:bg-white/5 transition-all cursor-pointer"
                 >
-                  Cancel
+                  {isKhmer ? "បោះបង់" : "Cancel"}
                 </button>
                 <button
                   onClick={handleUpdateGoal}
@@ -1544,7 +1509,7 @@ export default function PremiumDashboard() {
                   {isUpdatingGoal ? (
                     <div className="w-4 h-4 border-2 border-[#0E1319]/30 border-t-[#0E1319] rounded-full animate-spin"></div>
                   ) : (
-                    "Save Goal"
+                    isKhmer ? "រក្សាទុកគោលដៅ" : "Save Goal"
                   )}
                 </button>
               </div>
@@ -1553,7 +1518,7 @@ export default function PremiumDashboard() {
             {/* History Link / Table mention */}
             <div className="mt-6 pt-5 border-t border-[#f0f2f5] dark:border-white/5">
               <p className="text-[10px] text-[#6b7280] dark:text-[#7d8590] text-center italic">
-                Your goals are tracked in a dedicated table for premium reporting.
+                {isKhmer ? "គោលដៅរបស់អ្នកត្រូវបានតាមដានក្នុងតារាងសម្រាប់របាយការណ៍ Premium។" : "Your goals are tracked in a dedicated table for premium reporting."}
               </p>
             </div>
           </div>

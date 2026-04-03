@@ -25,7 +25,12 @@ const LineGraph = dynamic(() => import("./LineGraph"), {
   ssr: false
 });
 
-type Tab = "weather" | "sales" | "trend";
+const MLForecast = dynamic(() => import("./MLForecast"), {
+  loading: () => <div className="h-64 bg-gray-100 dark:bg-white/5 animate-pulse rounded-2xl"></div>,
+  ssr: false
+});
+
+type Tab = "weather" | "sales" | "trend" | "ml";
 
 export default function AIHub() {
   const [activeTab, setActiveTab] = useState<Tab>("weather");
@@ -49,7 +54,7 @@ export default function AIHub() {
         </div>
 
         <div className="inline-flex p-[4px] bg-[#f0f2f5] dark:bg-[#161B22] rounded-[14px] border border-[#e8eaed] dark:border-white/10 transition-colors">
-          <button
+          {/* <button
             onClick={() => setActiveTab("weather")}
             className={`flex items-center gap-2 px-4 py-[8px] rounded-[11px] text-[13px] font-extrabold transition-all duration-300 border-0 cursor-pointer ${
               activeTab === "weather"
@@ -59,28 +64,17 @@ export default function AIHub() {
           >
             <CloudSun size={15} />
             Weather
-          </button>
+          </button> */}
           <button
-            onClick={() => setActiveTab("sales")}
+            onClick={() => setActiveTab("ml")}
             className={`flex items-center gap-2 px-4 py-[8px] rounded-[11px] text-[13px] font-extrabold transition-all duration-300 border-0 cursor-pointer ${
-              activeTab === "sales"
+              activeTab === "ml"
                 ? "bg-white dark:bg-[#0d1117] text-[#111827] dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                 : "bg-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white"
             }`}
           >
-            <Brain size={15} />
-            Analysis
-          </button>
-          <button
-            onClick={() => setActiveTab("trend")}
-            className={`flex items-center gap-2 px-4 py-[8px] rounded-[11px] text-[13px] font-extrabold transition-all duration-300 border-0 cursor-pointer ${
-              activeTab === "trend"
-                ? "bg-white dark:bg-[#0d1117] text-[#111827] dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-                : "bg-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white"
-            }`}
-          >
-            <TrendingUp size={15} />
-            Trend
+            <Brain size={15} className="text-fuchsia-500" />
+            ML Model
           </button>
         </div>
       </div>
@@ -102,14 +96,11 @@ export default function AIHub() {
             <LineGraph />
           </div>
         )}
-      </div>
-
-      {/* Decorative Footer info */}
-      <div className="flex items-center justify-center p-4 bg-psar-primary/5 rounded-[16px] border border-psar-primary/10 border-dashed">
-        <p className="text-[11px] font-bold text-psar-primary flex items-center gap-2">
-          <Sparkles size={12} />
-          PsarPulse Premium AI is actively monitoring cross-market trends and real-time conditions.
-        </p>
+        {activeTab === "ml" && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <MLForecast />
+          </div>
+        )}
       </div>
     </div>
   );

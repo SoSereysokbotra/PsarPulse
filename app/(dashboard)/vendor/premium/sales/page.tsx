@@ -29,6 +29,7 @@ import {
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import AIHub from "@/components/vendor/premium/AIHub";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 // ─── Local Types ───────────────────────────────────────────────────
 export type Period = "Day" | "Week" | "Month";
@@ -111,6 +112,8 @@ const weatherData = {
 };
 // ═══════════════════════════════════════════════════════════════════
 export default function PremiumSalesPage() {
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
   const [salesRaw, setSalesRaw] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [quickAmount, setQuickAmount] = useState("");
@@ -379,8 +382,8 @@ export default function PremiumSalesPage() {
       plan="premium"
       navLinks={PREMIUM_NAV}
       currentPath="/vendor/premium/sales"
-      title="Sales"
-      planBadge={{ label: "PREMIUM", icon: Sparkles }}
+      title={isKhmer ? "ការលក់" : "Sales"}
+      planBadge={{ label: isKhmer ? "PREMIUM" : "PREMIUM", icon: Sparkles }}
       rightActions={
         <>
           <div className="hidden sm:flex items-center bg-[#f0f2f5] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] p-[3px] transition-colors">
@@ -402,7 +405,7 @@ export default function PremiumSalesPage() {
             onClick={handleExportPDF}
             className="hidden sm:flex items-center gap-2 bg-[#0d1117] dark:bg-white hover:opacity-90 text-white dark:text-[#0d1117] font-medium px-4 py-[9px] rounded-[10px] transition-colors text-[13px] cursor-pointer border-0"
           >
-            <FileText className="w-4 h-4" /> Export PDF
+            <FileText className="w-4 h-4" /> {isKhmer ? "ទាញយកជា PDF" : "Export PDF"}
           </button>
           <button
             onClick={() => {
@@ -411,7 +414,7 @@ export default function PremiumSalesPage() {
             }}
             className="flex items-center gap-[7px] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] text-white border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(139,92,246,0.3)] hover:opacity-90 transition-opacity"
           >
-            <Sparkles size={14} /> Smart Add
+            <Sparkles size={14} /> {isKhmer ? "បន្ថែមដោយឆ្លាតវៃ" : "Smart Add"}
           </button>
         </>
       }
@@ -429,39 +432,36 @@ export default function PremiumSalesPage() {
       <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7">
         <div className="pt-1 pb-2">
           <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
-            My Sales
+            {isKhmer ? "ការលក់របស់ខ្ញុំ" : "My Sales"}
           </h2>
           <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-            Unlimited sales history tracking ·{" "}
-            <span className="text-[#9ca3af] dark:text-[#4d5562]">
-              តាមដាន និងគ្រប់គ្រងការលក់
-            </span>
+            {isKhmer ? "ការតាមដានប្រវត្តិលក់គ្មានដែនកំណត់" : "Unlimited sales history tracking"} ·{" "}
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <VendorSummaryCard
             variant="dark"
-            title={`${period}'s Revenue`}
-            khmerTitle="ចំណូលប្រចាំ"
+            title={isKhmer ? "ចំណូលថ្ងៃនេះ" : `${period}'s Revenue`}
+            khmerTitle="ចំណូលថ្ងៃនេះ"
             value={`$${stats.totalRevenue.toFixed(2)}`}
             icon={CircleDollarSign}
             isPositive={true}
             trend="+12.5%"
           />
           <VendorSummaryCard
-            title="Transactions"
+            title={isKhmer ? "ប្រតិបត្តិការ" : "Transactions"}
             khmerTitle="ប្រតិបត្តិការ"
             value={stats.count}
             icon={Receipt}
-            subtext="sales history total"
+            subtext={isKhmer ? "សរុបប្រវត្តិលក់" : "sales history total"}
           />
           <VendorSummaryCard
-            title="Avg. Sale Value"
+            title={isKhmer ? "តម្លៃលក់មធ្យម" : "Avg. Sale Value"}
             khmerTitle="តម្លៃលក់មធ្យម"
             value={`$${stats.avgSale.toFixed(2)}`}
             icon={TrendingUp}
-            subtext="per transaction"
+            subtext={isKhmer ? "ក្នុងមួយប្រតិបត្តិការ" : "per transaction"}
             highlight
           />
         </div>
@@ -472,10 +472,10 @@ export default function PremiumSalesPage() {
           <div className="p-5 md:p-6 border-b border-[#f0f2f5] dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
-                Full Transaction History
+                {isKhmer ? "ប្រវត្តិប្រតិបត្តិការពេញលេញ" : "Full Transaction History"}
               </h3>
               <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                គ្រប់គ្រងប្រវត្តិប្រតិបត្តិការទាំងអស់
+                {isKhmer ? "គ្រប់គ្រងរាល់ការលក់របស់អ្នក" : "Manage all your sales records"}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -483,7 +483,7 @@ export default function PremiumSalesPage() {
                 <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#3ecf8e] transition-colors" />
                 <input
                   type="text"
-                  placeholder="Search transactions..."
+                  placeholder={isKhmer ? "ស្វែងរកប្រតិបត្តិការ..." : "Search transactions..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent border-none outline-none text-[13px] text-[#111827] dark:text-white w-full placeholder:text-[#9ca3af]"
@@ -499,24 +499,24 @@ export default function PremiumSalesPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#f7f8fa] dark:bg-[#161B22] border-b border-[#f0f2f5] dark:border-white/5 text-[11px] text-[#9ca3af] dark:text-[#7d8590] uppercase tracking-wider font-bold transition-colors">
-                  <th className="px-6 py-4">Date &amp; Time</th>
-                  <th className="px-6 py-4">Items Sold</th>
-                  <th className="px-6 py-4">Total Amount</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-center">Actions</th>
+                  <th className="px-6 py-4">{isKhmer ? "កាលបរិច្ឆេទ និងម៉ោង" : "Date & Time"}</th>
+                  <th className="px-6 py-4">{isKhmer ? "ទំនិញដែលបានលក់" : "Items Sold"}</th>
+                  <th className="px-6 py-4">{isKhmer ? "ចំនួនសរុប" : "Total Amount"}</th>
+                  <th className="px-6 py-4">{isKhmer ? "ស្ថានភាព" : "Status"}</th>
+                  <th className="px-6 py-4 text-center">{isKhmer ? "សកម្មភាព" : "Actions"}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f0f2f5] dark:divide-white/5">
-                {loading ? (
+                 {loading ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-[#9ca3af]">
-                      Loading your sales history...
+                      {isKhmer ? "កំពុងទាញយកប្រវត្តិលក់របស់អ្នក..." : "Loading your sales history..."}
                     </td>
                   </tr>
                 ) : filteredSales.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-12 text-center text-[#9ca3af]">
-                      No transactions found for this period.
+                      {isKhmer ? "រកមិនឃើញប្រតិបត្តិការសម្រាប់រយៈពេលនេះទេ។" : "No transactions found for this period."}
                     </td>
                   </tr>
                 ) : (
@@ -541,7 +541,7 @@ export default function PremiumSalesPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-[13.5px] font-medium text-[#374151] dark:text-[#e6edf3]">
-                          {txn.items || "Sale Item"}
+                          {txn.items ? (isKhmer ? (txn as any).khmerItems || txn.items : txn.items) : (isKhmer ? "មុខទំនិញលក់" : "Sale Item")}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -551,7 +551,7 @@ export default function PremiumSalesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[rgba(62,207,142,0.1)] text-[#3ecf8e] text-[11px] font-bold rounded-full border border-[rgba(62,207,142,0.2)]">
-                          <CheckCircle2 size={12} /> Complete
+                          <CheckCircle2 size={12} /> {isKhmer ? "រួចរាល់" : "Complete"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -570,8 +570,6 @@ export default function PremiumSalesPage() {
           </div>
         </div>
       </div>
-
-      {/* Smart Log Modal */}
       {isQuickLogModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0d1117]/60 backdrop-blur-sm p-4">
           <div
@@ -592,22 +590,24 @@ export default function PremiumSalesPage() {
               <X className="w-5 h-5" />
             </button>
             <h2 className="font-bold text-[22px] text-[#111827] dark:text-white mb-2">
-              {isSmartActive ? "AI Smart Add" : "Confirm New Sale"}
+              {isSmartActive 
+                ? (isKhmer ? "បន្ថែមឆ្លាតវៃដោយ AI" : "AI Smart Add") 
+                : (isKhmer ? "បញ្ជាក់ការលក់ថ្មី" : "Confirm New Sale")}
             </h2>
             <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mb-6">
               {isSmartActive 
-                ? "Describe your sale naturally and Gemini will parse it." 
-                : "Verify the parsed details before logging to history."}
+                ? (isKhmer ? "រៀបរាប់ការលក់របស់អ្នកដោយធម្មជាតិ ហើយ Gemini នឹងវិភាគវាឱ្យអ្នក។" : "Describe your sale naturally and Gemini will parse it.") 
+                : (isKhmer ? "ផ្ទៀងផ្ទាត់ព័ត៌មានមុននឹងកត់ត្រាចូលក្នុងប្រវត្តិ។" : "Verify the parsed details before logging to history.")}
             </p>
             {isSmartActive ? (
               <div className="space-y-5">
                 <div>
                   <label className="block text-[13px] font-bold text-[#111827] dark:text-white mb-2 uppercase tracking-wider">
-                    Quick Description
+                    {isKhmer ? "ការពិពណ៌នារហ័ស" : "Quick Description"}
                   </label>
                   <textarea
                     rows={3}
-                    placeholder='e.g., "Sold three coffees for $12 total, cash"'
+                    placeholder={isKhmer ? 'ឧ. "លក់កាហ្វេ ៣ កែវ សរុប ១២ ដុល្លារ ប្រាក់សុទ្ធ"' : 'e.g., "Sold three coffees for $12 total, cash"'}
                     value={smartPrompt}
                     onChange={(e) => setSmartPrompt(e.target.value)}
                     className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#3ecf8e] transition-all resize-none font-medium"
@@ -626,7 +626,7 @@ export default function PremiumSalesPage() {
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   ) : (
                     <>
-                      <Sparkles size={16} /> Parse with Gemini AI
+                      <Sparkles size={16} /> {isKhmer ? "វិភាគជាមួយ Gemini AI" : "Parse with Gemini AI"}
                     </>
                   )}
                 </button>
@@ -634,15 +634,15 @@ export default function PremiumSalesPage() {
             ) : (
               <form onSubmit={handleQuickLog} className="space-y-4">
                 <div className="p-4 bg-[#3ecf8e]/5 border border-[#3ecf8e]/20 rounded-xl mb-4 text-[13px] text-[#3ecf8e] flex items-center gap-2 font-medium">
-                  <CheckCircle2 size={14} /> AI Parsed Successfully
+                  <CheckCircle2 size={14} /> {isKhmer ? "បានវិភាគដោយជោគជ័យ" : "AI Parsed Successfully"}
                 </div>
                 <div>
                   <label className="block text-[13px] font-bold text-[#111827] dark:text-white mb-2 uppercase tracking-wider">
-                    Items Description
+                    {isKhmer ? "ការពិពណ៌នាទំនិញ" : "Items Description"}
                   </label>
                   <input
                     type="text"
-                    placeholder='e.g., "3 Iced Coffees, 2 Bakery"'
+                    placeholder={isKhmer ? 'ឧ. "កាហ្វេត្រជាក់ ៣, នំបុ័ង ២"' : 'e.g., "3 Iced Coffees, 2 Bakery"'}
                     value={quickItem}
                     onChange={(e) => setQuickItem(e.target.value)}
                     className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#3ecf8e] transition-all"
@@ -650,7 +650,7 @@ export default function PremiumSalesPage() {
                 </div>
                 <div>
                   <label className="block text-[13px] font-bold text-[#111827] dark:text-white mb-2 uppercase tracking-wider">
-                    Total Amount ($)
+                    {isKhmer ? "ចំនួនទឹកប្រាក់សរុប ($)" : "Total Amount ($)"}
                   </label>
                   <input
                     type="number"
@@ -663,7 +663,7 @@ export default function PremiumSalesPage() {
                 </div>
                 <div>
                   <label className="block text-[13px] font-bold text-[#111827] dark:text-white mb-2 uppercase tracking-wider">
-                    Payment Method
+                    {isKhmer ? "វិធីសាស្ត្របង់ប្រាក់" : "Payment Method"}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {(["Cash", "ABA/KHQR", "Other"] as Method[]).map((m) => (
@@ -677,7 +677,7 @@ export default function PremiumSalesPage() {
                             : "bg-[#f7f8fa] dark:bg-[#161B22] text-[#6b7280] dark:text-[#7d8590] hover:bg-gray-100"
                         }`}
                       >
-                        {m}
+                        {m === "Cash" ? (isKhmer ? "ប្រាក់សុទ្ធ" : "Cash") : m === "ABA/KHQR" ? (isKhmer ? "ABA/KHQR" : "ABA/KHQR") : (isKhmer ? "ផ្សេងៗ" : "Other")}
                       </button>
                     ))}
                   </div>
@@ -689,7 +689,7 @@ export default function PremiumSalesPage() {
                     disabled={saving}
                     className="w-full py-4 text-[#6b7280] font-bold rounded-[12px] border border-[#e8eaed] dark:border-white/10 bg-transparent cursor-pointer hover:bg-gray-50 transition-colors disabled:opacity-50"
                   >
-                    Edit Draft
+                    {isKhmer ? "កែសម្រួល" : "Edit Draft"}
                   </button>
                   <button
                     type="submit"
@@ -699,7 +699,7 @@ export default function PremiumSalesPage() {
                     {saving ? (
                       <div className="w-5 h-5 border-2 border-[#0d1117]/30 border-t-[#0d1117] rounded-full animate-spin"></div>
                     ) : (
-                      "Confirm & Log"
+                      isKhmer ? "បញ្ជាក់ និងកត់ត្រា" : "Confirm & Log"
                     )}
                   </button>
                 </div>
@@ -726,7 +726,7 @@ export default function PremiumSalesPage() {
                 <Brain size={18} className="text-white" />
               </div>
               <p className="font-bold text-[13.5px] text-[#e6edf3]">
-                Gemini Sales Assistant
+                {isKhmer ? "ជំនួយការផ្នែកលក់ Gemini" : "Gemini Sales Assistant"}
               </p>
             </div>
             <button
@@ -738,7 +738,9 @@ export default function PremiumSalesPage() {
           </div>
           <div className="flex-1 overflow-y-auto p-4 bg-[#f7f8fa] dark:bg-[#161B22] min-h-[300px] flex flex-col gap-3">
             <div className="bg-white dark:bg-[#0d1117] p-3 rounded-[12px] text-[13px] text-[#374151] dark:text-[#e6edf3] shadow-sm">
-              I can help you analyze your unlimited sales logs or predict future trends. What would you like to know?
+              {isKhmer 
+                ? "ខ្ញុំអាចជួយអ្នកវិភាគរាល់ការលក់របស់អ្នក ឬព្យាករណ៍ពីនិន្នាការនាពេលអនាគត។ តើអ្នកចង់ដឹងអ្វីខ្លះ?" 
+                : "I can help you analyze your unlimited sales logs or predict future trends. What would you like to know?"}
             </div>
             {messages.map((m, i) => (
               <div
@@ -754,7 +756,7 @@ export default function PremiumSalesPage() {
             ))}
             {isChatLoading && (
               <div className="bg-white dark:bg-[#0d1117] p-3 rounded-[12px] text-[13px] text-[#374151] dark:text-[#e6edf3] shadow-sm self-start rounded-bl-none italic">
-                Gemini is thinking...
+                {isKhmer ? "Gemini កំពុងគិត..." : "Gemini is thinking..."}
               </div>
             )}
           </div>
@@ -762,7 +764,7 @@ export default function PremiumSalesPage() {
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Ask your assistant..."
+                placeholder={isKhmer ? "សួរជំនួយការរបស់អ្នក..." : "Ask your assistant..."}
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
                 className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#3ecf8e] transition-colors"

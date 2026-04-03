@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Simple pattern detection logic (Mocked for performance, but based on real counts)
-    // In a real production app, this would use a clustering algorithm or Gemini directly
+    // In a real production app, this would use a clustering algorithm or OpenAI directly
     const recurring = [
       {
         name: "Stall Rent",

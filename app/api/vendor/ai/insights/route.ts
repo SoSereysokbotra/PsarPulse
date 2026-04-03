@@ -3,7 +3,14 @@ import { TokenUtil } from "@/lib/auth/utils/token.util";
 import { authConfig } from "@/lib/auth/config";
 import { VendorRepository } from "@/lib/db/repositories/vendor.repository";
 import { SalesRepository } from "@/lib/db/repositories/sales.repository";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { exec } from "child_process";
+import path from "path";
+import util from "util";
+const execAsync = util.promisify(exec);
+
+// ─── In-memory cache (per vendor, 10-minute TTL) ─────────────────────
+const insightsCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get(authConfig.cookies.accessToken)?.value;
@@ -16,59 +23,40 @@ export async function GET(request: NextRequest) {
     const vendor = await VendorRepository.findByUserId(payload.id);
     if (!vendor) return NextResponse.json({ message: "Vendor not found" }, { status: 404 });
 
-    const sales = await SalesRepository.findByVendorId(vendor.id);
-    
-    // 1. AI Analysis with Gemini
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey || sales.length === 0) {
-      // Fallback if no API key or no sales data
-      return NextResponse.json({
-        success: true,
-        data: [
-          {
-            tag: "Peak Hour",
-            title: "Analyzing Patterns...",
-            detail: sales.length === 0 ? "Log some sales to see AI insights here." : "Analyzing your sales data for peak patterns.",
-            color: "#8b5cf6",
-            icon: "zap"
-          }
-        ]
-      });
+    // Check cache first
+    const cached = insightsCache.get(vendor.id);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return NextResponse.json({ success: true, data: cached.data, cached: true });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    const salesSummary = sales.slice(0, 50).map(s => ({
-      item: s.items,
-      amount: s.amount,
-      date: s.createdAt
-    }));
-
-    const prompt = `
-      You are the PsarPulse Sales Analyst for vendor: ${vendor.businessName}.
-      Analyze the following last ${salesSummary.length} sales records:
-      ${JSON.stringify(salesSummary)}
+    const sales = await SalesRepository.findByVendorId(vendor.id);
+    
+    // 1. Use Custom ML Python Script (PsarPulse/ml)
+    const scriptPath = path.join(process.cwd(), "ml", "predict_customer.py");
+    try {
+      const { stdout } = await execAsync(`python "${scriptPath}"`);
+      const mlResult = JSON.parse(stdout.trim());
       
-      Identify 3 unique, actionable business insights.
-      Provide the result in the following JSON array format ONLY:
-      [
-        {"tag": "category", "title": "short title", "detail": "1-2 sentence advice", "color": "hex", "icon": "lucide-icon-name"}
-      ]
-      Categories: Peak Hour, Inventory Tip, Margin Alert, Customer Trend.
-      Icons: zap, package, trending-up, users.
-    `;
-
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text().replace(/```json|```/g, "").trim();
-    const insights = JSON.parse(responseText);
-
-    return NextResponse.json({
-      success: true,
-      data: insights
-    });
-  } catch (error) {
-    console.error("AI Insights GET Error:", error);
+      if (mlResult.success) {
+        insightsCache.set(vendor.id, { data: mlResult.data, timestamp: Date.now() });
+        return NextResponse.json({ success: true, data: mlResult.data });
+      } else {
+        throw new Error(mlResult.message || "Failed to predict from Python model");
+      }
+    } catch (mlErr) {
+       console.error("ML execution failed:", mlErr);
+       return NextResponse.json({
+         success: true,
+         data: [
+           { tag: "Peak Hour", title: "System Ready", detail: "Insufficient data to run ML models locally at this time.", color: "#8b5cf6", icon: "zap" }
+         ]
+       });
+    }
+  } catch (error: any) {
+    console.error("AI Insights GET Error:", error?.message || error);
+    
+    // Generic fallback for any other errors
+    
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
 }

@@ -3,7 +3,7 @@ import { TokenUtil } from "@/lib/auth/utils/token.util";
 import { authConfig } from "@/lib/auth/config";
 import { VendorRepository } from "@/lib/db/repositories/vendor.repository";
 import { SalesRepository } from "@/lib/db/repositories/sales.repository";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { getGeminiModel } from "@/lib/ai/gemini";
 
 // System prompt giving Gemini the role of a Premium business assistant
 const SYSTEM_PROMPT = `You are a smart AI business assistant for PsarPulse, a market vendor management application used in Cambodia.
@@ -28,24 +28,18 @@ export async function POST(request: NextRequest) {
   const token = request.cookies.get(authConfig.cookies.accessToken)?.value;
   if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
+  let userMessage = "";
+
   try {
     const payload = TokenUtil.verifyAccessToken(token);
     if (!payload?.id) return NextResponse.json({ message: "Invalid token" }, { status: 401 });
 
     const body = await request.json();
-    const userMessage: string = body.message || "";
+    userMessage = body.message || "";
     const context: string = body.context || ""; // optional: "dashboard" | "sales"
 
     if (!userMessage.trim()) {
       return NextResponse.json({ success: false, message: "Message is required" }, { status: 400 });
-    }
-
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    // If no API key configured, fall back to a smart mock
-    if (!apiKey) {
-      const reply = getFallbackReply(userMessage);
-      return NextResponse.json({ success: true, response: reply });
     }
 
     // Fetch live vendor sales context to inject into the prompt
@@ -73,18 +67,30 @@ LIVE VENDOR DATA (use this in your response where relevant):
       // silently skip if data fetch fails
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
-      systemInstruction: SYSTEM_PROMPT + "\n\n" + liveContext,
-    });
+    const model = getGeminiModel(SYSTEM_PROMPT + "\n\n" + liveContext);
+
+    // If no API key configured, fall back to a smart mock
+    if (!model) {
+      const reply = getFallbackReply(userMessage);
+      return NextResponse.json({ success: true, response: reply });
+    }
 
     const result = await model.generateContent(userMessage);
-    const text = result.response.text();
+    const text = result.response.text() || "";
 
     return NextResponse.json({ success: true, response: text });
   } catch (error: any) {
-    console.error("Gemini AI error:", error?.message || error);
+    console.error("Gemini AI API error:", error?.message || error);
+    
+    // Catch rate limits gracefully (429 Too Many Requests)
+    const errMsg = (error?.message || error?.statusText || "").toLowerCase();
+    if (errMsg.includes("429") || errMsg.includes("too many requests") || errMsg.includes("quota")) {
+      return NextResponse.json({
+        success: true,
+        response: "I'm helping a lot of vendors right now! Please wait about 10 seconds and ask me again. 🙏"
+      });
+    }
+
     // Graceful fallback so the chat never fully breaks
     return NextResponse.json({
       success: true,
@@ -97,7 +103,7 @@ LIVE VENDOR DATA (use this in your response where relevant):
 function getFallbackReply(message: string): string {
   const m = message.toLowerCase();
   if (m.includes("hello") || m.includes("hi") || m.includes("សួស្ត"))
-    return "សួស្តី! I'm your Gemini Business Assistant. I can help analyze sales trends, forecast revenue, and manage your inventory. What would you like to know?";
+    return "សួស្តី! I'm your AI Business Assistant. I can help analyze sales trends, forecast revenue, and manage your inventory. What would you like to know?";
   if (m.includes("sales") && m.includes("today"))
     return "You're currently tracking your real-time sales on the dashboard. Check the summary cards above for today's totals!";
   if (m.includes("inventory") || m.includes("stock"))
@@ -108,5 +114,5 @@ function getFallbackReply(message: string): string {
     return "Your Net Profit = Total Sales − Total Expenses. It's shown in real-time on the dashboard summary cards.";
   if (m.includes("weather") || m.includes("rain"))
     return "🌧️ Rainy conditions typically increase demand for hot beverages by 25-35%. Consider stocking up on hot latte supplies!";
-  return "I'm your AI-powered Premium business assistant! Ask me about sales trends, inventory, forecasts, or any business question. Add your Gemini API key in .env for full AI capabilities.";
+  return "I'm your AI-powered Premium business assistant! Ask me about sales trends, inventory, forecasts, or any business question. Please configure GEMINI_API_KEY for full AI capabilities.";
 }

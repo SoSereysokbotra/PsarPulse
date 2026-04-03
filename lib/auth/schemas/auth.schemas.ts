@@ -10,6 +10,8 @@ export const signupSchema = z.object({
   businessEmail: z.string().email("Invalid business email").optional(),
   phone: z.string().optional(),
   businessAddress: z.string().optional(),
+  businessCategory: z.string().optional(),
+  businessLogo: z.string().optional(),
   description: z.string().optional(),
 });
 

@@ -10,11 +10,19 @@
     "vendor_plans",
     "vendor_requests",
     "vendor_team_members",
-    "vendors",
     "invitations",
+    "payment_transactions",
     "vendor_subscriptions",
     "oauth_accounts",
-    "oauth_states"
+    "oauth_states",
+    "vendor_inventory",
+    "vendor_daily_reports",
+    "vendor_sales",
+    "vendor_expenses",
+    "vendor_customers",
+    "vendor_traffic_logs",
+    "vendor_goals",
+    "vendors"
   ],
   "schemas": {
     "support_notes": [
@@ -183,6 +191,10 @@
       {
         "column": "updated_at",
         "type": "timestamp without time zone"
+      },
+      {
+        "column": "avatar_url",
+        "type": "text"
       },
       {
         "column": "instance_id",
@@ -561,6 +573,18 @@
       {
         "column": "business_description",
         "type": "text"
+      },
+      {
+        "column": "latitude",
+        "type": "numeric"
+      },
+      {
+        "column": "longitude",
+        "type": "numeric"
+      },
+      {
+        "column": "is_public",
+        "type": "boolean"
       }
     ],
     "vendor_team_members": [
@@ -597,84 +621,6 @@
         "type": "boolean"
       }
     ],
-    "vendors": [
-      {
-        "column": "id",
-        "type": "uuid"
-      },
-      {
-        "column": "user_id",
-        "type": "uuid"
-      },
-      {
-        "column": "business_name",
-        "type": "character varying"
-      },
-      {
-        "column": "business_email",
-        "type": "character varying"
-      },
-      {
-        "column": "business_phone",
-        "type": "character varying"
-      },
-      {
-        "column": "business_logo",
-        "type": "character varying"
-      },
-      {
-        "column": "business_description",
-        "type": "text"
-      },
-      {
-        "column": "business_address",
-        "type": "text"
-      },
-      {
-        "column": "tax_id",
-        "type": "character varying"
-      },
-      {
-        "column": "plan_id",
-        "type": "uuid"
-      },
-      {
-        "column": "subscription_status",
-        "type": "character varying"
-      },
-      {
-        "column": "trial_ends_at",
-        "type": "timestamp without time zone"
-      },
-      {
-        "column": "subscription_started_at",
-        "type": "timestamp without time zone"
-      },
-      {
-        "column": "subscription_ends_at",
-        "type": "timestamp without time zone"
-      },
-      {
-        "column": "is_verified",
-        "type": "boolean"
-      },
-      {
-        "column": "verification_status",
-        "type": "character varying"
-      },
-      {
-        "column": "status",
-        "type": "character varying"
-      },
-      {
-        "column": "created_at",
-        "type": "timestamp without time zone"
-      },
-      {
-        "column": "updated_at",
-        "type": "timestamp without time zone"
-      }
-    ],
     "invitations": [
       {
         "column": "id",
@@ -702,6 +648,80 @@
       },
       {
         "column": "used_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "payment_transactions": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "transaction_id",
+        "type": "character varying"
+      },
+      {
+        "column": "provider",
+        "type": "character varying"
+      },
+      {
+        "column": "provider_status",
+        "type": "character varying"
+      },
+      {
+        "column": "status",
+        "type": "character varying"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid"
+      },
+      {
+        "column": "vendor_id",
+        "type": "uuid"
+      },
+      {
+        "column": "plan_code",
+        "type": "character varying"
+      },
+      {
+        "column": "billing_cycle",
+        "type": "character varying"
+      },
+      {
+        "column": "method",
+        "type": "character varying"
+      },
+      {
+        "column": "amount",
+        "type": "numeric"
+      },
+      {
+        "column": "currency",
+        "type": "character varying"
+      },
+      {
+        "column": "description",
+        "type": "text"
+      },
+      {
+        "column": "qr_string",
+        "type": "text"
+      },
+      {
+        "column": "webhook_payload",
+        "type": "jsonb"
+      },
+      {
+        "column": "completed_at",
         "type": "timestamp without time zone"
       },
       {
@@ -821,6 +841,342 @@
       {
         "column": "created_at",
         "type": "timestamp without time zone"
+      }
+    ],
+    "vendor_inventory": [
+      {
+        "column": "id",
+        "type": "integer"
+      },
+      {
+        "column": "vendor_id",
+        "type": "uuid"
+      },
+      {
+        "column": "name",
+        "type": "text"
+      },
+      {
+        "column": "khmer_name",
+        "type": "text"
+      },
+      {
+        "column": "price",
+        "type": "integer"
+      },
+      {
+        "column": "stock",
+        "type": "integer"
+      },
+      {
+        "column": "threshold",
+        "type": "integer"
+      },
+      {
+        "column": "status",
+        "type": "text"
+      },
+      {
+        "column": "category",
+        "type": "text"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "vendor_daily_reports": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "vendor_id",
+        "type": "uuid"
+      },
+      {
+        "column": "report_date",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "total_sales",
+        "type": "numeric"
+      },
+      {
+        "column": "total_expenses",
+        "type": "numeric"
+      },
+      {
+        "column": "net_profit",
+        "type": "numeric"
+      },
+      {
+        "column": "is_locked",
+        "type": "integer"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "vendor_sales": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "vendor_id",
+        "type": "uuid"
+      },
+      {
+        "column": "amount",
+        "type": "numeric"
+      },
+      {
+        "column": "method",
+        "type": "character varying"
+      },
+      {
+        "column": "items",
+        "type": "text"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "category",
+        "type": "character varying"
+      }
+    ],
+    "vendor_expenses": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "vendor_id",
+        "type": "uuid"
+      },
+      {
+        "column": "amount",
+        "type": "numeric"
+      },
+      {
+        "column": "category",
+        "type": "character varying"
+      },
+      {
+        "column": "description",
+        "type": "text"
+      },
+      {
+        "column": "expense_date",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "vendor_customers": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "vendor_id",
+        "type": "uuid"
+      },
+      {
+        "column": "name",
+        "type": "character varying"
+      },
+      {
+        "column": "phone",
+        "type": "character varying"
+      },
+      {
+        "column": "email",
+        "type": "character varying"
+      },
+      {
+        "column": "total_spent",
+        "type": "numeric"
+      },
+      {
+        "column": "points",
+        "type": "integer"
+      },
+      {
+        "column": "last_visit",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "vendor_traffic_logs": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "vendor_id",
+        "type": "uuid"
+      },
+      {
+        "column": "count",
+        "type": "integer"
+      },
+      {
+        "column": "status",
+        "type": "character varying"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "vendor_goals": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "vendor_id",
+        "type": "uuid"
+      },
+      {
+        "column": "target_amount",
+        "type": "numeric"
+      },
+      {
+        "column": "type",
+        "type": "character varying"
+      },
+      {
+        "column": "is_active",
+        "type": "boolean"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      }
+    ],
+    "vendors": [
+      {
+        "column": "id",
+        "type": "uuid"
+      },
+      {
+        "column": "user_id",
+        "type": "uuid"
+      },
+      {
+        "column": "business_name",
+        "type": "character varying"
+      },
+      {
+        "column": "business_email",
+        "type": "character varying"
+      },
+      {
+        "column": "business_phone",
+        "type": "character varying"
+      },
+      {
+        "column": "business_logo",
+        "type": "character varying"
+      },
+      {
+        "column": "business_description",
+        "type": "text"
+      },
+      {
+        "column": "business_address",
+        "type": "text"
+      },
+      {
+        "column": "tax_id",
+        "type": "character varying"
+      },
+      {
+        "column": "plan_id",
+        "type": "uuid"
+      },
+      {
+        "column": "subscription_status",
+        "type": "character varying"
+      },
+      {
+        "column": "trial_ends_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "subscription_started_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "subscription_ends_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "is_verified",
+        "type": "boolean"
+      },
+      {
+        "column": "verification_status",
+        "type": "character varying"
+      },
+      {
+        "column": "status",
+        "type": "character varying"
+      },
+      {
+        "column": "created_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "updated_at",
+        "type": "timestamp without time zone"
+      },
+      {
+        "column": "latitude",
+        "type": "numeric"
+      },
+      {
+        "column": "longitude",
+        "type": "numeric"
+      },
+      {
+        "column": "is_public",
+        "type": "boolean"
+      },
+      {
+        "column": "cover_image",
+        "type": "character varying"
+      },
+      {
+        "column": "category",
+        "type": "character varying"
+      },
+      {
+        "column": "rating",
+        "type": "numeric"
+      },
+      {
+        "column": "delivery_time",
+        "type": "character varying"
       }
     ]
   }

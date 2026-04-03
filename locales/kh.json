@@ -166,12 +166,12 @@
     "filters": {
       "all": "តម្រងទាំងអស់",
       "categories": {
-        "khmer": "ម្ហូបខ្មែរ",
-        "coffee": "កាហ្វេ",
-        "bakery": "នំបុ័ង",
-        "vegetarian": "ម្ហូបបួស",
-        "fastFood": "អាហាររហ័ស",
-        "desserts": "បង្អែម"
+        "apparel": "សម្លៀកបំពាក់",
+        "electronics": "អេឡិចត្រូនិក",
+        "household": "ប្រើប្រាស់ក្នុងផ្ទះ",
+        "services": "សេវាកម្ម",
+        "accessories": "គ្រឿងតុបតែង",
+        "other": "ផ្សេងៗ"
       }
     },
     "sortBy": "តម្រៀបតាម",

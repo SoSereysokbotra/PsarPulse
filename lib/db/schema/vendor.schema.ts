@@ -47,8 +47,14 @@ export const vendors = pgTable("vendors", {
   businessEmail: varchar("business_email", { length: 255 }).notNull(),
   businessPhone: varchar("business_phone", { length: 20 }),
   businessLogo: varchar("business_logo", { length: 512 }),
+  coverImage: varchar("cover_image", { length: 512 }),
   businessDescription: text("business_description"),
   businessAddress: text("business_address"),
+  category: varchar("category", { length: 100 }),
+  latitude: decimal("latitude", { precision: 10, scale: 8 }),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }),
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("0"),
+  deliveryTime: varchar("delivery_time", { length: 50 }),
   taxId: varchar("tax_id", { length: 50 }),
   planId: uuid("plan_id")
     .references(() => vendorPlans.id)
@@ -158,6 +164,7 @@ export const vendorRequests = pgTable("vendor_requests", {
   businessAddress: text("business_address"),
   businessDescription: text("business_description"),
   businessCategory: varchar("business_category", { length: 100 }),
+  businessLogo: varchar("business_logo", { length: 512 }),
   requiredPlan: varchar("required_plan", { length: 50 })
     .$type<"free" | "pro" | "premium">()
     .default("free"),

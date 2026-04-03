@@ -38,68 +38,7 @@ type TabId = "list" | "map" | "favorites";
 
 const USER_LOCATION: [number, number] = [11.5621, 104.888];
 
-const mockVendors: (t: any) => Vendor[] = (t) => [
-  {
-    id: "1",
-    name: "Bopha Kitchen",
-    rating: 4.8,
-    category: t("customer.filters.categories.khmer"),
-    deliveryTime: "20-30",
-    coords: [11.565, 104.89],
-    image:
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600",
-  },
-  {
-    id: "2",
-    name: "Mekong Coffee",
-    rating: 4.5,
-    category: t("customer.filters.categories.coffee"),
-    deliveryTime: "15-25",
-    coords: [11.56, 104.885],
-    image:
-      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=600",
-  },
-  {
-    id: "3",
-    name: "Blue Pumpkin",
-    rating: 4.6,
-    category: t("customer.filters.categories.bakery"),
-    deliveryTime: "25-35",
-    coords: [11.562, 104.892],
-    image:
-      "https://images.unsplash.com/photo-1517433456452-f9633a119fbd?auto=format&fit=crop&q=80&w=600",
-  },
-  {
-    id: "4",
-    name: "Veggie Garden",
-    rating: 4.7,
-    category: t("customer.filters.categories.vegetarian"),
-    deliveryTime: "30-45",
-    coords: [11.558, 104.883],
-    image:
-      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=600",
-  },
-  {
-    id: "5",
-    name: "Market Grill",
-    rating: 4.4,
-    category: t("customer.filters.categories.fastFood"),
-    deliveryTime: "10-20",
-    coords: [11.564, 104.881],
-    image:
-      "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=600",
-  },
-  {
-    id: "6",
-    name: "Sweet Khmer",
-    rating: 4.9,
-    category: t("customer.filters.categories.desserts"),
-    deliveryTime: "15-30",
-    coords: [11.561, 104.889],
-    image:
-      "https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&q=80&w=600",
-  },
-];
+// Remove mock vendors
 
 export default function PsarPulseDashboard() {
   const { t, language } = useLanguage();
@@ -123,6 +62,10 @@ export default function PsarPulseDashboard() {
   const [activeTab, setActiveTab] = useState<TabId>("list");
   const [favorites, setFavorites] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [loadingVendors, setLoadingVendors] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // --- Map State ---
   const [mapCenter, setMapCenter] = useState<[number, number]>(USER_LOCATION);
@@ -133,6 +76,20 @@ export default function PsarPulseDashboard() {
 
   useEffect(() => {
     setMounted(true);
+    const fetchVendors = async () => {
+      try {
+        const response = await fetch("/api/customer/vendors");
+        const json = await response.json();
+        if (json.success) {
+          setVendors(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch vendors:", error);
+      } finally {
+        setLoadingVendors(false);
+      }
+    };
+    fetchVendors();
   }, []);
 
   const toggleFavorite = (id: string) => {
@@ -176,6 +133,8 @@ export default function PsarPulseDashboard() {
                 <input
                   type="text"
                   placeholder={t("customer.searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className={`w-full pl-11 pr-4 py-2.5 border rounded-full text-sm outline-none transition-all ${
                     isDark
                       ? "bg-slate-900/50 border-white/10 text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40"
@@ -238,10 +197,13 @@ export default function PsarPulseDashboard() {
           <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3 overflow-x-auto no-scrollbar">
               <button
+                onClick={() => setSelectedCategory("all")}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all shadow-sm ${
-                  isDark
-                    ? "bg-white/5 text-slate-300 hover:bg-white/10"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  selectedCategory === "all"
+                    ? "bg-emerald-500 text-white shadow-emerald-500/20"
+                    : isDark
+                      ? "bg-white/5 text-slate-300 hover:bg-white/10"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 } ${isKhmer ? "font-suwannaphum text-sm" : ""}`}
               >
                 <SlidersHorizontal size={14} /> {t("customer.filters.all")}
@@ -250,19 +212,22 @@ export default function PsarPulseDashboard() {
                 className={`h-5 w-px mx-2 shrink-0 ${isDark ? "bg-white/10" : "bg-slate-200"}`}
               />
               {[
-                "khmer",
-                "coffee",
-                "bakery",
-                "vegetarian",
-                "fastFood",
-                "desserts",
+                "apparel",
+                "electronics",
+                "household",
+                "services",
+                "accessories",
+                "other",
               ].map((catKey) => (
                 <button
                   key={catKey}
+                  onClick={() => setSelectedCategory(catKey)}
                   className={`px-5 py-2.5 border rounded-full text-xs font-bold transition-all whitespace-nowrap shadow-sm hover:-translate-y-0.5 ${
-                    isDark
-                      ? "border-white/10 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/5"
-                      : "border-slate-200 text-slate-500 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
+                    selectedCategory === catKey
+                      ? "bg-emerald-500 border-emerald-500 text-white shadow-emerald-500/20"
+                      : isDark
+                        ? "border-white/10 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/5"
+                        : "border-slate-200 text-slate-500 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
                   } ${isKhmer ? "font-suwannaphum text-sm" : ""}`}
                 >
                   {t(`customer.filters.categories.${catKey}`)}
@@ -291,7 +256,7 @@ export default function PsarPulseDashboard() {
             </Marker>
 
             {/* Vendor markers */}
-            {mockVendors(t).map((vendor) => {
+            {vendors.map((vendor) => {
               const isSelected = selectedMapVendor?.id === vendor.id;
               return (
                 <Marker
@@ -422,10 +387,17 @@ export default function PsarPulseDashboard() {
       {activeTab !== "map" && (
         <main className="max-w-7xl mx-auto p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {mockVendors(t)
-              .filter(
-                (v) => activeTab !== "favorites" || favorites.includes(v.id),
-              )
+            {loadingVendors ? (
+              <div className="col-span-full py-12 flex justify-center text-slate-500">
+                Loading vendors...
+              </div>
+            ) : vendors
+              .filter((v) => {
+                const matchesSearch = v.name.toLowerCase().includes(searchQuery.toLowerCase()) || v.category.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesCategory = selectedCategory === "all" || v.category.toLowerCase() === selectedCategory.toLowerCase();
+                const isFavoriteTab = activeTab === "favorites" ? favorites.includes(v.id) : true;
+                return matchesSearch && matchesCategory && isFavoriteTab;
+              })
               .map((vendor) => (
                 <div
                   key={vendor.id}

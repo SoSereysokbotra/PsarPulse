@@ -47,14 +47,45 @@ export async function POST(request: NextRequest) {
     const sale = await SalesRepository.create({
       vendorId: vendor.id,
       amount: body.amount.toString(), // Ensure string for decimal
-      method: body.method,
+      method: body.method || "Cash",
       items: body.items,
+      category: body.category,
     });
 
     console.log("Sales POST: Created sale", sale.id);
     return NextResponse.json({ success: true, data: sale });
   } catch (error) {
     console.error("Sales POST Error:", error);
+    return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const token = request.cookies.get(authConfig.cookies.accessToken)?.value;
+  if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+  try {
+    const payload = TokenUtil.verifyAccessToken(token);
+    if (!payload?.id) return NextResponse.json({ message: "Invalid token" }, { status: 401 });
+
+    const vendor = await VendorRepository.findByUserId(payload.id);
+    if (!vendor) return NextResponse.json({ message: "Vendor not found" }, { status: 404 });
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ success: false, message: "Missing sale ID" }, { status: 400 });
+    }
+
+    const deleted = await SalesRepository.delete(id, vendor.id);
+    if (!deleted) {
+      return NextResponse.json({ success: false, message: "Sale not found or unauthorized" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, data: deleted });
+  } catch (error) {
+    console.error("Sales DELETE Error:", error);
     return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
   }
 }

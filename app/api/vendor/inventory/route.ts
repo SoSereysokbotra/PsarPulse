@@ -33,6 +33,18 @@ export async function POST(request: NextRequest) {
     const vendor = await VendorRepository.findByUserId(payload.id);
     if (!vendor) return NextResponse.json({ message: "Vendor not found" }, { status: 404 });
 
+    // Enforce plan-based limits
+    const currentCount = await InventoryRepository.countByVendorId(vendor.id);
+    const maxProducts = vendor.plan?.maxProducts;
+
+    if (maxProducts !== null && maxProducts !== undefined && currentCount >= maxProducts) {
+      return NextResponse.json({ 
+        success: false, 
+        message: `Inventory limit reached. Your plan allows up to ${maxProducts} products.`,
+        limitReached: true
+      }, { status: 403 });
+    }
+
     const body = await request.json();
     
     // Check for active Pro/Premium subscription

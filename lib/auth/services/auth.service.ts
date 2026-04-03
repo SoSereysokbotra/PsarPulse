@@ -156,6 +156,8 @@ export class AuthService {
         businessEmail: request.businessEmail || request.email,
         businessPhone: request.phone,
         businessAddress: request.businessAddress,
+        businessCategory: request.businessCategory,
+        businessLogo: request.businessLogo,
         businessDescription: request.description,
         latitude: request.latitude,
         longitude: request.longitude,

@@ -26,6 +26,8 @@ class AuthClient {
     businessEmail?: string;
     phone?: string;
     businessAddress?: string;
+    businessCategory?: string;
+    businessLogo?: string;
     description?: string;
     token?: string;
     latitude?: string;

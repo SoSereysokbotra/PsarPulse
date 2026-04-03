@@ -25,6 +25,8 @@ export interface SignupRequest {
   businessEmail?: string;
   phone?: string;
   businessAddress?: string;
+  businessCategory?: string;
+  businessLogo?: string;
   description?: string;
   latitude?: string;
   longitude?: string;

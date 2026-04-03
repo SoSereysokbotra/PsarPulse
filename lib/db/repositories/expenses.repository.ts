@@ -20,4 +20,9 @@ export class ExpensesRepository {
       where: eq(vendorExpenses.id, id),
     });
   }
+
+  static async delete(id: string) {
+    const [result] = await db.delete(vendorExpenses).where(eq(vendorExpenses.id, id)).returning();
+    return result;
+  }
 }

@@ -35,4 +35,16 @@ export class VendorRepository {
       },
     });
   }
+
+  /**
+   * Find all active verified vendors for customer discovery
+   */
+  static async findAllActive() {
+    return await db.query.vendors.findMany({
+      where: and(
+        eq(vendors.isVerified, true),
+        eq(vendors.status, "active")
+      ),
+    });
+  }
 }

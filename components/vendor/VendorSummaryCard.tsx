@@ -2,6 +2,7 @@
 
 import React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export interface VendorSummaryCardProps {
   title: string;
@@ -28,6 +29,8 @@ export default function VendorSummaryCard({
   highlight = false,
   variant = "light",
 }: VendorSummaryCardProps) {
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
   // Determine effective style: `highlight` overrides variant to "green"
   const effectiveVariant = highlight ? "green" : variant;
   const isGreen = effectiveVariant === "green";
@@ -55,26 +58,15 @@ export default function VendorSummaryCard({
       <div className="flex justify-between items-start mb-5">
         <div>
           <div
-            className={`text-[10.5px] font-bold uppercase tracking-[0.07em] ${
+            className={`text-[11px] font-bold uppercase tracking-[0.07em] ${
               isGreen
-                ? "text-psar-white/80"
+                ? "text-psar-white"
                 : explicitDark
-                  ? "text-[#7d8590]"
-                  : "text-[#6b7280] dark:text-[#7d8590]"
+                  ? "text-[#abb4be]"
+                  : "text-[#374151] dark:text-[#abb4be]"
             }`}
           >
-            {title}
-          </div>
-          <div
-            className={`text-[10px] mt-0.5 ${
-              isGreen
-                ? "text-psar-white/60"
-                : explicitDark
-                  ? "text-[#7d8590]"
-                  : "text-[#9ca3af] dark:text-[#7d8590]" // FIXED: Better dark mode contrast
-            }`}
-          >
-            {khmerTitle}
+            {isKhmer ? khmerTitle : title}
           </div>
         </div>
         {Icon && (
@@ -84,7 +76,7 @@ export default function VendorSummaryCard({
                 ? "bg-psar-white/20 border-transparent"
                 : explicitDark
                   ? "bg-psar-white/[0.06] border-psar-white/[0.08]"
-                  : "bg-[#f7f8fa] border-[#e8eaed] dark:bg-psar-white/[0.06] dark:border-psar-white/[0.08]"
+                  : "bg-[#f7f8fa] border-[#d1d5db] dark:bg-psar-white/[0.06] dark:border-psar-white/[0.08]"
             }`}
           >
             <Icon
@@ -96,46 +88,50 @@ export default function VendorSummaryCard({
       </div>
 
       {/* Value + trend */}
-      <div className="flex items-end justify-between">
+      <div className="flex flex-col gap-0.5 mt-auto">
         <span
-          className={`font-bold text-[30px] leading-none ${
+          className={`font-bold text-[24px] md:text-[28px] leading-tight truncate ${
             isGreen
               ? "text-psar-white"
               : explicitDark
-                ? "text-[#e6edf3]"
-                : "text-psar-dark dark:text-[#e6edf3]"
+                ? "text-[#ffffff]"
+                : "text-[#111827] dark:text-[#ffffff]"
           }`}
+          title={typeof value === 'string' ? value : undefined}
         >
           {value}
         </span>
-        {trend && (
-          <span
-            className={`text-[12.5px] font-bold mb-0.5 flex items-center gap-1 ${
-              isGreen
-                ? "text-psar-white"
-                : resolvedPositive
-                  ? "text-psar-primary"
-                  : "text-[#ef4444] dark:text-red-400"
-            }`}
-          >
-            {trendDirection === "up" && <TrendingUp size={14} />}
-            {trendDirection === "down" && <TrendingDown size={14} />}
-            {trend}
-          </span>
-        )}
-        {subtext && (
-          <span
-            className={`text-[12.5px] font-medium mb-0.5 ${
-              isGreen
-                ? "text-psar-white/80"
-                : explicitDark
-                  ? "text-[#7d8590]"
-                  : "text-[#6b7280] dark:text-[#7d8590]"
-            }`}
-          >
-            {subtext}
-          </span>
-        )}
+        
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0 pt-0.5 pb-0.5">
+          {trend && (
+            <span
+              className={`text-[12px] font-extrabold flex items-center gap-1 shrink-0 ${
+                isGreen
+                  ? "text-psar-white"
+                  : resolvedPositive
+                    ? "text-[#059669] dark:text-[#34d399]"
+                    : "text-[#dc2626] dark:text-[#f87171]"
+              }`}
+            >
+              {trendDirection === "up" && <TrendingUp size={14} />}
+              {trendDirection === "down" && <TrendingDown size={14} />}
+              {trend}
+            </span>
+          )}
+          {subtext && (
+            <span
+              className={`text-[11px] font-bold ${
+                isGreen
+                  ? "text-psar-white/90"
+                  : explicitDark
+                    ? "text-[#abb4be]"
+                    : "text-[#4b5563] dark:text-[#abb4be]"
+              }`}
+            >
+              {subtext}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

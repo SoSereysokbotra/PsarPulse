@@ -333,12 +333,12 @@
     "filters": {
       "all": "All Filters",
       "categories": {
-        "khmer": "Khmer",
-        "coffee": "Coffee",
-        "bakery": "Bakery",
-        "vegetarian": "Vegetarian",
-        "fastFood": "Fast Food",
-        "desserts": "Desserts"
+        "apparel": "Apparel",
+        "electronics": "Electronics",
+        "household": "Household",
+        "services": "Services",
+        "accessories": "Accessories",
+        "other": "Other"
       }
     },
     "sortBy": "Sort by",

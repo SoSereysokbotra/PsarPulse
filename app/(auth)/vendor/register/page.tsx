@@ -11,9 +11,8 @@ import {
   MapPin,
   FileText,
   Loader2,
-  Navigation,
+  Upload,
 } from "lucide-react";
-import { Map, Overlay } from "pigeon-maps";
 import { AuthLayout, LeftPanelContent, FormInput } from "@/components/auth";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -34,14 +33,44 @@ export default function VendorRegisterPage() {
     email: "",
     phone: "",
     storeName: "",
+    businessCategory: "apparel",
+    businessLogo: "",
+    businessAddress: "",
     description: "",
     password: "",
-    latitude: "11.5564",
-    longitude: "104.9282",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadData,
+      });
+      const result = await res.json();
+      
+      if (result.success && result.url) {
+        setFormData(prev => ({ ...prev, businessLogo: result.url }));
+      } else {
+        setError("Failed to upload image. Please try again.");
+      }
+    } catch (error) {
+      console.error("Upload failed", error);
+      setError("Network error during upload.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -64,9 +93,10 @@ export default function VendorRegisterPage() {
         businessName: formData.storeName,
         businessEmail: formData.email,
         phone: formData.phone,
+        businessAddress: formData.businessAddress,
+        businessCategory: formData.businessCategory,
+        businessLogo: formData.businessLogo,
         description: formData.description,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
       })) as SignupResponse;
 
       if (!result.success) {
@@ -196,45 +226,82 @@ export default function VendorRegisterPage() {
           disabled={isLoading}
         />
 
-        <div className="space-y-3">
-          <label className={`block text-sm font-bold mb-2 flex items-center gap-2 ${isDark ? "text-slate-200" : "text-slate-700"} ${isKhmer ? "font-suwannaphum" : ""}`}>
-            <Navigation className="w-4 h-4 text-psar-primary" />
-            {isKhmer ? "កំណត់ទីតាំងតូបនៅលើផែនទី" : "Pin Stall Location on Map"}
+        <div className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}>
+          <label className={`block text-sm font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            Store Category
           </label>
-          <div className={`h-56 w-full rounded-2xl overflow-hidden border shadow-inner ${isDark ? "border-dark-border bg-slate-900" : "border-slate-200 bg-slate-100"}`}>
-            <Map 
-              height={224}
-              defaultCenter={[11.5564, 104.9282]} 
-              defaultZoom={13}
-              onClick={({ latLng }) => {
-                setFormData(prev => ({ 
-                  ...prev, 
-                  latitude: latLng[0].toFixed(8), 
-                  longitude: latLng[1].toFixed(8) 
-                }));
-              }}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Store className={`h-5 w-5 ${isDark ? "text-slate-500" : "text-slate-400"}`} />
+            </div>
+            <select
+              name="businessCategory"
+              value={formData.businessCategory}
+              onChange={(e) => setFormData(prev => ({ ...prev, businessCategory: e.target.value }))}
+              disabled={isLoading}
+              className={`w-full pl-11 pr-4 py-3 rounded-xl border text-sm font-medium transition-all appearance-none outline-none ${
+                isDark
+                  ? "bg-[#0B1121] border-white/10 text-white focus:border-psar-primary focus:ring-1 focus:ring-psar-primary disabled:bg-slate-900 disabled:opacity-50"
+                  : "bg-white border-slate-200 text-slate-900 focus:border-psar-primary focus:ring-1 focus:ring-psar-primary disabled:bg-slate-50 disabled:opacity-50"
+              }`}
             >
-              <Overlay anchor={[parseFloat(formData.latitude), parseFloat(formData.longitude)]}>
-                <div className="relative flex flex-col items-center">
-                  <div className="w-10 h-10 bg-psar-primary rounded-full border-4 border-white dark:border-slate-800 shadow-xl flex items-center justify-center animate-bounce">
-                    <Store className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="w-3 h-1 bg-black/20 rounded-full mt-1 blur-[1px]" />
-                </div>
-              </Overlay>
-            </Map>
+              <option value="apparel">Apparel</option>
+              <option value="electronics">Electronics</option>
+              <option value="household">Household items</option>
+              <option value="services">Services</option>
+              <option value="accessories">Accessories</option>
+              <option value="other">Other</option>
+            </select>
           </div>
-          <div className="flex justify-between items-center px-1">
-            <p className="text-[10px] text-slate-400 italic">
-              {isKhmer 
-                ? "សូមចុចលើផែនទីដើម្បីកំណត់ទីតាំងពិតប្រាកដរបស់តូបអ្នក" 
-                : "Click on the map to mark the exact location of your stall"}
-            </p>
-            <div className="text-[10px] font-mono text-slate-400">
-              {parseFloat(formData.latitude).toFixed(4)}, {parseFloat(formData.longitude).toFixed(4)}
+        </div>
+
+        <div className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}>
+          <label className={`block text-sm font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            Shop Image
+          </label>
+          <div className={`flex items-center gap-4 p-4 border rounded-xl ${isDark ? "bg-[#0B1121] border-white/10" : "bg-white border-slate-200"}`}>
+            <div className={`w-16 h-16 rounded-xl flex items-center justify-center shrink-0 border-2 overflow-hidden ${isDark ? "bg-[#1C2128] border-white/10" : "bg-slate-50 border-slate-100"}`}>
+              {formData.businessLogo ? (
+                <img src={formData.businessLogo} alt="Shop Preview" className="w-full h-full object-cover" />
+              ) : (
+                <Store className={`h-8 w-8 ${isDark ? "text-slate-600" : "text-slate-300"}`} />
+              )}
+            </div>
+            <div className="flex-1">
+              <label className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold rounded-lg cursor-pointer transition-all ${
+                isDark 
+                  ? "bg-slate-800 hover:bg-slate-700 text-white" 
+                  : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+              } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}>
+                {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                {isUploading ? "Uploading..." : "Upload Image"}
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={handleFileUpload}
+                  disabled={isUploading || isLoading}
+                />
+              </label>
+              <p className={`text-xs mt-2 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+                Recommended size: 800x600px. Max size: 2MB.
+              </p>
             </div>
           </div>
         </div>
+
+        <FormInput
+          id="businessAddress"
+          name="businessAddress"
+          type="text"
+          label={t("auth.register.businessAddress")}
+          icon={MapPin}
+          placeholder={t("auth.register.addressPlaceholder")}
+          value={formData.businessAddress}
+          onChange={handleInputChange}
+          required
+          disabled={isLoading}
+        />
 
         <FormInput
           id="description"

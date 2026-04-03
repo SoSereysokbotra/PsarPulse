@@ -47,8 +47,14 @@ export const vendors = pgTable("vendors", {
   businessEmail: varchar("business_email", { length: 255 }).notNull(),
   businessPhone: varchar("business_phone", { length: 20 }),
   businessLogo: varchar("business_logo", { length: 512 }),
+  coverImage: varchar("cover_image", { length: 512 }),
   businessDescription: text("business_description"),
   businessAddress: text("business_address"),
+  category: varchar("category", { length: 100 }),
+  latitude: decimal("latitude", { precision: 10, scale: 8 }),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }),
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("0"),
+  deliveryTime: varchar("delivery_time", { length: 50 }),
   taxId: varchar("tax_id", { length: 50 }),
   planId: uuid("plan_id")
     .references(() => vendorPlans.id)
@@ -64,11 +70,24 @@ export const vendors = pgTable("vendors", {
     .$type<"pending" | "approved" | "rejected">()
     .default("pending"),
   status: varchar("status", { length: 50 })
-    .$type<"active" | "inactive" | "blocked">()
+    .$type<"active" | "inactive" | "blocked" >()
     .default("active"),
   latitude: decimal("latitude", { precision: 10, scale: 8 }),
   longitude: decimal("longitude", { precision: 11, scale: 8 }),
   isPublic: boolean("is_public").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Vendor Goals
+export const vendorGoals = pgTable("vendor_goals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  vendorId: uuid("vendor_id")
+    .references(() => vendors.id, { onDelete: "cascade" })
+    .notNull(),
+  targetAmount: decimal("target_amount", { precision: 10, scale: 2 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull().default("daily_revenue"),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -148,6 +167,7 @@ export const vendorRequests = pgTable("vendor_requests", {
   businessAddress: text("business_address"),
   businessDescription: text("business_description"),
   businessCategory: varchar("business_category", { length: 100 }),
+  businessLogo: varchar("business_logo", { length: 512 }),
   requiredPlan: varchar("required_plan", { length: 50 })
     .$type<"free" | "pro" | "premium">()
     .default("free"),
@@ -217,6 +237,14 @@ export const vendorsRelations = relations(vendors, ({ one, many }) => ({
   subscriptions: many(vendorSubscriptions),
   teamMembers: many(vendorTeamMembers),
   requests: many(vendorRequests),
+  goals: many(vendorGoals),
+}));
+
+export const vendorGoalsRelations = relations(vendorGoals, ({ one }) => ({
+  vendor: one(vendors, {
+    fields: [vendorGoals.vendorId],
+    references: [vendors.id],
+  }),
 }));
 
 export const vendorSubscriptionsRelations = relations(

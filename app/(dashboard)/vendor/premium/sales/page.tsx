@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   LayoutDashboard,
   CircleDollarSign,
@@ -9,6 +9,7 @@ import {
   Package,
   Plus,
   Search,
+  MoreVertical,
   X,
   Clock,
   Filter,
@@ -18,23 +19,27 @@ import {
   Sparkles,
   FileText,
   FileSpreadsheet,
-  CloudSun,
   Brain,
   MessageSquare,
   Zap,
   CheckCircle2,
-  ArrowUpRight,
   Send,
-  Megaphone,
 } from "lucide-react";
-import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
-import { Period } from "../../expenses/page";
+import AIHub from "@/components/vendor/premium/AIHub";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 
-// ─── Navigation ────────────────────────────────────────────────────
+// ─── Local Types ───────────────────────────────────────────────────
+export type Period = "Day" | "Week" | "Month";
+export type Method = "Cash" | "ABA/KHQR" | "Other";
+export type ToastT = {
+  id: number;
+  msg: string;
+  type: "success" | "error";
+};
+
 const PREMIUM_NAV = [
   {
     icon: LayoutDashboard,
@@ -75,57 +80,19 @@ const PREMIUM_NAV = [
   },
 ];
 
-// ─── Data ──────────────────────────────────────────────────────────
-const transactions = [
-  {
-    id: 1,
-    time: "1:45 PM",
-    amount: "$12.50",
-    item: "2x Iced Coffee, 1x Bread",
-    status: "Logged",
-    aiTagged: true,
-    tag: "Peak Hour",
-  },
-  {
-    id: 2,
-    time: "1:15 PM",
-    amount: "$4.00",
-    item: "1x Hot Latte",
-    status: "Logged",
-    aiTagged: true,
-    tag: "Weather Driven",
-  },
-  {
-    id: 3,
-    time: "12:30 PM",
-    amount: "$15.00",
-    item: "3x Noodle Soup",
-    status: "Logged",
-    aiTagged: false,
-    tag: "",
-  },
-  {
-    id: 4,
-    time: "11:00 AM",
-    amount: "$8.50",
-    item: "AI Auto-Logged Sale",
-    status: "Logged",
-    aiTagged: true,
-    tag: "Smart Log",
-  },
-];
+// Data fetch uses dynamic state
 
 const smartAlerts = [
   {
     type: "opportunity",
-    message: "Rain starting! Demand for Hot Lattes is spiking. Suggest moving cups to the front.",
-    khmerMessage: "មេឃចាប់ផ្តើមភ្លៀង! តម្រូវការឡាតេក្តៅកំពុងកើនឡើង។ គួរដាក់កែវនៅខាងមុខ។",
+    message:
+      "Rain starting! Demand for Hot Lattes is spiking. Suggest moving cups to the front.",
     time: "10 min ago",
   },
   {
     type: "warning",
-    message: "Sales dropped 15% in the last hour compared to historical average.",
-    khmerMessage: "ការលក់បានធ្លាក់ចុះ ១៥% ក្នុងម៉ោងចុងក្រោយ បើធៀបនឹងមធ្យមភាគប្រវត្តិសាស្ត្រ។",
+    message:
+      "Sales dropped 15% in the last hour compared to historical average.",
     time: "1 hour ago",
   },
 ];
@@ -140,34 +107,273 @@ const weatherData = {
       product: "Mango Sticky Rice",
       change: "+20%",
       reason: "Comfort food demand rises in rain",
-      khmerReason: "តម្រូវការអាហារកក់ក្តៅកើនឡើងពេលមានភ្លៀង",
     },
   ],
 };
-
 // ═══════════════════════════════════════════════════════════════════
 export default function PremiumSalesPage() {
-  const { t, language } = useLanguage();
-  const isKhmer = language === 'km';
-  
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
+  const [salesRaw, setSalesRaw] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [quickAmount, setQuickAmount] = useState("");
   const [quickItem, setQuickItem] = useState("");
+  const [quickCategory, setQuickCategory] = useState("");
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState("");
   const [period, setPeriod] = useState<Period>("Day");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSmartActive, setIsSmartActive] = useState(false);
+  const [smartPrompt, setSmartPrompt] = useState("");
+  const [isParsing, setIsParsing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [quickMethod, setQuickMethod] = useState<Method>("Cash");
+  const [toasts, setToasts] = useState<ToastT[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
 
-  const totalRevenue = transactions.reduce(
-    (s, t) => s + parseFloat(t.amount.replace("$", "")),
-    0,
-  );
-  const avgSale = totalRevenue / (transactions.length || 1);
+  const showToast = useCallback((msg: string, type: ToastT["type"] = "success") => {
+    const id = Date.now();
+    setToasts((p) => [...p, { id, msg, type }]);
+    setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 3500);
+  }, []);
 
-  const handleQuickLog = (e: React.FormEvent) => {
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/vendor/sales");
+      const json = await res.json();
+      if (json.success) setSalesRaw(json.data);
+    } catch (err) {
+      console.error("Sales fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleSmartParse = async () => {
+    if (!smartPrompt || isParsing) return;
+    setIsParsing(true);
+    try {
+      const res = await fetch("/api/vendor/ai/smart-add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: smartPrompt }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setQuickAmount(json.data.amount.toString());
+        setQuickItem(json.data.items);
+        setQuickCategory(json.data.category);
+        if (json.data.method) {
+          setQuickMethod(json.data.method as Method);
+        }
+        setIsSmartActive(false); // Move to review step
+      }
+    } catch (err) {
+      console.error("Smart parse error:", err);
+    } finally {
+      setIsParsing(false);
+    }
+  };
+
+  const handleExportPDF = () => {
+    const printContent = `
+      <html>
+        <head>
+          <title>PsarPulse Premium Sales Report</title>
+          <style>
+            body { font-family: sans-serif; padding: 40px; color: #111827; }
+            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3ecf8e; pb: 20px; mb: 30px; }
+            .title { font-size: 24px; font-weight: 800; color: #111827; }
+            .meta { font-size: 12px; color: #6b7280; }
+            table { w-full; border-collapse: collapse; mt-30px; }
+            th { text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; color: #9ca3af; border-bottom: 1px solid #e8eaed; }
+            td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f0f2f5; }
+            .amount { font-weight: 700; color: #3ecf8e; }
+            .footer { mt-50px; pt-20px; border-top: 1px solid #e8eaed; font-size: 10px; color: #9ca3af; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="title">Sales Performance Report</div>
+              <div class="meta">PsarPulse Premium · Generated ${new Date().toLocaleString()}</div>
+            </div>
+            <div style="text-align: right">
+              <div style="font-weight: 800; font-size: 18px; color: #3ecf8e">Premium Tier</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Items Sold</th>
+                <th>Method</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredSales.map(s => `
+                <tr>
+                  <td>${new Date(s.createdAt).toLocaleDateString()}</td>
+                  <td>${s.items || "N/A"}</td>
+                  <td>${s.method || "Cash"}</td>
+                  <td class="amount">$${parseFloat(s.amount).toFixed(2)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+          <div class="footer">
+            Confidential Business Report · Generated by PsarPulse AI Intelligence
+          </div>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  const filteredSales = useMemo(() => {
+    const now = new Date();
+    const isWithinPeriod = (dateStr: string) => {
+      const d = new Date(dateStr);
+      if (period === "Day") return d.toDateString() === now.toDateString();
+      if (period === "Week") {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return d >= weekAgo;
+      }
+      if (period === "Month") {
+        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        return d >= monthAgo;
+      }
+      return true;
+    };
+
+    return salesRaw.filter(
+      (s) =>
+        ((s.items || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (s.id || "").toString().toLowerCase().includes(searchQuery.toLowerCase())) &&
+        isWithinPeriod(s.createdAt)
+    );
+  }, [salesRaw, searchQuery, period]);
+
+  const stats = useMemo(() => {
+    const now = new Date();
+    const isWithinPeriod = (dateStr: string) => {
+      const d = new Date(dateStr);
+      if (period === "Day") return d.toDateString() === now.toDateString();
+      if (period === "Week") {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        return d >= weekAgo;
+      }
+      if (period === "Month") {
+        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        return d >= monthAgo;
+      }
+      return true;
+    };
+
+    const periodSales = salesRaw.filter((s) => isWithinPeriod(s.createdAt));
+    const totalRevenue = periodSales.reduce(
+      (s, t) => s + parseFloat(t.amount || "0"),
+      0
+    );
+    const count = periodSales.length;
+    const avgSale = count > 0 ? totalRevenue / count : 0;
+    return { totalRevenue, avgSale, count };
+  }, [salesRaw, period]);
+
+  const handleSendMessage = async () => {
+    if (!chatMessage.trim() || isChatLoading) return;
+    const userMsg = { role: "user", content: chatMessage };
+    setMessages((p) => [...p, userMsg]);
+    setChatMessage("");
+    setIsChatLoading(true);
+
+    try {
+      const res = await fetch("/api/vendor/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg.content, context: "sales" }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setMessages((p) => [...p, { role: "assistant", content: json.response }]);
+      } else {
+        setMessages((p) => [
+          ...p,
+          { role: "assistant", content: "Sorry, I encountered an error." },
+        ]);
+      }
+    } catch (err) {
+      console.error("Chat error:", err);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  const handleQuickLog = async (e: React.FormEvent) => {
     e.preventDefault();
-    setQuickAmount("");
-    setQuickItem("");
-    setIsQuickLogModalOpen(false);
+    if (!quickAmount || saving) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/vendor/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amount: parseFloat(quickAmount),
+          items: quickItem || "Quick Sale",
+          category: quickCategory || "Other",
+          method: quickMethod,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setQuickAmount("");
+        setQuickItem("");
+        setSmartPrompt("");
+        setQuickMethod("Cash");
+        setIsQuickLogModalOpen(false);
+        showToast("Sale logged successfully");
+        fetchData();
+      } else {
+        showToast(json.message || "Error logging sale", "error");
+      }
+    } catch (err) {
+      console.error("Quick log error:", err);
+      showToast("Server error occurred", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Delete this sale record?")) return;
+    try {
+      // optimistic ui not used here for reliability, but could be added
+      const res = await fetch(`/api/vendor/sales?id=${id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (json.success) {
+        showToast("Sale deleted successfully");
+        setSalesRaw((prev) => prev.filter((t) => t.id !== id));
+      } else {
+        showToast(json.message || "Error deleting sale", "error");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      showToast("Server error occurred", "error");
+    }
   };
 
   return (
@@ -176,483 +382,334 @@ export default function PremiumSalesPage() {
       plan="premium"
       navLinks={PREMIUM_NAV}
       currentPath="/vendor/premium/sales"
-      title={t("dashboard.sales")}
-      planBadge={{ label: "PREMIUM", icon: Sparkles }}
+      title={isKhmer ? "ការលក់" : "Sales"}
+      planBadge={{ label: isKhmer ? "PREMIUM" : "PREMIUM", icon: Sparkles }}
       rightActions={
         <>
-          {/* Period Toggle */}
           <div className="hidden sm:flex items-center bg-[#f0f2f5] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] p-[3px] transition-colors">
             {(["Day", "Week", "Month"] as Period[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-4 py-[7px] rounded-[8px] text-[13px] font-bold border-0 cursor-pointer transition-all ${period === p
-                    ? "bg-white dark:bg-[#0d1117] text-[#111827] dark:text-white shadow-sm"
+                className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${
+                  period === p
+                    ? "bg-white dark:bg-[#0d1117] text-[#111827] dark:text-white shadow-[0_1px_4px_rgba(0,0,0,0.08)]"
                     : "bg-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white"
-                  }`}
+                }`}
               >
-                {isKhmer ? (p === "Day" ? "ថ្ងៃ" : p === "Week" ? "សប្តាហ៍" : "ខែ") : p}
+                {p}
               </button>
             ))}
           </div>
-          {/* Export buttons */}
-          <button className="hidden sm:flex items-center gap-2 bg-[#0d1117] dark:bg-white hover:opacity-90 text-white dark:text-[#0d1117] font-bold px-4 py-[9px] rounded-[10px] transition-colors text-[13px] cursor-pointer border-0">
-            <FileText className="w-4 h-4" /> Export PDF
-          </button>
-          <button className="hidden sm:flex items-center gap-2 bg-white dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 hover:bg-[#f0f2f5] dark:hover:bg-white/5 text-[#111827] dark:text-white font-bold px-4 py-[9px] rounded-[10px] transition-colors text-[13px] cursor-pointer shadow-sm">
-            <FileSpreadsheet className="w-4 h-4" /> Export Excel
-          </button>
-          {/* Smart Add Sale button */}
-          <button
-            onClick={() => setIsQuickLogModalOpen(true)}
-            className="flex items-center gap-[7px] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] text-white border-0 rounded-[10px] px-4 py-[9px] font-extrabold text-[13px] cursor-pointer shadow-[0_4px_14px_rgba(139,92,246,0.3)] hover:opacity-90 transition-all hover:scale-[1.02]"
+          <button 
+            onClick={handleExportPDF}
+            className="hidden sm:flex items-center gap-2 bg-[#0d1117] dark:bg-white hover:opacity-90 text-white dark:text-[#0d1117] font-medium px-4 py-[9px] rounded-[10px] transition-colors text-[13px] cursor-pointer border-0"
           >
-            <Sparkles size={14} /> {t("dashboard.actions.smartLog") || "Smart Add"}
+            <FileText className="w-4 h-4" /> {isKhmer ? "ទាញយកជា PDF" : "Export PDF"}
+          </button>
+          <button
+            onClick={() => {
+              setIsSmartActive(true);
+              setIsQuickLogModalOpen(true);
+            }}
+            className="flex items-center gap-[7px] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] text-white border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(139,92,246,0.3)] hover:opacity-90 transition-opacity"
+          >
+            <Sparkles size={14} /> {isKhmer ? "បន្ថែមដោយឆ្លាតវៃ" : "Smart Add"}
           </button>
         </>
       }
     >
-      <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7 transition-colors">
-        {/* ── Page Header ── */}
+      {/* ── Toasts ── */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
+        {toasts.map((t) => (
+          <div key={t.id} className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-[12px] shadow-[2xl] text-[13.5px] font-semibold min-w-[280px] border transition-all animate-in slide-in-from-bottom-5 ${t.type === "error" ? "bg-white dark:bg-[#0d1117] text-[#ef4444] border-[#ef4444]/20" : "bg-white dark:bg-[#0d1117] text-[#111827] dark:text-white border-[#e8eaed] dark:border-white/10"}`}>
+            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#3ecf8e]" /> : <X size={16} className="text-[#ef4444]" />}
+            <span className="flex-1">{t.msg}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7">
         <div className="pt-1 pb-2">
           <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
-            {t("dashboard.titles.mySales")}
+            {isKhmer ? "ការលក់របស់ខ្ញុំ" : "My Sales"}
           </h2>
           <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-            {t("dashboard.titles.salesSubtitle")} ·{" "}
-            <span className="text-[#9ca3af] dark:text-[#4d5562] font-khmer">
-              តាមដាន និងគ្រប់គ្រងការលក់
-            </span>
+            {isKhmer ? "ការតាមដានប្រវត្តិលក់គ្មានដែនកំណត់" : "Unlimited sales history tracking"} ·{" "}
           </p>
         </div>
 
-        {/* ── Smart Push Notifications (premium exclusive) ── */}
-        <div className="flex flex-col gap-3">
-          {smartAlerts.map((alert, i) => (
-            <div
-              key={i}
-              className={`flex items-center gap-4 p-4 rounded-[14px] border transition-all hover:shadow-sm ${alert.type === "warning"
-                  ? "bg-[rgba(245,158,11,0.06)] dark:bg-[rgba(245,158,11,0.1)] border-[rgba(245,158,11,0.2)]"
-                  : "bg-[rgba(139,92,246,0.05)] dark:bg-[rgba(139,92,246,0.1)] border-[rgba(139,92,246,0.18)]"
-                }`}
-            >
-              <div
-                className={`p-2 rounded-[10px] ${alert.type === "warning" ? "bg-[rgba(245,158,11,0.12)]" : "bg-[rgba(139,92,246,0.1)]"}`}
-              >
-                {alert.type === "warning" ? (
-                  <TrendingDown className="w-5 h-5 text-[#f59e0b]" />
-                ) : (
-                  <Zap className="w-5 h-5 text-[#8b5cf6] dark:text-[#a78bfa]" />
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p
-                    className={`text-[14px] font-bold ${alert.type === "warning" ? "text-[#92400e] dark:text-[#fbbf24]" : "text-[#5b21b6] dark:text-[#d8b4fe]"}`}
-                  >
-                    {alert.type === "opportunity"
-                      ? (isKhmer ? "ការជូនដំណឹង AI" : "AI Smart Alert")
-                      : (isKhmer ? "ការព្រមានស្វ័យប្រវត្តិ" : "Automated Warning")}
-                  </p>
-                  <span className="text-[11px] text-[#9ca3af] dark:text-[#7d8590]">
-                    {alert.time}
-                  </span>
-                </div>
-                <p
-                  className={`text-[13px] font-medium mt-0.5 ${alert.type === "warning" ? "text-[#b45309] dark:text-[#fcd34d]" : "text-[#7c3aed] dark:text-[#e9d5ff]"}`}
-                >
-                  {isKhmer ? alert.khmerMessage : alert.message}
-                </p>
-              </div>
-              <button className="text-[12px] font-bold text-[#9ca3af] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white px-3 py-1.5 rounded-[8px] hover:bg-slate-100 dark:hover:bg-white/10 transition-colors border-0 cursor-pointer bg-transparent">
-                {t("common.dismiss") || "Dismiss"}
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Summary Cards ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           <VendorSummaryCard
             variant="dark"
-            title={t("dashboard.metrics.periodRevenue", { period: isKhmer ? (period === "Day" ? "ថ្ងៃនេះ" : period === "Week" ? "សប្តាហ៍នេះ" : "ខែនេះ") : period })}
-            khmerTitle="ចំណូលប្រចាំ"
-            value={`$${totalRevenue.toFixed(2)}`}
+            title={isKhmer ? "ចំណូលថ្ងៃនេះ" : `${period}'s Revenue`}
+            khmerTitle="ចំណូលថ្ងៃនេះ"
+            value={`$${stats.totalRevenue.toFixed(2)}`}
             icon={CircleDollarSign}
-          />
-          <VendorSummaryCard
-            title={t("dashboard.metrics.transactions")}
-            khmerTitle="ប្រតិបត្តិការ"
-            value={transactions.length}
-            icon={Receipt}
-            subtext="sales today"
-          />
-          <VendorSummaryCard
-            title={t("dashboard.metrics.avgSaleValue")}
-            khmerTitle="តម្លៃលក់មធ្យម"
-            value={`$${avgSale.toFixed(2)}`}
-            icon={TrendingUp}
-            subtext="per txn"
-          />
-          {/* Premium exclusive — AI Next-Week Forecast */}
-          <VendorSummaryCard
-            title={t("dashboard.metrics.aiForecast") || "AI Next-Week"}
-            khmerTitle="ការព្យាករណ៍ AI"
-            value="$3,120"
-            icon={Sparkles}
-            trend="Forecasted revenue"
             isPositive={true}
+            trend="+12.5%"
+          />
+          <VendorSummaryCard
+            title={isKhmer ? "ប្រតិបត្តិការ" : "Transactions"}
+            khmerTitle="ប្រតិបត្តិការ"
+            value={stats.count}
+            icon={Receipt}
+            subtext={isKhmer ? "សរុបប្រវត្តិលក់" : "sales history total"}
+          />
+          <VendorSummaryCard
+            title={isKhmer ? "តម្លៃលក់មធ្យម" : "Avg. Sale Value"}
+            khmerTitle="តម្លៃលក់មធ្យម"
+            value={`$${stats.avgSale.toFixed(2)}`}
+            icon={TrendingUp}
+            subtext={isKhmer ? "ក្នុងមួយប្រតិបត្តិការ" : "per transaction"}
             highlight
           />
         </div>
 
-        {/* ── Two-column layout ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left: Quick Log Banner + Transaction Table */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Quick Log Banner */}
-            <div className="bg-white dark:bg-[#0d1117] rounded-[14px] border border-[#e8eaed] dark:border-white/10 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 relative overflow-hidden transition-colors">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[rgba(139,92,246,0.05)] to-[rgba(62,207,142,0.05)] dark:from-[rgba(139,92,246,0.1)] dark:to-[rgba(62,207,142,0.1)] rounded-full blur-3xl -z-10 -translate-y-1/2 translate-x-1/2" />
-              <div>
-                <h2 className="font-bold text-[19px] text-[#111827] dark:text-white flex items-center gap-2">
-                  {t("dashboard.titles.unlimitedLog")} <Sparkles className="w-5 h-5 text-[#8b5cf6]" />
-                </h2>
-                <p className="text-[13px] text-[#6b7280] dark:text-[#7d8590] mt-0.5 font-khmer">
-                  {t("dashboard.titles.unlimitedLogSub")}
-                </p>
-              </div>
-              <button
-                onClick={() => setIsQuickLogModalOpen(true)}
-                className="bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-extrabold text-[15px] px-6 py-3.5 rounded-[12px] shadow-sm transition-all flex items-center gap-2 w-full sm:w-auto min-h-[50px] border-0 cursor-pointer hover:scale-[1.02]"
-              >
-                <Sparkles className="w-5 h-5" /> {t("dashboard.actions.smartLog") || "Smart Add"}
-              </button>
+        <AIHub />
+
+        <div className="bg-white dark:bg-[#0d1117] rounded-[14px] border border-[#e8eaed] dark:border-white/10 shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col transition-colors">
+          <div className="p-5 md:p-6 border-b border-[#f0f2f5] dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
+                {isKhmer ? "ប្រវត្តិប្រតិបត្តិការពេញលេញ" : "Full Transaction History"}
+              </h3>
+              <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
+                {isKhmer ? "គ្រប់គ្រងរាល់ការលក់របស់អ្នក" : "Manage all your sales records"}
+              </p>
             </div>
-
-            {/* Transaction Table */}
-            <div className="bg-white dark:bg-[#0d1117] rounded-[14px] border border-[#e8eaed] dark:border-white/10 shadow-sm overflow-hidden flex flex-col transition-colors">
-              <div className="p-5 md:p-6 border-b border-[#f0f2f5] dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
-                    {t("dashboard.titles.smartHistory")}
-                  </h3>
-                  <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5 font-khmer">
-                    ប្រវត្តិប្រតិបត្តិការឆ្លាតវៃ
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-all group focus-within:border-[#3ecf8e] w-64 shadow-sm">
-                    <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#3ecf8e] transition-colors" />
-                    <input
-                      type="text"
-                      placeholder={t("dashboard.placeholders.searchLog")}
-                      className="bg-transparent border-none outline-none text-[13px] text-[#111827] dark:text-white w-full placeholder:text-[#9ca3af]"
-                    />
-                  </div>
-                  <button className="p-2 border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[#6b7280] dark:text-[#7d8590] hover:bg-slate-100 dark:hover:bg-white/5 transition-colors min-h-[40px] bg-white dark:bg-[#161B22] cursor-pointer shadow-sm">
-                    <Filter className="w-4 h-4" />
-                  </button>
-                </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-colors group focus-within:border-[#3ecf8e] w-64">
+                <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#3ecf8e] transition-colors" />
+                <input
+                  type="text"
+                  placeholder={isKhmer ? "ស្វែងរកប្រតិបត្តិការ..." : "Search transactions..."}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-transparent border-none outline-none text-[13px] text-[#111827] dark:text-white w-full placeholder:text-[#9ca3af]"
+                />
               </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-[#f7f8fa] dark:bg-[#161B22] border-b border-[#f0f2f5] dark:border-white/5 text-[11px] text-[#9ca3af] dark:text-[#7d8590] uppercase tracking-wider font-bold transition-colors">
-                      <th className="px-6 py-4">{t("dashboard.table.time")}</th>
-                      <th className="px-6 py-4">{t("dashboard.table.itemBreakdown")}</th>
-                      <th className="px-6 py-4">{t("dashboard.table.amount")}</th>
-                      <th className="px-6 py-4">{t("dashboard.table.smartTag")}</th>
-                      <th className="px-6 py-4 text-center">{t("dashboard.table.actions")}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#f0f2f5] dark:divide-white/5 transition-colors">
-                    {transactions.map((txn) => (
-                      <tr
-                        key={txn.id}
-                        className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2 text-[14px] font-medium text-[#111827] dark:text-white">
-                            <Clock className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590]" />
-                            {txn.time}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-[13.5px] font-medium text-[#374151] dark:text-[#e6edf3]">
-                            {txn.item}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-[15px] font-bold text-[#3ecf8e]">
-                            {txn.amount}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {txn.aiTagged && txn.tag ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(139,92,246,0.08)] dark:bg-[rgba(139,92,246,0.15)] text-[#8b5cf6] dark:text-[#d8b4fe] text-[11px] font-bold rounded-[6px] border border-[rgba(139,92,246,0.2)]">
-                              <Brain className="w-3 h-3" /> {txn.tag}
-                            </span>
-                          ) : (
-                            <span className="text-[12px] text-[#d1d5db] dark:text-[#4d5562]">
-                              —
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <button className="p-2 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#8b5cf6] dark:hover:text-[#a78bfa] rounded-[8px] hover:bg-[rgba(139,92,246,0.08)] transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 cursor-pointer bg-transparent">
-                            <EllipsisVertical className="w-5 h-5 mx-auto" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="p-4 border-t border-[#f0f2f5] dark:border-white/5 bg-[#f7f8fa] dark:bg-[#161B22] text-center transition-colors">
-                <button className="text-[13.5px] font-bold text-[#3ecf8e] hover:underline border-0 bg-transparent cursor-pointer">
-                  {t("dashboard.actions.loadMore")}
-                </button>
-              </div>
+              <button className="p-2 border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[#6b7280] dark:text-[#7d8590] hover:bg-[#f0f2f5] dark:hover:bg-white/5 transition-colors min-h-[40px] bg-white dark:bg-[#161B22] cursor-pointer">
+                <Filter className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          {/* Right: AI Panels (premium exclusive) */}
-          <div className="space-y-6">
-            {/* AI Sales Forecaster */}
-            <div className="bg-gradient-to-br from-[rgba(139,92,246,0.06)] to-[rgba(62,207,142,0.06)] dark:from-[rgba(139,92,246,0.1)] dark:to-[rgba(62,207,142,0.1)] border border-[rgba(139,92,246,0.15)] rounded-[14px] p-5 transition-all hover:shadow-sm">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-white dark:bg-[#161B22] rounded-[10px] shadow-sm">
-                  <Sparkles className="w-5 h-5 text-[#8b5cf6] dark:text-[#a78bfa]" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[15px] text-[#5b21b6] dark:text-[#d8b4fe]">
-                    {isKhmer ? "ការព្យាករណ៍ AI" : "AI Sales Forecaster"}
-                  </h3>
-                  <p className="text-[11px] text-[#8b5cf6] dark:text-[#c084fc] mt-0.5 font-khmer">
-                    ការព្យាករណ៍ការលក់ AI
-                  </p>
-                </div>
-                <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-[#161B22] text-[#8b5cf6] dark:text-[#d8b4fe] text-[10px] font-bold rounded-full shadow-sm">
-                  <Brain className="w-3 h-3" /> Gemini
-                </span>
-              </div>
-
-              <p className="text-[13px] text-[#7c3aed] dark:text-[#c084fc] mb-4 font-bold leading-relaxed">
-                {isKhmer 
-                  ? "ការព្យាករណ៍ចំណូលសប្តាហ៍ក្រោយផ្អែកលើនិន្នាការ និងអាកាសធាតុ៖"
-                  : "Next-week revenue prediction based on trends & weather:"}
-              </p>
-
-              {/* Mini forecast bar chart */}
-              <div
-                className="flex items-end gap-1.5 mb-3"
-                style={{ height: "64px" }}
-              >
-                {[65, 80, 72, 95, 88, 110, 102].map((h, i) => {
-                  const days = ["M", "T", "W", "T", "F", "S", "S"];
-                  const isForecast = i >= 4;
-                  return (
-                    <div
-                      key={i}
-                      className="flex-1 flex flex-col items-center gap-0.5"
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#f7f8fa] dark:bg-[#161B22] border-b border-[#f0f2f5] dark:border-white/5 text-[11px] text-[#9ca3af] dark:text-[#7d8590] uppercase tracking-wider font-bold transition-colors">
+                  <th className="px-6 py-4">{isKhmer ? "កាលបរិច្ឆេទ និងម៉ោង" : "Date & Time"}</th>
+                  <th className="px-6 py-4">{isKhmer ? "ទំនិញដែលបានលក់" : "Items Sold"}</th>
+                  <th className="px-6 py-4">{isKhmer ? "ចំនួនសរុប" : "Total Amount"}</th>
+                  <th className="px-6 py-4">{isKhmer ? "ស្ថានភាព" : "Status"}</th>
+                  <th className="px-6 py-4 text-center">{isKhmer ? "សកម្មភាព" : "Actions"}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#f0f2f5] dark:divide-white/5">
+                 {loading ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-[#9ca3af]">
+                      {isKhmer ? "កំពុងទាញយកប្រវត្តិលក់របស់អ្នក..." : "Loading your sales history..."}
+                    </td>
+                  </tr>
+                ) : filteredSales.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-[#9ca3af]">
+                      {isKhmer ? "រកមិនឃើញប្រតិបត្តិការសម្រាប់រយៈពេលនេះទេ។" : "No transactions found for this period."}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredSales.map((txn) => (
+                    <tr
+                      key={txn.id}
+                      className="hover:bg-[#f7f8fa] dark:hover:bg-white/5 transition-colors group"
                     >
-                      <div
-                        className={`w-full rounded-t-sm transition-all duration-700 ${isForecast ? "opacity-50" : ""}`}
-                        style={{
-                          height: `${(h / 110) * 56}px`,
-                          background: isForecast
-                            ? "linear-gradient(to top,#c084fc,#e879f9)"
-                            : "linear-gradient(to top,#7c3aed,#a855f7)",
-                        }}
-                      />
-                      <span className="text-[9px] font-bold text-[#a78bfa] dark:text-[#d8b4fe]">
-                        {days[i]}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#6b7280] dark:text-[#7d8590]">
-                  <div className="w-2.5 h-2.5 rounded-sm bg-[#7c3aed]" /> {t("dashboard.common.actual") || "Actual"}
-                </div>
-                <div className="flex items-center gap-1.5 text-[11px] font-medium text-[#6b7280] dark:text-[#7d8590]">
-                  <div className="w-2.5 h-2.5 rounded-sm bg-[#f0abfc]" />{" "}
-                  {t("dashboard.common.forecast") || "Forecast"}
-                </div>
-              </div>
-              <div className="bg-white dark:bg-[#161B22] rounded-[10px] p-3 border border-[rgba(139,92,246,0.15)] shadow-sm">
-                <p className="text-[12px] text-[#7c3aed] dark:text-[#d8b4fe] font-bold flex items-center gap-1.5">
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                  {isKhmer ? "ការព្យាករណ៍៖" : "Predicted:"}{" "}
-                  <span className="text-[#5b21b6] dark:text-[#e9d5ff] font-extrabold">
-                    $3,120 {isKhmer ? "សប្តាហ៍ក្រោយ" : "next week"}
-                  </span>
-                </p>
-                <p className="text-[11px] text-[#6b7280] dark:text-[#7d8590] mt-1 leading-relaxed">
-                  {isKhmer 
-                    ? "រំពឹងថាមានភ្លៀងនៅថ្ងៃសុក្រ-សៅរ៍។ ភេសជ្ជៈក្តៅអាចលក់ដាច់ជាងភេសជ្ជៈត្រជាក់ ៣៥%។"
-                    : "Rain expected Fri–Sat. Hot beverages may outsell iced drinks by 35%."}
-                </p>
-              </div>
-            </div>
-
-            {/* Weather Intelligence (premium exclusive) */}
-            <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-[14px] shadow-sm overflow-hidden transition-all hover:shadow-md">
-              <div className="px-6 py-5 border-b border-[#f0f2f5] dark:border-white/5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-[rgba(59,130,246,0.08)] dark:bg-[rgba(59,130,246,0.15)] rounded-[10px]">
-                    <CloudSun className="w-5 h-5 text-[#3b82f6] dark:text-[#60a5fa]" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-[15px] text-[#111827] dark:text-white">
-                      {isKhmer ? "ព័ត៌មានអាកាសធាតុ" : "Weather Intelligence"}
-                    </h3>
-                    <p className="text-[11px] text-[#9ca3af] dark:text-[#7d8590] mt-0.5 font-khmer">
-                      ព័ត៌មានអាកាសធាតុ
-                    </p>
-                  </div>
-                </div>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(59,130,246,0.08)] text-[#3b82f6] dark:text-[#93c5fd] text-[10px] font-bold rounded-full">
-                  <Brain className="w-3 h-3" /> AI
-                </span>
-              </div>
-              <div className="p-5">
-                <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-[#161B22] rounded-[12px] border border-slate-100 dark:border-white/5 mb-5 shadow-sm">
-                  <span className="text-4xl">{weatherData.icon}</span>
-                  <div>
-                    <p className="text-[15px] font-bold text-[#111827] dark:text-white">
-                      {isKhmer ? (weatherData.condition === "Rainy Evening" ? "ល្ងាចមានភ្លៀង" : weatherData.condition) : weatherData.condition}
-                    </p>
-                    <p className="text-[13px] font-medium text-[#6b7280] dark:text-[#7d8590]">
-                      {weatherData.temp} · {isKhmer ? "រំពឹងថានឹង" : "Expected to be"}{" "}
-                      <strong className="text-[#8b5cf6] dark:text-[#c084fc]">
-                        {isKhmer ? "មមាញឹក" : weatherData.impact}
-                      </strong>
-                    </p>
-                  </div>
-                </div>
-                <h4 className="text-[11px] font-bold text-[#9ca3af] dark:text-[#7d8590] uppercase tracking-wider mb-3">
-                  {isKhmer ? "ផលប៉ះពាល់ដែលបានព្យាករលើផលិតផល" : "Predicted Impact on Products"}
-                </h4>
-                <div className="space-y-3">
-                  {weatherData.suggestions.map((s, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between p-3 rounded-[10px] bg-slate-50 dark:bg-[#161B22] border border-slate-100 dark:border-white/5 transition-all hover:bg-white dark:hover:bg-[#0d1117] hover:shadow-sm"
-                    >
-                      <div className="flex-1">
-                        <p className="text-[13.5px] font-bold text-[#111827] dark:text-white">
-                          {isKhmer && s.product === "Mango Sticky Rice" ? "បាយដំណើបស្វាយ" : s.product}
-                        </p>
-                        <p className="text-[12px] font-medium text-[#6b7280] dark:text-[#7d8590] leading-relaxed">
-                          {isKhmer ? s.khmerReason : s.reason}
-                        </p>
-                      </div>
-                      <span
-                        className={`text-[15px] font-extrabold ml-3 ${s.change.startsWith("+") ? "text-[#3ecf8e]" : "text-[#ef4444]"}`}
-                      >
-                        {s.change}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col">
+                          <span className="text-[14px] font-bold text-[#111827] dark:text-white">
+                            {new Date(txn.createdAt).toLocaleDateString()}
+                          </span>
+                          <span className="text-[12px] text-[#6b7280] dark:text-[#7d8590] flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(txn.createdAt).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-[13.5px] font-medium text-[#374151] dark:text-[#e6edf3]">
+                          {txn.items ? (isKhmer ? (txn as any).khmerItems || txn.items : txn.items) : (isKhmer ? "មុខទំនិញលក់" : "Sale Item")}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-[15px] font-bold text-[#3ecf8e]">
+                          ${parseFloat(txn.amount).toFixed(2)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[rgba(62,207,142,0.1)] text-[#3ecf8e] text-[11px] font-bold rounded-full border border-[rgba(62,207,142,0.2)]">
+                          <CheckCircle2 size={12} /> {isKhmer ? "រួចរាល់" : "Complete"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <button
+                          onClick={() => handleDelete(txn.id)}
+                          className="p-2 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#ef4444] dark:hover:text-[#f87171] rounded-[8px] hover:bg-[rgba(239,68,68,0.08)] dark:hover:bg-[rgba(239,68,68,0.15)] transition-colors opacity-0 group-hover:opacity-100 min-h-[40px] min-w-[40px] border-0 cursor-pointer bg-transparent"
+                        >
+                          <X className="w-5 h-5 mx-auto" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
-
-      {/* ══ Smart Add Modal ══ */}
       {isQuickLogModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#0d1117]/60 backdrop-blur-sm p-4">
           <div
             className="absolute inset-0"
-            onClick={() => setIsQuickLogModalOpen(false)}
+            onClick={() => {
+              setIsQuickLogModalOpen(false);
+              setIsSmartActive(false);
+            }}
           />
-          <div className="bg-white dark:bg-[#0d1117] rounded-[24px] w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 border border-[#e8eaed] dark:border-white/10 overflow-hidden transition-all slide-up">
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e]" />
+          <div className="bg-white dark:bg-[#0d1117] rounded-[24px] w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 border border-[#e8eaed] dark:border-white/10 overflow-hidden transition-colors">
             <button
-              onClick={() => setIsQuickLogModalOpen(false)}
-              className="absolute top-5 right-5 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 p-1.5 rounded-[8px] transition-colors border-0 cursor-pointer bg-transparent"
+              onClick={() => {
+                setIsQuickLogModalOpen(false);
+                setIsSmartActive(false);
+              }}
+              className="absolute top-5 right-5 text-[#9ca3af] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white p-1.5 rounded-[8px] transition-colors border-0 cursor-pointer bg-transparent"
             >
               <X className="w-5 h-5" />
             </button>
-
-            <div className="mb-6 flex items-center gap-3">
-              <div className="p-2.5 bg-gradient-to-br from-[rgba(139,92,246,0.12)] to-[rgba(62,207,142,0.12)] rounded-[12px] border border-[rgba(139,92,246,0.2)]">
-                <Brain className="w-6 h-6 text-[#8b5cf6] dark:text-[#c084fc]" />
-              </div>
-              <div>
-                <h2 className="font-bold text-[22px] text-[#111827] dark:text-white">
-                  {t("dashboard.actions.smartLog") || "Smart Log Sale"}
-                </h2>
-                <p className="text-[13px] font-medium text-[#6b7280] dark:text-[#7d8590] flex items-center gap-1">
-                  Powered by Gemini{" "}
-                  <Sparkles className="w-3.5 h-3.5 text-[#8b5cf6] dark:text-[#c084fc]" />
-                </p>
-              </div>
-            </div>
-
-            {/* AI hint banner */}
-            <div className="bg-[rgba(139,92,246,0.06)] dark:bg-[rgba(139,92,246,0.1)] p-4 rounded-[12px] mb-5 flex items-start gap-3 border border-[rgba(139,92,246,0.15)]">
-              <Sparkles className="w-4 h-4 text-[#8b5cf6] dark:text-[#d8b4fe] shrink-0 mt-0.5" />
-              <p className="text-[12.5px] font-medium text-[#7c3aed] dark:text-[#d8b4fe] leading-relaxed">
-                {isKhmer 
-                  ? "វាយតាមធម្មជាតិ ឧទាហរណ៍ 'លក់អាហារ ២ ឈុត អស់ ៤ ដុល្លារ'។ AI នឹងបែងចែកប្រភេទ និងដកស្តុកដោយស្វ័យប្រវត្តិ។"
-                  : 'Type naturally, e.g., "Sold 2 iced coffee for 4 dollars". AI will auto-categorize and deduct inventory correctly.'}
-              </p>
-            </div>
-
-            <form onSubmit={handleQuickLog} className="flex flex-col gap-5">
-              <div className="relative group">
-                <input
-                  type="text"
-                  placeholder={isKhmer ? 'ឧទាហរណ៍ "គុយទាវ ៣ ចាន និងកាហ្វេ ១ កែវ"' : 'e.g., "3 Noodle soups and 1 iced coffee"'}
-                  value={quickItem}
-                  onChange={(e) => setQuickItem(e.target.value)}
-                  className="block w-full px-4 py-4 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white text-[15px] placeholder-[#9ca3af] focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6] outline-none transition-all min-h-[60px] shadow-sm"
-                />
-              </div>
-
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <span className="text-[#9ca3af] font-bold">
-                    $
-                  </span>
+            <h2 className="font-bold text-[22px] text-[#111827] dark:text-white mb-2">
+              {isSmartActive 
+                ? (isKhmer ? "បន្ថែមឆ្លាតវៃដោយ AI" : "AI Smart Add") 
+                : (isKhmer ? "បញ្ជាក់ការលក់ថ្មី" : "Confirm New Sale")}
+            </h2>
+            <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mb-6">
+              {isSmartActive 
+                ? (isKhmer ? "រៀបរាប់ការលក់របស់អ្នកដោយធម្មជាតិ ហើយ Gemini នឹងវិភាគវាឱ្យអ្នក។" : "Describe your sale naturally and Gemini will parse it.") 
+                : (isKhmer ? "ផ្ទៀងផ្ទាត់ព័ត៌មានមុននឹងកត់ត្រាចូលក្នុងប្រវត្តិ។" : "Verify the parsed details before logging to history.")}
+            </p>
+            {isSmartActive ? (
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-[13px] font-bold text-[#111827] dark:text-white mb-2 uppercase tracking-wider">
+                    {isKhmer ? "ការពិពណ៌នារហ័ស" : "Quick Description"}
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder={isKhmer ? 'ឧ. "លក់កាហ្វេ ៣ កែវ សរុប ១២ ដុល្លារ ប្រាក់សុទ្ធ"' : 'e.g., "Sold three coffees for $12 total, cash"'}
+                    value={smartPrompt}
+                    onChange={(e) => setSmartPrompt(e.target.value)}
+                    className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#3ecf8e] transition-all resize-none font-medium"
+                  />
                 </div>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder={isKhmer ? "ចំនួនទឹកប្រាក់ (AI នឹងបំពេញស្វ័យប្រវត្តិ)" : "Amount (AI will auto-fill if empty)"}
-                  value={quickAmount}
-                  onChange={(e) => setQuickAmount(e.target.value)}
-                  className="block w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white text-[16px] font-extrabold placeholder-[#9ca3af] focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#8b5cf6] focus:ring-1 focus:ring-[#8b5cf6] outline-none transition-all min-h-[60px] shadow-sm"
-                />
-              </div>
-
-              <div className="flex gap-3 mt-2">
                 <button
-                  type="button"
-                  onClick={() => setIsQuickLogModalOpen(false)}
-                  className="flex-1 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-[#374151] dark:text-[#e6edf3] font-bold text-[15px] py-4 rounded-[12px] transition-all min-h-[56px] border-0 cursor-pointer shadow-sm"
+                  onClick={handleSmartParse}
+                  disabled={!smartPrompt || isParsing}
+                  className={`w-full font-bold py-4 rounded-[12px] flex items-center justify-center gap-2 border-0 cursor-pointer transition-all ${
+                    !smartPrompt || isParsing 
+                      ? "bg-gray-100 dark:bg-white/5 text-gray-400" 
+                      : "bg-[#8b5cf6] text-white shadow-lg hover:shadow-[#8b5cf6]/30"
+                  }`}
                 >
-                  {t("common.cancel") || "Cancel"}
-                </button>
-                <button
-                  type="submit"
-                  className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-extrabold text-[15px] py-4 rounded-[12px] shadow-md transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer hover:scale-[1.02]"
-                >
-                  <Sparkles className="w-5 h-5" /> {isKhmer ? "កត់ត្រាតាម AI" : "Log via AI"}
+                  {isParsing ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <Sparkles size={16} /> {isKhmer ? "វិភាគជាមួយ Gemini AI" : "Parse with Gemini AI"}
+                    </>
+                  )}
                 </button>
               </div>
-            </form>
+            ) : (
+              <form onSubmit={handleQuickLog} className="space-y-4">
+                <div className="p-4 bg-[#3ecf8e]/5 border border-[#3ecf8e]/20 rounded-xl mb-4 text-[13px] text-[#3ecf8e] flex items-center gap-2 font-medium">
+                  <CheckCircle2 size={14} /> {isKhmer ? "បានវិភាគដោយជោគជ័យ" : "AI Parsed Successfully"}
+                </div>
+                <div>
+                  <label className="block text-[13px] font-bold text-[#111827] dark:text-white mb-2 uppercase tracking-wider">
+                    {isKhmer ? "ការពិពណ៌នាទំនិញ" : "Items Description"}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={isKhmer ? 'ឧ. "កាហ្វេត្រជាក់ ៣, នំបុ័ង ២"' : 'e.g., "3 Iced Coffees, 2 Bakery"'}
+                    value={quickItem}
+                    onChange={(e) => setQuickItem(e.target.value)}
+                    className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#3ecf8e] transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-bold text-[#111827] dark:text-white mb-2 uppercase tracking-wider">
+                    {isKhmer ? "ចំនួនទឹកប្រាក់សរុប ($)" : "Total Amount ($)"}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={quickAmount}
+                    onChange={(e) => setQuickAmount(e.target.value)}
+                    className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#3ecf8e] transition-all font-bold text-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[13px] font-bold text-[#111827] dark:text-white mb-2 uppercase tracking-wider">
+                    {isKhmer ? "វិធីសាស្ត្របង់ប្រាក់" : "Payment Method"}
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(["Cash", "ABA/KHQR", "Other"] as Method[]).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setQuickMethod(m)}
+                        className={`py-3 rounded-[10px] text-[12px] font-bold transition-all border-0 cursor-pointer ${
+                          quickMethod === m
+                            ? "bg-[#3ecf8e] text-[#0d1117] shadow-lg"
+                            : "bg-[#f7f8fa] dark:bg-[#161B22] text-[#6b7280] dark:text-[#7d8590] hover:bg-gray-100"
+                        }`}
+                      >
+                        {m === "Cash" ? (isKhmer ? "ប្រាក់សុទ្ធ" : "Cash") : m === "ABA/KHQR" ? (isKhmer ? "ABA/KHQR" : "ABA/KHQR") : (isKhmer ? "ផ្សេងៗ" : "Other")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsSmartActive(true)}
+                    disabled={saving}
+                    className="w-full py-4 text-[#6b7280] font-bold rounded-[12px] border border-[#e8eaed] dark:border-white/10 bg-transparent cursor-pointer hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  >
+                    {isKhmer ? "កែសម្រួល" : "Edit Draft"}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving || !quickAmount}
+                    className="w-full bg-[#3ecf8e] text-[#0d1117] font-bold py-4 rounded-[12px] shadow-md hover:shadow-emerald-500/30 transition-all border-0 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {saving ? (
+                      <div className="w-5 h-5 border-2 border-[#0d1117]/30 border-t-[#0d1117] rounded-full animate-spin"></div>
+                    ) : (
+                      isKhmer ? "បញ្ជាក់ និងកត់ត្រា" : "Confirm & Log"
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
 
-      {/* ══ Gemini AI Chat FAB ══ */}
+      {/* Chat FAB */}
       {!isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
@@ -662,58 +719,67 @@ export default function PremiumSalesPage() {
         </button>
       )}
       {isChatOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[520px] bg-white dark:bg-[#0d1117] rounded-[20px] shadow-2xl border border-[#e8eaed] dark:border-white/10 flex flex-col overflow-hidden transition-all slide-up">
+        <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[520px] bg-white dark:bg-[#0d1117] rounded-[20px] shadow-2xl border border-[#e8eaed] dark:border-white/10 flex flex-col overflow-hidden transition-colors">
           <div className="px-5 py-4 bg-[#0d1117] flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-full flex items-center justify-center">
                 <Brain size={18} className="text-white" />
               </div>
-              <div>
-                <p className="font-bold text-[13.5px] text-[#e6edf3]">
-                  {isKhmer ? "ជំនួយការលក់ Gemini" : "Gemini Sales Assistant"}
-                </p>
-                <p className="text-[11px] font-medium text-[#4d5562]">
-                  {isKhmer ? "កំពុងអនឡាញ · ត្រៀមខ្លួនព្យាករណ៍" : "Online · Ready to predict"}
-                </p>
-              </div>
+              <p className="font-bold text-[13.5px] text-[#e6edf3]">
+                {isKhmer ? "ជំនួយការផ្នែកលក់ Gemini" : "Gemini Sales Assistant"}
+              </p>
             </div>
             <button
               onClick={() => setIsChatOpen(false)}
-              className="text-[#7d8590] hover:text-[#e6edf3] bg-transparent border-0 cursor-pointer p-1"
+              className="text-[#7d8590] hover:text-[#e6edf3] bg-transparent border-0 cursor-pointer"
             >
               <X size={16} />
             </button>
           </div>
-          <div
-            className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-slate-50 dark:bg-[#161B22] transition-colors"
-            style={{ minHeight: "260px" }}
-          >
-            <div className="flex justify-start">
-              <div className="max-w-[85%] px-4 py-3 bg-white dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 text-[#374151] dark:text-[#e6edf3] rounded-[14px] rounded-bl-[4px] shadow-sm text-[13px] font-medium leading-relaxed">
-                {isKhmer 
-                  ? "សួស្តី! ខ្ញុំកត់សម្គាល់ឃើញថាការលក់កាហ្វេទឹកកកបានធ្លាក់ចុះ ១០% នៅថ្ងៃនេះ - ដោយសារមានភ្លៀង។ តើអ្នកចង់ឱ្យខ្ញុំផ្អាកការបញ្ជាទិញទឹកកកស្វ័យប្រវត្តិនាថ្ងៃស្អែកដែរឬទេ?"
-                  : "Hi! I notice sales for Iced Coffee dropped 10% today — it's raining. Do you want me to pause the automated restock order for ice tomorrow?"}
-              </div>
+          <div className="flex-1 overflow-y-auto p-4 bg-[#f7f8fa] dark:bg-[#161B22] min-h-[300px] flex flex-col gap-3">
+            <div className="bg-white dark:bg-[#0d1117] p-3 rounded-[12px] text-[13px] text-[#374151] dark:text-[#e6edf3] shadow-sm">
+              {isKhmer 
+                ? "ខ្ញុំអាចជួយអ្នកវិភាគរាល់ការលក់របស់អ្នក ឬព្យាករណ៍ពីនិន្នាការនាពេលអនាគត។ តើអ្នកចង់ដឹងអ្វីខ្លះ?" 
+                : "I can help you analyze your unlimited sales logs or predict future trends. What would you like to know?"}
             </div>
-            <div className="flex justify-end">
-              <div className="max-w-[85%] px-4 py-3 bg-slate-900 dark:bg-gradient-to-r dark:from-[#8b5cf6] dark:to-[#3ecf8e] text-white rounded-[14px] rounded-br-[4px] text-[13px] font-bold leading-relaxed shadow-sm">
-                {isKhmer 
-                  ? "បាទ ផ្អាកវា ហើយបង្កើនចំនួនកែវសូកូឡាក្តៅជំនួសវិញ។"
-                  : "Yes, pause it and increase Hot Chocolate cups instead."}
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`p-3 rounded-[12px] text-[13px] shadow-sm max-w-[85%] ${
+                  m.role === "user"
+                    ? "bg-[#3ecf8e] text-[#0d1117] self-end rounded-br-none"
+                    : "bg-white dark:bg-[#0d1117] text-[#374151] dark:text-[#e6edf3] self-start rounded-bl-none"
+                }`}
+              >
+                {m.content}
               </div>
-            </div>
+            ))}
+            {isChatLoading && (
+              <div className="bg-white dark:bg-[#0d1117] p-3 rounded-[12px] text-[13px] text-[#374151] dark:text-[#e6edf3] shadow-sm self-start rounded-bl-none italic">
+                {isKhmer ? "Gemini កំពុងគិត..." : "Gemini is thinking..."}
+              </div>
+            )}
           </div>
-          <div className="p-3 border-t border-[#e8eaed] dark:border-white/10 bg-white dark:bg-[#0d1117] transition-colors">
-            <div className="flex items-center gap-2">
+          <div className="p-3 bg-white dark:bg-[#0d1117] border-t border-[#e8eaed] dark:border-white/10">
+            <div className="flex gap-2">
               <input
                 type="text"
-                placeholder={isKhmer ? "ផ្ញើសារទៅកាន់ជំនួយការអាជីវកម្មរបស់អ្នក..." : "Message your business assistant..."}
+                placeholder={isKhmer ? "សួរជំនួយការរបស់អ្នក..." : "Ask your assistant..."}
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
-                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/10 rounded-[10px] text-[13px] font-medium outline-none text-[#111827] dark:text-white focus:border-[#3ecf8e] shadow-sm"
+                className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#3ecf8e] transition-colors"
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               />
-              <button className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] text-white rounded-[10px] border-0 cursor-pointer hover:opacity-90 shadow-sm transition-transform hover:scale-105">
-                <Send size={15} />
+              <button 
+                onClick={handleSendMessage}
+                disabled={isChatLoading}
+                className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] text-white rounded-[10px] border-0 cursor-pointer disabled:opacity-50"
+              >
+                {isChatLoading ? (
+                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  <Send size={15} />
+                )}
               </button>
             </div>
           </div>

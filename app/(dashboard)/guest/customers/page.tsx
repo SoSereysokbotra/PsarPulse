@@ -288,7 +288,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Main layout with top padding for guest strip */}
-      <div className={`flex h-screen w-full overflow-hidden transition-colors duration-500 pt-[36px] ${isDark ? "bg-[#0b0f14] text-[#e6edf3]" : "bg-[#f0f2f5] text-[#111827]"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+      <div className={`flex h-screen w-full overflow-hidden transition-colors duration-500 pt-[36px] ${isDark ? "bg-[#0b0f14] text-[#e6edf3]" : "bg-[#f0f2f5] text-[#111827]"} ${isKhmer ? "font-battambang" : ""}`}>
         {/* Reusable Sidebar */}
         <VendorSidebar
           plan="free"
@@ -411,7 +411,7 @@ export default function CustomersPage() {
                                     <div
                                       className={`text-[11px] font-bold ${inCart ? "text-[#3ecf8e]" : "text-[#6b7280]"}`}
                                     >
-                                      ${p.price.toFixed(2)}
+                                      ${parseFloat(p.price?.toString() || "0").toFixed(2)}
                                     </div>
                                   </button>
                                 );

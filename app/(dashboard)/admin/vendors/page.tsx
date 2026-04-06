@@ -117,7 +117,7 @@ export default function VendorDirectoryPage() {
   };
 
   return (
-    <div className={`space-y-6 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}>
+    <div className={`space-y-6 ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 fade-in">
         <div>
           <h1 className={`text-3xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>

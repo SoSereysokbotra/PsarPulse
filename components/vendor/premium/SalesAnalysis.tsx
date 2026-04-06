@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 import { 
   Zap, 
   Package, 
@@ -41,7 +42,7 @@ export default function SalesAnalysis() {
   useEffect(() => {
     async function fetchInsights() {
       try {
-        const res = await fetch("/api/vendor/ai/insights");
+        const res = await offlineFetch("/api/vendor/ai/insights");
         const json = await res.json();
         if (json.success && json.data) {
           if (json.data.insights) {

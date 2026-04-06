@@ -23,6 +23,7 @@ import {
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 const PREMIUM_NAV = [
   { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor/premium" },
@@ -61,7 +62,7 @@ export default function InventoryPage() {
     const fetchInventory = async () => {
       setLoading(true);
       try {
-        const res = await fetch("/api/vendor/inventory");
+        const res = await offlineFetch("/api/vendor/inventory");
         const json = await res.json();
         if (json.success) {
           setInventoryItems(json.data || []);
@@ -110,7 +111,7 @@ export default function InventoryPage() {
     setError(null);
     try {
       const url = editingItem ? `/api/vendor/inventory/${editingItem.id}` : "/api/vendor/inventory";
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method: editingItem ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -126,8 +127,9 @@ export default function InventoryPage() {
       } else {
         setError(json.message || "Failed to save item");
       }
-    } catch (err) {
-      setError("Server error occurred");
+    } catch (err: any) {
+      console.error("Save error:", err);
+      setError(err?.message || "Server error occurred");
     } finally {
       setIsSaving(false);
     }
@@ -137,7 +139,7 @@ export default function InventoryPage() {
     if (!window.confirm("Are you sure you want to delete this item?")) return;
     setIsDeleting(id);
     try {
-      const res = await fetch(`/api/vendor/inventory/${id}`, { method: "DELETE" });
+      const res = await offlineFetch(`/api/vendor/inventory/${id}`, { method: "DELETE" });
       if (res.ok) {
         setInventoryItems(prev => prev.filter(item => item.id !== id));
       }
@@ -151,7 +153,7 @@ export default function InventoryPage() {
   const handleQuickRestock = async (item: any) => {
     try {
       const newStock = item.stock + 10;
-      const res = await fetch(`/api/vendor/inventory/${item.id}`, {
+      const res = await offlineFetch(`/api/vendor/inventory/${item.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stock: newStock }),

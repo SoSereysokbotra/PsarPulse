@@ -151,7 +151,7 @@ export default function MarketPulsePage() {
             <span
               className="hidden sm:inline"
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].back}
@@ -166,7 +166,7 @@ export default function MarketPulsePage() {
             ></span>
             <span
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].title}
@@ -196,7 +196,7 @@ export default function MarketPulsePage() {
             <h2
               className="text-2xl font-bold mb-2 tracking-tight"
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].title}
@@ -204,7 +204,7 @@ export default function MarketPulsePage() {
             <p
               className={`text-sm mb-6 leading-relaxed ${isDark ? "text-gray-400" : "text-gray-500"}`}
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].desc}
@@ -226,7 +226,7 @@ export default function MarketPulsePage() {
                       : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary focus:shadow-sm"
                   }`}
                 style={
-                  lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                  lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
                 }
               />
             </div>
@@ -257,7 +257,7 @@ export default function MarketPulsePage() {
                   className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -356,7 +356,7 @@ export default function MarketPulsePage() {
                 ${isDark ? "bg-white text-gray-900" : "bg-gray-900 text-white"}
                `}
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {isListView ? (
@@ -510,7 +510,7 @@ export default function MarketPulsePage() {
                           `}
                         style={
                           lang === "km"
-                            ? { fontFamily: "var(--font-suwannaphum)" }
+                            ? { fontFamily: "var(--font-battambang)" }
                             : {}
                         }
                       >

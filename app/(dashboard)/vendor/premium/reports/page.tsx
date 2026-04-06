@@ -34,6 +34,7 @@ import {
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import dynamic from "next/dynamic";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 const LineGraph = dynamic(() => import("@/components/vendor/premium/LineGraph"), { ssr: false });
 const SalesAnalysis = dynamic(() => import("@/components/vendor/premium/SalesAnalysis"), { ssr: false });
@@ -137,8 +138,8 @@ export default function PremiumReportsPage() {
   const [expenses, setExpenses] = useState<any[]>([]);
 
   React.useEffect(() => {
-    fetch("/api/vendor/sales").then(r => r.json()).then(d => { if(d.success) setSales(d.data); });
-    fetch("/api/vendor/expenses").then(r => r.json()).then(d => { if(d.success) setExpenses(d.data); });
+    offlineFetch("/api/vendor/sales").then(r => r.json()).then(d => { if(d.success) setSales(d.data); });
+    offlineFetch("/api/vendor/expenses").then(r => r.json()).then(d => { if(d.success) setExpenses(d.data); });
   }, []);
 
   const totalRevenue = React.useMemo(() => sales.reduce((s, x) => s + parseFloat(x.amount || 0), 0), [sales]);
@@ -197,7 +198,7 @@ export default function PremiumReportsPage() {
     setChatMsg("");
     
     try {
-      const res = await fetch("/api/vendor/ai/chat", {
+      const res = await offlineFetch("/api/vendor/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: currentMsg, context: "reports" }),

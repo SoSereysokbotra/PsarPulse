@@ -87,12 +87,12 @@ export default function SignupPageAlt() {
     >
       <header className="mb-10">
         <h1
-          className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}
         >
           {t("auth.signup.title")}
         </h1>
         <p
-          className={`font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
         >
           {t("auth.signup.subtitle")}
         </p>
@@ -141,7 +141,7 @@ export default function SignupPageAlt() {
 
         {error && (
           <p
-            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-suwannaphum" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-battambang" : ""}`}
           >
             {error}
           </p>
@@ -150,7 +150,7 @@ export default function SignupPageAlt() {
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-[0_8px_20px_-6px_rgba(41,178,141,0.5)] hover:bg-[#239979] hover:-translate-y-1 hover:shadow-[0_12px_24px_-8px_rgba(41,178,141,0.6)] active:translate-y-0 transition-all duration-300 disabled:opacity-70 ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-[0_8px_20px_-6px_rgba(41,178,141,0.5)] hover:bg-[#239979] hover:-translate-y-1 hover:shadow-[0_12px_24px_-8px_rgba(41,178,141,0.6)] active:translate-y-0 transition-all duration-300 disabled:opacity-70 ${isKhmer ? "font-battambang" : ""}`}
         >
           {isLoading ? (
             <>
@@ -172,7 +172,7 @@ export default function SignupPageAlt() {
         </div>
         <div className="relative flex justify-center text-sm">
           <span
-            className={`px-4 font-medium ${isDark ? "bg-dark-bg text-[#8A8F98]" : "bg-white text-slate-400"} ${isKhmer ? "font-suwannaphum" : ""}`}
+            className={`px-4 font-medium ${isDark ? "bg-dark-bg text-[#8A8F98]" : "bg-white text-slate-400"} ${isKhmer ? "font-battambang" : ""}`}
           >
             {t("auth.login.orContinueWith")}
           </span>
@@ -210,7 +210,7 @@ export default function SignupPageAlt() {
             />
           </svg>
           <span
-            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-suwannaphum text-xs" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-battambang text-xs" : ""}`}
           >
             Google
           </span>
@@ -231,7 +231,7 @@ export default function SignupPageAlt() {
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
           </svg>
           <span
-            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-suwannaphum text-xs" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-battambang text-xs" : ""}`}
           >
             Facebook
           </span>
@@ -263,7 +263,7 @@ export default function SignupPageAlt() {
             />
           </svg>
           <span
-            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-suwannaphum text-xs" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-battambang text-xs" : ""}`}
           >
             TikTok
           </span>
@@ -271,7 +271,7 @@ export default function SignupPageAlt() {
       </div>
 
       <p
-        className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+        className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
       >
         {t("auth.signup.alreadyMember")}{" "}
         <Link

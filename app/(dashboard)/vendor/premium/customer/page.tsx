@@ -30,6 +30,7 @@ import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 const TABS = [
   { id: "log", label: "Traffic Log", khmer: "កំណត់ហេតុអតិថិជន" },
@@ -78,8 +79,8 @@ export default function CustomersPage() {
       setLoading(true);
       try {
         const [custRes, salesRes] = await Promise.all([
-          fetch("/api/vendor/customers"),
-          fetch("/api/vendor/sales")
+          offlineFetch("/api/vendor/customers"),
+          offlineFetch("/api/vendor/sales")
         ]);
         const custJson = await custRes.json();
         const salesJson = await salesRes.json();
@@ -107,7 +108,7 @@ export default function CustomersPage() {
     if (isLogLogging) return;
     setIsLogLogging(true);
     try {
-      const res = await fetch("/api/vendor/customers", {
+      const res = await offlineFetch("/api/vendor/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ count: amount }),
@@ -130,7 +131,7 @@ export default function CustomersPage() {
     if (!window.confirm("Delete this traffic log?")) return;
     setIsLogDeleting(id);
     try {
-      const res = await fetch(`/api/vendor/customers?id=${id}&type=traffic`, { method: "DELETE" });
+      const res = await offlineFetch(`/api/vendor/customers?id=${id}&type=traffic`, { method: "DELETE" });
       if (res.ok) {
         setLogHistory((prev) => prev.filter((l) => l.id !== id));
       }
@@ -146,7 +147,7 @@ export default function CustomersPage() {
     if (!crmName.trim() || crmSubmitting) return;
     setCrmSubmitting(true);
     try {
-      const res = await fetch("/api/vendor/customers", {
+      const res = await offlineFetch("/api/vendor/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: crmName, phone: crmPhone, notes: crmNotes }),
@@ -170,7 +171,7 @@ export default function CustomersPage() {
   const handleDeleteCustomer = async () => {
     if (!selectedCustomer) return;
     try {
-      const res = await fetch(`/api/vendor/customers/${selectedCustomer.id}`, { method: "DELETE" });
+      const res = await offlineFetch(`/api/vendor/customers/${selectedCustomer.id}`, { method: "DELETE" });
       if (res.ok) {
         setCrmDatabase((prev) => prev.filter((c) => c.id !== selectedCustomer.id));
         setIsDeleteModalOpen(false);
@@ -507,7 +508,7 @@ function CustomerAnalytics({ logHistory, crmDatabase, todaySales }: { logHistory
   React.useEffect(() => {
     async function fetchInsights() {
       try {
-        const res = await fetch("/api/vendor/ai/insights");
+        const res = await offlineFetch("/api/vendor/ai/insights");
         const json = await res.json();
         if (json.success && json.data) {
           if (json.data.insights) {

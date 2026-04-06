@@ -98,7 +98,7 @@ export function AdminTopNav() {
 
         {/* Nav Items */}
         <nav
-          className={`flex items-center gap-0.5 overflow-x-auto flex-1 scrollbar-none ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`flex items-center gap-0.5 overflow-x-auto flex-1 scrollbar-none ${isKhmer ? "font-battambang" : ""}`}
         >
           {navItems.map((item) => {
             const isActive =
@@ -130,7 +130,7 @@ export function AdminTopNav() {
 
         {/* Right side: Superadmin link + Notifications + Profile */}
         <div
-          className={`flex items-center gap-2 ml-auto shrink-0 ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`flex items-center gap-2 ml-auto shrink-0 ${isKhmer ? "font-battambang" : ""}`}
         >
           {/* Superadmin link */}
           <Link

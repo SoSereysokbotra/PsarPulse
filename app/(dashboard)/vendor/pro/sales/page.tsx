@@ -20,9 +20,11 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 
+import Link from "next/link";
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 export type Period = "Day" | "Week" | "Month";
 
@@ -48,21 +50,28 @@ export default function ProSalesPage() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
-    const fetchSales = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/vendor/sales");
-        const json = await res.json();
-        if (json.success) setTransactions(json.data);
+        const [salesRes, invRes] = await Promise.all([
+          offlineFetch("/api/vendor/sales"),
+          offlineFetch("/api/vendor/inventory")
+        ]);
+        const salesJson = await salesRes.json();
+        const invJson = await invRes.json();
+        
+        if (salesJson.success) setTransactions(salesJson.data);
+        if (invJson.success) setInventory(invJson.data);
       } catch (error) {
-        console.error("Failed to fetch sales", error);
+        console.error("Failed to fetch data", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchSales();
+    fetchData();
   }, []);
 
   const handleQuickLog = async (e: React.FormEvent) => {
@@ -70,7 +79,7 @@ export default function ProSalesPage() {
     if (!quickAmount || isSubmitting) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/vendor/sales", {
+      const res = await offlineFetch("/api/vendor/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -148,9 +157,9 @@ export default function ProSalesPage() {
 
   const getTranslatedPeriod = (p: Period) => {
     switch (p) {
-      case "Day": return t("dashboard.periods.day");
-      case "Week": return t("dashboard.periods.week");
-      case "Month": return t("dashboard.periods.month");
+      case "Day": return t("Day");
+      case "Week": return t("Week");
+      case "Month": return t("Month");
       default: return p;
     }
   };
@@ -213,21 +222,6 @@ export default function ProSalesPage() {
             </p>
           </div>
 
-          {/* Quick Log Trigger */}
-          <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors">
-            <div>
-              <h2 className="font-bold text-[19px] text-[#111827] dark:text-white">{t("dashboard.actions.quickSale")}</h2>
-              <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">{t("dashboard.actions.quickLogSub")}</p>
-            </div>
-            <button
-              onClick={() => setIsQuickLogModalOpen(true)}
-              className="bg-psar-primary hover:opacity-90 text-white font-bold text-[16px] px-6 py-3.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 w-full sm:w-auto min-h-[50px] border-0 cursor-pointer"
-            >
-              <Plus className="w-5 h-5" />
-              <span>{t("dashboard.actions.addSale")}</span>
-            </button>
-          </div>
-
           {/* Quick Log Modal */}
           {isQuickLogModalOpen && (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -257,6 +251,39 @@ export default function ProSalesPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleQuickLog} className="flex flex-col gap-5">
+                    {/* Inventory Picker */}
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3 block">
+                        {t("inventory.modal.pickLabel")} {language === "km" ? "(ជ្រើសរើសពីស្តុក)" : ""}
+                      </label>
+                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+                        {inventory.length > 0 ? (
+                          inventory.map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => {
+                                setQuickAmount(item.price.toString());
+                                setQuickItem(item.name);
+                              }}
+                              className={`shrink-0 px-4 py-2.5 rounded-xl border text-[13px] font-bold transition-all flex flex-col items-start gap-1 min-w-[120px] ${
+                                quickItem === item.name 
+                                  ? "bg-psar-primary border-psar-primary text-white shadow-md" 
+                                  : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10"
+                              }`}
+                            >
+                              <span className="truncate w-full text-left">{item.name}</span>
+                              <span className={`text-[11px] ${quickItem === item.name ? "text-white/80" : "text-slate-500"}`}>${parseFloat(item.price).toFixed(2)}</span>
+                            </button>
+                          ))
+                        ) : (
+                          <Link href="/vendor/pro/inventory" className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 dark:border-white/10 text-slate-500 text-xs no-underline hover:border-psar-primary transition-all">
+                            <Package size={14} /> {t("inventory.modal.quickPickEmpty")}
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Amount */}
                     <div className="relative group mt-2">
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -343,7 +370,7 @@ export default function ProSalesPage() {
               value={`$${totalRevenue.toFixed(2)}`}
             />
             <VendorSummaryCard
-              title={t("dashboard.metrics.transactions")}
+              title={t("Transactions")}
               khmerTitle="ចំនួនការលក់"
               value={transactions.length}
               subtext={`total logs`}

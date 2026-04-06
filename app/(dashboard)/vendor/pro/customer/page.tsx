@@ -33,6 +33,7 @@ import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 const PRO_NAV = [
   {
@@ -89,69 +90,96 @@ export default function ProCustomerPage() {
   const [crmNotes, setCrmNotes] = useState("");
 
   const [logs, setLogs] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
-    const fetchCustomers = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/vendor/customers");
+        const res = await offlineFetch("/api/vendor/customers");
         const json = await res.json();
-        if (json.success) {
-          setLogs(json.data);
+        
+        if (json.success && json.data) {
+          setCustomers(Array.isArray(json.data.customers) ? json.data.customers : []);
+          setLogs(Array.isArray(json.data.trafficLogs) ? json.data.trafficLogs : []);
         }
       } catch (error) {
-        console.error("Failed to fetch customers", error);
+        console.error("Failed to fetch data", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchCustomers();
+    fetchData();
   }, []);
 
-  const totalLogsCount = logs.reduce((sum, logEntry) => sum + (parseInt(logEntry.count) || 1), 0);
+  const safeLogs = Array.isArray(logs) ? logs : [];
+  const totalSpentValue = customers.reduce((sum, c: any) => sum + parseFloat(c.totalSpent || 0), 0);
+
+  // Date constants
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+  // Traffic segmented by time
+  const todayLogs = safeLogs.filter(log => new Date(log.createdAt) >= todayStart);
+  const thisWeekLogs = safeLogs.filter(log => {
+    const d = new Date(log.createdAt);
+    return d >= sevenDaysAgo;
+  });
+  const lastWeekLogs = safeLogs.filter(log => {
+    const d = new Date(log.createdAt);
+    return d >= fourteenDaysAgo && d < sevenDaysAgo;
+  });
+
+  const todayCount = todayLogs.reduce((sum, log) => sum + (parseInt(log.count) || 1), 0);
+  const thisWeekCount = thisWeekLogs.reduce((sum, log) => sum + (parseInt(log.count) || 1), 0);
+  const lastWeekCount = lastWeekLogs.reduce((sum, log) => sum + (parseInt(log.count) || 1), 0);
+
+  // Peak Time Calculation
+  const peakTimeStats = safeLogs.reduce((acc: any, log: any) => {
+    const hour = new Date(log.createdAt).getHours();
+    acc[hour] = (acc[hour] || 0) + (parseInt(log.count) || 1);
+    return acc;
+  }, {});
+
+  let peakHour = 0;
+  let maxTraffic = -1;
+  Object.entries(peakTimeStats).forEach(([hour, count]: [string, any]) => {
+    if (count > maxTraffic) {
+      maxTraffic = count;
+      peakHour = parseInt(hour);
+    }
+  });
+
+  const ampm = peakHour >= 12 ? 'PM' : 'AM';
+  const displayPeakHour = peakHour % 12 || 12;
+  const peakTimeStr = maxTraffic > 0 ? `${displayPeakHour}:00 ${ampm}` : "N/A";
+
+  // Weekly Change Calculation
+  let weeklyChangeStr = "+0%";
+  if (lastWeekCount > 0) {
+    const change = ((thisWeekCount - lastWeekCount) / lastWeekCount) * 100;
+    weeklyChangeStr = `${change >= 0 ? "+" : ""}${change.toFixed(0)}%`;
+  }
+
   const summaryData = {
-    todayCount: String(totalLogsCount),
-    todayLogs: String(logs.length),
-    avgSpend: "$2.96",
-    weeklyCount: String(totalLogsCount),
-    weeklyChange: "+12%",
-    peakTime: "12:00 PM",
-    weeklyCustomers: "85",
-    avgLTV: "$12.50",
+    todayCount: String(todayCount),
+    todayLogs: String(todayLogs.length),
+    avgSpend: safeLogs.length > 0 ? `$${(totalSpentValue / (safeLogs.length || 1)).toFixed(2)}` : "$0.00",
+    weeklyCount: String(thisWeekCount),
+    weeklyChange: weeklyChangeStr,
+    peakTime: peakTimeStr,
+    weeklyCustomers: String(thisWeekCount),
+    avgLTV: customers.length > 0 ? `$${(totalSpentValue / customers.length).toFixed(2)}` : "$0.00",
   };
 
-  // Mock CRM Customer Database for Pro Tier
-  const crmDatabase = [
-    {
-      id: 101,
-      name: "Sokha Heng",
-      phone: "012 *** 345",
-      visits: 12,
-      lastVisit: "Today, 2:30 PM",
-      status: "Loyal",
-    },
-    {
-      id: 102,
-      name: "Bopha Chan",
-      phone: "098 *** 765",
-      visits: 5,
-      lastVisit: "Yesterday",
-      status: "Regular",
-    },
-    {
-      id: 103,
-      name: "Anonymous",
-      phone: "-",
-      visits: 1,
-      lastVisit: "Yesterday",
-      status: "New",
-    },
-  ];
+
 
   const handleLog = async (amount: number) => {
     const status = amount >= 10 ? "Peak Traffic" : "Regular";
     try {
-      const res = await fetch("/api/vendor/traffic", {
+      const res = await offlineFetch("/api/vendor/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ count: amount, status }),
@@ -167,7 +195,7 @@ export default function ProCustomerPage() {
   const handleLogQuickExpense = async (amt?: number) => {
     if (typeof amt !== "number" && (!qExpAmount || isNaN(Number(qExpAmount)))) return;
     try {
-      const res = await fetch("/api/vendor/expenses", {
+      const res = await offlineFetch("/api/vendor/expenses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -194,12 +222,16 @@ export default function ProCustomerPage() {
     if (!crmName.trim() || crmSubmitting) return;
     setCrmSubmitting(true);
     try {
-      const res = await fetch("/api/vendor/customers", {
+      const res = await offlineFetch("/api/vendor/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: crmName, phone: crmPhone, notes: crmNotes }),
       });
       if (res.ok) {
+        const result = await res.json();
+        if (result.success) {
+          setCustomers((prev) => [result.data, ...prev]);
+        }
         setCrmSuccess(true);
         setTimeout(() => {
           setCrmSuccess(false);
@@ -415,30 +447,7 @@ export default function ProCustomerPage() {
           </div>
         </div>
 
-        {/* Quick Expense Bar (Pro) */}
-        <div className="bg-white dark:bg-[#161B22] border border-slate-200 dark:border-white/5 rounded-2xl p-5 flex flex-col lg:flex-row items-center justify-between gap-4 shadow-sm mb-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-red-500/10 p-2 rounded-lg"><Receipt className="w-5 h-5 text-red-500" /></div>
-            <div>
-              <p className="font-bold text-slate-900 dark:text-white text-[15px]">{t("dashboard.actions.quickLogExpense")}</p>
-              <p className="text-[11px] text-slate-500 dark:text-[#7d8590] mt-0.5">{t("dashboard.actions.quickLogSub")}</p>
-            </div>
-          </div>
-          <div className="flex flex-1 items-center gap-2 w-full lg:max-w-xl justify-end">
-             <div className="flex items-center gap-2 mr-2">
-               {[1, 5, 10].map(n => (
-                 <button key={n} onClick={() => handleLogQuickExpense(n)} className="px-4 py-2 bg-red-500/5 text-red-500 text-sm font-bold rounded-xl border border-red-500/10 min-h-11 hover:bg-red-500/10 transition-all">
-                   ${n}
-                 </button>
-               ))}
-             </div>
-             <div className="relative w-32">
-               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
-               <input type="number" placeholder="0.00" value={qExpAmount} onChange={e => setQExpAmount(e.target.value)} className="w-full bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl pl-6 pr-3 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-red-500 transition-all" />
-             </div>
-             <button onClick={() => handleLogQuickExpense()} disabled={!qExpAmount} className="bg-[#0d1117] dark:bg-red-500/20 hover:bg-black dark:hover:bg-red-500/30 text-white dark:text-red-400 font-bold px-5 py-2.5 rounded-xl text-sm transition-all border border-transparent dark:border-red-500/20 disabled:opacity-50">{t("dashboard.actions.log")}</button>
-          </div>
-        </div>
+  
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Pro Feature: CRM Database View */}
@@ -452,7 +461,12 @@ export default function ProCustomerPage() {
                   {t("dashboard.customerSection.crmDatabaseSub")}
                 </p>
               </div>
-              <Search className="w-4 h-4 text-slate-400" />
+              <button 
+                onClick={() => setIsCRMModalOpen(true)}
+                className="flex items-center gap-2 bg-[#3ecf8e] text-[#0d1117] px-4 py-2 rounded-xl text-sm font-bold shadow-[0_2px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a] transition-all cursor-pointer border-0"
+              >
+                <Plus className="w-4 h-4" /> {"Add Customer"}
+              </button>
             </div>
 
             <div className="overflow-x-auto flex-1">
@@ -460,12 +474,12 @@ export default function ProCustomerPage() {
                 <thead>
                   <tr className="bg-slate-50 dark:bg-[#0d1117]/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 text-[11px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
                     <th className="px-5 py-3">{t("dashboard.customerSection.crmCustomer")}</th>
-                    <th className="px-5 py-3">{t("dashboard.customerSection.crmVisits")}</th>
-                    <th className="px-5 py-3">{t("dashboard.customerSection.crmStatus")}</th>
+                    <th className="px-5 py-3">{t("dashboard.table.spent") || "Spent"}</th>
+                    <th className="px-5 py-3">{t("dashboard.table.joined") || "Joined"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                  {crmDatabase.map((customer) => (
+                  {customers.map((customer: any) => (
                     <tr
                       key={customer.id}
                       className="hover:bg-psar-primary/10/30 transition-colors"
@@ -479,21 +493,13 @@ export default function ProCustomerPage() {
                         </div>
                       </td>
                       <td className="px-5 py-3">
-                        <span className="font-bold text-slate-700 dark:text-[#c9d1d9]">
-                          {customer.visits}
+                        <span className="font-bold text-[#3ecf8e] text-[15px]">
+                          ${parseFloat(customer.totalSpent || 0).toFixed(2)}
                         </span>
                       </td>
                       <td className="px-5 py-3">
-                        <span
-                          className={`inline-flex px-2 py-0.5 rounded text-[11px] font-bold ${
-                            customer.status === "Loyal"
-                              ? "bg-amber-100 text-amber-700"
-                              : customer.status === "Regular"
-                                ? "bg-psar-primary/10 text-psar-primary"
-                                : "bg-slate-100 text-slate-600 dark:text-[#9aa4b2]"
-                          }`}
-                        >
-                          {customer.status}
+                        <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-[#9aa4b2]">
+                          {new Date(customer.createdAt).toLocaleDateString()}
                         </span>
                       </td>
                     </tr>
@@ -532,7 +538,7 @@ export default function ProCustomerPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                  {logs.map((logEntry) => (
+                  {safeLogs.map((logEntry: any) => (
                     <tr
                       key={logEntry.id}
                       className="hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117]/50 dark:bg-white/5 transition-colors"

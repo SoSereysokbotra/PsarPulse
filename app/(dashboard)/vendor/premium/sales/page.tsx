@@ -30,6 +30,7 @@ import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import AIHub from "@/components/vendor/premium/AIHub";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // ─── Local Types ───────────────────────────────────────────────────
 export type Period = "Day" | "Week" | "Month";
@@ -142,7 +143,7 @@ export default function PremiumSalesPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/vendor/sales");
+      const res = await offlineFetch("/api/vendor/sales");
       const json = await res.json();
       if (json.success) setSalesRaw(json.data);
     } catch (err) {
@@ -160,7 +161,7 @@ export default function PremiumSalesPage() {
     if (!smartPrompt || isParsing) return;
     setIsParsing(true);
     try {
-      const res = await fetch("/api/vendor/ai/smart-add", {
+      const res = await offlineFetch("/api/vendor/ai/smart-add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: smartPrompt }),
@@ -302,7 +303,7 @@ export default function PremiumSalesPage() {
     setIsChatLoading(true);
 
     try {
-      const res = await fetch("/api/vendor/ai/chat", {
+      const res = await offlineFetch("/api/vendor/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMsg.content, context: "sales" }),
@@ -328,7 +329,7 @@ export default function PremiumSalesPage() {
     if (!quickAmount || saving) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/vendor/sales", {
+      const res = await offlineFetch("/api/vendor/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -362,7 +363,7 @@ export default function PremiumSalesPage() {
     if (!window.confirm("Delete this sale record?")) return;
     try {
       // optimistic ui not used here for reliability, but could be added
-      const res = await fetch(`/api/vendor/sales?id=${id}`, { method: "DELETE" });
+      const res = await offlineFetch(`/api/vendor/sales?id=${id}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
         showToast("Sale deleted successfully");

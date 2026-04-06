@@ -28,6 +28,7 @@ import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 export default function CustomersPage() {
   const { language, t } = useLanguage();
@@ -71,7 +72,7 @@ export default function CustomersPage() {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const res = await fetch("/api/vendor/customers");
+        const res = await offlineFetch("/api/vendor/customers");
         const data = await res.json();
         if (data.success) setCustomers(data.data);
       } catch (error) {
@@ -87,7 +88,7 @@ export default function CustomersPage() {
   useEffect(() => {
     const fetchTraffic = async () => {
       try {
-        const res = await fetch("/api/vendor/traffic");
+        const res = await offlineFetch("/api/vendor/traffic");
         const data = await res.json();
         if (data.success) {
           const mapped = data.data.map((l: any) => ({
@@ -149,7 +150,7 @@ export default function CustomersPage() {
   const handleLogTraffic = async (amount: number) => {
     const status = amount >= 10 ? "Peak Traffic" : "Regular";
     try {
-      const res = await fetch("/api/vendor/traffic", {
+      const res = await offlineFetch("/api/vendor/traffic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ count: amount, status }),
@@ -176,7 +177,7 @@ export default function CustomersPage() {
   const handleLogQuickExpense = async (amt?: number) => {
     if (typeof amt !== "number" && (!qExpAmount || isNaN(Number(qExpAmount)))) return;
     try {
-      const res = await fetch("/api/vendor/expenses", {
+      const res = await offlineFetch("/api/vendor/expenses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -205,7 +206,7 @@ export default function CustomersPage() {
       totalSpent: parseFloat(formData.get("totalSpent") as string || "0"),
     };
     try {
-      const res = await fetch("/api/vendor/customers", {
+      const res = await offlineFetch("/api/vendor/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -235,7 +236,7 @@ export default function CustomersPage() {
     if (!fName || !editTarget) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/vendor/customers/${editTarget.id}`, {
+      const res = await offlineFetch(`/api/vendor/customers/${editTarget.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -261,7 +262,7 @@ export default function CustomersPage() {
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await fetch(`/api/vendor/customers/${deleteTarget.id}`, { method: "DELETE" });
+      const res = await offlineFetch(`/api/vendor/customers/${deleteTarget.id}`, { method: "DELETE" });
       const result = await res.json();
       if (result.success) {
         setCustomers(p => p.filter(x => x.id !== deleteTarget.id));

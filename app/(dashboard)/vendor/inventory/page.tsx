@@ -31,6 +31,7 @@ import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 export type Category = "Food" | "Drink" | "Snack" | "Main" | "Other";
 
@@ -83,7 +84,7 @@ export default function FreeInventoryPage() {
 
   const fetchInventory = async () => {
     try {
-      const res = await fetch("/api/vendor/inventory");
+      const res = await offlineFetch("/api/vendor/inventory");
       const data = await res.json();
       if (data.success) {
         const mapped = data.data.map((i: any) => ({
@@ -145,7 +146,7 @@ export default function FreeInventoryPage() {
     try {
       const url = editTarget ? `/api/vendor/inventory/${editTarget.id}` : "/api/vendor/inventory";
       const method = editTarget ? "PUT" : "POST";
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -174,7 +175,7 @@ export default function FreeInventoryPage() {
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await fetch(`/api/vendor/inventory/${deleteTarget.id}`, { method: "DELETE" });
+      const res = await offlineFetch(`/api/vendor/inventory/${deleteTarget.id}`, { method: "DELETE" });
       const result = await res.json();
       if (result.success) {
         showToast(t("dashboard.status.logged") || "Item deleted");
@@ -303,7 +304,7 @@ export default function FreeInventoryPage() {
                           <div className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{item.name}</div>
                           <div className="text-[11px] text-slate-500 mt-0.5">{item.khmerName || "—"}</div>
                         </td>
-                        <td className="px-6 py-4 font-bold text-[#3ecf8e]">${item.price.toFixed(2)}</td>
+                        <td className="px-6 py-4 font-bold text-[#3ecf8e]">${parseFloat(item.price?.toString() || "0").toFixed(2)}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <span className="font-bold">{item.stock}</span>

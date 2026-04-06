@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 const PRO_NAV = [
   { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor/pro" },
@@ -137,17 +138,35 @@ export default function ProReportsPage() {
     transactions: 0
   });
   const [realExpenseCategories, setRealExpenseCategories] = useState<any[]>([]);
+  const [realDaily, setRealDaily] = useState<any[]>(() => {
+    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const today = new Date();
+    const last7Days: any[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      last7Days.push({ day: daysOfWeek[d.getDay()], rev: 0, exp: 0 });
+    }
+    return last7Days;
+  });
+  const [realTopItems, setRealTopItems] = useState<any[]>([]);
+  const [realTopMovers, setRealTopMovers] = useState<any[]>([]);
   const [realExpenseTotal, setRealExpenseTotal] = useState("$0.00");
   const [realInventoryItems, setRealInventoryItems] = useState<any[]>([]);
+  
+  const [realHourlyTraffic, setRealHourlyTraffic] = useState<any[]>(() => [8,9,10,11,12,13,14,15,16,17,18,19].map(h => ({ hour: h === 12 ? "12PM" : h > 12 ? `${h-12}PM` : `${h}AM`, val: 0 })));
+  const [realDailyCustomerTrend, setRealDailyCustomerTrend] = useState<number[]>([0,0,0,0,0,0,0]);
+  const [realPeakHour, setRealPeakHour] = useState("No Data");
+  const [realRetentionRate, setRealRetentionRate] = useState("0%");
 
   React.useEffect(() => {
     const fetchStats = async () => {
       try {
         const [salesRes, expRes, custRes, invRes] = await Promise.all([
-          fetch("/api/vendor/sales"),
-          fetch("/api/vendor/expenses"),
-          fetch("/api/vendor/customers"),
-          fetch("/api/vendor/inventory"),
+          offlineFetch("/api/vendor/sales"),
+          offlineFetch("/api/vendor/expenses"),
+          offlineFetch("/api/vendor/customers"),
+          offlineFetch("/api/vendor/inventory"),
         ]);
         const [salesDataRes, expDataRes, custDataRes, invDataRes] = await Promise.all([
           salesRes.json(),
@@ -183,10 +202,153 @@ export default function ProReportsPage() {
           }));
           setRealExpenseCategories(dynamicExpCats);
           setRealExpenseTotal(`$${totalExp.toFixed(2)}`);
+
+          // Compute Daily Data for last 7 days from current time backward
+          const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+          const today = new Date();
+          const last7Days: string[] = [];
+          for (let i = 6; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(d.getDate() - i);
+            last7Days.push(daysOfWeek[d.getDay()]);
+          }
+
+          const dailyMap: Record<string, { rev: number, exp: number }> = {};
+          last7Days.forEach(d => dailyMap[d] = { rev: 0, exp: 0 });
+
+          const getDayStr = (d: string) => {
+            const date = new Date(d);
+            return isNaN(date.getTime()) ? null : daysOfWeek[date.getDay()];
+          };
+
+          salesDataRes.data.forEach((s: any) => {
+            const d = getDayStr(s.createdAt);
+            if (d && dailyMap[d]) dailyMap[d].rev += parseFloat(s.amount || "0");
+          });
+          expDataRes.data.forEach((e: any) => {
+            const d = getDayStr(e.createdAt);
+            if (d && dailyMap[d]) dailyMap[d].exp += parseFloat(e.amount || "0");
+          });
+          
+          const computedDaily = last7Days.map(d => ({
+            day: d,
+            rev: dailyMap[d].rev > 0 ? dailyMap[d].rev : 0,
+            exp: dailyMap[d].exp > 0 ? dailyMap[d].exp : 0
+          }));
+          
+          setRealDaily(computedDaily);
+
+          // Compute Top Items
+          const itemMap: Record<string, { name: string, qty: number, revenue: number }> = {};
+          salesDataRes.data.forEach((s: any) => {
+             let itemsArr: string[] = [];
+             try {
+                if (s.items && s.items.startsWith("[")) {
+                  itemsArr = JSON.parse(s.items).map((i: any) => i.name || i);
+                } else if (s.items) {
+                  itemsArr = s.items.split(",").map((i: string) => i.trim());
+                }
+             } catch(e) {}
+             
+             if (itemsArr.length > 0) {
+               const amtPerItem = parseFloat(s.amount || "0") / itemsArr.length;
+               itemsArr.forEach(itemName => {
+                  if (!itemMap[itemName]) itemMap[itemName] = { name: itemName, qty: 0, revenue: 0 };
+                  itemMap[itemName].qty += 1;
+                  itemMap[itemName].revenue += amtPerItem;
+               });
+             } else {
+               const cat = s.category || "General";
+               if (!itemMap[cat]) itemMap[cat] = { name: cat, qty: 0, revenue: 0 };
+               itemMap[cat].qty += 1;
+               itemMap[cat].revenue += parseFloat(s.amount || "0");
+             }
+          });
+
+          let computedTopItems = Object.values(itemMap).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+          const maxRev = computedTopItems.length > 0 ? computedTopItems[0].revenue : 0;
+          const formattedTopItems = computedTopItems.map(item => ({
+             ...item,
+             khmer: "",
+             revenue: `$${item.revenue.toFixed(2)}`,
+             pct: maxRev > 0 ? Math.round((item.revenue / maxRev) * 100) : 0
+          }));
+          setRealTopItems(formattedTopItems);
+          
+          // Compute Hourly Traffic
+          const hourlyMap: Record<number, number> = {};
+          for(let i=8; i<=19; i++) hourlyMap[i] = 0; // 8 AM to 7 PM
+          
+          let repeatCustomers = 0;
+          const phoneNumbers = new Set();
+
+          salesDataRes.data.forEach((s: any) => {
+            if (s.customerPhone) {
+              if (phoneNumbers.has(s.customerPhone)) repeatCustomers++;
+              phoneNumbers.add(s.customerPhone);
+            }
+            const date = new Date(s.createdAt);
+            if(!isNaN(date.getTime())) {
+              const hour = date.getHours();
+              if(hour >= 8 && hour <= 19) hourlyMap[hour] += 1;
+            }
+          });
+
+          const computedHourlyTraffic = Object.keys(hourlyMap).map(k => {
+            const h = parseInt(k);
+            return { hour: h === 12 ? "12PM" : h > 12 ? `${h - 12}PM` : `${h}AM`, val: hourlyMap[h] };
+          });
+          setRealHourlyTraffic(computedHourlyTraffic);
+
+          const maxHourCount = Math.max(...computedHourlyTraffic.map(x => x.val), 0);
+          if (maxHourCount > 0) {
+             const peakObj = computedHourlyTraffic.find(x => x.val === maxHourCount);
+             if (peakObj) setRealPeakHour(peakObj.hour);
+          }
+          
+          if (salesDataRes.data.length > 0) {
+            setRealRetentionRate(`${Math.round((repeatCustomers / salesDataRes.data.length) * 100)}%`);
+          }
+
+          // Compute Daily Customer Trend (using sales as customer traffic)
+          const dailyCustMap: Record<string, number> = {};
+          last7Days.forEach(d => dailyCustMap[d] = 0);
+          salesDataRes.data.forEach((s: any) => {
+            const d = getDayStr(s.createdAt);
+            if (d && dailyCustMap[d] !== undefined) dailyCustMap[d] += 1;
+          });
+          setRealDailyCustomerTrend(last7Days.map(d => dailyCustMap[d]));
         }
 
         if (invDataRes.success) {
           setRealInventoryItems(invDataRes.data);
+          
+          if (salesDataRes.success) {
+             const soldMap: Record<string, number> = {};
+             salesDataRes.data.forEach((s: any) => {
+               let itemsArr: string[] = [];
+               try {
+                  if (s.items && s.items.startsWith("[")) {
+                    itemsArr = JSON.parse(s.items).map((i: any) => i.name || i);
+                  } else if (s.items) {
+                    itemsArr = s.items.split(",").map((i: string) => i.trim());
+                  }
+               } catch(e) {}
+               itemsArr.forEach(i => soldMap[i] = (soldMap[i] || 0) + 1);
+             });
+
+             const computedMovers = invDataRes.data
+               .map((invItem: any) => ({
+                 name: invItem.name,
+                 sold: soldMap[invItem.name] || 0,
+                 restocked: (soldMap[invItem.name] || 0) + (invItem.stock || 0)
+               }))
+               .filter((i: any) => i.sold > 0)
+               .sort((a: any, b: any) => b.sold - a.sold)
+               .slice(0, 5);
+             
+             setRealTopMovers(computedMovers);
+          }
         }
       } catch (e) {
         console.error("Reports fetch error:", e);
@@ -322,23 +484,29 @@ export default function ProReportsPage() {
             <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl p-6 shadow-sm">
               <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-5">Revenue vs Expenses</h3>
               <div className="h-52 flex items-end gap-3">
-                {dynamicPlData.daily.map((d, i) => {
-                  const maxVal = 550; // Dynamic based on data in real world
+                {realDaily.length === 0 ? (
+                  <div className="w-full flex items-center justify-center h-full border border-dashed border-slate-200 dark:border-white/10 rounded-xl">
+                    <p className="text-sm text-slate-400">No chart data available.</p>
+                  </div>
+                ) : realDaily.map((d, i) => {
+                  const maxVal = Math.max(...realDaily.map(x => Math.max(x.rev || 0, x.exp || 0)), 10) * 1.1;
                   return (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1">
                       <div className="w-full flex items-end gap-0.5 justify-center h-44">
                         {/* Revenue bar */}
-                        <div className="w-[45%] bg-psar-primary/10 rounded-t-lg relative group">
+                        <div className="w-[45%] h-full bg-psar-primary/10 rounded-t-lg relative group">
                           <div
                             className="absolute bottom-0 w-full bg-psar-primary rounded-t-lg transition-all duration-500 group-hover:bg-psar-primary"
                             style={{ height: `${(d.rev / maxVal) * 100}%` }}
+                            title={`Revenue: $${d.rev.toFixed(2)}`}
                           ></div>
                         </div>
                         {/* Expense bar */}
-                        <div className="w-[45%] bg-slate-100 rounded-t-lg relative group">
+                        <div className="w-[45%] h-full bg-slate-100 dark:bg-white/5 rounded-t-lg relative group">
                           <div
-                            className="absolute bottom-0 w-full bg-slate-400 rounded-t-lg transition-all duration-500 group-hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117]0"
+                            className="absolute bottom-0 w-full bg-slate-400 rounded-t-lg transition-all duration-500 group-hover:bg-slate-50 dark:hover:bg-white/10 dark:bg-white/5"
                             style={{ height: `${(d.exp / maxVal) * 100}%` }}
+                            title={`Expense: $${d.exp.toFixed(2)}`}
                           ></div>
                         </div>
                       </div>
@@ -376,7 +544,9 @@ export default function ProReportsPage() {
                   <p className="text-[12px] font-khmer text-slate-400 mt-0.5">ទំនិញលក់ដាច់ជាងគេ</p>
                 </div>
                 <div className="p-5 space-y-4">
-                  {dynamicSalesData.topItems.map((item, i) => (
+                  {realTopItems.length === 0 ? (
+                    <p className="text-center text-slate-400 py-6 text-sm">No sales data yet.</p>
+                  ) : realTopItems.map((item, i) => (
                     <div key={i} className="flex items-center gap-4">
                       <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 dark:text-[#7d8590] text-[12px] font-bold flex items-center justify-center shrink-0">
                         {i + 1}
@@ -412,17 +582,17 @@ export default function ProReportsPage() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Current</span>
-                      <span className="text-[17px] font-bold text-slate-900 dark:text-white">{dynamicSalesData.comparison.current}</span>
+                      <span className="text-[17px] font-bold text-slate-900 dark:text-white">{`$${stats.sales.toFixed(2)}`}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Previous</span>
-                      <span className="text-[17px] font-bold text-slate-400">{dynamicSalesData.comparison.previous}</span>
+                      <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Available</span>
+                      <span className="text-[17px] font-bold text-slate-400">-</span>
                     </div>
                     <div className="pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
-                      <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Change</span>
+                      <span className="text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">Trend</span>
                       <span className="flex items-center gap-1 text-[15px] font-bold text-psar-primary">
-                        <ArrowUpRight className="w-4 h-4" />
-                        {dynamicSalesData.comparison.change}
+                        <TrendingUp className="w-4 h-4" />
+                        Active
                       </span>
                     </div>
                   </div>
@@ -432,14 +602,18 @@ export default function ProReportsPage() {
                 <div className="bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm p-5 flex-1">
                   <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-4">Sales Trend</h3>
                   <div className="h-24 flex items-end gap-1.5">
-                    {dynamicSalesData.trend.map((h, i) => (
-                      <div key={i} className="flex-1 bg-psar-primary/10 rounded-t-md relative group">
+                    {realDaily.map((d, i) => {
+                      const maxRev = Math.max(...realDaily.map(x => x.rev), 10);
+                      const h = (d.rev / maxRev) * 100;
+                      return (
+                      <div key={i} className="flex-1 h-full bg-psar-primary/10 rounded-t-md relative group">
                         <div
                           className="absolute bottom-0 w-full bg-psar-primary rounded-t-md transition-all duration-500 group-hover:bg-psar-primary"
                           style={{ height: `${h}%` }}
+                          title={`${d.day}: $${d.rev.toFixed(2)}`}
                         ></div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                   <div className="mt-3 flex items-center gap-2 text-[13px] text-slate-500 dark:text-[#7d8590] font-medium">
                     <span>Total: {dynamicSalesData.totalSales} sales</span>
@@ -561,8 +735,8 @@ export default function ProReportsPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 md:grid-cols-2 gap-5 mb-6">
               <MiniCard title="Total Customers" khmer="អតិថិជនសរុប" value={String(dynamicCustomerData.totalCustomers)} />
               <MiniCard title="Avg. Spend" khmer="ការចំណាយមធ្យម" value={dynamicCustomerData.avgSpend} />
-              <MiniCard title="Peak Hour" khmer="ម៉ោងមមាញឹក" value={dynamicCustomerData.peakHour} accent />
-              <MiniCard title="Retention Rate" khmer="អត្រារក្សាទុក" value={dynamicCustomerData.retentionRate} />
+              <MiniCard title="Peak Hour" khmer="ម៉ោងមមាញឹក" value={realPeakHour} accent />
+              <MiniCard title="Retention Rate" khmer="អត្រារក្សាទុក" value={realRetentionRate} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -571,14 +745,17 @@ export default function ProReportsPage() {
                 <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-1">Hourly Traffic</h3>
                 <p className="text-[12px] text-slate-400 font-medium mb-5">Customer volume by hour of day</p>
                 <div className="h-40 flex items-end gap-1">
-                  {dynamicCustomerData.hourlyTraffic.map((h, i) => {
-                    const isPeak = h.val >= 70;
+                  {realHourlyTraffic.map((h, i) => {
+                    const maxTraffic = Math.max(...realHourlyTraffic.map(x => x.val), 10);
+                    const isPeak = h.val > 0 && h.val === Math.max(...realHourlyTraffic.map(x => x.val));
+                    const percentage = (h.val / maxTraffic) * 100;
                     return (
                       <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                        <div className={`w-full ${isPeak ? "bg-orange-100" : "bg-slate-100"} rounded-t-lg relative group`} style={{ height: "120px" }}>
+                        <div className={`w-full ${isPeak ? "bg-orange-100 dark:bg-orange-900/40" : "bg-slate-100 dark:bg-white/5"} rounded-t-lg relative group h-full`}>
                           <div
                             className={`absolute bottom-0 w-full rounded-t-lg transition-all duration-500 ${isPeak ? "bg-orange-400 group-hover:bg-orange-500" : "bg-psar-primary group-hover:bg-psar-primary"}`}
-                            style={{ height: `${(h.val / 100) * 100}%` }}
+                            style={{ height: `${percentage}%` }}
+                            title={`${h.hour}: ${h.val} customers`}
                           ></div>
                         </div>
                         <span className="text-[9px] text-slate-400 font-medium">{h.hour}</span>
@@ -601,19 +778,24 @@ export default function ProReportsPage() {
                 <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white mb-1">Daily Customer Trend</h3>
                 <p className="text-[12px] text-slate-400 font-medium mb-5">Customers per day this week</p>
                 <div className="h-40 flex items-end gap-2">
-                  {dynamicCustomerData.dailyTrend.map((val, i) => {
-                    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-                    const isWeekend = i >= 5;
+                  {realDailyCustomerTrend.map((val, i) => {
+                    const maxTrend = Math.max(...realDailyCustomerTrend, 10);
+                    const percentage = (val / maxTrend) * 100;
+                    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                    const today = new Date();
+                    const dObj = new Date(today);
+                    dObj.setDate(dObj.getDate() - (6 - i));
+                    const isWeekend = dObj.getDay() === 0 || dObj.getDay() === 6;
                     return (
                       <div key={i} className="flex-1 flex flex-col items-center gap-1">
                         <span className="text-[11px] font-bold text-slate-500 dark:text-[#7d8590]">{val}</span>
-                        <div className={`w-full ${isWeekend ? "bg-psar-primary/10" : "bg-slate-100"} rounded-t-lg relative group`} style={{ height: "110px" }}>
+                        <div className={`w-full ${isWeekend ? "bg-psar-primary/10 dark:bg-psar-primary/20" : "bg-slate-100 dark:bg-white/5"} rounded-t-lg relative group h-full`}>
                           <div
-                            className={`absolute bottom-0 w-full rounded-t-lg transition-all duration-500 ${isWeekend ? "bg-psar-primary group-hover:bg-psar-primary" : "bg-slate-400 group-hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117]0"}`}
-                            style={{ height: `${(val / 100) * 100}%` }}
+                            className={`absolute bottom-0 w-full rounded-t-lg transition-all duration-500 ${isWeekend ? "bg-psar-primary group-hover:bg-psar-primary" : "bg-slate-400 group-hover:bg-slate-50 dark:hover:bg-white/10 dark:bg-white/5"}`}
+                            style={{ height: `${percentage}%` }}
                           ></div>
                         </div>
-                        <span className="text-[11px] text-slate-400 font-medium">{days[i]}</span>
+                        <span className="text-[11px] text-slate-400 font-medium">{days[dObj.getDay()]}</span>
                       </div>
                     );
                   })}
@@ -704,7 +886,9 @@ export default function ProReportsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                      {inventoryData.topMovers.map((item, i) => (
+                      {realTopMovers.length === 0 ? (
+                        <tr><td colSpan={3} className="px-6 py-4 text-center text-slate-400 text-sm">No recent stock movement.</td></tr>
+                      ) : realTopMovers.map((item, i) => (
                         <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/5 dark:bg-[#0d1117]/50 dark:bg-white/5 transition-colors">
                           <td className="px-6 py-4">
                             <span className="text-[14px] font-semibold text-slate-900 dark:text-white">{item.name}</span>

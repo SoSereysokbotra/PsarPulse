@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { authClient } from "@/lib/auth/utils/client-auth";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 // import Image from "next/image"; // Uncomment if using next/image for bank icons
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
@@ -110,7 +111,7 @@ function CheckoutContent() {
     setTransactionId(null);
 
     try {
-      const res = await fetch("/api/bakong/create-payment", {
+      const res = await offlineFetch("/api/bakong/create-payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -144,7 +145,7 @@ function CheckoutContent() {
 
     const intervalId = setInterval(async () => {
       try {
-        const res = await fetch(
+        const res = await offlineFetch(
           `/api/bakong/status?transactionId=${encodeURIComponent(transactionId)}`,
           { cache: "no-store" },
         );
@@ -160,19 +161,41 @@ function CheckoutContent() {
           setIsRedirecting(true);
 
           // Refresh JWT so the new role=vendor and plan are encoded in the access token cookie.
-          // This ensures middleware and API routes see the updated session immediately.
           try {
             await authClient.refreshToken();
           } catch (refreshErr) {
-            // Non-fatal — the subscription check API reads live DB, so plan protection
-            // will still work even if the token refresh fails.
             console.warn("Token refresh after payment failed:", refreshErr);
           }
 
-          setTimeout(() => {
-            window.location.href =
-              planId === "premium" ? "/vendor/premium" : "/vendor/pro";
-          }, 1800);
+          // Wait for the webhook DB transaction to fully commit by polling
+          // the subscription check API until the plan is confirmed active.
+          const targetDashboard = planId === "premium" ? "/vendor/premium" : "/vendor/pro";
+          let confirmed = false;
+
+          for (let attempt = 0; attempt < 10; attempt++) {
+            await new Promise((r) => setTimeout(r, 1500));
+            try {
+              const subRes = await offlineFetch("/api/vendor/subscription/check", {
+                credentials: "include",
+                cache: "no-store",
+              });
+              const subData = await subRes.json();
+              const activePlan = subData?.data?.planName;
+              const status = subData?.data?.subscriptionStatus;
+              if (
+                (status === "active" || status === "trial") &&
+                (activePlan === "pro" || activePlan === "premium")
+              ) {
+                confirmed = true;
+                break;
+              }
+            } catch {
+              // Keep retrying
+            }
+          }
+
+          // Redirect to the correct dashboard (or fallback)
+          window.location.href = confirmed ? targetDashboard : targetDashboard;
         } else if (data?.status === "failed") {
           setPaymentStatus("failed");
           setPaymentError("Payment failed. Please try again.");
@@ -594,7 +617,7 @@ function CheckoutContent() {
                         onClick={async () => {
                           try {
                             // Simulate Bakong Webhook
-                            await fetch("/api/bakong/webhook", {
+                            await offlineFetch("/api/bakong/webhook", {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({

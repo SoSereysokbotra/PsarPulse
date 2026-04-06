@@ -1,6 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Suwannaphum:wght@100;300;400;700;900&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Battambang:wght@100;300;400;700;900&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -38,8 +37,8 @@ input:-webkit-autofill:active {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-outfit: "Outfit", sans-serif;
-  --font-suwannaphum: "Suwannaphum", serif;
-  --font-sans: var(--font-outfit), var(--font-suwannaphum);
+  --font-battambang: "Battambang", serif;
+  --font-sans: var(--font-outfit), var(--font-battambang);
 
   /* Dark theme palette */
   --color-dark-bg: #0a0a0a;

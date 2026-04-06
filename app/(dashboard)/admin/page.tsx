@@ -165,7 +165,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div
-      className={`space-y-8 font-sans ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}
+      className={`space-y-8 font-sans ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}
     >
       {/* Header & Context Bar */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 fade-in">

@@ -47,7 +47,7 @@ export const FormInput = ({
     isDark
       ? "bg-dark-surface border-dark-border text-white placeholder-slate-500 focus:border-psar-primary focus:ring-psar-primary/20"
       : "bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:bg-white hover:border-slate-300 focus:border-psar-primary focus:ring-psar-primary/20"
-  } shadow-sm rounded-xl outline-none ${isKhmer ? "font-suwannaphum" : ""} ${
+  } shadow-sm rounded-xl outline-none ${isKhmer ? "font-battambang" : ""} ${
     props.disabled
       ? isDark
         ? "opacity-60 cursor-not-allowed bg-dark-bg"
@@ -60,13 +60,13 @@ export const FormInput = ({
       <div className="flex items-center justify-between mb-2">
         <label
           htmlFor={id}
-          className={`block text-sm font-bold ${isDark ? "text-[#8A8F98]" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`block text-sm font-bold ${isDark ? "text-[#8A8F98]" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}
         >
           {label}
         </label>
 
         {rightLabelElement && (
-          <div className={isKhmer ? "font-suwannaphum" : ""}>
+          <div className={isKhmer ? "font-battambang" : ""}>
             {rightLabelElement}
           </div>
         )}

@@ -12,7 +12,7 @@ export interface SyncRequest {
 
 export async function queueRequest(url: string, method: string, body?: any, headers?: Record<string, string>) {
   const request: SyncRequest = {
-    id: crypto.randomUUID(),
+    id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'temp-' + Date.now() + Math.random().toString(36).substring(2),
     url,
     method,
     body,

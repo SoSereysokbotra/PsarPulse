@@ -35,6 +35,7 @@ import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useUser } from "@/components/providers/UserProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface Product {
@@ -131,11 +132,12 @@ export default function ProDashboard() {
 
   const fetchAllData = useCallback(async () => {
     try {
-      const [salesRes, expRes, custRes, invRes] = await Promise.all([
-        fetch("/api/vendor/sales"),
-        fetch("/api/vendor/expenses"),
-        fetch("/api/vendor/customers"),
-        fetch("/api/vendor/inventory")
+      const [salesRes, expRes, custRes, invRes, repRes] = await Promise.all([
+        offlineFetch("/api/vendor/sales"),
+        offlineFetch("/api/vendor/expenses"),
+        offlineFetch("/api/vendor/customers"),
+        offlineFetch("/api/vendor/inventory"),
+        offlineFetch("/api/vendor/reports")
       ]);
 
       if (salesRes.status === 401 || expRes.status === 401) {
@@ -143,11 +145,12 @@ export default function ProDashboard() {
         return;
       }
 
-      const [salesData, expData, custData, invData] = await Promise.all([
+      const [salesData, expData, custData, invData, repData] = await Promise.all([
         salesRes.json(),
         expRes.json(),
         custRes.json(),
-        invRes.json()
+        invRes.json(),
+        repRes.json()
       ]);
 
       if (salesData.success) {
@@ -168,6 +171,15 @@ export default function ProDashboard() {
       if (invData.success) {
         setInventoryItems(invData.data);
       }
+      if (repData.success) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todayReport = repData.data.find((r: any) => r.reportDate.startsWith(todayStr));
+        if (todayReport && todayReport.isLocked === 1) {
+          setIsDayLocked(true);
+        } else {
+          setIsDayLocked(false);
+        }
+      }
     } catch (e) {
       console.error("Dashboard fetch error:", e);
     }
@@ -184,6 +196,28 @@ export default function ProDashboard() {
   }, [fetchAllData]);
 
   const hasData = stats.transactions > 0 || stats.expenses > 0 || stats.customers > 0;
+
+  const handleLockDay = async () => {
+    if (isDayLocked || !hasData) return;
+    try {
+      const res = await offlineFetch("/api/vendor/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: new Date().toISOString(),
+          totalSales: stats.sales,
+          totalExpenses: stats.expenses,
+          netProfit: stats.sales - stats.expenses,
+          isLocked: true
+        })
+      });
+      if (res.ok) {
+        setIsDayLocked(true);
+      }
+    } catch (e) {
+      console.error("Failed to lock day:", e);
+    }
+  };
 
   // ── Goal ring ─────────────────────────────────────────
   const goalPct = Math.min((stats.sales / GOAL_TARGET) * 100, 100);
@@ -380,10 +414,10 @@ export default function ProDashboard() {
   const cartItems = cart.reduce((sum, i) => sum + i.qty, 0);
 
   const completeSale = async () => {
-    if (!cart.length) return;
+    if (isDayLocked || !cart.length) return;
     try {
       const itemsStr = cart.map(i => `${i.qty}x ${i.product.name}`).join(", ");
-      const res = await fetch("/api/vendor/sales", {
+      const res = await offlineFetch("/api/vendor/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: cartTotal, method: "Cash", items: itemsStr }),
@@ -437,11 +471,14 @@ export default function ProDashboard() {
         <>
           <div ref={quickSaleRef} className="relative">
             <button
+              disabled={isDayLocked}
               onClick={() => setQuickSaleOpen((o) => !o)}
-              className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer transition-all duration-200 ${
-                quickSaleOpen
-                  ? "bg-[#0E1319] text-[#e6edf3]"
-                  : "bg-[#29B28D] text-[#0E1319] shadow-[0_2px_14px_rgba(41,178,141,0.28)]"
+              className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] transition-all duration-200 ${
+                isDayLocked
+                  ? "bg-gray-200 dark:bg-white/5 text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-none"
+                  : quickSaleOpen
+                  ? "bg-[#0E1319] text-[#e6edf3] cursor-pointer"
+                  : "bg-[#29B28D] text-[#0E1319] shadow-[0_2px_14px_rgba(41,178,141,0.28)] cursor-pointer"
               }`}
             >
               {quickSaleOpen ? (
@@ -504,7 +541,7 @@ export default function ProDashboard() {
                             >
                               <span>{p.name}</span>
                               <span className="text-[#29B28D] font-bold">
-                                ${p.price.toFixed(2)}
+                                ${parseFloat(p.price?.toString() || "0").toFixed(2)}
                               </span>
                             </button>
                           ))
@@ -549,7 +586,7 @@ export default function ProDashboard() {
                                 <div
                                   className={`text-[11px] font-bold ${inCart ? "text-[#29B28D]" : "text-[#6b7280] dark:text-[#7d8590]"}`}
                                 >
-                                  ${p.price.toFixed(2)}
+                                  ${parseFloat(p.price?.toString() || "0").toFixed(2)}
                                 </div>
                                 {inCart && (
                                   <span className="absolute top-1.5 right-2 bg-[#29B28D] text-[#0E1319] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
@@ -1040,7 +1077,7 @@ export default function ProDashboard() {
                 </p>
                 <p className="text-[12px] text-[#9ca3af] mb-2">ចំណាយសរុប</p>
                 <p className="text-[22px] font-bold text-red-500">
-                  {summaryData.expenses}
+              {summaryData.expenses}
                 </p>
               </div>
               <div className="p-4 bg-[rgba(41,178,141,0.08)] rounded-[11px] text-center border border-[rgba(41,178,141,0.18)]">
@@ -1061,7 +1098,7 @@ export default function ProDashboard() {
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles className="w-5 h-5 text-[#29B28D]" />
                 <h4 className="font-bold text-[14px] text-[#111827] dark:text-white">
-                  AI Daily Summary
+                  {isKhmer ? "សង្ខេបប្រចាំថ្ងៃដោយ AI" : "AI Daily Summary"}
                 </h4>
                 <span className="text-[10px] font-bold text-[#29B28D] bg-[rgba(41,178,141,0.12)] px-2 py-0.5 rounded-full">
                   PRO
@@ -1069,14 +1106,29 @@ export default function ProDashboard() {
               </div>
               <p className="text-[14px] text-[#111827] dark:text-white leading-relaxed">
                 {hasData ? (
-                  <>
-                    📊 <strong>Great day!</strong> Revenue increased by 18% vs.
-                    yesterday. Iced Coffee continues to dominate with 52 units sold.
-                    Your profit margin improved to 70.7%. Consider restocking Hot
-                    Latte — current stock is critically low at 8 units.
-                  </>
+                  isKhmer ? (
+                    <>
+                      📊 <strong>ការអនុវត្តល្អណាស់!</strong> អ្នកបានកត់ត្រាការលក់ចំនួន {stats.transactions} នៅថ្ងៃនេះ។ 
+                      {bestSellingProducts.length > 0 && (
+                        <> <strong>{bestSellingProducts[0].khmer || bestSellingProducts[0].name}</strong> គឺជាផលិតផលដែលលក់ដាច់បំផុតរបស់អ្នក។</>
+                      )}
+                      {inventoryItems.some(i => i.status !== "good") && (
+                        <> សូមពិនិត្យមើលកម្រិតស្តុករបស់អ្នក! មុខទំនិញមួយចំនួនកំពុងថយចុះ ហើយត្រូវការការបំពេញបន្ថែម។</>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      📊 <strong>Great performance!</strong> You have logged {stats.transactions} sales today. 
+                      {bestSellingProducts.length > 0 && (
+                        <> <strong>{bestSellingProducts[0].name}</strong> is your top performer.</>
+                      )}
+                      {inventoryItems.some(i => i.status !== "good") && (
+                        <> Watch your stock levels! Some items are running low and need restocking.</>
+                      )}
+                    </>
+                  )
                 ) : (
-                  <>Not enough data yet. Start making sales to generate your AI daily summary.</>
+                  <>{isKhmer ? "មិនទាន់មានទិន្នន័យគ្រប់គ្រាន់នៅឡើយទេ។ ចាប់ផ្តើមធ្វើការលក់ដើម្បីបង្កើតការសង្ខេបប្រចាំថ្ងៃដោយ AI របស់អ្នក។" : "Not enough data yet. Start making sales to generate your AI daily summary."}</>
                 )}
               </p>
             </div>
@@ -1088,9 +1140,14 @@ export default function ProDashboard() {
 
             {!isDayLocked ? (
               <button
-                onClick={() => setIsDayLocked(true)}
-                className="w-full flex items-center justify-center gap-2.5 bg-[#29B28D] hover:opacity-90 text-[#0E1319] font-bold text-[16px] py-4 rounded-[11px] border-0 cursor-pointer transition-all shadow-[0_4px_22px_rgba(41,178,141,0.28)] min-h-[56px]"
-              >
+                onClick={() => handleLockDay()}
+                disabled={!hasData}
+                className={`w-full flex items-center justify-center gap-2.5 hover:opacity-90 font-bold text-[16px] py-4 rounded-[11px] border-0 cursor-pointer transition-all shadow-[0_4px_22px_rgba(41,178,141,0.28)] min-h-[56px] ${
+                  hasData 
+                    ? "bg-[#29B28D] text-[#0E1319]" 
+                    : "bg-gray-200 dark:bg-white/5 text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-none"
+                }`}
+                >
                 <Lock className="w-5 h-5" />
                 <span>Confirm &amp; Lock Day (បញ្ជាក់ និងចាក់សោ)</span>
               </button>

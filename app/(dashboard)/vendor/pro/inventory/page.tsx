@@ -28,6 +28,7 @@ import {
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 const PRO_NAV = [
   { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor/pro" },
@@ -51,7 +52,7 @@ export default function ProInventoryPage() {
 
   const fetchInventory = async () => {
     try {
-      const res = await fetch("/api/vendor/inventory");
+      const res = await offlineFetch("/api/vendor/inventory");
       const data = await res.json();
       if (data.success) setInventoryItems(data.data);
     } catch (e) { console.error(e); }
@@ -65,7 +66,7 @@ export default function ProInventoryPage() {
     const url = editingItem ? `/api/vendor/inventory/${editingItem.id}` : "/api/vendor/inventory";
     const method = editingItem ? "PUT" : "POST";
     try {
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method, headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
       });
@@ -80,7 +81,7 @@ export default function ProInventoryPage() {
   const handleDelete = async (id: string) => {
     if(!window.confirm(t("dashboard.modals.deleteConfirmDesc"))) return;
     try {
-      const res = await fetch(`/api/vendor/inventory/${id}`, { method: "DELETE" });
+      const res = await offlineFetch(`/api/vendor/inventory/${id}`, { method: "DELETE" });
       if (res.ok) fetchInventory();
     } catch (error) { console.error(error); }
   };

@@ -157,12 +157,12 @@ function AdminRegisterPageContent() {
     >
       <header className="mb-10">
         <h1
-          className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}
         >
           Admin Registration
         </h1>
         <p
-          className={`font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
         >
           Create your administrative account
         </p>
@@ -211,7 +211,7 @@ function AdminRegisterPageContent() {
 
         {error && (
           <p
-            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-suwannaphum" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-battambang" : ""}`}
           >
             {error}
           </p>
@@ -220,7 +220,7 @@ function AdminRegisterPageContent() {
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold text-sm py-3 rounded-xl shadow-xl hover:bg-indigo-700 hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-70 ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`w-full flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold text-sm py-3 rounded-xl shadow-xl hover:bg-indigo-700 hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-70 ${isKhmer ? "font-battambang" : ""}`}
         >
           {isLoading ? (
             <>
@@ -234,7 +234,7 @@ function AdminRegisterPageContent() {
       </form>
 
       <p
-        className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+        className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
       >
         {t("auth.signup.alreadyMember")}{" "}
         <Link

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 import { 
   Cloud, 
   CloudRain, 
@@ -35,7 +36,7 @@ export default function WeatherIntelligence() {
   useEffect(() => {
     async function fetchWeather() {
       try {
-        const res = await fetch("/api/vendor/ai/weather");
+        const res = await offlineFetch("/api/vendor/ai/weather");
         const json = await res.json();
         if (json.success) {
           setData(json.data);

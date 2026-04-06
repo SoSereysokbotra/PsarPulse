@@ -9,8 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-outfit)", "var(--font-suwannaphum)", "sans-serif"],
-        khmer: ["var(--font-suwannaphum)", "sans-serif"],
+        sans: ["var(--font-outfit)", "var(--font-battambang)", "sans-serif"],
+        khmer: ["var(--font-battambang)", "sans-serif"],
       },
     },
   },

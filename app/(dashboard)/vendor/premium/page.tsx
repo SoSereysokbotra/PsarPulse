@@ -38,6 +38,7 @@ import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useUser } from "@/components/providers/UserProvider";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { PremiumAnalytics } from "@/lib/analytics/premium.analytics";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface Product {
@@ -146,7 +147,7 @@ export default function PremiumDashboard() {
 
   const fetchGoal = useCallback(async () => {
     try {
-      const res = await fetch("/api/vendor/goal");
+      const res = await offlineFetch("/api/vendor/goal");
       const json = await res.json();
       if (json.success && json.data) {
         setDailyGoalValue(parseFloat(json.data.targetAmount));
@@ -160,10 +161,10 @@ export default function PremiumDashboard() {
   const fetchAllData = useCallback(async () => {
     try {
       const [salesRes, expRes, custRes, invRes] = await Promise.all([
-        fetch("/api/vendor/sales"),
-        fetch("/api/vendor/expenses"),
-        fetch("/api/vendor/customers"),
-        fetch("/api/vendor/inventory")
+        offlineFetch("/api/vendor/sales"),
+        offlineFetch("/api/vendor/expenses"),
+        offlineFetch("/api/vendor/customers"),
+        offlineFetch("/api/vendor/inventory")
       ]);
 
       if (salesRes.status === 401 || expRes.status === 401) {
@@ -203,7 +204,7 @@ export default function PremiumDashboard() {
 
   const fetchAiSavings = useCallback(async () => {
     try {
-      const res = await fetch("/api/vendor/ai/savings");
+      const res = await offlineFetch("/api/vendor/ai/savings");
       const json = await res.json();
       if (json.success) {
         setAiSavings(json.data);
@@ -296,7 +297,7 @@ export default function PremiumDashboard() {
     if (!newGoalInput || isUpdatingGoal) return;
     setIsUpdatingGoal(true);
     try {
-      const res = await fetch("/api/vendor/goal", {
+      const res = await offlineFetch("/api/vendor/goal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ targetAmount: parseFloat(newGoalInput) }),
@@ -378,7 +379,7 @@ export default function PremiumDashboard() {
     setIsCompletingSale(true);
     try {
       const itemsStr = cart.map(i => `${i.qty}x ${i.product.name}`).join(", ");
-      const res = await fetch("/api/vendor/sales", {
+      const res = await offlineFetch("/api/vendor/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount: cartTotal, method: "Cash", items: itemsStr }),
@@ -543,7 +544,7 @@ export default function PremiumDashboard() {
     setDashChatMessages(prev => [...prev, { role: "user", text: msg }]);
     setIsChatSending(true);
     try {
-      const res = await fetch("/api/vendor/ai/chat", {
+      const res = await offlineFetch("/api/vendor/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: msg, context: "dashboard" }),

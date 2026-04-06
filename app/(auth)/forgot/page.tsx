@@ -74,12 +74,12 @@ export default function ForgotPasswordPage() {
         <>
           <header className="mb-10">
             <h1
-              className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum text-3xl" : ""}`}
+              className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang text-3xl" : ""}`}
             >
               {isKhmer ? "ភ្លេចពាក្យសម្ងាត់?" : "Forgot Password?"}
             </h1>
             <p
-              className={`font-medium text-lg ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+              className={`font-medium text-lg ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
             >
               {isKhmer
                 ? "បញ្ចូលអ៊ីមែលរបស់អ្នកដើម្បីបន្ត។"
@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
 
             {error && (
               <p
-                className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-suwannaphum" : ""}`}
+                className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-battambang" : ""}`}
               >
                 {error}
               </p>
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-xl hover:bg-[#239979] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-70 ${isKhmer ? "font-suwannaphum" : ""}`}
+              className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-xl hover:bg-[#239979] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-70 ${isKhmer ? "font-battambang" : ""}`}
             >
               {isLoading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />

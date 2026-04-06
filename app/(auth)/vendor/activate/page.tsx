@@ -77,10 +77,10 @@ function VendorActivationContent() {
               <div className="w-20 h-20 border-4 border-psar-primary/20 border-t-psar-primary rounded-full animate-spin" />
               <Loader2 className="w-10 h-10 text-psar-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
-            <h1 className={`text-3xl font-extrabold ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            <h1 className={`text-3xl font-extrabold ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}>
               {isKhmer ? "កំពុងធ្វើឱ្យសកម្ម..." : "Activating Account..."}
             </h1>
-            <p className={`text-lg font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            <p className={`text-lg font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}>
               {isKhmer ? "សូមរង់ចាំបន្តិច" : "Please wait a moment while we verify your details."}
             </p>
           </>
@@ -91,13 +91,13 @@ function VendorActivationContent() {
             <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/30 rounded-full flex items-center justify-center">
               <CheckCircle2 className="w-12 h-12 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h1 className={`text-3xl font-extrabold ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            <h1 className={`text-3xl font-extrabold ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}>
               {isKhmer ? "ជោគជ័យ!" : "Success!"}
             </h1>
-            <p className={`text-lg font-medium ${isDark ? "text-emerald-400" : "text-emerald-600"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            <p className={`text-lg font-medium ${isDark ? "text-emerald-400" : "text-emerald-600"} ${isKhmer ? "font-battambang" : ""}`}>
               {message}
             </p>
-            <p className={`text-sm ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            <p className={`text-sm ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}>
               {isKhmer ? "បញ្ជូនអ្នកទៅកាន់ផ្ទាំងគ្រប់គ្រង..." : "Redirecting you to the dashboard..."}
             </p>
           </>
@@ -108,10 +108,10 @@ function VendorActivationContent() {
             <div className="w-20 h-20 bg-red-100 dark:bg-red-950/30 rounded-full flex items-center justify-center">
               <XCircle className="w-12 h-12 text-red-600 dark:text-red-400" />
             </div>
-            <h1 className={`text-3xl font-extrabold ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            <h1 className={`text-3xl font-extrabold ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}>
               {isKhmer ? "កំហុសក្នុងការធ្វើឱ្យសកម្ម" : "Activation Error"}
             </h1>
-            <p className={`text-lg font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+            <p className={`text-lg font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-battambang" : ""}`}>
               {message}
             </p>
             <button

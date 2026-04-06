@@ -140,16 +140,9 @@ export class AuthService {
     }
 
     // Role-specific record creation
-    if (user.role === "vendor" && !request.token) {
+    if (user.role === "vendor") {
       const { db } = await import("@/lib/db");
-      const { vendorRequests } = await import("@/lib/db/schema");
-
-      const pendingRequest = await db.query.vendorRequests.findFirst({
-        where: and(
-          eq(vendorRequests.userId, user.id),
-          eq(vendorRequests.status, "pending"),
-        ),
-      });
+      const { vendorRequests, vendors, vendorPlans } = await import("@/lib/db/schema");
 
       const requestPayload = {
         businessName: request.businessName || request.fullName,
@@ -163,28 +156,64 @@ export class AuthService {
         longitude: request.longitude,
       };
 
-      if (pendingRequest) {
-        await db
-          .update(vendorRequests)
-          .set(requestPayload)
-          .where(eq(vendorRequests.id, pendingRequest.id));
+      if (!request.token) {
+        const pendingRequest = await db.query.vendorRequests.findFirst({
+          where: and(
+            eq(vendorRequests.userId, user.id),
+            eq(vendorRequests.status, "pending"),
+          ),
+        });
+
+        if (pendingRequest) {
+          await db
+            .update(vendorRequests)
+            .set(requestPayload)
+            .where(eq(vendorRequests.id, pendingRequest.id));
+        } else {
+          await db.insert(vendorRequests).values({
+            userId: user.id,
+            ...requestPayload,
+            status: "pending",
+            requiredPlan: "free",
+          });
+        }
+
+        // Vendor requests are reviewed by admin before activation.
+        // Do not send email verification OTP for this self-registration flow.
+        return {
+          success: true,
+          data: {
+            userId: user.id,
+          },
+        };
       } else {
-        await db.insert(vendorRequests).values({
+        // VIP Vendor Setup - Direct creation with Premium plan
+        let premiumPlan = await db.query.vendorPlans.findFirst({
+          where: eq(vendorPlans.name, "premium"),
+        });
+
+        if (!premiumPlan) {
+          const [newPlan] = await db.insert(vendorPlans).values({
+            name: "premium",
+            description: "Premium VIP Features",
+            monthlyPrice: "99.00",
+            priority: 3,
+            isActive: true,
+          }).returning();
+          premiumPlan = newPlan;
+        }
+
+        await db.insert(vendors).values({
           userId: user.id,
-          ...requestPayload,
-          status: "pending",
-          requiredPlan: "free",
+          businessName: request.fullName + "'s Store",
+          businessEmail: request.email,
+          planId: premiumPlan.id,
+          isVerified: true,
+          status: "active",
+          verificationStatus: "approved",
+          subscriptionStatus: "active"
         });
       }
-
-      // Vendor requests are reviewed by admin before activation.
-      // Do not send email verification OTP for this self-registration flow.
-      return {
-        success: true,
-        data: {
-          userId: user.id,
-        },
-      };
     } else if (user.role === "admin" && !existingUser) {
       const { db } = await import("@/lib/db");
       const { admins } = await import("@/lib/db/schema");
@@ -467,7 +496,7 @@ export class AuthService {
           fullName: "Sothyroth Tes",
           email: MASTER_ADMIN_EMAIL,
           passwordHash: passwordHash,
-          role: "admin",
+          role: "super_admin",
           isVerified: true,
           status: "active",
         });
@@ -477,7 +506,7 @@ export class AuthService {
         const { admins } = await import("@/lib/db/schema");
         await db.insert(admins).values({
           userId: user.id,
-          role: "admin",
+          role: "super_admin",
           canManageVendors: true,
           canManageUsers: true,
           canManagePlans: true,

@@ -139,7 +139,7 @@ export default function PsarPulseDashboard() {
                     isDark
                       ? "bg-slate-900/50 border-white/10 text-white placeholder-slate-500 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40"
                       : "bg-slate-800/50 border-white/20 text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/60"
-                  } ${isKhmer ? "font-suwannaphum" : ""}`}
+                  } ${isKhmer ? "font-battambang" : ""}`}
                 />
               </div>
             </div>
@@ -175,7 +175,7 @@ export default function PsarPulseDashboard() {
                     activeTab === tab.id
                       ? "text-emerald-400"
                       : "text-slate-400 hover:text-white"
-                  } ${isKhmer ? "font-suwannaphum" : ""}`}
+                  } ${isKhmer ? "font-battambang" : ""}`}
                 >
                   <Icon size={16} />
                   {tab.label}
@@ -204,7 +204,7 @@ export default function PsarPulseDashboard() {
                     : isDark
                       ? "bg-white/5 text-slate-300 hover:bg-white/10"
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                } ${isKhmer ? "font-suwannaphum text-sm" : ""}`}
+                } ${isKhmer ? "font-battambang text-sm" : ""}`}
               >
                 <SlidersHorizontal size={14} /> {t("customer.filters.all")}
               </button>
@@ -228,7 +228,7 @@ export default function PsarPulseDashboard() {
                       : isDark
                         ? "border-white/10 text-slate-400 hover:border-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/5"
                         : "border-slate-200 text-slate-500 hover:border-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
-                  } ${isKhmer ? "font-suwannaphum text-sm" : ""}`}
+                  } ${isKhmer ? "font-battambang text-sm" : ""}`}
                 >
                   {t(`customer.filters.categories.${catKey}`)}
                 </button>
@@ -353,7 +353,7 @@ export default function PsarPulseDashboard() {
                 <div className="flex-1 flex flex-col justify-center">
                   <div className="flex justify-between items-start mb-1">
                     <h3
-                      className={`font-bold text-lg leading-tight ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}
+                      className={`font-bold text-lg leading-tight ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}
                     >
                       {selectedMapVendor.name}
                     </h3>
@@ -368,7 +368,7 @@ export default function PsarPulseDashboard() {
                     </button>
                   </div>
                   <p
-                    className={`text-sm mb-3 ${isDark ? "text-slate-400" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+                    className={`text-sm mb-3 ${isDark ? "text-slate-400" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
                   >
                     {selectedMapVendor.category} •{" "}
                     {selectedMapVendor.deliveryTime} mins
@@ -442,12 +442,12 @@ export default function PsarPulseDashboard() {
                     <div className="flex justify-between items-start mb-6">
                       <div>
                         <h3
-                          className={`font-bold text-xl mb-1 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}
+                          className={`font-bold text-xl mb-1 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}
                         >
                           {vendor.name}
                         </h3>
                         <p
-                          className={`text-sm font-medium ${isDark ? "text-slate-400" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+                          className={`text-sm font-medium ${isDark ? "text-slate-400" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
                         >
                           {vendor.category}
                         </p>
@@ -469,13 +469,13 @@ export default function PsarPulseDashboard() {
                           isDark
                             ? "border-white/10 text-slate-300 hover:bg-white/5"
                             : "border-slate-200 text-slate-700 hover:bg-slate-50"
-                        } ${isKhmer ? "font-suwannaphum text-xs" : ""}`}
+                        } ${isKhmer ? "font-battambang text-xs" : ""}`}
                       >
                         <Navigation size={16} className="text-emerald-500" />{" "}
                         {t("customer.actions.directions")}
                       </button>
                       <button
-                        className={`py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 ${isKhmer ? "font-suwannaphum text-xs" : ""}`}
+                        className={`py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 ${isKhmer ? "font-battambang text-xs" : ""}`}
                       >
                         <MessageSquare size={16} />{" "}
                         {t("customer.actions.review")}
@@ -497,12 +497,12 @@ export default function PsarPulseDashboard() {
                 <Heart size={40} className="opacity-20 translate-y-0.5" />
               </div>
               <p
-                className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum text-2xl" : ""}`}
+                className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang text-2xl" : ""}`}
               >
                 {t("customer.favoritesEmpty.title")}
               </p>
               <p
-                className={`text-sm max-w-[240px] leading-relaxed ${isDark ? "text-slate-400" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+                className={`text-sm max-w-[240px] leading-relaxed ${isDark ? "text-slate-400" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
               >
                 {t("customer.favoritesEmpty.desc")}
               </p>

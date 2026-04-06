@@ -218,6 +218,14 @@
       "crmStatus": "Status",
       "crmViewAll": "View All CRM Data"
     },
+    "traffic": {
+      "title": "Foot Traffic Log",
+      "subtitle": "Recent activity and peak alerts",
+      "time": "Time",
+      "count": "Amount",
+      "type": "Log Type",
+      "viewHistory": "View All Activity"
+    },
     "common": {
       "search": "Search...",
       "cancel": "Cancel",

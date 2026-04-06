@@ -144,7 +144,7 @@ export default function VendorRequestsPage() {
 
   return (
     <div
-      className={`space-y-6 font-sans pb-10 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}
+      className={`space-y-6 font-sans pb-10 ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-slate-100" : "text-slate-900"}`}
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

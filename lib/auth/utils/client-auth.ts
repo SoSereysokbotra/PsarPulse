@@ -1,3 +1,5 @@
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
+
 class AuthClient {
   private baseUrl = "/api/auth";
 
@@ -5,7 +7,7 @@ class AuthClient {
     path: string,
     options: RequestInit = {},
   ): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
+    const response = await offlineFetch(`${this.baseUrl}${path}`, {
       credentials: "include",
       headers: {
         "Content-Type": "application/json",

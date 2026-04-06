@@ -114,12 +114,12 @@ export default function EmailVerificationPage() {
           </div>
         </div>
         <h1
-          className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum text-3xl" : ""}`}
+          className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang text-3xl" : ""}`}
         >
           {isKhmer ? "ការបញ្ជាក់អ៊ីមែល" : "Email Verification"}
         </h1>
         <p
-          className={`font-medium text-lg ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`font-medium text-lg ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
         >
           {isKhmer
             ? "សូមបញ្ចូលលេខកូដសម្ងាត់ ៦ ខ្ទង់ដែលបានផ្ញើទៅកាន់អ៊ីមែលរបស់អ្នក"
@@ -132,7 +132,7 @@ export default function EmailVerificationPage() {
 
         {error && (
           <p
-            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-suwannaphum" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-battambang" : ""}`}
           >
             {error}
           </p>
@@ -140,7 +140,7 @@ export default function EmailVerificationPage() {
 
         {info && (
           <p
-            className={`text-sm font-medium ${isDark ? "text-emerald-400" : "text-emerald-600"} ${isKhmer ? "font-suwannaphum" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-emerald-400" : "text-emerald-600"} ${isKhmer ? "font-battambang" : ""}`}
           >
             {info}
           </p>
@@ -149,7 +149,7 @@ export default function EmailVerificationPage() {
         <button
           type="submit"
           disabled={isLoading || otp.some((d) => !d)}
-          className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-lg py-3 rounded-2xl shadow-xl hover:bg-[#239979] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-50 ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-lg py-3 rounded-2xl shadow-xl hover:bg-[#239979] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-50 ${isKhmer ? "font-battambang" : ""}`}
         >
           {isLoading ? (
             <Loader2 className="w-6 h-6 animate-spin" />
@@ -163,14 +163,14 @@ export default function EmailVerificationPage() {
 
       <div className="mt-10 text-center">
         <p
-          className={`font-medium mb-3 ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`font-medium mb-3 ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
         >
           {isKhmer ? "មិនបានទទួលលេខកូដមែនទេ?" : "Didn't receive the code?"}
         </p>
         <button
           onClick={handleResend}
           disabled={resendTimer > 0 || isLoading}
-          className={`inline-flex items-center gap-2 text-psar-primary font-extrabold hover:text-[#239979] transition-colors disabled:text-slate-300 ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`inline-flex items-center gap-2 text-psar-primary font-extrabold hover:text-[#239979] transition-colors disabled:text-slate-300 ${isKhmer ? "font-battambang" : ""}`}
         >
           <RefreshCcw
             className={`w-4 h-4 ${resendTimer > 0 ? "opacity-50" : "animate-spin-slow"}`}

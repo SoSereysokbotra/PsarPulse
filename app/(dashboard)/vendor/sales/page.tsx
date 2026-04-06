@@ -32,6 +32,7 @@ import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // ─── Types ────────────────────────────────────────────────────────
 export type Period = "Day" | "Week" | "Month";
@@ -108,8 +109,8 @@ export default function SalesDashboard() {
     const fetchSales = async () => {
       try {
         const [salesRes, invRes] = await Promise.all([
-          fetch("/api/vendor/sales"),
-          fetch("/api/vendor/inventory")
+          offlineFetch("/api/vendor/sales"),
+          offlineFetch("/api/vendor/inventory")
         ]);
         const salesData = await salesRes.json();
         const invData = await invRes.json();
@@ -192,7 +193,7 @@ export default function SalesDashboard() {
       const url = editTarget ? `/api/vendor/sales/${editTarget.id}` : "/api/vendor/sales";
       const method = editTarget ? "PUT" : "POST";
       
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -235,7 +236,7 @@ export default function SalesDashboard() {
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await fetch(`/api/vendor/sales/${deleteTarget.id}`, { method: "DELETE" });
+      const res = await offlineFetch(`/api/vendor/sales/${deleteTarget.id}`, { method: "DELETE" });
       const result = await res.json();
       if (result.success) {
         setTxns((p) => p.filter((x) => x.id !== deleteTarget.id));

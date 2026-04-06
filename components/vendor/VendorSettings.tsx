@@ -26,6 +26,7 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import { authClient } from "@/lib/auth/utils/client-auth";
 import { useUser } from "@/components/providers/UserProvider";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
@@ -237,7 +238,7 @@ export default function VendorSettings({
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("/api/upload/avatar", {
+      const response = await offlineFetch("/api/upload/avatar", {
         method: "POST",
         body: formData,
       });

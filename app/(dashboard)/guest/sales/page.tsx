@@ -144,7 +144,7 @@ export default function SalesDemoDashboard() {
   const statChange   = STATS[period];
 
   return (
-    <div className={`flex flex-col h-screen overflow-hidden transition-colors duration-500 ${isDark ? "bg-[#0b0f14]" : "bg-[#f0f2f5]"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+    <div className={`flex flex-col h-screen overflow-hidden transition-colors duration-500 ${isDark ? "bg-[#0b0f14]" : "bg-[#f0f2f5]"} ${isKhmer ? "font-battambang" : ""}`}>
       {/* ── Guest Mode Strip ── */}
       <div className={`shrink-0 border-b py-2 text-center flex items-center justify-center h-[36px] transition-colors duration-500 ${isDark ? "bg-[#0d1117] border-white/10" : "bg-[#111827] border-[#3ecf8e]/20"}`}>
         <span className="text-xs text-[#e6edf3]">

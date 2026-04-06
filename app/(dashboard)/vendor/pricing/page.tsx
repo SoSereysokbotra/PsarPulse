@@ -9,6 +9,7 @@ import {
   Zap,
   Shield,
   ArrowRight,
+  ArrowLeft,
   Star,
 } from "lucide-react";
 import { authClient } from "@/lib/auth/utils/client-auth";
@@ -133,6 +134,7 @@ const premiumIconStyle: React.CSSProperties = {
 };
 
 import { useRouter } from "next/navigation";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 export default function PricingPage() {
   const router = useRouter();
@@ -143,20 +145,27 @@ export default function PricingPage() {
   useEffect(() => {
     let mounted = true;
 
-    authClient
-      .getProfile()
+    // Use subscription check API as the source of truth (reads live from DB)
+    offlineFetch("/api/vendor/subscription/check", { credentials: "include", cache: "no-store" })
+      .then((r) => r.json())
       .then((res: any) => {
-        if (!mounted || !res?.success) return;
-
-        const rawPlan = String(
-          res?.data?.vendor?.plan?.name || "free",
-        ).toLowerCase();
-        if (rawPlan === "free" || rawPlan === "pro" || rawPlan === "premium") {
-          setCurrentPlan(rawPlan);
+        if (!mounted) return;
+        const planName = res?.data?.planName;
+        const status = res?.data?.subscriptionStatus;
+        const isActive = status === "active" || status === "trial";
+        if (isActive && (planName === "pro" || planName === "premium")) {
+          setCurrentPlan(planName);
         }
       })
       .catch(() => {
-        // Keep default free plan when profile is unavailable.
+        // Fallback to profile API
+        return authClient.getProfile().then((res: any) => {
+          if (!mounted || !res?.success) return;
+          const rawPlan = String(res?.data?.vendor?.plan?.name || "free").toLowerCase();
+          if (rawPlan === "free" || rawPlan === "pro" || rawPlan === "premium") {
+            setCurrentPlan(rawPlan);
+          }
+        });
       })
       .finally(() => {
         if (mounted) setLoadingPlan(false);
@@ -179,9 +188,28 @@ export default function PricingPage() {
     return false;
   };
 
+  // Determine the correct dashboard path based on current plan
+  const dashboardPath =
+    currentPlan === "premium" ? "/vendor/premium"
+    : currentPlan === "pro" ? "/vendor/pro"
+    : "/vendor";
+
+  const hasPaidPlan = currentPlan === "pro" || currentPlan === "premium";
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <div className="max-w-6xl mx-auto px-6 py-12">
+        {/* Back to Dashboard button for paid vendors */}
+        {!loadingPlan && hasPaidPlan && (
+          <button
+            onClick={() => (window.location.href = dashboardPath)}
+            className="group mb-6 flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 text-sm font-bold text-slate-700 hover:text-slate-900"
+          >
+            <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-slate-700 transition-colors" />
+            Back to {currentPlan === "premium" ? "Premium" : "Pro"} Dashboard
+          </button>
+        )}
+
         {/* Hero */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold mb-4 bg-[#29B28D]/10 text-[#29B28D]">

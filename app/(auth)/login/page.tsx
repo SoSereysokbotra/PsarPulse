@@ -78,7 +78,28 @@ function LoginPageContent() {
       }
 
       if (role === "vendor") {
-        router.push("/vendor");
+        // Fetch the vendor's actual plan to redirect to the correct dashboard
+        try {
+          const subRes = await fetch("/api/vendor/subscription/check", {
+            credentials: "include",
+            cache: "no-store",
+          });
+          const subData = await subRes.json();
+          const planName = subData?.data?.planName;
+          const status = subData?.data?.subscriptionStatus;
+          const isActive = status === "active" || status === "trial";
+
+          if (isActive && planName === "premium") {
+            window.location.href = "/vendor/premium";
+          } else if (isActive && planName === "pro") {
+            window.location.href = "/vendor/pro";
+          } else {
+            window.location.href = "/vendor";
+          }
+        } catch {
+          // Fallback: let middleware handle redirect
+          window.location.href = "/vendor";
+        }
         return;
       }
 
@@ -118,12 +139,12 @@ function LoginPageContent() {
     >
       <header className="mb-10">
         <h1
-          className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`text-4xl font-extrabold tracking-tight mb-2 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}
         >
           {t("auth.login.title")}
         </h1>
         <p
-          className={`font-medium text-lg ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`font-medium text-lg ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
         >
           {t("auth.login.subtitle")}
         </p>
@@ -157,7 +178,7 @@ function LoginPageContent() {
           rightLabelElement={
             <Link
               href="/forgot"
-              className={`text-sm font-bold text-psar-primary hover:underline hover:text-psar-dark transition-colors ${isKhmer ? "font-suwannaphum" : ""}`}
+              className={`text-sm font-bold text-psar-primary hover:underline hover:text-psar-dark transition-colors ${isKhmer ? "font-battambang" : ""}`}
             >
               {t("auth.login.forgotPassword")}
             </Link>
@@ -166,7 +187,7 @@ function LoginPageContent() {
 
         {error && (
           <p
-            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-suwannaphum" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-battambang" : ""}`}
           >
             {error}
           </p>
@@ -175,7 +196,7 @@ function LoginPageContent() {
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-xl hover:bg-[#239979] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-70 ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-xl hover:bg-[#239979] hover:-translate-y-1 active:translate-y-0 transition-all duration-300 disabled:opacity-70 ${isKhmer ? "font-battambang" : ""}`}
         >
           {isLoading ? (
             <Loader2 className="w-6 h-6 animate-spin" />
@@ -194,7 +215,7 @@ function LoginPageContent() {
         </div>
         <div className="relative flex justify-center text-sm">
           <span
-            className={`px-4 font-medium ${isDark ? "bg-dark-bg text-[#8A8F98]" : "bg-white text-slate-400"} ${isKhmer ? "font-suwannaphum" : ""}`}
+            className={`px-4 font-medium ${isDark ? "bg-dark-bg text-[#8A8F98]" : "bg-white text-slate-400"} ${isKhmer ? "font-battambang" : ""}`}
           >
             {t("auth.login.orContinueWith")}
           </span>
@@ -232,7 +253,7 @@ function LoginPageContent() {
             />
           </svg>
           <span
-            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-suwannaphum text-xs" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-battambang text-xs" : ""}`}
           >
             Google
           </span>
@@ -253,7 +274,7 @@ function LoginPageContent() {
             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
           </svg>
           <span
-            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-suwannaphum text-xs" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-battambang text-xs" : ""}`}
           >
             Facebook
           </span>
@@ -285,7 +306,7 @@ function LoginPageContent() {
             />
           </svg>
           <span
-            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-suwannaphum text-xs" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-battambang text-xs" : ""}`}
           >
             TikTok
           </span>
@@ -293,7 +314,7 @@ function LoginPageContent() {
       </div>
 
       <p
-        className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}
+        className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
       >
         {t("auth.login.noAccount")}{" "}
         <Link

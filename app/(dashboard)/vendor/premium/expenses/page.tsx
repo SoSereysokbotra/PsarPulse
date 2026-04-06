@@ -38,6 +38,7 @@ import {
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // ─── Constants & Types ────────────────────────────────────────────────────────
 
@@ -254,7 +255,7 @@ export default function PremiumExpensesPage() {
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const res = await fetch("/api/vendor/expenses");
+        const res = await offlineFetch("/api/vendor/expenses");
         const json = await res.json();
         if (json.success) setExpenses(json.data);
       } catch (error) {
@@ -266,7 +267,7 @@ export default function PremiumExpensesPage() {
 
     const fetchAiSavings = async () => {
       try {
-        const res = await fetch("/api/vendor/ai/savings");
+        const res = await offlineFetch("/api/vendor/ai/savings");
         const json = await res.json();
         if (json.success) setAiSavings(json.data);
       } catch (error) {
@@ -278,7 +279,7 @@ export default function PremiumExpensesPage() {
 
     const fetchForecast = async () => {
       try {
-        const res = await fetch("/api/vendor/ai/forecast");
+        const res = await offlineFetch("/api/vendor/ai/forecast");
         const json = await res.json();
         if (json.success && json.data) {
           const salesArr = json.data.sales || [];
@@ -294,7 +295,7 @@ export default function PremiumExpensesPage() {
 
     const fetchInsights = async () => {
       try {
-        const res = await fetch("/api/vendor/ai/insights");
+        const res = await offlineFetch("/api/vendor/ai/insights");
         const json = await res.json();
         if (json.success && Array.isArray(json.data) && json.data.length > 0) {
           setLiveInsights(json.data.map((d: any) => ({
@@ -313,7 +314,7 @@ export default function PremiumExpensesPage() {
 
     const fetchRecurring = async () => {
       try {
-        const res = await fetch("/api/vendor/ai/recurring");
+        const res = await offlineFetch("/api/vendor/ai/recurring");
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
           setLiveRecurringItems(json.data);
@@ -335,7 +336,7 @@ export default function PremiumExpensesPage() {
     if (!expenseAmount || isSaving) return;
     setIsSaving(true);
     try {
-      const res = await fetch("/api/vendor/expenses", {
+      const res = await offlineFetch("/api/vendor/expenses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -366,7 +367,7 @@ export default function PremiumExpensesPage() {
     if (!window.confirm("Delete this expense?")) return;
     setIsDeleting(id);
     try {
-      const res = await fetch(`/api/vendor/expenses/${id}`, { method: "DELETE" });
+      const res = await offlineFetch(`/api/vendor/expenses/${id}`, { method: "DELETE" });
       if (res.ok) {
         setExpenses(prev => prev.filter(exp => exp.id !== id));
       }
@@ -399,7 +400,7 @@ export default function PremiumExpensesPage() {
     setIsChatSending(true);
     
     try {
-      const res = await fetch("/api/vendor/ai/chat", {
+      const res = await offlineFetch("/api/vendor/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMsg, context: "expenses" })

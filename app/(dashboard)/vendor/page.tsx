@@ -33,6 +33,7 @@ import {
 
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface NavItemProps {
@@ -174,9 +175,9 @@ export default function VendorDashboard() {
     const fetchStats = async () => {
       try {
         const [salesRes, expRes, custRes] = await Promise.all([
-          fetch("/api/vendor/sales"),
-          fetch("/api/vendor/expenses"),
-          fetch("/api/vendor/customers")
+          offlineFetch("/api/vendor/sales"),
+          offlineFetch("/api/vendor/expenses"),
+          offlineFetch("/api/vendor/customers")
         ]);
         const [salesData, expData, custData] = await Promise.all([
           salesRes.json(),
@@ -425,7 +426,7 @@ export default function VendorDashboard() {
 
     try {
       const itemsStr = cart.map(i => `${i.qty}x ${i.product.name}`).join(", ");
-      const res = await fetch("/api/vendor/sales", {
+      const res = await offlineFetch("/api/vendor/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -460,7 +461,7 @@ export default function VendorDashboard() {
 
   const logTraffic = async () => {
     try {
-      const res = await fetch("/api/vendor/traffic", {
+      const res = await offlineFetch("/api/vendor/traffic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ count: 1, status: "in" }),
@@ -475,7 +476,7 @@ export default function VendorDashboard() {
 
   const logQuickExpense = async (amount: number, category: string = "Other") => {
     try {
-      const res = await fetch("/api/vendor/expenses", {
+      const res = await offlineFetch("/api/vendor/expenses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -585,7 +586,7 @@ export default function VendorDashboard() {
                     {t("dashboard.actions.quickSale")}
                   </span>
                   <span
-                    className={`text-[11px] ml-auto ${isKhmer ? "font-suwannaphum" : ""}`}
+                    className={`text-[11px] ml-auto ${isKhmer ? "font-battambang" : ""}`}
                   >
                     ការលក់រហ័ស
                   </span>
@@ -634,7 +635,7 @@ export default function VendorDashboard() {
                             >
                               <span>{p.name}</span>
                               <span className="text-[#3ecf8e] font-bold">
-                                ${p.price.toFixed(2)}
+                                ${parseFloat(p.price?.toString() || "0").toFixed(2)}
                               </span>
                             </button>
                           ))
@@ -699,7 +700,7 @@ export default function VendorDashboard() {
                                         : "text-[#6b7280]"
                                     }`}
                                 >
-                                  ${p.price.toFixed(2)}
+                                  ${parseFloat(p.price?.toString() || "0").toFixed(2)}
                                 </div>
                                 {inCart && (
                                   <span className="absolute top-1.5 right-2 bg-[#3ecf8e] text-[#0d1117] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
@@ -795,7 +796,7 @@ export default function VendorDashboard() {
                       }`}
                   >
                     <span
-                      className={`text-xs font-medium ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"
+                      className={`text-xs font-medium ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"
                         }`}
                     >
                       {t("dashboard.customers")} · អតិថិជន
@@ -986,7 +987,7 @@ export default function VendorDashboard() {
                     Monthly Sales Logs
                   </div>
                   <div
-                    className={`text-[11px] mt-px ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                    className={`text-[11px] mt-px ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
                   >
                     {t("dashboard.customerSection.subtitle")}
                   </div>
@@ -1039,7 +1040,7 @@ export default function VendorDashboard() {
                     Customer Traffic
                   </div>
                   <div
-                    className={`text-[11px] mt-px ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                    className={`text-[11px] mt-px ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
                   >
                     Log visitor count
                   </div>
@@ -1065,7 +1066,7 @@ export default function VendorDashboard() {
                     Quick Expense
                   </div>
                   <div
-                    className={`text-[11px] mt-px ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                    className={`text-[11px] mt-px ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
                   >
                     Log $1.00 immediately
                   </div>
@@ -1137,7 +1138,7 @@ export default function VendorDashboard() {
                 {t("dashboard.metrics.monthlyRevenue")}
               </h3>
               <p
-                className={`text-[12px] mb-5 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                className={`text-[12px] mb-5 ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
               >
                 ចំណូលប្រចាំខែ
               </p>
@@ -1189,7 +1190,7 @@ export default function VendorDashboard() {
                 {t("dashboard.metrics.weeklyRevenue")}
               </h3>
               <p
-                className={`text-[12px] mb-5 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                className={`text-[12px] mb-5 ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
               >
                 ចំណូលប្រចាំសប្តាហ៍
               </p>
@@ -1244,7 +1245,7 @@ export default function VendorDashboard() {
                 )}
               </div>
               <p
-                className={`text-[12px] mb-4 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                className={`text-[12px] mb-4 ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
               >
                 ការចំណាយ
               </p>
@@ -1307,7 +1308,7 @@ export default function VendorDashboard() {
                   {t("dashboard.metrics.breakdown")}
                 </div>
                 <div
-                  className={`text-[11px] mt-0.5 ${isKhmer ? "font-suwannaphum" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                  className={`text-[11px] mt-0.5 ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
                 >
                   {isKhmer ? "ការបែងចែកចំណាយ" : "Expense Details"}
                 </div>
@@ -1494,7 +1495,7 @@ export default function VendorDashboard() {
                 <button
                   onClick={async () => {
                     try {
-                      const res = await fetch("/api/vendor/reports", {
+                      const res = await offlineFetch("/api/vendor/reports", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({

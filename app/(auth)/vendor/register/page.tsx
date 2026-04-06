@@ -12,7 +12,9 @@ import {
   FileText,
   Loader2,
   Upload,
+  LocateFixed,
 } from "lucide-react";
+import { Map as PigeonMap, Overlay, ZoomControl } from "pigeon-maps";
 import { AuthLayout, LeftPanelContent, FormInput } from "@/components/auth";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
@@ -38,11 +40,44 @@ export default function VendorRegisterPage() {
     businessAddress: "",
     description: "",
     password: "",
+    latitude: "",
+    longitude: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
+  
+  const [mapCenter, setMapCenter] = useState<[number, number]>([11.5564, 104.9282]);
+  const [mapZoom, setMapZoom] = useState(13);
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleLocateMe = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        setMapCenter([lat, lng]);
+        setMapZoom(15);
+        setFormData(prev => ({ 
+          ...prev, 
+          latitude: lat.toString(), 
+          longitude: lng.toString() 
+        }));
+        setIsLocating(false);
+      },
+      () => {
+        alert("Unable to retrieve your location");
+        setIsLocating(false);
+      }
+    );
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -97,6 +132,8 @@ export default function VendorRegisterPage() {
         businessCategory: formData.businessCategory,
         businessLogo: formData.businessLogo,
         description: formData.description,
+        latitude: formData.latitude,
+        longitude: formData.longitude,
       })) as SignupResponse;
 
       if (!result.success) {
@@ -119,15 +156,15 @@ export default function VendorRegisterPage() {
           <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6 mx-auto">
             <Store className="h-10 w-10 text-emerald-600" />
           </div>
-          <h2 className={`text-3xl font-extrabold mb-4 tracking-tight ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+          <h2 className={`text-3xl font-extrabold mb-4 tracking-tight ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}>
             {t("auth.register.successTitle")}
           </h2>
-          <p className={`mb-8 leading-relaxed ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+          <p className={`mb-8 leading-relaxed ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}>
             {t("auth.register.successDesc")}
           </p>
           <Link
             href="/"
-            className={`block w-full py-4 rounded-xl font-bold shadow-lg transition-all ${isDark ? "bg-white text-black hover:bg-slate-100 shadow-white/5" : "bg-slate-900 text-white shadow-slate-900/20 hover:-translate-y-1 hover:shadow-xl"} ${isKhmer ? "font-suwannaphum" : ""}`}
+            className={`block w-full py-4 rounded-xl font-bold shadow-lg transition-all ${isDark ? "bg-white text-black hover:bg-slate-100 shadow-white/5" : "bg-slate-900 text-white shadow-slate-900/20 hover:-translate-y-1 hover:shadow-xl"} ${isKhmer ? "font-battambang" : ""}`}
           >
             {t("auth.register.returnHome")}
           </Link>
@@ -163,10 +200,10 @@ export default function VendorRegisterPage() {
       backHref="/"
     >
       <header className="mb-10">
-        <h1 className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+        <h1 className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}>
           {t("auth.register.title")}
         </h1>
-        <p className={`font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+        <p className={`font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}>
           {t("auth.register.subtitle")}
         </p>
       </header>
@@ -227,7 +264,7 @@ export default function VendorRegisterPage() {
         />
 
         <div className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}>
-          <label className={`block text-sm font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+          <label className={`block text-sm font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-battambang" : ""}`}>
             Store Category
           </label>
           <div className="relative">
@@ -256,7 +293,7 @@ export default function VendorRegisterPage() {
         </div>
 
         <div className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}>
-          <label className={`block text-sm font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+          <label className={`block text-sm font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-battambang" : ""}`}>
             Shop Image
           </label>
           <div className={`flex items-center gap-4 p-4 border rounded-xl ${isDark ? "bg-[#0B1121] border-white/10" : "bg-white border-slate-200"}`}>
@@ -303,6 +340,56 @@ export default function VendorRegisterPage() {
           disabled={isLoading}
         />
 
+        <div className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}>
+          <div className="flex items-center justify-between mb-2">
+            <label className={`block text-sm font-bold ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-battambang" : ""}`}>
+              Stall Location (Optional)
+            </label>
+            <button 
+              type="button" 
+              onClick={handleLocateMe}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border ${
+                isDark ? "bg-[#111216] hover:bg-[#1a1c23] border-white/10 text-psar-primary" : "bg-white hover:bg-slate-50 border-slate-200 text-psar-primary shadow-sm"
+              }`}
+            >
+              <LocateFixed className={`w-3.5 h-3.5 ${isLocating ? "animate-pulse" : ""}`} />
+              {isLocating ? "Locating..." : "Use My Location"}
+            </button>
+          </div>
+          <div className={`h-[300px] w-full rounded-xl overflow-hidden border ${isDark ? "border-white/10" : "border-slate-200"} relative z-0`}>
+            <PigeonMap
+              center={mapCenter}
+              zoom={mapZoom}
+              onBoundsChanged={({ center, zoom }) => {
+                setMapCenter(center);
+                setMapZoom(zoom);
+              }}
+              onClick={({ latLng }) => {
+                setFormData(prev => ({
+                  ...prev,
+                  latitude: latLng[0].toString(),
+                  longitude: latLng[1].toString()
+                }));
+              }}
+            >
+              <ZoomControl />
+              {formData.latitude && formData.longitude && (
+                <Overlay anchor={[parseFloat(formData.latitude), parseFloat(formData.longitude)]} offset={[16, 32]}>
+                  <div className="flex flex-col items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white bg-psar-primary`}>
+                      <Store className="w-4 h-4" />
+                    </div>
+                    <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] -mt-1 border-t-psar-primary`}></div>
+                  </div>
+                </Overlay>
+              )}
+            </PigeonMap>
+          </div>
+          <p className={`text-xs mt-2 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+            Click on the map to pin your exact stall location.
+          </p>
+        </div>
+
         <FormInput
           id="description"
           name="description"
@@ -333,7 +420,7 @@ export default function VendorRegisterPage() {
 
         {error && (
           <p
-            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-suwannaphum" : ""}`}
+            className={`text-sm font-medium ${isDark ? "text-red-400" : "text-red-600"} ${isKhmer ? "font-battambang" : ""}`}
           >
             {error}
           </p>
@@ -342,7 +429,7 @@ export default function VendorRegisterPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-[0_8px_20px_-6px_rgba(41,178,141,0.5)] hover:bg-[#239979] hover:-translate-y-1 hover:shadow-[0_12px_24px_-8px_rgba(41,178,141,0.6)] active:translate-y-0 transition-all duration-300 disabled:opacity-70 mt-8 ${isKhmer ? "font-suwannaphum" : ""}`}
+          className={`w-full flex items-center justify-center gap-2 bg-psar-primary text-white font-bold text-sm py-3 rounded-xl shadow-[0_8px_20px_-6px_rgba(41,178,141,0.5)] hover:bg-[#239979] hover:-translate-y-1 hover:shadow-[0_12px_24px_-8px_rgba(41,178,141,0.6)] active:translate-y-0 transition-all duration-300 disabled:opacity-70 mt-8 ${isKhmer ? "font-battambang" : ""}`}
         >
           {isLoading ? (
             <>
@@ -355,7 +442,7 @@ export default function VendorRegisterPage() {
         </button>
       </form>
 
-      <p className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-suwannaphum" : ""}`}>
+      <p className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}>
         {t("auth.register.alreadyVendor")}{" "}
         <Link
           href="/login"

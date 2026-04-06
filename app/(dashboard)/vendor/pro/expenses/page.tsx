@@ -31,6 +31,7 @@ import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 const PRO_NAV = [
   {
@@ -100,7 +101,7 @@ export default function ProExpensePage() {
   React.useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const res = await fetch("/api/vendor/expenses");
+        const res = await offlineFetch("/api/vendor/expenses");
         const json = await res.json();
         if (json.success) {
           setExpenses(json.data);
@@ -126,7 +127,7 @@ export default function ProExpensePage() {
   const handleQuickLog = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/vendor/expenses", {
+      const res = await offlineFetch("/api/vendor/expenses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -169,38 +170,35 @@ export default function ProExpensePage() {
       title={t("dashboard.titles.myExpenses")}
       planBadge={{ label: "PRO", icon: Crown }}
       rightActions={
-        <>
+        <div className="flex items-center gap-3">
           <button className="hidden sm:flex items-center gap-2 bg-psar-dark hover:opacity-90 text-white font-medium px-3.5 py-2 rounded-xl transition-colors text-sm min-h-[40px] cursor-pointer border-0">
             <FileText className="w-4 h-4" /> {t("dashboard.actions.exportPdf")}
           </button>
-        </>
+          <button
+            onClick={() => setShowCustomCategoryModal(true)}
+            className="flex items-center gap-2 bg-psar-primary/10 hover:bg-psar-primary/20 text-psar-primary font-medium px-3.5 py-2 rounded-xl transition-colors text-sm min-h-[40px] cursor-pointer border border-psar-primary/20"
+          >
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t("dashboard.actions.addCategory")}</span>
+          </button>
+          <button
+            onClick={() => setIsQuickLogModalOpen(true)}
+            className="flex items-center gap-2 bg-psar-primary hover:bg-psar-primary/90 text-white font-medium px-3.5 py-2 rounded-xl transition-colors text-sm min-h-[40px] cursor-pointer border-0"
+          >
+            <Plus className="w-4 h-4" /> {t("dashboard.actions.addExpense")}
+          </button>
+        </div>
       }
     >
-      <div className="flex-1 w-full h-full overflow-y-auto p-6 md:p-8 space-y-7">
-        {/* QUICK LOGGING SECTION */}
-        <div className="bg-white dark:bg-dark-surface rounded-2xl border-slate-200 dark:border-white/5 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-colors">
-          <div>
-            <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">{t("dashboard.modals.addExpenseTitle")}</h2>
-            <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
-              {t("dashboard.actions.quickLogSub")}
-            </p>
-          </div>
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button
-              onClick={() => setShowCustomCategoryModal(true)}
-              className="bg-psar-primary/10 hover:bg-psar-primary/20 text-psar-primary font-bold text-[14px] px-4 py-3.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 flex-1 sm:flex-none min-h-[50px] border border-psar-primary/20 cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{t("dashboard.actions.addCategory")}</span>
-            </button>
-            <button
-              onClick={() => setIsQuickLogModalOpen(true)}
-              className="bg-psar-primary hover:bg-psar-primary/90 text-white font-bold text-[16px] px-6 py-3.5 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 flex-1 sm:flex-none min-h-[50px] border-0 cursor-pointer"
-            >
-              <Plus className="w-5 h-5" />
-              <span>{t("dashboard.actions.addExpense")}</span>
-            </button>
-          </div>
+      <div className="flex-1 w-full h-full overflow-y-auto p-6 md:p-8 space-y-7"> 
+        {/* Header */}
+        <div className="pt-1 pb-2">
+          <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
+            {t("dashboard.titles.myExpenses")}
+          </h2>
+          <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
+            Track and manage your expenses ·{" "}
+            <span className="text-[#9ca3af] font-khmer">តាមដាន និងគ្រប់គ្រងការចំណាយ</span>
+          </p>
         </div>
 
         {/* QUICK LOGGING MODAL */}
@@ -391,7 +389,7 @@ export default function ProExpensePage() {
         {/* Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <VendorSummaryCard
-            title={t("dashboard.metrics.todayTotal") || "Today's Expenses"}
+            title={"Today's Expenses"}
             khmerTitle="ចំណាយថ្ងៃនេះ"
             value={summaryData.todayTotal}
             icon={Receipt}
@@ -410,7 +408,6 @@ export default function ProExpensePage() {
             khmerTitle="ចំណាយប្រចាំសប្តាហ៍"
             value={summaryData.weeklyTotal}
             icon={TrendingDown}
-            trend="+5% vs last week"
             isPositive={false}
           />
           <VendorSummaryCard

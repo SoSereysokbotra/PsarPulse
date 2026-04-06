@@ -32,21 +32,35 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
-  // Exclude API, auth, internal routes, and HTML navigations from Cache-First
-  if (
-    url.pathname.startsWith("/api/") ||
-    url.pathname.startsWith("/_next/") ||
-    event.request.method !== "GET" ||
-    event.request.mode === "navigate"
-  ) {
+  // Identify request scopes
+  const isApi = url.pathname.startsWith("/api/");
+  const isNavigate = event.request.mode === "navigate";
+  const isMethodNotGet = event.request.method !== "GET";
+  const isRSC = url.searchParams.has("_rsc") || event.request.headers.get("rsc") === "1" || event.request.headers.get("RSC") === "1";
+  const isNextStatic = url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/_next/image");
+  const isStaticAsset = url.pathname.match(/\.(js|css|png|jpg|jpeg|svg|gif|woff2?|map|ico)$/i);
+
+  // Network-First for APIs, HTML navigations, Data payloads, and anything not explicitly a static asset
+  if (isApi || isNavigate || isMethodNotGet || isRSC || (!isNextStatic && !isStaticAsset)) {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        // For navigations, fallback to offline markup or cache if available
-        if (event.request.mode === "navigate") {
-          return caches.match(event.request).then(res => res || caches.match("/"));
-        }
-        return caches.match(event.request);
-      })
+      fetch(event.request)
+        .then((networkResponse) => {
+          // Cache successful GET responses for next time
+          if (networkResponse.ok && event.request.method === "GET") {
+            const clonedResponse = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, clonedResponse);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // For navigations, fallback to offline markup or cache if available
+          if (event.request.mode === "navigate") {
+            return caches.match(event.request).then(res => res || caches.match("/"));
+          }
+          return caches.match(event.request);
+        })
     );
     return;
   }

@@ -121,13 +121,36 @@ export async function GET(
       (CookieUtil as any).setRefreshTokenCookie(newAccessToken);
     }
 
-    const dashboardUrls = {
-      super_admin: "/superadmin",
-      admin: "/admin",
-      vendor: "/vendor",
-      customer: "/customer",
-    };
-    const redirectPath = dashboardUrls[user!.role as keyof typeof dashboardUrls] || "/";
+    // Determine redirect based on role and vendor plan
+    let redirectPath = "/";
+    const userRole = user!.role as string;
+
+    if (userRole === "super_admin") {
+      redirectPath = "/superadmin";
+    } else if (userRole === "admin") {
+      redirectPath = "/admin";
+    } else if (userRole === "vendor") {
+      // Check vendor's actual subscription plan for correct dashboard
+      try {
+        const { VendorRepository } = await import("@/lib/db/repositories/vendor.repository");
+        const vendor = await VendorRepository.findByUserId(user!.id);
+        const planName = vendor?.plan?.name;
+        const subStatus = vendor?.subscriptionStatus;
+        const isActive = subStatus === "active" || subStatus === "trial";
+
+        if (isActive && planName === "premium") {
+          redirectPath = "/vendor/premium";
+        } else if (isActive && planName === "pro") {
+          redirectPath = "/vendor/pro";
+        } else {
+          redirectPath = "/vendor";
+        }
+      } catch {
+        redirectPath = "/vendor";
+      }
+    } else {
+      redirectPath = "/customer";
+    }
 
     return NextResponse.redirect(new URL(redirectPath, baseUrl));
 

@@ -87,7 +87,7 @@ export default function SettingsPage() {
   ];
 
   return (
-    <div className={`max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 ${isKhmer ? "font-suwannaphum" : ""}`}>
+    <div className={`max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 ${isKhmer ? "font-battambang" : ""}`}>
       {/* Page Header */}
       <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>

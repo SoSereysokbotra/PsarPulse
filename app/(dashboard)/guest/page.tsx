@@ -299,7 +299,7 @@ export default function DemoDashboard() {
         </div>
       </div>
 
-      <div className={`flex h-screen w-full overflow-hidden transition-colors duration-500 pt-[36px] ${isDark ? "bg-[#0b0f14] text-[#e6edf3]" : "bg-[#f0f2f5] text-[#111827]"} ${isKhmer ? "font-suwannaphum" : "font-sans"}`}>
+      <div className={`flex h-screen w-full overflow-hidden transition-colors duration-500 pt-[36px] ${isDark ? "bg-[#0b0f14] text-[#e6edf3]" : "bg-[#f0f2f5] text-[#111827]"} ${isKhmer ? "font-battambang" : "font-sans"}`}>
         {/* ── Custom Floating Tooltip ── */}
         <div
           className={`fixed z-[9999] bg-[#0d1117] text-[#e6edf3] p-3 rounded-lg text-xs shadow-xl w-[250px] pointer-events-none transition-opacity duration-150 ease-out ${tooltip.content ? "opacity-100" : "opacity-0"}`}
@@ -437,7 +437,7 @@ export default function DemoDashboard() {
                                   >
                                     <span>{p.name}</span>
                                     <span className="text-[#3ecf8e] font-bold">
-                                      ${p.price.toFixed(2)}
+                                      ${parseFloat(p.price?.toString() || "0").toFixed(2)}
                                     </span>
                                   </button>
                                 ))
@@ -482,7 +482,7 @@ export default function DemoDashboard() {
                                     <div
                                       className={`text-[11px] font-bold ${inCart ? "text-[#3ecf8e]" : "text-[#6b7280]"}`}
                                     >
-                                      ${p.price.toFixed(2)}
+                                      ${parseFloat(p.price?.toString() || "0").toFixed(2)}
                                     </div>
                                     {inCart && (
                                       <span className="absolute top-1.5 right-2 bg-[#3ecf8e] text-[#0d1117] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">

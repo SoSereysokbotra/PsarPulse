@@ -338,7 +338,7 @@ export default function LandingPage() {
                           className={`text-[13px] font-medium leading-tight ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
                           style={
                             lang === "km"
-                              ? { fontFamily: "var(--font-suwannaphum)" }
+                              ? { fontFamily: "var(--font-battambang)" }
                               : {}
                           }
                         >
@@ -348,7 +348,7 @@ export default function LandingPage() {
                           className={`text-[11px] leading-tight mt-0.5 ${resolvedTheme === "light" ? "text-slate-500" : "text-[#8A8F98]"}`}
                           style={
                             lang === "km"
-                              ? { fontFamily: "var(--font-suwannaphum)" }
+                              ? { fontFamily: "var(--font-battambang)" }
                               : {}
                           }
                         >
@@ -373,7 +373,7 @@ export default function LandingPage() {
                           className="text-[13px] font-medium text-white leading-tight"
                           style={
                             lang === "km"
-                              ? { fontFamily: "var(--font-suwannaphum)" }
+                              ? { fontFamily: "var(--font-battambang)" }
                               : {}
                           }
                         >
@@ -383,7 +383,7 @@ export default function LandingPage() {
                           className="text-[11px] text-[#8A8F98] leading-tight mt-0.5"
                           style={
                             lang === "km"
-                              ? { fontFamily: "var(--font-suwannaphum)" }
+                              ? { fontFamily: "var(--font-battambang)" }
                               : {}
                           }
                         >
@@ -399,7 +399,7 @@ export default function LandingPage() {
                       className="w-full block text-center py-2 text-[11px] text-[#8A8F98] hover:text-white transition-colors"
                       style={
                         lang === "km"
-                          ? { fontFamily: "var(--font-suwannaphum)" }
+                          ? { fontFamily: "var(--font-battambang)" }
                           : {}
                       }
                     >
@@ -451,7 +451,7 @@ export default function LandingPage() {
                           className="text-[13px] font-medium text-white leading-tight"
                           style={
                             lang === "km"
-                              ? { fontFamily: "var(--font-suwannaphum)" }
+                              ? { fontFamily: "var(--font-battambang)" }
                               : {}
                           }
                         >
@@ -461,7 +461,7 @@ export default function LandingPage() {
                           className="text-[11px] text-[#8A8F98] leading-tight mt-0.5"
                           style={
                             lang === "km"
-                              ? { fontFamily: "var(--font-suwannaphum)" }
+                              ? { fontFamily: "var(--font-battambang)" }
                               : {}
                           }
                         >
@@ -486,7 +486,7 @@ export default function LandingPage() {
                           className="text-[13px] font-medium text-white leading-tight"
                           style={
                             lang === "km"
-                              ? { fontFamily: "var(--font-suwannaphum)" }
+                              ? { fontFamily: "var(--font-battambang)" }
                               : {}
                           }
                         >
@@ -496,7 +496,7 @@ export default function LandingPage() {
                           className="text-[11px] text-[#8A8F98] leading-tight mt-0.5"
                           style={
                             lang === "km"
-                              ? { fontFamily: "var(--font-suwannaphum)" }
+                              ? { fontFamily: "var(--font-battambang)" }
                               : {}
                           }
                         >
@@ -512,7 +512,7 @@ export default function LandingPage() {
                       className="w-full block text-center py-2 text-[11px] text-[#8A8F98] hover:text-white transition-colors"
                       style={
                         lang === "km"
-                          ? { fontFamily: "var(--font-suwannaphum)" }
+                          ? { fontFamily: "var(--font-battambang)" }
                           : {}
                       }
                     >
@@ -543,7 +543,7 @@ export default function LandingPage() {
           className={`fade-in-1 text-4xl sm:text-5xl md:text-6xl font-semibold text-center leading-[1.15] mb-6 max-w-4xl tracking-tight relative z-10 w-full transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
           style={
             lang === "km"
-              ? { fontFamily: "var(--font-suwannaphum)", lineHeight: "1.4" }
+              ? { fontFamily: "var(--font-battambang)", lineHeight: "1.4" }
               : {}
           }
         >
@@ -556,7 +556,7 @@ export default function LandingPage() {
           style={
             lang === "km"
               ? {
-                  fontFamily: "var(--font-suwannaphum)",
+                  fontFamily: "var(--font-battambang)",
                   lineHeight: "1.8",
                   fontSize: "16px",
                 }
@@ -571,7 +571,7 @@ export default function LandingPage() {
             href="/vendor/register"
             className="px-6 py-3 rounded-xl bg-brand-primary hover:bg-brand-primary-hover transition-all duration-200 text-white font-semibold text-sm shadow-lg shadow-brand-primary/20 hover:-translate-y-[1px]"
             style={
-              lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+              lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
             }
           >
             {t[lang].btnVendor}
@@ -580,7 +580,7 @@ export default function LandingPage() {
             href="/login"
             className="px-6 py-3 rounded-xl border border-blue-400/40 text-blue-400 hover:border-blue-400/70 hover:text-blue-300 transition-all duration-200 font-medium text-sm"
             style={
-              lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+              lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
             }
           >
             {t[lang].btnCustomer}
@@ -596,7 +596,7 @@ export default function LandingPage() {
                 ? "bg-white text-slate-800 hover:text-brand-primary hover:shadow-lg border-slate-200" 
                 : "bg-[#1f2833] text-white hover:text-[#66fcf1] border-white/10 hover:border-[#66fcf1]/30 shadow-black/80"
             }`}
-            style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}}
+            style={lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}}
           >
             <span className="text-xl">🗺️</span> {t[lang].exploreMap}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform ml-1"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -608,7 +608,7 @@ export default function LandingPage() {
             className={`text-[13px] transition-colors underline underline-offset-2 ${resolvedTheme === "light" ? "text-slate-400 hover:text-slate-600" : "text-white/40 hover:text-white/80"}`}
             style={
               lang === "km"
-                ? { fontFamily: "var(--font-suwannaphum)", fontSize: "14px" }
+                ? { fontFamily: "var(--font-battambang)", fontSize: "14px" }
                 : {}
             }
           >
@@ -622,7 +622,7 @@ export default function LandingPage() {
         ======================================== */}
       <h2
         className={`text-3xl sm:text-4xl font-medium text-center tracking-tight mb-24 px-4 mt-20 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
-        style={lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}}
+        style={lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}}
       >
         {t[lang].whyChoose}
       </h2>
@@ -641,7 +641,7 @@ export default function LandingPage() {
               className={`text-3xl sm:text-4xl font-semibold leading-[1.2] mb-6 tracking-tight transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
               style={
                 lang === "km"
-                  ? { fontFamily: "var(--font-suwannaphum)", lineHeight: "1.4" }
+                  ? { fontFamily: "var(--font-battambang)", lineHeight: "1.4" }
                   : {}
               }
             >
@@ -651,7 +651,7 @@ export default function LandingPage() {
               className={`text-sm sm:text-base leading-relaxed max-w-lg transition-colors ${resolvedTheme === "light" ? "text-slate-600" : "text-muted"}`}
               style={
                 lang === "km"
-                  ? { fontFamily: "var(--font-suwannaphum)", lineHeight: "1.8" }
+                  ? { fontFamily: "var(--font-battambang)", lineHeight: "1.8" }
                   : {}
               }
             >
@@ -682,7 +682,7 @@ export default function LandingPage() {
                     className={`font-semibold text-lg mb-2 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
                     style={
                       lang === "km"
-                        ? { fontFamily: "var(--font-suwannaphum)" }
+                        ? { fontFamily: "var(--font-battambang)" }
                         : {}
                     }
                   >
@@ -692,7 +692,7 @@ export default function LandingPage() {
                     className={`text-sm transition-colors ${resolvedTheme === "light" ? "text-slate-500" : "text-muted"}`}
                     style={
                       lang === "km"
-                        ? { fontFamily: "var(--font-suwannaphum)" }
+                        ? { fontFamily: "var(--font-battambang)" }
                         : {}
                     }
                   >
@@ -720,7 +720,7 @@ export default function LandingPage() {
             <h3
               className={`text-3xl sm:text-4xl font-semibold leading-[1.2] mb-6 tracking-tight transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].feature2Title}
@@ -729,7 +729,7 @@ export default function LandingPage() {
               className={`text-sm sm:text-base leading-relaxed max-w-lg transition-colors ${resolvedTheme === "light" ? "text-slate-600" : "text-muted"}`}
               style={
                 lang === "km"
-                  ? { fontFamily: "var(--font-suwannaphum)", lineHeight: "1.8" }
+                  ? { fontFamily: "var(--font-battambang)", lineHeight: "1.8" }
                   : {}
               }
             >
@@ -760,7 +760,7 @@ export default function LandingPage() {
                     className={`font-semibold text-lg mb-2 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
                     style={
                       lang === "km"
-                        ? { fontFamily: "var(--font-suwannaphum)" }
+                        ? { fontFamily: "var(--font-battambang)" }
                         : {}
                     }
                   >
@@ -770,7 +770,7 @@ export default function LandingPage() {
                     className={`text-sm transition-colors ${resolvedTheme === "light" ? "text-slate-500" : "text-muted"}`}
                     style={
                       lang === "km"
-                        ? { fontFamily: "var(--font-suwannaphum)" }
+                        ? { fontFamily: "var(--font-battambang)" }
                         : {}
                     }
                   >
@@ -799,7 +799,7 @@ export default function LandingPage() {
                           className="text-muted text-[10px]"
                           style={
                             lang === "km"
-                              ? { fontFamily: "var(--font-suwannaphum)" }
+                              ? { fontFamily: "var(--font-battambang)" }
                               : {}
                           }
                         >
@@ -829,7 +829,7 @@ export default function LandingPage() {
             <h3
               className={`text-3xl sm:text-4xl font-semibold leading-[1.2] mb-6 tracking-tight transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].feature3Title}
@@ -838,7 +838,7 @@ export default function LandingPage() {
               className={`text-sm sm:text-base leading-relaxed max-w-lg transition-colors ${resolvedTheme === "light" ? "text-slate-600" : "text-muted"}`}
               style={
                 lang === "km"
-                  ? { fontFamily: "var(--font-suwannaphum)", lineHeight: "1.8" }
+                  ? { fontFamily: "var(--font-battambang)", lineHeight: "1.8" }
                   : {}
               }
             >
@@ -869,7 +869,7 @@ export default function LandingPage() {
                     className={`font-semibold text-lg mb-2 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
                     style={
                       lang === "km"
-                        ? { fontFamily: "var(--font-suwannaphum)" }
+                        ? { fontFamily: "var(--font-battambang)" }
                         : {}
                     }
                   >
@@ -879,7 +879,7 @@ export default function LandingPage() {
                     className={`text-sm transition-colors ${resolvedTheme === "light" ? "text-slate-500" : "text-muted"}`}
                     style={
                       lang === "km"
-                        ? { fontFamily: "var(--font-suwannaphum)" }
+                        ? { fontFamily: "var(--font-battambang)" }
                         : {}
                     }
                   >
@@ -926,7 +926,7 @@ export default function LandingPage() {
           className={`text-3xl sm:text-4xl md:text-5xl font-medium text-center tracking-tight leading-[1.15] mb-16 px-4 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
           style={
             lang === "km"
-              ? { fontFamily: "var(--font-suwannaphum)", lineHeight: "1.4" }
+              ? { fontFamily: "var(--font-battambang)", lineHeight: "1.4" }
               : {}
           }
         >
@@ -951,7 +951,7 @@ export default function LandingPage() {
                   className="text-3xl font-bold text-white mb-3"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -962,7 +962,7 @@ export default function LandingPage() {
                   style={
                     lang === "km"
                       ? {
-                          fontFamily: "var(--font-suwannaphum)",
+                          fontFamily: "var(--font-battambang)",
                           lineHeight: "1.6",
                         }
                       : {}
@@ -987,7 +987,7 @@ export default function LandingPage() {
                   className="text-2xl font-bold text-white mb-3"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -998,7 +998,7 @@ export default function LandingPage() {
                   style={
                     lang === "km"
                       ? {
-                          fontFamily: "var(--font-suwannaphum)",
+                          fontFamily: "var(--font-battambang)",
                           lineHeight: "1.6",
                         }
                       : {}
@@ -1026,7 +1026,7 @@ export default function LandingPage() {
                   className="text-2xl font-bold text-white mb-3"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -1037,7 +1037,7 @@ export default function LandingPage() {
                   style={
                     lang === "km"
                       ? {
-                          fontFamily: "var(--font-suwannaphum)",
+                          fontFamily: "var(--font-battambang)",
                           lineHeight: "1.6",
                         }
                       : {}
@@ -1062,7 +1062,7 @@ export default function LandingPage() {
                   className="text-2xl font-bold text-white mb-3"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -1073,7 +1073,7 @@ export default function LandingPage() {
                   style={
                     lang === "km"
                       ? {
-                          fontFamily: "var(--font-suwannaphum)",
+                          fontFamily: "var(--font-battambang)",
                           lineHeight: "1.6",
                         }
                       : {}
@@ -1099,7 +1099,7 @@ export default function LandingPage() {
             <span
               className="bg-brand-primary/10 text-brand-primary text-[11px] font-bold tracking-[0.08em] uppercase py-1.5 px-3 rounded-full border border-brand-primary/20 mb-4 inline-block"
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].pricing}
@@ -1129,7 +1129,7 @@ export default function LandingPage() {
               <p
                 className={`text-[40px] font-bold tracking-[-0.03em] mb-6 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
                 style={
-                  lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                  lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
                 }
               >
                 {t[lang].basicName}
@@ -1142,7 +1142,7 @@ export default function LandingPage() {
                       className="text-muted text-[13px]"
                       style={
                         lang === "km"
-                          ? { fontFamily: "var(--font-suwannaphum)" }
+                          ? { fontFamily: "var(--font-battambang)" }
                           : {}
                       }
                     >
@@ -1195,7 +1195,7 @@ export default function LandingPage() {
                       className={`font-medium text-[13px] transition-colors ${resolvedTheme === "light" ? "text-slate-700" : "text-white"}`}
                       style={
                         lang === "km"
-                          ? { fontFamily: "var(--font-suwannaphum)" }
+                          ? { fontFamily: "var(--font-battambang)" }
                           : {}
                       }
                     >
@@ -1238,7 +1238,7 @@ export default function LandingPage() {
                       className="text-muted text-[13px]"
                       style={
                         lang === "km"
-                          ? { fontFamily: "var(--font-suwannaphum)" }
+                          ? { fontFamily: "var(--font-battambang)" }
                           : {}
                       }
                     >
@@ -1273,7 +1273,7 @@ export default function LandingPage() {
               className={`text-sm leading-relaxed mb-6 max-w-xs transition-colors ${resolvedTheme === "light" ? "text-slate-500" : "text-gray-400"}`}
               style={
                 lang === "km"
-                  ? { fontFamily: "var(--font-suwannaphum)", lineHeight: "1.6" }
+                  ? { fontFamily: "var(--font-battambang)", lineHeight: "1.6" }
                   : {}
               }
             >
@@ -1301,7 +1301,7 @@ export default function LandingPage() {
             <h5
               className={`text-sm font-semibold uppercase tracking-wider mb-6 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].footerProduct}
@@ -1315,7 +1315,7 @@ export default function LandingPage() {
                   className="hover:text-brand-primary transition-colors"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -1328,7 +1328,7 @@ export default function LandingPage() {
                   className="hover:text-brand-primary transition-colors"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -1341,7 +1341,7 @@ export default function LandingPage() {
                   className="hover:text-brand-primary transition-colors"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -1354,7 +1354,7 @@ export default function LandingPage() {
                   className="hover:text-brand-primary transition-colors"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -1369,7 +1369,7 @@ export default function LandingPage() {
             <h5
               className={`text-sm font-semibold uppercase tracking-wider mb-6 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].footerCompany}
@@ -1383,7 +1383,7 @@ export default function LandingPage() {
                   className="hover:text-brand-primary transition-colors"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -1396,7 +1396,7 @@ export default function LandingPage() {
                   className="hover:text-brand-primary transition-colors"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -1409,7 +1409,7 @@ export default function LandingPage() {
                   className="hover:text-brand-primary transition-colors"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -1422,7 +1422,7 @@ export default function LandingPage() {
                   className="hover:text-brand-primary transition-colors"
                   style={
                     lang === "km"
-                      ? { fontFamily: "var(--font-suwannaphum)" }
+                      ? { fontFamily: "var(--font-battambang)" }
                       : {}
                   }
                 >
@@ -1435,9 +1435,9 @@ export default function LandingPage() {
           {/* Status & Location */}
           <div className="flex flex-col">
             <h5
-              className="text-white text-sm font-semibold uppercase tracking-wider mb-6"
+              className={`text-sm font-semibold uppercase tracking-wider mb-6 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].status}
@@ -1447,7 +1447,7 @@ export default function LandingPage() {
               <span
                 className="text-sm text-gray-300 font-medium"
                 style={
-                  lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                  lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
                 }
               >
                 {t[lang].systemsOperational}
@@ -1456,7 +1456,7 @@ export default function LandingPage() {
             <p
               className="text-gray-500 text-xs uppercase tracking-widest mb-2"
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].basedIn}
@@ -1464,7 +1464,7 @@ export default function LandingPage() {
             <p
               className="text-sm text-gray-400 leading-relaxed"
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].location}
@@ -1477,7 +1477,7 @@ export default function LandingPage() {
           <p
             className="text-gray-500 text-xs sm:text-sm text-center md:text-left"
             style={
-              lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+              lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
             }
           >
             © {new Date().getFullYear()} PsarPulse KH. {t[lang].copyright}
@@ -1485,18 +1485,18 @@ export default function LandingPage() {
           <div className="flex gap-6 text-xs text-gray-500">
             <a
               href="#"
-              className="hover:text-white transition-colors"
+              className={`transition-colors ${resolvedTheme === "light" ? "hover:text-slate-900" : "hover:text-white"}`}
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].privacyPolicy}
             </a>
             <a
               href="#"
-              className="hover:text-white transition-colors"
+              className={`transition-colors ${resolvedTheme === "light" ? "hover:text-slate-900" : "hover:text-white"}`}
               style={
-                lang === "km" ? { fontFamily: "var(--font-suwannaphum)" } : {}
+                lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
               }
             >
               {t[lang].termsOfService}
@@ -1505,7 +1505,7 @@ export default function LandingPage() {
         </div>
 
         {/* Massive Background Text & Gradient */}
-        <h3 className="absolute bottom-[-10px] sm:bottom-[-20px] left-1/2 -translate-x-1/2 text-[14vw] sm:text-[10vw] font-bold tracking-tighter z-0 opacity-[0.03] whitespace-nowrap text-white pointer-events-none select-none">
+        <h3 className={`absolute bottom-[-10px] sm:bottom-[-20px] left-1/2 -translate-x-1/2 text-[14vw] sm:text-[10vw] font-bold tracking-tighter z-0 opacity-[0.03] whitespace-nowrap pointer-events-none select-none transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}>
           PSARPULSE
         </h3>
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] bg-brand-primary opacity-[0.04] blur-[80px] rounded-full pointer-events-none z-0"></div>

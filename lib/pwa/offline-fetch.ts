@@ -31,7 +31,15 @@ export async function offlineFetch(input: RequestInfo | URL, init?: RequestInit)
       );
       
       // Return a simulated success response so the UI optimistically updates
-      return new Response(JSON.stringify({ success: true, offlineQueued: true }), {
+      return new Response(JSON.stringify({ 
+        success: true, 
+        offlineQueued: true,
+        data: {
+          id: "temp-" + Date.now(),
+          ...(typeof parsedBody === 'object' && parsedBody !== null ? parsedBody : { raw: parsedBody }),
+          createdAt: new Date().toISOString()
+        }
+      }), {
         status: 200,
         headers: { "Content-Type": "application/json" }
       });

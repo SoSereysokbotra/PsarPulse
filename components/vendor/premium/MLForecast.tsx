@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { 
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
+import {
   Brain, 
   Target, 
   TrendingUp, 
@@ -30,7 +31,7 @@ export default function MLForecast() {
   useEffect(() => {
     async function fetchPrediction() {
       try {
-        const res = await fetch("/api/vendor/ai/predict");
+        const res = await offlineFetch("/api/vendor/ai/predict");
         const json = await res.json();
         if (json.success) {
           setData(json.data);

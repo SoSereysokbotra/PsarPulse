@@ -30,6 +30,7 @@ import VendorSidebar from "@/components/vendor/VendorSidebar";
 import VendorTopbar from "@/components/vendor/VendorTopbar";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // ─── Types ────────────────────────────────────────────────────────
 export type Period = "Day" | "Week" | "Month";
@@ -116,7 +117,7 @@ export default function ExpensesPage() {
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
-        const res = await fetch("/api/vendor/expenses");
+        const res = await offlineFetch("/api/vendor/expenses");
         const data = await res.json();
         if (data.success) {
           const mapped = data.data.map((e: any) => ({
@@ -184,7 +185,7 @@ export default function ExpensesPage() {
       const url = editTarget ? `/api/vendor/expenses/${editTarget.id}` : "/api/vendor/expenses";
       const method = editTarget ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await offlineFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -224,7 +225,7 @@ export default function ExpensesPage() {
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await fetch(`/api/vendor/expenses/${deleteTarget.id}`, { method: "DELETE" });
+      const res = await offlineFetch(`/api/vendor/expenses/${deleteTarget.id}`, { method: "DELETE" });
       const result = await res.json();
       if (result.success) {
         setExpenses((p) => p.filter((x) => x.id !== deleteTarget.id));

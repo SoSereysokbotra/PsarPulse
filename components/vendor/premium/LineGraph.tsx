@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { TrendingUp, Calendar } from "lucide-react";
+import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // Dynamically import Recharts components with SSR disabled
 import {
@@ -27,7 +28,7 @@ export default function LineGraph() {
   useEffect(() => {
     async function fetchSales() {
       try {
-        const res = await fetch("/api/vendor/sales");
+        const res = await offlineFetch("/api/vendor/sales");
         const json = await res.json();
         if (json.success) {
           setSales(json.data);

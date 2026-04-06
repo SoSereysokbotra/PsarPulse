@@ -40,7 +40,7 @@ export const AuthLayout = ({
           {showBack && (
             <Link
               href={backHref}
-              className={`${isDark ? "text-[#8A8F98] hover:text-white" : "text-slate-400 hover:text-slate-900"} transition-colors flex items-center font-bold ${isKhmer ? "font-suwannaphum" : ""}`}
+              className={`${isDark ? "text-[#8A8F98] hover:text-white" : "text-slate-400 hover:text-slate-900"} transition-colors flex items-center font-bold ${isKhmer ? "font-battambang" : ""}`}
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> {t("auth.back")}
             </Link>

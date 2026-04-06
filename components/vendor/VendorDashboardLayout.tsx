@@ -55,7 +55,7 @@ export default function VendorDashboardLayout({
   }, []);
 
   return (
-    <div className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white bg-[#f0f2f5] dark:bg-dark-bg text-slate-900 dark:text-white ${isKhmer ? "font-suwannaphum" : ""}`}>
+    <div className={`min-h-screen flex font-sans selection:bg-[#29B28D] selection:text-white bg-[#f0f2f5] dark:bg-dark-bg text-slate-900 dark:text-white ${isKhmer ? "font-battambang" : ""}`}>
       {/* Mobile sidebar backdrop */}
       {isSidebarOpen && (
         <div

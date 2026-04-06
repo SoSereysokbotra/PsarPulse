@@ -72,8 +72,6 @@ export const vendors = pgTable("vendors", {
   status: varchar("status", { length: 50 })
     .$type<"active" | "inactive" | "blocked" >()
     .default("active"),
-  latitude: decimal("latitude", { precision: 10, scale: 8 }),
-  longitude: decimal("longitude", { precision: 11, scale: 8 }),
   isPublic: boolean("is_public").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

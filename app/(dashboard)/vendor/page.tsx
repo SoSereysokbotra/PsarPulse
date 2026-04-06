@@ -543,8 +543,8 @@ export default function VendorDashboard() {
             <button
               onClick={() => setQuickSaleOpen((o) => !o)}
               className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer transition-all duration-200 ${quickSaleOpen
-                  ? "bg-[#0d1117] text-[#e6edf3]"
-                  : "bg-[#29B28D] text-[#0d1117] shadow-[0_2px_14px_rgba(41,178,141,0.28)]"
+                  ? "bg-psar-primary text-white"
+                  : "bg-[#29B28D] text-white shadow-[0_2px_14px_rgba(41,178,141,0.28)]"
                 }`}
             >
               {quickSaleOpen ? (
@@ -1047,7 +1047,7 @@ export default function VendorDashboard() {
                 </div>
                 <button
                   onClick={logTraffic}
-                  className="flex items-center gap-2 bg-[#29B28D] text-[#0d1117] font-bold text-[13px] px-4 py-2.5 rounded-[10px] border-0 cursor-pointer shadow-[0_4px_12px_rgba(41,178,141,0.2)] active:scale-95 transition-all"
+                  className="flex items-center gap-2 bg-psar-primary text-white font-bold text-[13px] px-4 py-2.5 rounded-[10px] border-0 cursor-pointer shadow-[0_4px_12px_rgba(41,178,141,0.2)] active:scale-95 transition-all"
                 >
                   <Users size={14} /> +1 Log
                 </button>
@@ -1513,7 +1513,7 @@ export default function VendorDashboard() {
                       console.error("Failed to lock day:", e);
                     }
                   }}
-                  className="w-full flex items-center justify-center gap-[9px] bg-[#29B28D] text-[#0d1117] font-bold text-[15px] py-4 rounded-[11px] border-0 cursor-pointer transition-all duration-200 shadow-[0_4px_22px_rgba(41,178,141,0.28)] hover:bg-[#239979]"
+                  className="w-full flex items-center justify-center gap-[9px] bg-psar-primary text-white font-bold text-[15px] py-4 rounded-[11px] border-0 cursor-pointer transition-all duration-200 shadow-[0_4px_22px_rgba(41,178,141,0.28)] hover:bg-[#239979]"
                 >
                   <Lock size={16} />
                   Confirm &amp; Lock Day

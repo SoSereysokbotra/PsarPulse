@@ -477,8 +477,8 @@ export default function ProDashboard() {
                 isDayLocked
                   ? "bg-gray-200 dark:bg-white/5 text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-none"
                   : quickSaleOpen
-                  ? "bg-[#0E1319] text-[#e6edf3] cursor-pointer"
-                  : "bg-[#29B28D] text-[#0E1319] shadow-[0_2px_14px_rgba(41,178,141,0.28)] cursor-pointer"
+                  ? "bg-psar-primary text-white cursor-pointer"
+                  : "bg-[#29B28D] text-white shadow-[0_2px_14px_rgba(41,178,141,0.28)] cursor-pointer"
               }`}
             >
               {quickSaleOpen ? (

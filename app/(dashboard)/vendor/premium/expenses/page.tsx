@@ -484,7 +484,7 @@ export default function PremiumExpensesPage() {
           <button onClick={() => setIsChatOpen(true)} className="flex items-center gap-1.5 bg-gradient-to-r from-[#8b5cf6] to-[#29B28D] text-white font-bold px-3.5 py-2 rounded-[10px] text-sm hover:opacity-90 transition-opacity cursor-pointer border-0">
             <Brain className="w-4 h-4" /> Gemini AI
           </button>
-          <button onClick={() => setIsQuickLogModalOpen(true)} className="flex items-center gap-1.5 bg-[#29B28D] hover:bg-[#4dd49a] text-[#0d1117] font-bold px-4 py-2 rounded-[10px] text-sm shadow-[0_2px_14px_rgba(41,178,141,0.28)] transition-colors cursor-pointer border-0">
+          <button onClick={() => setIsQuickLogModalOpen(true)} className="flex items-center gap-1.5 bg-[#29B28D] hover:bg-[#4dd49a] text-white font-bold px-4 py-2 rounded-[10px] text-sm shadow-[0_2px_14px_rgba(41,178,141,0.28)] transition-colors cursor-pointer border-0">
             <Plus className="w-4 h-4" /> Add Expense
           </button>
         </>

@@ -31,7 +31,7 @@ export default function FreeStatCard({
   if (explicitDark) {
     containerClass += "bg-slate-900 text-white";
   } else if (isGreen) {
-    containerClass += "bg-[#29B28D] text-white";
+    containerClass += "bg-psar-primary text-white";
   } else {
     containerClass += "bg-white border border-slate-200 dark:bg-slate-900 dark:border-white/5 dark:text-white";
   }

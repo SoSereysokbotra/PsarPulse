@@ -595,7 +595,7 @@ function PLCard({
   return (
     <div
       className={`p-5 rounded-2xl border transition-colors ${highlight
-          ? "bg-[#29B28D] text-white border-transparent shadow-md"
+          ? "bg-psar-primary text-white border-transparent shadow-md"
           : "bg-white dark:bg-[#0d1117] border-[#e8eaed] dark:border-white/10 shadow-[0_1px_4px_rgba(0,0,0,0.06)]"
         }`}
     >

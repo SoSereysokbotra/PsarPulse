@@ -463,7 +463,7 @@ export default function ProCustomerPage() {
               </div>
               <button 
                 onClick={() => setIsCRMModalOpen(true)}
-                className="flex items-center gap-2 bg-[#29B28D] text-[#0d1117] px-4 py-2 rounded-xl text-sm font-bold shadow-[0_2px_14px_rgba(41,178,141,0.28)] hover:bg-[#249e7d] transition-all cursor-pointer border-0"
+                className="flex items-center gap-2 bg-psar-primary text-white px-4 py-2 rounded-xl text-sm font-bold shadow-[0_2px_14px_rgba(41,178,141,0.28)] hover:bg-[#249e7d] transition-all cursor-pointer border-0"
               >
                 <Plus className="w-4 h-4" /> {"Add Customer"}
               </button>

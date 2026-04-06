@@ -575,8 +575,8 @@ export default function PremiumDashboard() {
               onClick={() => setQuickSaleOpen((o) => !o)}
               className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer transition-all duration-200 ${
                 quickSaleOpen
-                  ? "bg-[#0E1319] text-[#e6edf3] dark:bg-white dark:text-[#111827]"
-                  : "bg-[#29B28D] text-[#0E1319] shadow-[0_2px_14px_rgba(41,178,141,0.28)]"
+                  ? "bg-[#0E1319] text-white dark:bg-white dark:text-[#111827]"
+                  : "bg-[#29B28D] text-white shadow-[0_2px_14px_rgba(41,178,141,0.28)]"
               }`}
             >
               {quickSaleOpen ? (

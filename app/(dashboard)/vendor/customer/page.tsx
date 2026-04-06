@@ -378,8 +378,8 @@ export default function CustomersPage() {
                 <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Spent ($)</label>
                 <input name="totalSpent" type="number" step="0.01" defaultValue="0.00" className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
               </div>
-              <button type="submit" className="bg-[#29B28D] text-[#0d1117] font-bold py-2.5 rounded-xl text-sm border border-[#29B28D]/20 hover:bg-[#249e7d] transition-all shadow-lg">
-                {t("dashboard.actions.addCustomer")}
+              <button type="submit" className="bg-[#29B28D] text-white font-bold py-2.5 rounded-xl text-sm border border-[#29B28D]/20 hover:bg-[#249e7d] transition-all shadow-lg">
+                {t("AddCustomer")}
               </button>
             </form>
           </div>

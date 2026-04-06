@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Battambang:wght@100;300;400;700;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Battambang:wght@100;300;400;700;900&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -12,8 +12,8 @@
 
 /* Fix for browser autofill background in dark mode */
 .dark input:-webkit-autofill,
-.dark input:-webkit-autofill:hover, 
-.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
 .dark input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px #0d1117 inset !important;
   -webkit-text-fill-color: white !important;
@@ -21,8 +21,8 @@
 }
 
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px white inset !important;
   -webkit-text-fill-color: #1e293b !important;
@@ -48,18 +48,18 @@ input:-webkit-autofill:active {
   --color-dark-border-dashed: #333333;
 
   /* Brand */
-  --color-brand-primary: #29B28D;
+  --color-brand-primary: #29b28d;
   --color-brand-primary-hover: #249e7d;
   --color-brand-dark: #219072;
 
   /* Psar Colors */
-  --color-psar-dark: #0E1319;
-  --color-psar-white: #FFFFFF;
-  --color-psar-primary: #29B28D;
+  --color-psar-dark: #0e1319;
+  --color-psar-white: #ffffff;
+  --color-psar-primary: #29b28d;
 
   /* Text */
   --color-muted: #888888;
-  --color-secondary: #29B28D;
+  --color-secondary: #29b28d;
   --color-placeholder: #555555;
 }
 

@@ -78,14 +78,8 @@ export default function LineGraph() {
       <div className="bg-white dark:bg-[#0d1117] rounded-[24px] border border-[#e8eaed] dark:border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-8 min-h-[450px] flex flex-col transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]">
         <div className="flex items-start justify-between mb-8">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="p-1 px-2 bg-[#3ecf8e]/10 text-[#3ecf8e] text-[10px] font-bold rounded-full uppercase tracking-wider border border-[#3ecf8e]/20">
-                Performance Metrics
-              </span>
-              <span className="flex h-2 w-2 rounded-full bg-[#3ecf8e] animate-pulse"></span>
-            </div>
             <h3 className="text-[22px] font-black text-[#111827] dark:text-white flex items-center gap-2">
-              <TrendingUp size={22} className="text-[#3ecf8e]" />
+              <TrendingUp size={22} className="text-psar-primary" />
               7-Day Sales Velocity
             </h3>
             <p className="text-[13px] text-[#6b7280] dark:text-[#7d8590] mt-1">
@@ -107,7 +101,7 @@ export default function LineGraph() {
             >
               <defs>
                 <linearGradient id="colorAmountDetailed" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3ecf8e" stopOpacity={0.4} />
+                  <stop offset="5%" stopColor="#29B28D" stopOpacity={0.4} />
                   <stop offset="95%" stopColor="#3ecf8e" stopOpacity={0} />
                 </linearGradient>
               </defs>
@@ -141,9 +135,9 @@ export default function LineGraph() {
                   boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.4)",
                   padding: "12px",
                 }}
-                itemStyle={{ color: "#3ecf8e", fontWeight: "800" }}
+                itemStyle={{ color: "#29B28D", fontWeight: "800" }}
                 labelStyle={{ color: "#9ca3af", marginBottom: "6px", fontWeight: "bold" }}
-                cursor={{ stroke: "#3ecf8e", strokeWidth: 2, strokeDasharray: "5 5" }}
+                cursor={{ stroke: "#29B28D", strokeWidth: 2, strokeDasharray: "5 5" }}
                 formatter={(value: any) => {
                   if (typeof value === "number") return [`$${value.toLocaleString()}`, "Revenue"];
                   return [value || "0", "Revenue"];
@@ -152,12 +146,12 @@ export default function LineGraph() {
               <Area
                 type="monotone"
                 dataKey="amount"
-                stroke="#3ecf8e"
+                stroke="#29B28D"
                 strokeWidth={4}
                 fillOpacity={1}
                 fill="url(#colorAmountDetailed)"
                 animationDuration={2000}
-                activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2, fill: "#3ecf8e" }}
+                activeDot={{ r: 6, stroke: "#fff", strokeWidth: 2, fill: "#29B28D" }}
               />
             </AreaChart>
           </ResponsiveContainer>

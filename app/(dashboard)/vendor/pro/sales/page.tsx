@@ -202,7 +202,7 @@ export default function ProSalesPage() {
           {/* Add Sale */}
           <button
             onClick={() => setIsQuickLogModalOpen(true)}
-            className="flex items-center gap-[7px] bg-[#3ecf8e] text-[#0d1117] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a] transition-colors"
+            className="flex items-center gap-[7px] bg-[#29B28D] text-[#0d1117] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(41,178,141,0.28)] hover:bg-[#249e7d] transition-colors"
           >
             <Plus size={14} /> {t("dashboard.actions.addSale")}
           </button>

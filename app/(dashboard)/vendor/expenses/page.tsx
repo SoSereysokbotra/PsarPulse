@@ -64,7 +64,7 @@ const CATEGORIES: {
   labelKey: string;
   color: string;
 }[] = [
-  { value: "Ingredients", labelKey: "dashboard.categories.ingredients", color: "#3ecf8e" },
+  { value: "Ingredients", labelKey: "dashboard.categories.ingredients", color: "#29B28D" },
   { value: "Rent", labelKey: "dashboard.categories.rent", color: "#3b82f6" },
   { value: "Transport", labelKey: "dashboard.categories.transport", color: "#8b5cf6" },
   { value: "Electricity", labelKey: "dashboard.categories.electricity", color: "#f59e0b" },
@@ -73,7 +73,7 @@ const CATEGORIES: {
 ];
 
 const CAT_BADGE: Record<string, string> = {
-  Ingredients: "bg-[rgba(62,207,142,0.12)] text-[#3ecf8e] border border-[rgba(62,207,142,0.25)]",
+  Ingredients: "bg-[rgba(41,178,141,0.12)] text-[#29B28D] border border-[rgba(41,178,141,0.25)]",
   Rent: "bg-[rgba(59,130,246,0.1)] text-[#3b82f6] border border-[rgba(59,130,246,0.2)]",
   Transport: "bg-[rgba(139,92,246,0.1)] text-[#8b5cf6] border border-[rgba(139,92,246,0.2)]",
   Electricity: "bg-[rgba(245,158,11,0.1)] text-[#f59e0b] border border-[rgba(245,158,11,0.2)]",
@@ -250,7 +250,7 @@ export default function ExpensesPage() {
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
         {toasts.map((t) => (
           <div key={t.id} className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.18)] text-[13.5px] font-semibold min-w-[280px] border ${t.type === "error" ? "bg-white text-red-500 border-red-100" : "bg-white text-slate-900 border-slate-200"}`}>
-            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#3ecf8e]" /> : <AlertCircle size={16} className="text-red-500" />}
+            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#29B28D]" /> : <AlertCircle size={16} className="text-red-500" />}
             <span className="flex-1">{t.msg}</span>
           </div>
         ))}
@@ -277,7 +277,7 @@ export default function ExpensesPage() {
                 <button key={p} onClick={() => setPeriod(p)} className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${period === p ? (isDark ? "bg-dark-surface text-white shadow-md" : "bg-white text-slate-900 shadow-sm") : "bg-transparent text-slate-500 hover:text-slate-900"}`}>{p}</button>
               ))}
             </div>
-            <button onClick={openAdd} className="flex items-center gap-2 bg-[#0d1117] text-[#3ecf8e] px-4 py-[9px] rounded-[10px] font-bold text-[13px] border border-[#3ecf8e]/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:bg-black transition-all">
+            <button onClick={openAdd} className="flex items-center gap-2 bg-[#0d1117] text-[#29B28D] px-4 py-[9px] rounded-[10px] font-bold text-[13px] border border-[#29B28D]/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:bg-black transition-all">
               <Plus size={14} /> {t("dashboard.actions.addExpense")}
             </button>
           </>
@@ -324,8 +324,8 @@ export default function ExpensesPage() {
             <div className={`border rounded-[14px] overflow-hidden shadow-sm ${isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"}`}>
               <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-4">
                 <h3 className="font-semibold text-sm">{t("dashboard.titles.spendingTrends")}</h3>
-                <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-60 focus-within:border-[#3ecf8e]/30 focus-within:shadow-[0_0_0_4px_rgba(62,207,142,0.03)] group">
-                  <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#3ecf8e]" />
+                <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-60 focus-within:border-[#29B28D]/30 focus-within:shadow-[0_0_0_4px_rgba(41,178,141,0.03)] group">
+                  <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#29B28D]" />
                   <input type="text" placeholder={t("dashboard.common.search")} value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
                 </div>
               </div>
@@ -359,7 +359,7 @@ export default function ExpensesPage() {
                           </button>
                           {activeMenuId === exp.id && (
                             <div className={`absolute right-full top-1/2 -translate-y-1/2 mr-2 z-20 w-[120px] rounded-xl shadow-2xl border overflow-hidden ${isDark ? "bg-dark-surface border-white/10" : "bg-white border-slate-200"}`}>
-                              <button onClick={() => openEdit(exp)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> {t("dashboard.common.edit")}</button>
+                              <button onClick={() => openEdit(exp)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#29B28D] transition-colors"><Pencil size={14} /> {t("dashboard.common.edit")}</button>
                               <button onClick={() => { setDeleteTarget(exp); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> {t("dashboard.common.delete")}</button>
                             </div>
                           )}
@@ -396,11 +396,11 @@ export default function ExpensesPage() {
                 ))}</div>
               </div>
               <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("dashboard.table.note")} ({t("inventory.modal.khmerNameLabel").includes("Optional") ? "Optional" : "ស្រេចចិត្ត"})</label>
-                <input type="text" placeholder={t("dashboard.modals.notePlaceholder")} value={fNote} onChange={(e) => setFNote(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
+                <input type="text" placeholder={t("dashboard.modals.notePlaceholder")} value={fNote} onChange={(e) => setFNote(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={closeModal} className={`flex-1 py-4 rounded-xl font-bold transition-all ${isDark ? "bg-white/5 text-slate-400 hover:bg-white/10" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>{t("dashboard.common.cancel")}</button>
-                <button onClick={handleSave} disabled={!fAmount || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black disabled:opacity-50 transition-all">{saving ? t("inventory.modal.saving") : t("inventory.modal.saveLog")}</button>
+                <button onClick={handleSave} disabled={!fAmount || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#29B28D] font-bold rounded-xl shadow-lg border border-[#29B28D]/20 hover:bg-black disabled:opacity-50 transition-all">{saving ? t("inventory.modal.saving") : t("inventory.modal.saveLog")}</button>
               </div>
             </div>
           </div>

@@ -891,7 +891,7 @@ export default function PremiumDashboard() {
             </div>
             <div className="space-y-1">
               <span className="text-[22px] font-extrabold text-white tracking-tight" suppressHydrationWarning>
-                {isKhmer ? greetingKh : greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName} 👋
+                {isKhmer ? greetingKh : greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName}
               </span>
               <div className="text-[11px] text-[#abb4be] mt-0.5 flex items-center gap-2" suppressHydrationWarning>
                 <Clock size={10} className="inline-block text-[#29B28D]" />
@@ -1266,7 +1266,7 @@ export default function PremiumDashboard() {
                 {hasData ? (
                   isKhmer ? (
                     <>
-                      📊 <strong>ការអនុវត្តល្អណាស់!</strong> អ្នកបានកត់ត្រាការលក់ចំនួន {stats.transactions} នៅថ្ងៃនេះ។ 
+                      <strong>ការអនុវត្តល្អណាស់!</strong> អ្នកបានកត់ត្រាការលក់ចំនួន {stats.transactions} នៅថ្ងៃនេះ។ ខ្លាំងណាស់!
                       {bestSellingProducts.length > 0 && (
                         <> <strong>{bestSellingProducts[0].khmer || bestSellingProducts[0].name}</strong> គឺជាផលិតផលដែលលក់ដាច់បំផុតរបស់អ្នក។</>
                       )}
@@ -1276,7 +1276,7 @@ export default function PremiumDashboard() {
                     </>
                   ) : (
                     <>
-                      📊 <strong>Great performance!</strong> You have logged {stats.transactions} sales today. 
+                      <strong>Great performance!</strong> You have logged {stats.transactions} sales today. Strong work!
                       {bestSellingProducts.length > 0 && (
                         <> <strong>{bestSellingProducts[0].name}</strong> is your top performer.</>
                       )}

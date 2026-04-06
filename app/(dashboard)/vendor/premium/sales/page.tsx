@@ -101,7 +101,7 @@ const smartAlerts = [
 const weatherData = {
   condition: "Rainy Evening",
   temp: "28°C",
-  icon: "🌧️",
+  icon: "Rain",
   impact: "busy",
   suggestions: [
     {
@@ -190,14 +190,14 @@ export default function PremiumSalesPage() {
           <title>PsarPulse Premium Sales Report</title>
           <style>
             body { font-family: sans-serif; padding: 40px; color: #111827; }
-            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #3ecf8e; pb: 20px; mb: 30px; }
+            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #29B28D; pb: 20px; mb: 30px; }
             .title { font-size: 24px; font-weight: 800; color: #111827; }
             .meta { font-size: 12px; color: #6b7280; }
-            table { w-full; border-collapse: collapse; mt-30px; }
+            table { w-full; border-collapse: collapse; mt: 30px; }
             th { text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; color: #9ca3af; border-bottom: 1px solid #e8eaed; }
             td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f0f2f5; }
-            .amount { font-weight: 700; color: #3ecf8e; }
-            .footer { mt-50px; pt-20px; border-top: 1px solid #e8eaed; font-size: 10px; color: #9ca3af; text-align: center; }
+            .amount { font-weight: 700; color: #29B28D; }
+            .footer { mt: 50px; pt: 20px; border-top: 1px solid #e8eaed; font-size: 10px; color: #9ca3af; text-align: center; }
           </style>
         </head>
         <body>
@@ -207,7 +207,7 @@ export default function PremiumSalesPage() {
               <div class="meta">PsarPulse Premium · Generated ${new Date().toLocaleString()}</div>
             </div>
             <div style="text-align: right">
-              <div style="font-weight: 800; font-size: 18px; color: #3ecf8e">Premium Tier</div>
+              <div style="font-weight: 800; font-size: 18px; color: #29B28D">Premium Tier</div>
             </div>
           </div>
           <table>
@@ -413,7 +413,7 @@ export default function PremiumSalesPage() {
               setIsSmartActive(true);
               setIsQuickLogModalOpen(true);
             }}
-            className="flex items-center gap-[7px] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] text-white border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(139,92,246,0.3)] hover:opacity-90 transition-opacity"
+            className="flex items-center gap-[7px] bg-gradient-to-r from-[#8b5cf6] to-[#29B28D] text-white border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(139,92,246,0.3)] hover:opacity-90 transition-opacity"
           >
             <Sparkles size={14} /> {isKhmer ? "បន្ថែមដោយឆ្លាតវៃ" : "Smart Add"}
           </button>
@@ -424,7 +424,7 @@ export default function PremiumSalesPage() {
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
         {toasts.map((t) => (
           <div key={t.id} className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-[12px] shadow-[2xl] text-[13.5px] font-semibold min-w-[280px] border transition-all animate-in slide-in-from-bottom-5 ${t.type === "error" ? "bg-white dark:bg-[#0d1117] text-[#ef4444] border-[#ef4444]/20" : "bg-white dark:bg-[#0d1117] text-[#111827] dark:text-white border-[#e8eaed] dark:border-white/10"}`}>
-            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#3ecf8e]" /> : <X size={16} className="text-[#ef4444]" />}
+            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#29B28D]" /> : <X size={16} className="text-[#ef4444]" />}
             <span className="flex-1">{t.msg}</span>
           </div>
         ))}
@@ -480,8 +480,8 @@ export default function PremiumSalesPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-colors group focus-within:border-[#3ecf8e] w-64">
-                <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#3ecf8e] transition-colors" />
+              <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-colors group focus-within:border-[#29B28D] w-64">
+                <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#29B28D] transition-colors" />
                 <input
                   type="text"
                   placeholder={isKhmer ? "ស្វែងរកប្រតិបត្តិការ..." : "Search transactions..."}
@@ -546,12 +546,12 @@ export default function PremiumSalesPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-[15px] font-bold text-[#3ecf8e]">
+                        <span className="text-[15px] font-bold text-[#29B28D]">
                           ${parseFloat(txn.amount).toFixed(2)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[rgba(62,207,142,0.1)] text-[#3ecf8e] text-[11px] font-bold rounded-full border border-[rgba(62,207,142,0.2)]">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[11px] font-bold rounded-full border border-[rgba(41,178,141,0.2)]">
                           <CheckCircle2 size={12} /> {isKhmer ? "រួចរាល់" : "Complete"}
                         </span>
                       </td>
@@ -611,7 +611,7 @@ export default function PremiumSalesPage() {
                     placeholder={isKhmer ? 'ឧ. "លក់កាហ្វេ ៣ កែវ សរុប ១២ ដុល្លារ ប្រាក់សុទ្ធ"' : 'e.g., "Sold three coffees for $12 total, cash"'}
                     value={smartPrompt}
                     onChange={(e) => setSmartPrompt(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#3ecf8e] transition-all resize-none font-medium"
+                    className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#29B28D] transition-all resize-none font-medium"
                   />
                 </div>
                 <button
@@ -634,7 +634,7 @@ export default function PremiumSalesPage() {
               </div>
             ) : (
               <form onSubmit={handleQuickLog} className="space-y-4">
-                <div className="p-4 bg-[#3ecf8e]/5 border border-[#3ecf8e]/20 rounded-xl mb-4 text-[13px] text-[#3ecf8e] flex items-center gap-2 font-medium">
+                <div className="p-4 bg-[#29B28D]/5 border border-[#29B28D]/20 rounded-xl mb-4 text-[13px] text-[#29B28D] flex items-center gap-2 font-medium">
                   <CheckCircle2 size={14} /> {isKhmer ? "បានវិភាគដោយជោគជ័យ" : "AI Parsed Successfully"}
                 </div>
                 <div>
@@ -646,7 +646,7 @@ export default function PremiumSalesPage() {
                     placeholder={isKhmer ? 'ឧ. "កាហ្វេត្រជាក់ ៣, នំបុ័ង ២"' : 'e.g., "3 Iced Coffees, 2 Bakery"'}
                     value={quickItem}
                     onChange={(e) => setQuickItem(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#3ecf8e] transition-all"
+                    className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#29B28D] transition-all"
                   />
                 </div>
                 <div>
@@ -659,7 +659,7 @@ export default function PremiumSalesPage() {
                     placeholder="0.00"
                     value={quickAmount}
                     onChange={(e) => setQuickAmount(e.target.value)}
-                    className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#3ecf8e] transition-all font-bold text-lg"
+                    className="w-full px-4 py-3.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[12px] text-[#111827] dark:text-white outline-none focus:border-[#29B28D] transition-all font-bold text-lg"
                   />
                 </div>
                 <div>
@@ -674,7 +674,7 @@ export default function PremiumSalesPage() {
                         onClick={() => setQuickMethod(m)}
                         className={`py-3 rounded-[10px] text-[12px] font-bold transition-all border-0 cursor-pointer ${
                           quickMethod === m
-                            ? "bg-[#3ecf8e] text-[#0d1117] shadow-lg"
+                            ? "bg-[#29B28D] text-[#0d1117] shadow-lg"
                             : "bg-[#f7f8fa] dark:bg-[#161B22] text-[#6b7280] dark:text-[#7d8590] hover:bg-gray-100"
                         }`}
                       >
@@ -695,7 +695,7 @@ export default function PremiumSalesPage() {
                   <button
                     type="submit"
                     disabled={saving || !quickAmount}
-                    className="w-full bg-[#3ecf8e] text-[#0d1117] font-bold py-4 rounded-[12px] shadow-md hover:shadow-emerald-500/30 transition-all border-0 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full bg-[#29B28D] text-[#0d1117] font-bold py-4 rounded-[12px] shadow-md hover:shadow-emerald-500/30 transition-all border-0 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {saving ? (
                       <div className="w-5 h-5 border-2 border-[#0d1117]/30 border-t-[#0d1117] rounded-full animate-spin"></div>
@@ -714,7 +714,7 @@ export default function PremiumSalesPage() {
       {!isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-full shadow-[0_8px_32px_rgba(139,92,246,0.4)] flex items-center justify-center text-white hover:scale-110 transition-transform cursor-pointer border-0"
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-[#8b5cf6] to-[#29B28D] rounded-full shadow-[0_8px_32px_rgba(139,92,246,0.4)] flex items-center justify-center text-white hover:scale-110 transition-transform cursor-pointer border-0"
         >
           <MessageSquare size={22} />
         </button>
@@ -723,7 +723,7 @@ export default function PremiumSalesPage() {
         <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[520px] bg-white dark:bg-[#0d1117] rounded-[20px] shadow-2xl border border-[#e8eaed] dark:border-white/10 flex flex-col overflow-hidden transition-colors">
           <div className="px-5 py-4 bg-[#0d1117] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-full flex items-center justify-center">
+              <div className="w-9 h-9 bg-gradient-to-br from-[#8b5cf6] to-[#29B28D] rounded-full flex items-center justify-center">
                 <Brain size={18} className="text-white" />
               </div>
               <p className="font-bold text-[13.5px] text-[#e6edf3]">
@@ -748,7 +748,7 @@ export default function PremiumSalesPage() {
                 key={i}
                 className={`p-3 rounded-[12px] text-[13px] shadow-sm max-w-[85%] ${
                   m.role === "user"
-                    ? "bg-[#3ecf8e] text-[#0d1117] self-end rounded-br-none"
+                    ? "bg-[#29B28D] text-[#0d1117] self-end rounded-br-none"
                     : "bg-white dark:bg-[#0d1117] text-[#374151] dark:text-[#e6edf3] self-start rounded-bl-none"
                 }`}
               >
@@ -768,13 +768,13 @@ export default function PremiumSalesPage() {
                 placeholder={isKhmer ? "សួរជំនួយការរបស់អ្នក..." : "Ask your assistant..."}
                 value={chatMessage}
                 onChange={(e) => setChatMessage(e.target.value)}
-                className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#3ecf8e] transition-colors"
+                className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#29B28D] transition-colors"
                 onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
               />
               <button 
                 onClick={handleSendMessage}
                 disabled={isChatLoading}
-                className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] text-white rounded-[10px] border-0 cursor-pointer disabled:opacity-50"
+                className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#29B28D] text-white rounded-[10px] border-0 cursor-pointer disabled:opacity-50"
               >
                 {isChatLoading ? (
                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

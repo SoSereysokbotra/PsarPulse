@@ -287,7 +287,7 @@ export default function CustomersPage() {
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
         {toasts.map((t) => (
           <div key={t.id} className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.18)] text-[13.5px] font-semibold min-w-[280px] border ${t.type === "error" ? "bg-white text-[#ef4444] border-[#fecaca]" : "bg-white text-[#111827] border-[#e8eaed]"}`}>
-            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#3ecf8e]" /> : <AlertCircle size={16} className="text-[#ef4444]" />}
+            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#29B28D]" /> : <AlertCircle size={16} className="text-[#ef4444]" />}
             <span className="flex-1">{t.msg}</span>
           </div>
         ))}
@@ -324,12 +324,12 @@ export default function CustomersPage() {
           </div>
 
           {/* Log Traffic Bar */}
-          <div className="bg-[#0d1117] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 border border-[#3ecf8e]/10">
+          <div className="bg-[#0d1117] rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 border border-[#29B28D]/10">
             <div><p className="font-bold text-white text-[15px]">{t("dashboard.actions.logTraffic")}</p><p className="text-[11px] text-slate-400 mt-0.5">{t("dashboard.actions.logTrafficSub")}</p></div>
             <div className="flex items-center gap-2 flex-wrap">
-              {[1, 5, 10].map(n => <button key={n} onClick={() => handleLogTraffic(n)} className="px-4 py-2 bg-[#1a1a1a] text-[#3ecf8e] text-sm font-bold rounded-xl border border-[#3ecf8e]/20 min-h-11 hover:bg-black transition-all">+{n}</button>)}
+              {[1, 5, 10].map(n => <button key={n} onClick={() => handleLogTraffic(n)} className="px-4 py-2 bg-[#1a1a1a] text-[#29B28D] text-sm font-bold rounded-xl border border-[#29B28D]/20 min-h-11 hover:bg-black transition-all">+{n}</button>)}
               <div className="flex items-center bg-white/10 rounded-xl px-2 py-1"><button onClick={() => setCustomCount(c => Math.max(1, c - 1))} className="text-white"><Minus size={14} /></button><span className="text-white font-bold mx-3">{customCount}</span><button onClick={() => setCustomCount(c => c + 1)} className="text-white"><Plus size={14} /></button></div>
-              <button onClick={() => handleLogTraffic(customCount)} className="px-5 py-2 bg-[#3ecf8e] text-[#0d1117] font-bold rounded-xl text-sm min-h-11 hover:bg-[#4dd49a] transition-colors flex items-center gap-1.5"><Plus size={14} /> {t("dashboard.actions.log")} {customCount}</button>
+              <button onClick={() => handleLogTraffic(customCount)} className="px-5 py-2 bg-[#29B28D] text-[#0d1117] font-bold rounded-xl text-sm min-h-11 hover:bg-[#249e7d] transition-colors flex items-center gap-1.5"><Plus size={14} /> {t("dashboard.actions.log")} {customCount}</button>
             </div>
           </div>
 
@@ -364,21 +364,21 @@ export default function CustomersPage() {
             <form ref={addFormRef} onSubmit={handleCreateCustomer} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
               <div>
                 <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Name *</label>
-                <input name="name" required className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} placeholder="John Doe" />
+                <input name="name" required className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} placeholder="John Doe" />
               </div>
               <div>
                 <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Phone</label>
-                <input name="phone" className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} placeholder="012 345 678" />
+                <input name="phone" className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} placeholder="012 345 678" />
               </div>
               <div>
                 <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Email</label>
-                <input name="email" type="email" className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} placeholder="john@example.com" />
+                <input name="email" type="email" className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} placeholder="john@example.com" />
               </div>
               <div>
                 <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}>Spent ($)</label>
-                <input name="totalSpent" type="number" step="0.01" defaultValue="0.00" className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
+                <input name="totalSpent" type="number" step="0.01" defaultValue="0.00" className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all ${isDark ? "bg-black/20 border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
               </div>
-              <button type="submit" className="bg-[#3ecf8e] text-[#0d1117] font-bold py-2.5 rounded-xl text-sm border border-[#3ecf8e]/20 hover:bg-[#4dd49a] transition-all shadow-lg">
+              <button type="submit" className="bg-[#29B28D] text-[#0d1117] font-bold py-2.5 rounded-xl text-sm border border-[#29B28D]/20 hover:bg-[#249e7d] transition-all shadow-lg">
                 {t("dashboard.actions.addCustomer")}
               </button>
             </form>
@@ -412,7 +412,7 @@ export default function CustomersPage() {
                         </button>
                         {activeMenuId === cust.id && (
                           <div className={`absolute right-[80%] top-1/2 -translate-y-1/2 mr-2 z-20 w-[120px] rounded-xl shadow-2xl border overflow-hidden ${isDark ? "bg-dark-surface border-white/10" : "bg-white border-slate-200"}`}>
-                            <button onClick={() => openEdit(cust)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> {t("dashboard.common.edit")}</button>
+                            <button onClick={() => openEdit(cust)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#29B28D] transition-colors"><Pencil size={14} /> {t("dashboard.common.edit")}</button>
                             <button onClick={() => { setDeleteTarget(cust); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> {t("dashboard.common.delete")}</button>
                           </div>
                         )}
@@ -453,7 +453,7 @@ export default function CustomersPage() {
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setModalOpen(false)} className={`flex-1 py-4 rounded-xl font-bold transition-all ${isDark ? "bg-white/5 text-slate-400 hover:bg-white/10" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>{t("dashboard.common.cancel")}</button>
-                <button onClick={handleSaveEdit} disabled={!fName || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black transition-all">{saving ? t("inventory.modal.saving") : t("dashboard.common.save")}</button>
+                <button onClick={handleSaveEdit} disabled={!fName || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#29B28D] font-bold rounded-xl shadow-lg border border-[#29B28D]/20 hover:bg-black transition-all">{saving ? t("inventory.modal.saving") : t("dashboard.common.save")}</button>
               </div>
             </div>
           </div>

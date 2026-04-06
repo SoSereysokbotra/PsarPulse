@@ -229,7 +229,7 @@ export default function CustomersPage() {
       title={isKhmer ? "គ្រប់គ្រងអតិថិជន" : "Customer Management"}
       planBadge={{ label: isKhmer ? "PREMIUM" : "PREMIUM", icon: Sparkles }}
       rightActions={
-        <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 bg-[#3ecf8e] hover:bg-[#4dd49a] text-[#0d1117] font-bold px-4 py-2 rounded-[10px] text-sm shadow-[0_2px_14px_rgba(62,207,142,0.28)] transition-colors cursor-pointer border-0">
+        <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 bg-[#29B28D] hover:bg-[#239979] text-[#0d1117] font-bold px-4 py-2 rounded-[10px] text-sm shadow-[0_2px_14px_rgba(41,178,141,0.28)] transition-colors cursor-pointer border-0">
           <PlusCircle className="w-4 h-4" /> {isKhmer ? "បន្ថែមប្រវត្តិ" : "Add Profile"}
         </button>
       }
@@ -312,9 +312,9 @@ export default function CustomersPage() {
                   <button key={n} onClick={() => handleLog(n)} className="w-14 h-14 bg-[#29B28D] hover:bg-[#239979] text-white text-lg font-bold rounded-xl transition-all shadow-lg shadow-[#29B28D]/20 border-0 cursor-pointer">+{n}</button>
                 ))}
                 <div className="flex items-center bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-2 h-14 transition-colors">
-                  <button onClick={() => setCustomCount(Math.max(1, customCount - 1))} className="p-2 text-slate-500 hover:text-psar-primary transition-colors bg-transparent border-0 cursor-pointer"><Minus className="w-5 h-5" /></button>
+                  <button onClick={() => setCustomCount(Math.max(1, customCount - 1))} className="p-2 text-slate-500 hover:text-[#29B28D] transition-colors bg-transparent border-0 cursor-pointer"><Minus className="w-5 h-5" /></button>
                   <span className="w-10 text-center font-bold text-lg dark:text-white">{customCount}</span>
-                  <button onClick={() => setCustomCount(customCount + 1)} className="p-2 text-slate-500 hover:text-psar-primary transition-colors bg-transparent border-0 cursor-pointer"><Plus className="w-5 h-5" /></button>
+                  <button onClick={() => setCustomCount(customCount + 1)} className="p-2 text-slate-500 hover:text-[#29B28D] transition-colors bg-transparent border-0 cursor-pointer"><Plus className="w-5 h-5" /></button>
                 </div>
                 <button onClick={() => handleLog(customCount)} className="h-14 px-6 bg-[#111827] dark:bg-white text-white dark:text-[#111827] font-bold rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity border-0 cursor-pointer shadow-xl">
                   <User className="w-5 h-5" /> {isKhmer ? "កត់ត្រា" : "Log"} {customCount}
@@ -406,8 +406,8 @@ export default function CustomersPage() {
                   <label className="text-[12px] font-bold text-slate-700 dark:text-[#9aa4b2] ml-1">{isKhmer ? "ចំណូលចិត្ត / សម្គាល់" : "Preferences / Tags"}</label>
                   <textarea placeholder={isKhmer ? "ចូលចិត្តហិរ, អតិថិជនប្រចាំថ្ងៃអាទិត្យ..." : "Likes spicy, regular Sunday buyer..."} value={crmNotes} onChange={e => setCrmNotes(e.target.value)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-psar-primary transition-colors text-sm h-24 resize-none dark:text-white" />
                 </div>
-                <button type="submit" disabled={crmSubmitting || !crmName.trim()} className="w-full bg-[#3ecf8e] text-[#0d1117] font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#3ecf8e]/20 flex items-center justify-center gap-2 border-0 cursor-pointer disabled:opacity-50">
-                  {crmSubmitting ? (isKhmer ? "កំពុងដំណើរការ..." : "Processing...") : crmSuccess ? (isKhmer ? "រក្សាទុកអតិថិជនបានជោគជ័យ ✓" : "Customer Saved ✓") : (isKhmer ? "បង្កើតព័ត៌មានអតិថិជន" : "Create Profile")}
+                <button type="submit" disabled={crmSubmitting || !crmName.trim()} className="w-full bg-[#29B28D] text-[#0d1117] font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-[#29B28D]/20 flex items-center justify-center gap-2 border-0 cursor-pointer disabled:opacity-50">
+                  {crmSubmitting ? (isKhmer ? "កំពុងដំណើរការ..." : "Processing...") : crmSuccess ? (isKhmer ? "រក្សាទុកអតិថិជនបានជោគជ័យ" : "Customer Saved") : (isKhmer ? "បង្កើតព័ត៌មានអតិថិជន" : "Create Profile")}
                 </button>
               </form>
             </div>
@@ -448,7 +448,7 @@ export default function CustomersPage() {
                         <tr key={customer.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-[#3ecf8e]/10 flex items-center justify-center border border-[#3ecf8e]/20"><User className="w-5 h-5 text-[#3ecf8e]" /></div>
+                              <div className="w-10 h-10 rounded-full bg-[#29B28D]/10 flex items-center justify-center border border-[#29B28D]/20"><User className="w-5 h-5 text-[#29B28D]" /></div>
                               <div>
                                 <p className="font-bold text-[14px] text-slate-900 dark:text-white">{customer.name}</p>
                                 <p className="text-[12px] text-slate-500 flex items-center gap-1"><Phone className="w-3 h-3" /> {customer.phone || (isKhmer ? "គ្មានលេខទូរស័ព្ទ" : "No phone")}</p>
@@ -465,7 +465,7 @@ export default function CustomersPage() {
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                              <button className="p-2 text-slate-400 hover:text-psar-primary transition-colors bg-transparent border-0 cursor-pointer"><Edit className="w-4 h-4" /></button>
+                              <button className="p-2 text-slate-400 hover:text-[#29B28D] transition-colors bg-transparent border-0 cursor-pointer"><Edit className="w-4 h-4" /></button>
                               <button onClick={() => { setSelectedCustomer(customer); setIsDeleteModalOpen(true); }} className="p-2 text-slate-400 hover:text-red-500 transition-colors bg-transparent border-0 cursor-pointer"><Trash2 className="w-4 h-4" /></button>
                             </div>
                           </td>
@@ -571,7 +571,7 @@ function CustomerAnalytics({ logHistory, crmDatabase, todaySales }: { logHistory
           <div className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-wider mt-1">{isKhmer ? "អតិថិជនសរុប" : "Total Visitors"}</div>
         </div>
         <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-2xl p-5 text-center transition-colors">
-          <div className="text-[28px] font-black text-[#3ecf8e]">{retentionRate}%</div>
+          <div className="text-[28px] font-black text-[#29B28D]">{retentionRate}%</div>
           <div className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-wider mt-1">{isKhmer ? "អត្រារក្សាអតិថិជន" : "Retention Rate"}</div>
         </div>
         <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-2xl p-5 text-center transition-colors">
@@ -606,9 +606,9 @@ function CustomerAnalytics({ logHistory, crmDatabase, todaySales }: { logHistory
                       backgroundColor: intensity > 0.7
                         ? "rgba(139, 92, 246, 0.8)"
                         : intensity > 0.4
-                        ? "rgba(62, 207, 142, 0.6)"
+                        ? "rgba(41, 178, 141, 0.6)"
                         : intensity > 0.1
-                        ? "rgba(62, 207, 142, 0.25)"
+                        ? "rgba(41, 178, 141, 0.25)"
                         : "rgba(148, 163, 184, 0.1)",
                     }}
                     title={`${hour}:00 — ${count} visitors`}
@@ -620,8 +620,8 @@ function CustomerAnalytics({ logHistory, crmDatabase, todaySales }: { logHistory
           </div>
           <div className="flex items-center gap-3 mt-4 text-[10px] text-[#9ca3af]">
             <div className="flex items-center gap-1"><div className="w-3 h-3 rounded bg-[rgba(148,163,184,0.1)] border border-slate-200 dark:border-white/10" /> {isKhmer ? "តិច" : "Low"}</div>
-            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded bg-[rgba(62,207,142,0.25)]" /> {isKhmer ? "មធ្យម" : "Medium"}</div>
-            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded bg-[rgba(62,207,142,0.6)]" /> {isKhmer ? "ខ្ពស់" : "High"}</div>
+            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded bg-[rgba(41, 178, 141, 0.25)]" /> {isKhmer ? "មធ្យម" : "Medium"}</div>
+            <div className="flex items-center gap-1"><div className="w-3 h-3 rounded bg-[rgba(41, 178, 141, 0.6)]" /> {isKhmer ? "ខ្ពស់" : "High"}</div>
             <div className="flex items-center gap-1"><div className="w-3 h-3 rounded bg-[rgba(139,92,246,0.8)]" /> {isKhmer ? "មមាញឹកខ្លាំង" : "Peak"}</div>
           </div>
         </div>
@@ -629,10 +629,10 @@ function CustomerAnalytics({ logHistory, crmDatabase, todaySales }: { logHistory
         {/* Visit Frequency Distribution */}
         <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-2xl p-6 transition-colors">
           <div className="flex items-center gap-2 mb-5">
-            <TrendingUp className="w-4 h-4 text-[#3ecf8e]" />
+            <TrendingUp className="w-4 h-4 text-[#29B28D]" />
             <h3 className="font-bold text-[16px] text-[#111827] dark:text-white flex items-center">
               {isKhmer ? "ការព្យាករណ៍ចរាចរណ៍ ៧ ថ្ងៃ" : "7-Day Traffic Forecast"}
-              <span className="text-[10px] text-[#3ecf8e] leading-none font-bold tracking-wider border border-[#3ecf8e]/30 bg-[#3ecf8e]/10 px-2 py-1 rounded-full ml-2">MODEL</span>
+              <span className="text-[10px] text-[#29B28D] leading-none font-bold tracking-wider border border-[#29B28D]/30 bg-[#29B28D]/10 px-2 py-1 rounded-full ml-2">MODEL</span>
             </h3>
           </div>
           <div className="flex items-end gap-2 h-32">
@@ -641,7 +641,7 @@ function CustomerAnalytics({ logHistory, crmDatabase, todaySales }: { logHistory
                 <span className="text-[10px] font-bold text-[#6b7280] dark:text-[#7d8590]">{d.count}</span>
                 <div className="w-full relative rounded-t-md" style={{ height: "100px" }}>
                   <div
-                    className="absolute bottom-0 w-full rounded-t-md bg-gradient-to-t from-[#3ecf8e] to-[#3ecf8e]/60 transition-all"
+                    className="absolute bottom-0 w-full rounded-t-md bg-gradient-to-t from-[#29B28D] to-[#29B28D]/60 transition-all"
                     style={{ height: `${(d.count / maxDaily) * 100}%`, minHeight: d.count > 0 ? "4px" : "0px" }}
                   />
                 </div>
@@ -655,7 +655,7 @@ function CustomerAnalytics({ logHistory, crmDatabase, todaySales }: { logHistory
       {/* AI Insights */}
       <div className="bg-[#0d1117] rounded-2xl border border-white/10 p-6">
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-br from-[#8b5cf6] to-[#29B28D] rounded-xl flex items-center justify-center">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -665,7 +665,7 @@ function CustomerAnalytics({ logHistory, crmDatabase, todaySales }: { logHistory
         </div>
         {insightsLoading ? (
           <div className="flex items-center gap-3 p-4">
-            <div className="w-5 h-5 border-2 border-white/20 border-t-[#3ecf8e] rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-white/20 border-t-[#29B28D] rounded-full animate-spin" />
             <span className="text-[13px] text-[#7d8590]">
               {isKhmer ? "កំពុងវិភាគទិន្នន័យអតិថិជនរបស់អ្នក..." : "Analyzing your customer data..."}
             </span>
@@ -677,9 +677,9 @@ function CustomerAnalytics({ logHistory, crmDatabase, todaySales }: { logHistory
                 <span
                   className="inline-block px-2 py-0.5 text-[10px] font-bold rounded-full border mb-3"
                   style={{
-                    color: insight.color || "#3ecf8e",
-                    backgroundColor: `${insight.color || "#3ecf8e"}15`,
-                    borderColor: `${insight.color || "#3ecf8e"}30`,
+                    color: insight.color || "#29B28D",
+                    backgroundColor: `${insight.color || "#29B28D"}15`,
+                    borderColor: `${insight.color || "#29B28D"}30`,
                   }}
                 >
                   {insight.tag}

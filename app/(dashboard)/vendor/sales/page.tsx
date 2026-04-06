@@ -61,7 +61,7 @@ const now = () =>
   });
 
 const METHOD_BADGE: Record<Method, string> = {
-  Cash: "bg-[rgba(62,207,142,0.12)] text-[#3ecf8e] border border-[rgba(62,207,142,0.25)]",
+  Cash: "bg-[rgba(41,178,141,0.12)] text-[#29B28D] border border-[rgba(41,178,141,0.25)]",
   "ABA/KHQR":
     "bg-[rgba(59,130,246,0.10)] text-[#3b82f6] border border-[rgba(59,130,246,0.2)]",
   Other: "bg-[#f0f2f5] text-[#6b7280] border border-[#e8eaed]",
@@ -264,7 +264,7 @@ export default function SalesDashboard() {
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 items-center pointer-events-none">
         {toasts.map((t) => (
           <div key={t.id} className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-[12px] shadow-[0_8px_32px_rgba(0,0,0,0.18)] text-[13.5px] font-semibold min-w-[280px] border ${t.type === "error" ? "bg-white text-[#ef4444] border-[#fecaca]" : "bg-white text-[#111827] border-[#e8eaed]"}`}>
-            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#3ecf8e]" /> : <AlertCircle size={16} className="text-[#ef4444]" />}
+            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#29B28D]" /> : <AlertCircle size={16} className="text-[#ef4444]" />}
             <span className="flex-1">{t.msg}</span>
           </div>
         ))}
@@ -291,7 +291,7 @@ export default function SalesDashboard() {
                 <button key={p} onClick={() => setPeriod(p)} className={`px-4 py-[7px] rounded-[8px] text-[13px] font-semibold border-0 cursor-pointer transition-all ${period === p ? (isDark ? "bg-dark-surface text-white shadow-md" : "bg-white text-[#111827] shadow-sm") : "text-slate-500 hover:text-[#111827]"}`}>{p}</button>
               ))}
             </div>
-            <button onClick={openAdd} className="flex items-center gap-[7px] bg-[#0d1117] text-[#3ecf8e] border border-[#3ecf8e]/20 rounded-[10px] px-4 py-[9px] font-bold text-[13px] shadow-[0_2px_14px_rgba(0,0,0,0.15)] hover:bg-black transition-all">
+            <button onClick={openAdd} className="flex items-center gap-[7px] bg-[#0d1117] text-[#29B28D] border border-[#29B28D]/20 rounded-[10px] px-4 py-[9px] font-bold text-[13px] shadow-[0_2px_14px_rgba(0,0,0,0.15)] hover:bg-black transition-all">
               <Plus size={14} /> {t("dashboard.actions.addSale")}
             </button>
           </>
@@ -313,8 +313,8 @@ export default function SalesDashboard() {
             <div className={`border rounded-[14px] overflow-hidden shadow-sm ${isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"}`}>
               <div className="px-[22px] py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-3">
                 <h3 className="font-semibold text-[14px]">{t("dashboard.titles.history")}</h3>
-                <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-64 focus-within:border-[#3ecf8e]/30 focus-within:shadow-[0_0_0_4px_rgba(62,207,142,0.03)] group">
-                  <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#3ecf8e]" />
+                <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-64 focus-within:border-[#29B28D]/30 focus-within:shadow-[0_0_0_4px_rgba(41,178,141,0.03)] group">
+                  <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#29B28D]" />
                   <input type="text" placeholder={t("dashboard.common.search")} value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
                 </div>
               </div>
@@ -341,7 +341,7 @@ export default function SalesDashboard() {
                         <td className="px-[22px] py-[14px]">
                           <span className={`px-2.5 py-[3px] rounded-full text-[11px] font-bold ${METHOD_BADGE[txn.method]}`}>{txn.method}</span>
                         </td>
-                        <td className="px-[22px] py-[14px] text-right font-bold text-[#3ecf8e]">+${txn.amount.toFixed(2)}</td>
+                        <td className="px-[22px] py-[14px] text-right font-bold text-[#29B28D]">+${txn.amount.toFixed(2)}</td>
                         <td className="px-[22px] py-[14px] text-center relative">
                           <button 
                             onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === txn.id ? null : txn.id); }}
@@ -351,7 +351,7 @@ export default function SalesDashboard() {
                           </button>
                           {activeMenuId === txn.id && (
                             <div className={`absolute right-full top-1/2 -translate-y-1/2 mr-2 z-20 w-[120px] rounded-xl shadow-2xl border overflow-hidden ${isDark ? "bg-dark-surface border-white/10" : "bg-white border-slate-200"}`}>
-                              <button onClick={() => openEdit(txn)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#3ecf8e] transition-colors"><Pencil size={14} /> {t("dashboard.common.edit")}</button>
+                              <button onClick={() => openEdit(txn)} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-[#29B28D] transition-colors"><Pencil size={14} /> {t("dashboard.common.edit")}</button>
                               <button onClick={() => { setDeleteTarget(txn); setActiveMenuId(null); }} className="w-full px-4 py-2.5 flex items-center gap-2 text-[12.5px] font-semibold hover:bg-white/5 text-red-500 transition-colors"><Trash2 size={14} /> {t("dashboard.common.delete")}</button>
                             </div>
                           )}
@@ -395,7 +395,7 @@ export default function SalesDashboard() {
                           }}
                           className={`shrink-0 px-4 py-2.5 rounded-xl border text-[13px] font-bold transition-all flex flex-col items-start gap-1 min-w-[120px] ${
                             fItems === item.name 
-                              ? "bg-[#3ecf8e] border-[#3ecf8e] text-[#0d1117] shadow-md" 
+                              ? "bg-[#29B28D] border-[#29B28D] text-[#0d1117] shadow-md" 
                               : isDark ? "bg-white/5 border-white/10 text-white hover:bg-white/10" : "bg-slate-50 border-slate-200 text-slate-900 hover:bg-slate-100"
                           }`}
                         >
@@ -404,7 +404,7 @@ export default function SalesDashboard() {
                         </button>
                       ))
                     ) : (
-                      <Link href="/vendor/inventory" className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 dark:border-white/10 text-slate-500 text-xs no-underline hover:border-[#3ecf8e] transition-all">
+                      <Link href="/vendor/inventory" className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 dark:border-white/10 text-slate-500 text-xs no-underline hover:border-[#29B28D] transition-all">
                         <Package size={14} /> {t("inventory.modal.quickPickEmpty")}
                       </Link>
                     )}
@@ -414,22 +414,22 @@ export default function SalesDashboard() {
 
               <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.amountLabel")} *</label>
                 <div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">$</span>
-                  <input ref={amountRef} type="number" placeholder="0.00" value={fAmount} onChange={(e) => setFAmount(e.target.value)} className={`w-full pl-9 pr-4 py-4 rounded-xl text-2xl font-bold border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
+                  <input ref={amountRef} type="number" placeholder="0.00" value={fAmount} onChange={(e) => setFAmount(e.target.value)} className={`w-full pl-9 pr-4 py-4 rounded-xl text-2xl font-bold border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
                 </div>
               </div>
               <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.itemsLabel")}</label>
-                <input type="text" placeholder="e.g. 2x Coffee" value={fItems} onChange={(e) => setFItems(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
+                <input type="text" placeholder="e.g. 2x Coffee" value={fItems} onChange={(e) => setFItems(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
               </div>
               <div><label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.paymentMethodLabel")}</label>
                 <div className="grid grid-cols-3 gap-2">{(["Cash", "ABA/KHQR", "Other"] as Method[]).map((m) => (
-                  <button key={m} onClick={() => setFMethod(m)} className={`py-3 rounded-[10px] text-[13px] font-bold transition-all ${fMethod === m ? "bg-[#3ecf8e] text-[#0d1117] shadow-lg" : isDark ? "bg-white/5 text-slate-400 border border-white/5 hover:bg-white/10" : "bg-slate-50 text-slate-500 border border-transparent hover:bg-slate-100"}`}>
+                  <button key={m} onClick={() => setFMethod(m)} className={`py-3 rounded-[10px] text-[13px] font-bold transition-all ${fMethod === m ? "bg-[#29B28D] text-[#0d1117] shadow-lg" : isDark ? "bg-white/5 text-slate-400 border border-white/5 hover:bg-white/10" : "bg-slate-50 text-slate-500 border border-transparent hover:bg-slate-100"}`}>
                     {m === "Cash" ? t("dashboard.methods.cash") : m === "ABA/KHQR" ? t("dashboard.methods.qr") : t("dashboard.methods.other")}
                   </button>
                 ))}</div>
               </div>
               <div className="flex gap-3 pt-2">
                 <button onClick={closeModal} className={`flex-1 py-4 rounded-xl font-bold transition-all ${isDark ? "bg-white/5 text-slate-400 hover:bg-white/10" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>{t("dashboard.actions.cancel")}</button>
-                <button onClick={handleSave} disabled={!fAmount || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black transition-all">{saving ? t("inventory.modal.saving") : t("inventory.modal.saveLog")}</button>
+                <button onClick={handleSave} disabled={!fAmount || saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#29B28D] font-bold rounded-xl shadow-lg border border-[#29B28D]/20 hover:bg-black transition-all">{saving ? t("inventory.modal.saving") : t("inventory.modal.saveLog")}</button>
               </div>
             </div>
           </div>

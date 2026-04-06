@@ -188,9 +188,9 @@ const forecastItems = [
 ];
 
 const geminiTips = [
-  { tip: "Buy ingredients Tuesday 6–8 AM at Orussey Market", saving: "Save ~$4.50/week", emoji: "🌅" },
-  { tip: "Batch electricity usage — turn off fans after 9 PM", saving: "Save ~$2/week", emoji: "⚡" },
-  { tip: "Share TukTuk with Stall B41 for shared market runs", saving: "Save ~$1.50/trip", emoji: "🛺" },
+  { tip: "Buy ingredients Tuesday 6–8 AM at Orussey Market", saving: "Save ~$4.50/week", emoji: "" },
+  { tip: "Batch electricity usage — turn off fans after 9 PM", saving: "Save ~$2/week", emoji: "" },
+  { tip: "Share TukTuk with Stall B41 for shared market runs", saving: "Save ~$1.50/trip", emoji: "" },
 ];
 
 const TABS: { id: TabId; label: string; khmer: string }[] = [
@@ -481,10 +481,10 @@ export default function PremiumExpensesPage() {
           <button onClick={handleExportExcel} className="hidden sm:flex items-center gap-1.5 bg-white dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 hover:bg-[#f0f2f5] dark:hover:bg-white/5 text-[#111827] dark:text-white font-semibold px-3.5 py-2 rounded-[10px] text-sm transition-colors cursor-pointer">
             <FileSpreadsheet className="w-4 h-4" /> Excel
           </button>
-          <button onClick={() => setIsChatOpen(true)} className="flex items-center gap-1.5 bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] text-white font-bold px-3.5 py-2 rounded-[10px] text-sm hover:opacity-90 transition-opacity cursor-pointer border-0">
+          <button onClick={() => setIsChatOpen(true)} className="flex items-center gap-1.5 bg-gradient-to-r from-[#8b5cf6] to-[#29B28D] text-white font-bold px-3.5 py-2 rounded-[10px] text-sm hover:opacity-90 transition-opacity cursor-pointer border-0">
             <Brain className="w-4 h-4" /> Gemini AI
           </button>
-          <button onClick={() => setIsQuickLogModalOpen(true)} className="flex items-center gap-1.5 bg-[#3ecf8e] hover:bg-[#4dd49a] text-[#0d1117] font-bold px-4 py-2 rounded-[10px] text-sm shadow-[0_2px_14px_rgba(62,207,142,0.28)] transition-colors cursor-pointer border-0">
+          <button onClick={() => setIsQuickLogModalOpen(true)} className="flex items-center gap-1.5 bg-[#29B28D] hover:bg-[#4dd49a] text-[#0d1117] font-bold px-4 py-2 rounded-[10px] text-sm shadow-[0_2px_14px_rgba(41,178,141,0.28)] transition-colors cursor-pointer border-0">
             <Plus className="w-4 h-4" /> Add Expense
           </button>
         </>
@@ -512,7 +512,7 @@ export default function PremiumExpensesPage() {
             title={isKhmer ? "ប្រភេទចំណាយច្រើនបំផុត" : "Top Category"}
             khmerTitle="ប្រភេទទូទៅ"
             value={summaryData.topCat}
-            subtext={isKhmer ? "ផ្អែកលើប្រវត្តិ" : "🏷️ base on history"}
+            subtext={isKhmer ? "ផ្អែកលើប្រវត្តិ" : "base on history"}
           />
           <VendorSummaryCard
             variant="green"
@@ -575,13 +575,13 @@ export default function PremiumExpensesPage() {
           <div className="space-y-5">
             <div className="bg-[#0d1117] border border-white/[0.06] rounded-[14px] px-[26px] py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-[rgba(62,207,142,0.12)] rounded-[11px]"><Brain className="w-5 h-5 text-[#3ecf8e]" /></div>
+                <div className="p-3 bg-[rgba(41,178,141,0.12)] rounded-[11px]"><Brain className="w-5 h-5 text-[#29B28D]" /></div>
                 <div>
                   <div className="text-[16px] font-bold text-[#e6edf3]">AI Expense Intelligence Active</div>
                   <div className="text-[12px] text-[#7d8590] mt-0.5">Anomaly detection · Recurring patterns · Cost optimization · Gemini insights</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 bg-[rgba(62,207,142,0.1)] border border-[rgba(62,207,142,0.2)] px-4 py-2 rounded-[10px] text-[#3ecf8e] shrink-0">
+              <div className="flex items-center gap-2 bg-[rgba(41,178,141,0.1)] border border-[rgba(41,178,141,0.2)] px-4 py-2 rounded-[10px] text-[#29B28D] shrink-0">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span className="text-[13px] font-semibold">Premium Active</span>
               </div>
@@ -636,10 +636,10 @@ export default function PremiumExpensesPage() {
                   {isKhmer ? "ការព្យាករណ៍ចំណាយ AI — ៧ ថ្ងៃបន្ទាប់" : "AI Expense Forecast — Next 7 Days"}
                 </div>
                 <div className="text-[11px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                  {isKhmer ? "ការព្យាករណ៍ចំណាយ" : "Expense forecast"} · {isKhmer ? "សរុបដែលបានរំពឹងទុក" : "Predicted total"}: <strong className="text-[#3ecf8e]">{liveForecastTotal}</strong> · {isKhmer ? "ភាពជឿជាក់" : "confidence"} {liveForecastConfidence}
+                  {isKhmer ? "ការព្យាករណ៍ចំណាយ" : "Expense forecast"} · {isKhmer ? "សរុបដែលបានរំពឹងទុក" : "Predicted total"}: <strong className="text-[#29B28D]">{liveForecastTotal}</strong> · {isKhmer ? "ភាពជឿជាក់" : "confidence"} {liveForecastConfidence}
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(62,207,142,0.1)] text-[#3ecf8e] text-[10px] font-bold rounded-full border border-[rgba(62,207,142,0.2)]"><Brain className="w-2.5 h-2.5" /> AI</span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[10px] font-bold rounded-full border border-[rgba(41,178,141,0.2)]"><Brain className="w-2.5 h-2.5" /> AI</span>
             </div>
             <div className="p-[22px]">
               <div className="flex items-end gap-2 h-28 mb-4">
@@ -651,8 +651,8 @@ export default function PremiumExpensesPage() {
                   const isToday = i === (now.getDay() + 6) % 7;
                   return (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                      <div className="w-full relative rounded-t-[6px] transition-colors" style={{ height: "96px", background: isToday ? "rgba(62,207,142,0.15)" : "" }}>
-                        <div className={`absolute bottom-0 w-full rounded-t-[6px] ${isToday ? "bg-[#3ecf8e]" : "bg-[#d1d5db] dark:bg-white/10"}`} style={{ height: `${(h / maxWeekly) * 100}%` }} />
+                      <div className="w-full relative rounded-t-[6px] transition-colors" style={{ height: "96px", background: isToday ? "rgba(41,178,141,0.15)" : "" }}>
+                        <div className={`absolute bottom-0 w-full rounded-t-[6px] ${isToday ? "bg-[#29B28D]" : "bg-[#d1d5db] dark:bg-white/10"}`} style={{ height: `${(h / maxWeekly) * 100}%` }} />
                       </div>
                       <span className="text-[10px] text-[#9ca3af] dark:text-[#7d8590]">{day}</span>
                     </div>
@@ -674,7 +674,7 @@ export default function PremiumExpensesPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-[14px] font-bold text-[#111827] dark:text-white">{fi.predicted}</p>
-                      <span className={`text-[11px] font-bold flex items-center justify-end gap-0.5 ${fi.up === true ? "text-[#ef4444]" : fi.up === false ? "text-[#3ecf8e]" : "text-[#9ca3af] dark:text-[#7d8590]"}`}>
+                      <span className={`text-[11px] font-bold flex items-center justify-end gap-0.5 ${fi.up === true ? "text-[#ef4444]" : fi.up === false ? "text-[#29B28D]" : "text-[#9ca3af] dark:text-[#7d8590]"}`}>
                         {fi.up === true && <TrendingUp className="w-3 h-3" />} {isKhmer ? (fi.up === true ? "កើន" : fi.up === false ? "ថយ" : "ដដែល") : fi.change} {fi.change}
                       </span>
                     </div>
@@ -688,8 +688,8 @@ export default function PremiumExpensesPage() {
         {activeTab === "history" && (
           <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-[14px] overflow-hidden shadow-sm transition-colors">
             <div className="px-[20px] py-[16px] border-b border-[#f0f2f5] dark:border-white/5 flex items-center justify-between transition-colors">
-              <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-colors group focus-within:border-[#3ecf8e] w-64">
-                <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#3ecf8e] transition-colors" />
+              <div className="flex items-center gap-2.5 px-3 py-2 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] transition-colors group focus-within:border-[#29B28D] w-64">
+                <Search className="w-4 h-4 text-[#9ca3af] dark:text-[#7d8590] group-focus-within:text-[#29B28D] transition-colors" />
                 <input
                   type="text"
                   placeholder={isKhmer ? "ស្វែងរកចំណាយ..." : "Search expenses..."}
@@ -713,7 +713,7 @@ export default function PremiumExpensesPage() {
                 </thead>
                 <tbody className="divide-y divide-[#f0f2f5] dark:divide-white/5 transition-colors">
                   {loading ? (
-                    <tr><td colSpan={5} className="px-[20px] py-12 text-center text-[#9ca3af]">{isKhmer ? "កំពុងទាញយក..." : "Loading…"}</td></tr>
+                    <tr><td colSpan={5} className="px-[20px] py-12 text-center text-[#9ca3af]">{isKhmer ? "កំពុងទាញយក..." : "Loading..."}</td></tr>
                   ) : filteredHistory.length === 0 ? (
                     <tr><td colSpan={5} className="px-[20px] py-12 text-center text-[#9ca3af]">{isKhmer ? "មិនឃើញមានការចំណាយទេ។" : "No expenses found."}</td></tr>
                   ) : (
@@ -762,7 +762,7 @@ export default function PremiumExpensesPage() {
           <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
             <button onClick={() => setIsQuickLogModalOpen(false)} className="absolute top-5 right-5 text-[#9ca3af] hover:text-[#111827] hover:bg-[#f0f2f5] dark:hover:bg-white/10 p-1.5 rounded-lg transition-colors border-0 bg-transparent cursor-pointer"><X className="w-5 h-5" /></button>
             <div className="mb-6 flex items-center gap-2">
-              <div className="p-2 bg-[rgba(62,207,142,0.1)] text-[#3ecf8e] rounded-lg"><ReceiptIcon className="w-6 h-6" /></div>
+              <div className="p-2 bg-[rgba(41,178,141,0.1)] text-[#29B28D] rounded-lg"><ReceiptIcon className="w-6 h-6" /></div>
               <div>
                 <h2 className="font-bold text-[22px] text-[#111827] dark:text-white">
                   {isKhmer ? "កត់ត្រាចំណាយថ្មី" : "Log New Expense"}
@@ -779,26 +779,26 @@ export default function PremiumExpensesPage() {
                   </div>
                 </div>
                 <div className="relative group">
-                  <select value={expenseCategory} onChange={(e) => setExpenseCategory(e.target.value)} className="block w-full px-4 py-4 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[#111827] dark:text-white text-[15px] font-medium focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#3ecf8e] outline-none transition-all min-h-[60px] cursor-pointer">
+                  <select value={expenseCategory} onChange={(e) => setExpenseCategory(e.target.value)} className="block w-full px-4 py-4 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[#111827] dark:text-white text-[15px] font-medium focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#29B28D] outline-none transition-all min-h-[60px] cursor-pointer">
                     {categoriesList.map((cat, idx) => (
                       <option key={idx} value={cat.name}>{isKhmer ? cat.khmer : cat.name}</option>
                     ))}
                   </select>
                   <div className="absolute top-[-10px] left-4 bg-white dark:bg-[#0d1117] px-1 text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590] flex items-center gap-2">
                     {isKhmer ? "ប្រភេទ" : "Category"} 
-                    <button type="button" onClick={() => setShowCustomCategoryModal(true)} className="text-[#3ecf8e] text-[10px] hover:underline border-0 bg-transparent cursor-pointer">
+                    <button type="button" onClick={() => setShowCustomCategoryModal(true)} className="text-[#29B28D] text-[10px] hover:underline border-0 bg-transparent cursor-pointer">
                       + {isKhmer ? "ផ្ទាល់ខ្លួន" : "Custom"}
                     </button>
                   </div>
                 </div>
                 <div className="relative mt-2">
-                  <input type="text" placeholder={isKhmer ? "តើចំណាយនេះសម្រាប់អ្វី? (មិនបាច់ក៏បាន)" : "What was this for? (Optional)"} value={expenseNote} onChange={(e) => setExpenseNote(e.target.value)} className="block w-full px-4 py-4 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[#111827] dark:text-white text-[15px] placeholder-[#9ca3af] dark:placeholder-[#7d8590] focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#3ecf8e] outline-none transition-all min-h-[60px]" />
+                  <input type="text" placeholder={isKhmer ? "តើចំណាយនេះសម្រាប់អ្វី? (មិនបាច់ក៏បាន)" : "What was this for? (Optional)"} value={expenseNote} onChange={(e) => setExpenseNote(e.target.value)} className="block w-full px-4 py-4 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[#111827] dark:text-white text-[15px] placeholder-[#9ca3af] dark:placeholder-[#7d8590] focus:bg-white dark:focus:bg-[#0d1117] focus:border-[#29B28D] outline-none transition-all min-h-[60px]" />
                 </div>
                 <div className="flex gap-3 mt-2">
                   <button type="button" onClick={() => setIsQuickLogModalOpen(false)} className="flex-1 bg-[#f0f2f5] dark:bg-white/5 hover:bg-[#e8eaed] dark:hover:bg-white/10 text-[#374151] dark:text-white font-bold text-[16px] py-4 rounded-xl transition-all min-h-[56px] border-0 cursor-pointer">
                     {isKhmer ? "បោះបង់" : "Cancel"}
                   </button>
-                  <button type="submit" disabled={!expenseAmount || isSaving} className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold text-[16px] py-4 rounded-xl transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer disabled:opacity-60">
+                  <button type="submit" disabled={!expenseAmount || isSaving} className="flex-[2] bg-gradient-to-r from-[#8b5cf6] to-[#29B28D] hover:opacity-90 text-white font-bold text-[16px] py-4 rounded-xl transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer disabled:opacity-60">
                     {isSaving ? (
                       <RefreshCw className="w-5 h-5 animate-spin" />
                     ) : (
@@ -820,7 +820,7 @@ export default function PremiumExpensesPage() {
           <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-2xl w-full max-w-sm p-6 shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-200">
             <button onClick={() => setShowCustomCategoryModal(false)} className="absolute top-4 right-4 text-[#9ca3af] hover:text-[#e6edf3] p-1.5 rounded-lg hover:bg-white/10 transition-colors border-0 bg-transparent cursor-pointer"><X className="w-5 h-5" /></button>
             <div className="flex items-center gap-2 mb-5">
-              <div className="p-2 bg-[rgba(62,207,142,0.1)] text-[#3ecf8e] rounded-lg"><Tag className="w-5 h-5" /></div>
+              <div className="p-2 bg-[rgba(41,178,141,0.1)] text-[#29B28D] rounded-lg"><Tag className="w-5 h-5" /></div>
               <div>
                 <h3 className="font-bold text-[18px] text-[#111827] dark:text-white">
                   {isKhmer ? "បន្ថែមប្រភេទផ្ទាល់ខ្លួន" : "Add Custom Category"}
@@ -831,8 +831,8 @@ export default function PremiumExpensesPage() {
               </div>
             </div>
             <div className="space-y-4">
-              <input type="text" placeholder={isKhmer ? 'ឧ. ការតុបតែងហាង' : 'e.g., Shop Decor'} value={customCategoryName} onChange={(e) => setCustomCategoryName(e.target.value)} className="w-full px-4 py-3 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[14px] focus:border-[#3ecf8e] outline-none transition-all text-[#111827] dark:text-white" autoFocus />
-              <button onClick={handleCreateCustomCategory} className="w-full bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] hover:opacity-90 text-white font-bold py-3 rounded-xl transition-colors border-0 cursor-pointer">
+              <input type="text" placeholder={isKhmer ? 'ឧ. ការតុបតែងហាង' : 'e.g., Shop Decor'} value={customCategoryName} onChange={(e) => setCustomCategoryName(e.target.value)} className="w-full px-4 py-3 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-xl text-[14px] focus:border-[#29B28D] outline-none transition-all text-[#111827] dark:text-white" autoFocus />
+              <button onClick={handleCreateCustomCategory} className="w-full bg-gradient-to-r from-[#8b5cf6] to-[#29B28D] hover:opacity-90 text-white font-bold py-3 rounded-xl transition-colors border-0 cursor-pointer">
                 {isKhmer ? "បង្កើតប្រភេទ" : "Create Category"}
               </button>
             </div>
@@ -844,7 +844,7 @@ export default function PremiumExpensesPage() {
       {!isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-full shadow-[0_8px_32px_rgba(139,92,246,0.4)] flex items-center justify-center text-white hover:scale-110 transition-transform cursor-pointer border-0"
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-[#8b5cf6] to-[#29B28D] rounded-full shadow-[0_8px_32px_rgba(139,92,246,0.4)] flex items-center justify-center text-white hover:scale-110 transition-transform cursor-pointer border-0"
         >
           <MessageSquare className="w-[22px] h-[22px]" />
         </button>
@@ -854,7 +854,7 @@ export default function PremiumExpensesPage() {
         <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[520px] bg-white dark:bg-[#0d1117] rounded-[20px] shadow-[0_24px_64px_rgba(0,0,0,0.2)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)] border border-[#e8eaed] dark:border-white/10 flex flex-col overflow-hidden transition-colors">
           <div className="px-5 py-4 bg-[#0d1117] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-full flex items-center justify-center">
+              <div className="w-9 h-9 bg-gradient-to-br from-[#8b5cf6] to-[#29B28D] rounded-full flex items-center justify-center">
                 <Brain className="w-[18px] h-[18px] text-white" />
               </div>
               <div>
@@ -879,7 +879,7 @@ export default function PremiumExpensesPage() {
                 <div
                   className={`max-w-[80%] px-4 py-3 rounded-[14px] text-[13px] leading-relaxed transition-colors ${
                     msg.role === "user"
-                      ? "bg-[#0d1117] dark:bg-gradient-to-r dark:from-[#8b5cf6] dark:to-[#3ecf8e] text-[#e6edf3] dark:text-white rounded-br-[4px]"
+                      ? "bg-[#0d1117] dark:bg-gradient-to-r dark:from-[#8b5cf6] dark:to-[#29B28D] text-[#e6edf3] dark:text-white rounded-br-[4px]"
                       : "bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 text-[#374151] dark:text-[#e6edf3] rounded-bl-[4px] shadow-sm"
                   }`}
                 >
@@ -903,12 +903,12 @@ export default function PremiumExpensesPage() {
                 value={chatMsg}
                 onChange={(e) => setChatMsg(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#3ecf8e] dark:focus:border-[#3ecf8e] transition-colors placeholder-[#9ca3af] dark:placeholder-[#7d8590]"
+                className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#29B28D] dark:focus:border-[#29B28D] transition-colors placeholder-[#9ca3af] dark:placeholder-[#7d8590]"
               />
               <button
                 onClick={handleSend}
                 disabled={isChatSending}
-                className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] text-white rounded-[10px] border-0 cursor-pointer hover:opacity-90 disabled:opacity-50"
+                className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#29B28D] text-white rounded-[10px] border-0 cursor-pointer hover:opacity-90 disabled:opacity-50"
               >
                 {isChatSending ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

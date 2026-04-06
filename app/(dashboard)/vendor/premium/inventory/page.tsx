@@ -216,10 +216,10 @@ export default function InventoryPage() {
                   placeholder={isKhmer ? "ស្វែងរកទំនិញ..." : "Search items..."}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/10 rounded-xl text-sm dark:text-white focus:outline-none focus:border-[#3ecf8e] min-h-[44px] transition-colors"
+                  className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-[#161B22] border border-slate-200 dark:border-white/10 rounded-xl text-sm dark:text-white focus:outline-none focus:border-[#29B28D] min-h-[44px] transition-colors"
                 />
               </div>
-              <button onClick={() => { setEditingItem(null); setFormData({name:"", khmerName:"", price:"", stock:0, threshold:10}); setIsModalOpen(true); }} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#3ecf8e] text-[#0d1117] font-bold px-4 py-2.5 rounded-xl hover:opacity-90 transition-opacity min-h-[44px] border-0 cursor-pointer">
+              <button onClick={() => { setEditingItem(null); setFormData({name:"", khmerName:"", price:"", stock:0, threshold:10}); setIsModalOpen(true); }} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#29B28D] text-[#0d1117] font-bold px-4 py-2.5 rounded-xl hover:opacity-90 transition-opacity min-h-[44px] border-0 cursor-pointer">
                 <Plus className="w-4 h-4" /> {isKhmer ? "បន្ថែមទំនិញ" : "Add Item"}
               </button>
             </div>
@@ -254,7 +254,7 @@ export default function InventoryPage() {
                       <div className="flex items-center gap-3">
                         <span className="text-[15px] font-bold text-slate-900 dark:text-white w-6">{item.stock}</span>
                         <div className="w-24 h-1.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${item.status === "out" ? "bg-red-500" : item.status === "low" ? "bg-orange-500" : "bg-[#3ecf8e]"}`} style={{ width: `${Math.min((item.stock / 50) * 100, 100)}%` }} />
+                          <div className={`h-full rounded-full ${item.status === "out" ? "bg-red-500" : item.status === "low" ? "bg-orange-500" : "bg-[#29B28D]"}`} style={{ width: `${Math.min((item.stock / 50) * 100, 100)}%` }} />
                         </div>
                       </div>
                     </td>
@@ -266,7 +266,7 @@ export default function InventoryPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => handleQuickRestock(item)} className="p-2 text-slate-400 hover:text-[#3ecf8e] rounded-lg transition-colors bg-transparent border-0 cursor-pointer" title="Quick Restock +10"><PlusCircle className="w-4 h-4" /></button>
+                        <button onClick={() => handleQuickRestock(item)} className="p-2 text-slate-400 hover:text-[#29B28D] rounded-lg transition-colors bg-transparent border-0 cursor-pointer" title="Quick Restock +10"><PlusCircle className="w-4 h-4" /></button>
                         <button onClick={() => { setEditingItem(item); setFormData({name: item.name, khmerName: item.khmerName || "", price: item.price.toString().replace('$',''), stock: item.stock, threshold: item.threshold}); setIsModalOpen(true); }} className="p-2 text-slate-400 hover:text-[#111827] dark:hover:text-white rounded-lg transition-colors bg-transparent border-0 cursor-pointer" title="Edit Product"><Edit2 className="w-4 h-4" /></button>
                         <button onClick={() => handleDelete(item.id)} disabled={isDeleting === item.id} className="p-2 text-slate-400 hover:text-red-500 rounded-lg transition-colors bg-transparent border-0 cursor-pointer">{isDeleting === item.id ? <PlusCircle className="w-4 h-4 animate-spin rotate-45" /> : <X className="w-4 h-4" />}</button>
                       </div>
@@ -300,39 +300,39 @@ export default function InventoryPage() {
                 <label className="block text-[13px] font-bold text-slate-700 dark:text-[#9aa4b2] mb-1.5 font-khmer">
                   {isKhmer ? "ឈ្មោះផលិតផល" : "Product Name"} <span className="text-red-500">*</span>
                 </label>
-                <input required placeholder={isKhmer ? "ឧ. តែទឹកដោះគោ" : "e.g. Milk Tea"} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161B22] text-slate-900 dark:text-white rounded-xl px-4 py-3 outline-none focus:border-[#3ecf8e] transition-colors text-[14px]" />
+                <input required placeholder={isKhmer ? "ឧ. តែទឹកដោះគោ" : "e.g. Milk Tea"} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161B22] text-slate-900 dark:text-white rounded-xl px-4 py-3 outline-none focus:border-[#29B28D] transition-colors text-[14px]" />
               </div>
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 dark:text-[#9aa4b2] mb-1.5">
                   {isKhmer ? "ឈ្មោះជាភាសាអង់គ្លេស (ប្រសិនបើមាន)" : "English Name (Optional)"}
                 </label>
-                <input placeholder="e.g. Milk Tea" value={formData.khmerName} onChange={e => setFormData({ ...formData, khmerName: e.target.value })} className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161B22] text-slate-900 dark:text-white rounded-xl px-4 py-3 outline-none focus:border-[#3ecf8e] transition-colors text-[14px]" />
+                <input placeholder="e.g. Milk Tea" value={formData.khmerName} onChange={e => setFormData({ ...formData, khmerName: e.target.value })} className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161B22] text-slate-900 dark:text-white rounded-xl px-4 py-3 outline-none focus:border-[#29B28D] transition-colors text-[14px]" />
               </div>
               <div>
                 <label className="block text-[13px] font-bold text-slate-700 dark:text-[#9aa4b2] mb-1.5">
                   {isKhmer ? "តម្លៃ ($)" : "Price ($)"} <span className="text-red-500">*</span>
                 </label>
-                <input type="number" step="0.01" placeholder="0.00" required value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161B22] text-slate-900 dark:text-white rounded-xl px-4 py-3 outline-none focus:border-[#3ecf8e] transition-colors text-[14px]" />
+                <input type="number" step="0.01" placeholder="0.00" required value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161B22] text-slate-900 dark:text-white rounded-xl px-4 py-3 outline-none focus:border-[#29B28D] transition-colors text-[14px]" />
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">
                   <label className="block text-[13px] font-bold text-slate-700 dark:text-[#9aa4b2] mb-1.5">
                     {isKhmer ? "ស្តុកបច្ចុប្បន្ន" : "Current Stock"} <span className="text-red-500">*</span>
                   </label>
-                  <input type="number" placeholder="0" required value={formData.stock} onChange={e => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })} className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161B22] text-slate-900 dark:text-white rounded-xl px-4 py-3 outline-none focus:border-[#3ecf8e] transition-colors text-[14px]" />
+                  <input type="number" placeholder="0" required value={formData.stock} onChange={e => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })} className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161B22] text-slate-900 dark:text-white rounded-xl px-4 py-3 outline-none focus:border-[#29B28D] transition-colors text-[14px]" />
                 </div>
                 <div className="flex-1">
                   <label className="block text-[13px] font-bold text-slate-700 dark:text-[#9aa4b2] mb-1.5">
                     {isKhmer ? "កម្រិតផ្តល់សញ្ញា" : "Alert Threshold"}
                   </label>
-                  <input type="number" placeholder="10" required value={formData.threshold} onChange={e => setFormData({ ...formData, threshold: parseInt(e.target.value) || 0 })} className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161B22] text-slate-900 dark:text-white rounded-xl px-4 py-3 outline-none focus:border-[#3ecf8e] transition-colors text-[14px]" />
+                  <input type="number" placeholder="10" required value={formData.threshold} onChange={e => setFormData({ ...formData, threshold: parseInt(e.target.value) || 0 })} className="w-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#161B22] text-slate-900 dark:text-white rounded-xl px-4 py-3 outline-none focus:border-[#29B28D] transition-colors text-[14px]" />
                 </div>
               </div>
               <div className="flex justify-end gap-3 mt-8 pt-4 border-t border-[#f0f2f5] dark:border-white/5">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-3 text-[#374151] dark:text-[#e6edf3] font-bold hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl transition-colors border-0 cursor-pointer bg-transparent">
                   {isKhmer ? "បោះបង់" : "Cancel"}
                 </button>
-                <button type="submit" disabled={isSaving} className="px-5 py-3 bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] text-white font-bold rounded-xl shadow-md hover:opacity-90 transition-opacity border-0 cursor-pointer disabled:opacity-50 min-w-[120px]">
+                <button type="submit" disabled={isSaving} className="px-5 py-3 bg-gradient-to-r from-[#8b5cf6] to-[#29B28D] text-white font-bold rounded-xl shadow-md hover:opacity-90 transition-opacity border-0 cursor-pointer disabled:opacity-50 min-w-[120px]">
                   {isSaving ? (isKhmer ? "កំពុងរក្សាទុក..." : "Saving...") : editingItem ? (isKhmer ? "រក្សាទុកការផ្លាស់ប្តូរ" : "Save Changes") : (isKhmer ? "បញ្ជាក់ទំនិញ" : "Confirm Item")}
                 </button>
               </div>

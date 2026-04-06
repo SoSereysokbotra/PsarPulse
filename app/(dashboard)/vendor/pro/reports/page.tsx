@@ -424,7 +424,7 @@ export default function ProReportsPage() {
       <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
 
           {/* Tabs Navigation */}
-          <div className="flex items-end gap-0 border-b border-[#e8eaed] dark:border-white/5 -mt-3 overflow-x-auto scrollbar-none">
+          <div className="flex items-end gap-0 border-b border-[#e8eaed] dark:border-white/5 -mt-3 overflow-x-auto overflow-y-hidden [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -838,7 +838,7 @@ export default function ProReportsPage() {
                       (i) => i.status === "low" || i.status === "out" || (i.stock !== undefined && i.threshold !== undefined && i.stock <= i.threshold)
                     );
                     return lowItems.length === 0 ? (
-                      <p className="text-center text-slate-400 py-6 text-sm">All items are well stocked! ✓</p>
+                      <p className="text-center text-slate-400 py-6 text-sm">All items are well stocked!</p>
                     ) : lowItems.map((item: any, i: number) => (
                       <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117]/50 dark:bg-white/5">
                         <div>

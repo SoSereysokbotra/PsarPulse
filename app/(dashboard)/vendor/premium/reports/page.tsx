@@ -227,7 +227,7 @@ export default function PremiumReportsPage() {
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
-            className="hidden sm:block bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 text-[#111827] dark:text-white text-[13px] font-medium rounded-[10px] px-3 py-2 outline-none focus:border-[#3ecf8e] cursor-pointer transition-colors"
+            className="hidden sm:block bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 text-[#111827] dark:text-white text-[13px] font-medium rounded-[10px] px-3 py-2 outline-none focus:border-[#29B28D] cursor-pointer transition-colors"
           >
             <option value="Today">{isKhmer ? "ថ្ងៃនេះ" : "Today"}</option>
             <option value="This Week">{isKhmer ? "សប្តាហ៍នេះ" : "This Week"}</option>
@@ -242,7 +242,7 @@ export default function PremiumReportsPage() {
           </button>
           <button
             onClick={() => setIsChatOpen((o) => !o)}
-            className="flex items-center gap-1.5 bg-gradient-to-r from-[#8b5cf6] to-[#3ecf8e] text-white border-0 rounded-[10px] px-3.5 py-[9px] font-bold text-[13px] cursor-pointer hover:opacity-90"
+            className="flex items-center gap-1.5 bg-gradient-to-r from-[#8b5cf6] to-[#29B28D] text-white border-0 rounded-[10px] px-3.5 py-[9px] font-bold text-[13px] cursor-pointer hover:opacity-90"
           >
             <Brain size={14} /> {isKhmer ? "Gemini AI" : "Gemini AI"}
           </button>
@@ -262,7 +262,7 @@ export default function PremiumReportsPage() {
         </div>
 
         {/* ── Tabs ── */}
-        <div className="flex items-end gap-0 border-b border-[#e8eaed] dark:border-white/10 -mt-3 transition-colors">
+        <div className="flex items-end gap-0 border-b border-[#e8eaed] dark:border-white/10 -mt-3 overflow-x-auto overflow-y-hidden [ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden transition-colors">
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -282,7 +282,7 @@ export default function PremiumReportsPage() {
           <section>
             {/* Section header */}
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-1.5 h-6 bg-[#3ecf8e] rounded-full" />
+              <div className="w-1.5 h-6 bg-[#29B28D] rounded-full" />
               <h2 className="font-bold text-[19px] text-[#111827] dark:text-white">
                 {isKhmer ? "ចំណេញ និង ខាត" : "Profit & Loss"}
               </h2>
@@ -299,7 +299,7 @@ export default function PremiumReportsPage() {
                 trend={revenueTrend}
                 isPositive={totalRevenue > 0}
                 icon={<TrendingUp className="w-5 h-5" />}
-                accentColor="bg-[#3ecf8e]"
+                accentColor="bg-[#29B28D]"
               />
               <PLCard
                 title={isKhmer ? "ចំណាយសរុប" : "Total Expenses"}
@@ -317,7 +317,7 @@ export default function PremiumReportsPage() {
                 trend={netProfit > 0 ? "+Live" : "-Live"}
                 isPositive={netProfit > 0}
                 icon={<CircleDollarSign className="w-5 h-5" />}
-                accentColor="bg-[#3ecf8e]"
+                accentColor="bg-[#29B28D]"
                 highlight
               />
               <PLCard
@@ -342,7 +342,7 @@ export default function PremiumReportsPage() {
         {activeTab === "sales" && (
           <section>
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-1.5 h-6 bg-[#3ecf8e] rounded-full" />
+              <div className="w-1.5 h-6 bg-[#29B28D] rounded-full" />
               <h2 className="font-bold text-[19px] text-[#111827] dark:text-white">
                 {isKhmer ? "របាយការណ៍ការលក់" : "Sales Report"}
               </h2>
@@ -374,7 +374,7 @@ export default function PremiumReportsPage() {
                               </span>
                             </div>
                             <div>
-                              <span className="text-[13.5px] font-bold text-[#3ecf8e]">
+                              <span className="text-[13.5px] font-bold text-[#29B28D]">
                                 {isKhmer ? "លក់ដាច់" : "sold"}
                               </span>
                               <span className="text-[12px] text-[#9ca3af] dark:text-[#7d8590] ml-1.5">
@@ -384,7 +384,7 @@ export default function PremiumReportsPage() {
                           </div>
                           <div className="w-full h-1.5 bg-[#f0f2f5] dark:bg-white/5 rounded-full overflow-hidden transition-colors">
                             <div
-                              className="h-full bg-[#3ecf8e] rounded-full transition-all"
+                              className="h-full bg-[#29B28D] rounded-full transition-all"
                               style={{ width: `${item.pct}%` }}
                             />
                           </div>
@@ -408,10 +408,10 @@ export default function PremiumReportsPage() {
                   <div className="text-[10px] text-[#4d5562] mb-4">
                     {isKhmer ? "ការលក់សរុប" : "Total Sales"}
                   </div>
-                  <div className="text-[30px] font-bold text-[#3ecf8e]">
+                  <div className="text-[30px] font-bold text-[#29B28D]">
                     ${totalRevenue.toFixed(2)}
                   </div>
-                  <div className="flex items-center gap-1 mt-2 text-[12.5px] font-bold text-[#3ecf8e]">
+                  <div className="flex items-center gap-1 mt-2 text-[12.5px] font-bold text-[#29B28D]">
                     <span className="text-white/60 font-normal">{isKhmer ? "បានធ្វើបច្ចុប្បន្នភាពផ្ទាល់" : "Updated Live"}</span>
                   </div>
                 </div>
@@ -426,10 +426,10 @@ export default function PremiumReportsPage() {
                       dynamicTrend.map((h, i) => (
                         <div
                           key={i}
-                          className="flex-1 bg-[rgba(62,207,142,0.1)] rounded-t-[5px] relative"
+                          className="flex-1 bg-[rgba(41,178,141,0.1)] rounded-t-[5px] relative"
                         >
                           <div
-                            className="absolute bottom-0 w-full bg-[#3ecf8e] rounded-t-[5px] transition-all"
+                            className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[5px] transition-all"
                             style={{ height: `${(h / maxTrend) * 100}%` }}
                             title={`$${h.toFixed(2)}`}
                           />
@@ -479,7 +479,7 @@ export default function PremiumReportsPage() {
         {activeTab === "insights" && (
           <section>
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-1.5 h-6 bg-gradient-to-b from-[#8b5cf6] to-[#3ecf8e] rounded-full" />
+              <div className="w-1.5 h-6 bg-gradient-to-b from-[#8b5cf6] to-[#29B28D] rounded-full" />
               <h2 className="font-bold text-[19px] text-[#111827] dark:text-white">
                 {isKhmer ? "ការយល់ដឹងអំពីអាជីវកម្ម" : "Business Insights"}
               </h2>
@@ -496,7 +496,7 @@ export default function PremiumReportsPage() {
       {!isChatOpen && (
         <button
           onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-full shadow-[0_8px_32px_rgba(139,92,246,0.4)] flex items-center justify-center text-white hover:scale-110 transition-transform cursor-pointer border-0"
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-br from-[#8b5cf6] to-[#29B28D] rounded-full shadow-[0_8px_32px_rgba(139,92,246,0.4)] flex items-center justify-center text-white hover:scale-110 transition-transform cursor-pointer border-0"
         >
           <MessageSquare size={22} />
         </button>
@@ -506,7 +506,7 @@ export default function PremiumReportsPage() {
         <div className="fixed bottom-6 right-6 z-50 w-[380px] max-h-[520px] bg-white dark:bg-[#0d1117] rounded-[20px] shadow-[0_24px_64px_rgba(0,0,0,0.2)] dark:shadow-[0_24px_64px_rgba(0,0,0,0.5)] border border-[#e8eaed] dark:border-white/10 flex flex-col overflow-hidden transition-colors">
           <div className="px-5 py-4 bg-[#0d1117] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] rounded-full flex items-center justify-center">
+              <div className="w-9 h-9 bg-gradient-to-br from-[#8b5cf6] to-[#29B28D] rounded-full flex items-center justify-center">
                 <Brain size={18} className="text-white" />
               </div>
               <div>
@@ -536,7 +536,7 @@ export default function PremiumReportsPage() {
               >
                 <div
                   className={`max-w-[80%] px-4 py-3 rounded-[14px] text-[13px] leading-relaxed transition-colors ${msg.role === "user"
-                      ? "bg-[#0d1117] dark:bg-gradient-to-r dark:from-[#8b5cf6] dark:to-[#3ecf8e] text-[#e6edf3] dark:text-white rounded-br-[4px]"
+                      ? "bg-[#0d1117] dark:bg-gradient-to-r dark:from-[#8b5cf6] dark:to-[#29B28D] text-[#e6edf3] dark:text-white rounded-br-[4px]"
                       : "bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 text-[#374151] dark:text-[#e6edf3] rounded-bl-[4px] shadow-sm"
                     }`}
                 >
@@ -553,11 +553,11 @@ export default function PremiumReportsPage() {
                 value={chatMsg}
                 onChange={(e) => setChatMsg(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#3ecf8e] dark:focus:border-[#3ecf8e] transition-colors placeholder-[#9ca3af] dark:placeholder-[#7d8590]"
+                className="flex-1 px-4 py-2.5 bg-[#f7f8fa] dark:bg-[#161B22] border border-[#e8eaed] dark:border-white/10 rounded-[10px] text-[13px] outline-none text-[#111827] dark:text-white focus:border-[#29B28D] dark:focus:border-[#29B28D] transition-colors placeholder-[#9ca3af] dark:placeholder-[#7d8590]"
               />
               <button
                 onClick={handleSend}
-                className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#3ecf8e] text-white rounded-[10px] border-0 cursor-pointer hover:opacity-90"
+                className="p-2.5 bg-gradient-to-br from-[#8b5cf6] to-[#29B28D] text-white rounded-[10px] border-0 cursor-pointer hover:opacity-90"
               >
                 <Send size={15} />
               </button>
@@ -595,7 +595,7 @@ function PLCard({
   return (
     <div
       className={`p-5 rounded-2xl border transition-colors ${highlight
-          ? "bg-[#3ecf8e] text-white border-transparent shadow-md"
+          ? "bg-[#29B28D] text-white border-transparent shadow-md"
           : "bg-white dark:bg-[#0d1117] border-[#e8eaed] dark:border-white/10 shadow-[0_1px_4px_rgba(0,0,0,0.06)]"
         }`}
     >
@@ -628,7 +628,7 @@ function PLCard({
           className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${highlight
               ? "bg-white/20 text-white"
               : isPositive
-                ? "bg-[rgba(62,207,142,0.1)] dark:bg-[rgba(62,207,142,0.15)] text-[#3ecf8e] dark:text-[#4dd49a]"
+                ? "bg-[rgba(41,178,141,0.1)] dark:bg-[rgba(41,178,141,0.15)] text-[#29B28D] dark:text-[#4dd49a]"
                 : "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400"
             }`}
         >

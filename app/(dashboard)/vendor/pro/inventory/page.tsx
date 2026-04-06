@@ -246,7 +246,7 @@ export default function ProInventoryPage() {
                   {inventoryItems.map((item) => (
                     <tr
                       key={item.id}
-                      className="hover:bg-psar-primary/10/20 transition-colors group"
+                      className="hover:bg-psar-primary/10 transition-colors group"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col">

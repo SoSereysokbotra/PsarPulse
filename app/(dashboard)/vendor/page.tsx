@@ -76,7 +76,7 @@ const EXP_BREAKDOWN = [
     label: "គ្រឿងផ្សំ",
     labelEn: "Ingredients",
     pct: 43,
-    color: "#3ecf8e",
+    color: "#29B28D",
   },
   { key: "rent", label: "ថ្លៃដូរ", labelEn: "Rent", pct: 25, color: "#3b82f6" },
   {
@@ -316,7 +316,7 @@ export default function VendorDashboard() {
   const GOAL = { ...GOAL_DATA, current: stats.todaySales, target: dailyGoal };
 
   const expenseCategories = [
-    { label: "គ្រឿងផ្សំ", value: 38, color: "#3ecf8e" },
+    { label: "គ្រឿងផ្សំ", value: 38, color: "#29B28D" },
     { label: "ថ្លៃជួល", value: 22, color: "#3b82f6" },
     { label: "ពលកម្ម", value: 18, color: "#f59e0b" },
     { label: "ដឹកជញ្ជូន", value: 10, color: "#ef4444" },
@@ -544,7 +544,7 @@ export default function VendorDashboard() {
               onClick={() => setQuickSaleOpen((o) => !o)}
               className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer transition-all duration-200 ${quickSaleOpen
                   ? "bg-[#0d1117] text-[#e6edf3]"
-                  : "bg-[#3ecf8e] text-[#0d1117] shadow-[0_2px_14px_rgba(62,207,142,0.28)]"
+                  : "bg-[#29B28D] text-[#0d1117] shadow-[0_2px_14px_rgba(41,178,141,0.28)]"
                 }`}
             >
               {quickSaleOpen ? (
@@ -557,7 +557,7 @@ export default function VendorDashboard() {
                 </>
               )}
               {cartItems > 0 && !quickSaleOpen && (
-                <span className="bg-[#0d1117] text-[#3ecf8e] rounded-full w-[18px] h-[18px] text-[10px] font-extrabold flex items-center justify-center ml-0.5">
+                <span className="bg-[#0d1117] text-[#29B28D] rounded-full w-[18px] h-[18px] text-[10px] font-extrabold flex items-center justify-center ml-0.5">
                   {cartItems}
                 </span>
               )}
@@ -578,7 +578,7 @@ export default function VendorDashboard() {
                   className={`flex items-center gap-2 px-[18px] py-[14px] border-b ${isDark ? "border-white/5" : "border-[#e8eaed]"
                     }`}
                 >
-                  <ShoppingCart size={14} className="text-[#3ecf8e]" />
+                  <ShoppingCart size={14} className="text-[#29B28D]" />
                   <span
                     className={`font-bold text-sm ${isDark ? "text-white" : "text-[#111827]"
                       }`}
@@ -606,8 +606,8 @@ export default function VendorDashboard() {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={t("dashboard.placeholders.searchProduct")}
                       className={`w-full pl-[33px] pr-[11px] py-[9px] rounded-[9px] text-[13px] outline-none transition-colors ${isDark
-                          ? "bg-[#0d1117] border border-white/5 text-white focus:border-[#3ecf8e]"
-                          : "bg-[#f7f8fa] border border-[#e8eaed] text-[#111827] focus:border-[#3ecf8e]"
+                          ? "bg-[#0d1117] border border-white/5 text-white focus:border-[#29B28D]"
+                          : "bg-[#f7f8fa] border border-[#e8eaed] text-[#111827] focus:border-[#29B28D]"
                         }`}
                       style={{ fontFamily: "inherit" }}
                     />
@@ -634,7 +634,7 @@ export default function VendorDashboard() {
                               style={{ fontFamily: "inherit" }}
                             >
                               <span>{p.name}</span>
-                              <span className="text-[#3ecf8e] font-bold">
+                              <span className="text-[#29B28D] font-bold">
                                 ${parseFloat(p.price?.toString() || "0").toFixed(2)}
                               </span>
                             </button>
@@ -675,8 +675,8 @@ export default function VendorDashboard() {
                                 }}
                                 className={`px-3 py-[9px] rounded-[9px] text-left cursor-pointer transition-all duration-[120ms] relative border ${inCart
                                     ? isDark
-                                      ? "bg-[#3ecf8e]/15 border-[#3ecf8e]/30"
-                                      : "bg-[rgba(62,207,142,0.12)] border-[#3ecf8e]"
+                                      ? "bg-[#29B28D]/15 border-[#29B28D]/30"
+                                      : "bg-[rgba(41,178,141,0.12)] border-[#29B28D]"
                                     : isDark
                                       ? "bg-[#1a1a1a] border-white/5 hover:bg-[#222222]"
                                       : "bg-[#f7f8fa] border-[#e8eaed] hover:bg-[#eff0f2]"
@@ -684,7 +684,7 @@ export default function VendorDashboard() {
                               >
                                 <div
                                   className={`text-xs font-semibold truncate mb-0.5 ${inCart
-                                      ? "text-[#3ecf8e]"
+                                      ? "text-[#29B28D]"
                                       : isDark
                                         ? "text-white"
                                         : "text-[#111827]"
@@ -694,7 +694,7 @@ export default function VendorDashboard() {
                                 </div>
                                 <div
                                   className={`text-[11px] font-bold ${inCart
-                                      ? "text-[#3ecf8e]"
+                                      ? "text-[#29B28D]"
                                       : isDark
                                         ? "text-[#7d8590]"
                                         : "text-[#6b7280]"
@@ -703,7 +703,7 @@ export default function VendorDashboard() {
                                   ${parseFloat(p.price?.toString() || "0").toFixed(2)}
                                 </div>
                                 {inCart && (
-                                  <span className="absolute top-1.5 right-2 bg-[#3ecf8e] text-[#0d1117] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
+                                  <span className="absolute top-1.5 right-2 bg-[#29B28D] text-[#0d1117] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
                                     {inCart.qty}
                                   </span>
                                 )}
@@ -848,7 +848,7 @@ export default function VendorDashboard() {
                     >
                       {cartItems} item{cartItems !== 1 ? "s" : ""}
                     </span>
-                    <span className="font-extrabold text-xl text-[#3ecf8e]">
+                    <span className="font-extrabold text-xl text-[#29B28D]">
                       ${cartTotal.toFixed(2)}
                     </span>
                   </div>
@@ -861,7 +861,7 @@ export default function VendorDashboard() {
                     }}
                     disabled={cart.length === 0}
                     className={`w-full py-3 font-bold text-[13.5px] border-0 rounded-[10px] flex items-center justify-center gap-[7px] transition-all ${cart.length
-                        ? "bg-[#3ecf8e] text-[#0d1117] cursor-pointer shadow-[0_4px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a]"
+                        ? "bg-[#29B28D] text-[#0d1117] cursor-pointer shadow-[0_4px_14px_rgba(41,178,141,0.28)] hover:bg-[#239979]"
                         : isDark
                           ? "bg-[#1a1a1a] text-[#4d5562] cursor-not-allowed"
                           : "bg-[#f0f2f5] text-[#6b7280] cursor-not-allowed"
@@ -885,13 +885,13 @@ export default function VendorDashboard() {
           >
             {/* Left — greeting */}
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[17px] font-extrabold text-white shrink-0 shadow-[0_0_0_3px_rgba(62,207,142,0.2)]">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#29B28D] to-[#219072] flex items-center justify-center text-[17px] font-extrabold text-white shrink-0 shadow-[0_0_0_3px_rgba(41,178,141,0.2)]">
                 {loading ? "..." : displayInitials}
               </div>
               <div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-[18px] font-extrabold text-[#e6edf3]" suppressHydrationWarning>
-                    {greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName} 👋
+                    {greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName}
                   </span>
                 </div>
                 <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2" suppressHydrationWarning>
@@ -921,7 +921,7 @@ export default function VendorDashboard() {
                     cy="44"
                     r={radius}
                     fill="none"
-                    stroke="#3ecf8e"
+                    stroke="#29B28D"
                     strokeWidth="7"
                     strokeLinecap="round"
                     strokeDasharray={`${strokeDash} ${circum}`}
@@ -940,8 +940,8 @@ export default function VendorDashboard() {
               {/* Goal text */}
               <div>
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Target size={12} className="text-[#3ecf8e]" />
-                  <span className="text-[11px] font-bold text-[#3ecf8e] uppercase tracking-[0.06em]">
+                  <Target size={12} className="text-[#29B28D]" />
+                  <span className="text-[11px] font-bold text-[#29B28D] uppercase tracking-[0.06em]">
                     {isKhmer ? "គោលដៅប្រចាំថ្ងៃ" : "Daily Goal"}
                   </span>
                 </div>
@@ -955,7 +955,7 @@ export default function VendorDashboard() {
                 </div>
                 <div className="mt-2 w-[120px] h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#3ecf8e] rounded-full transition-[width] duration-700"
+                    className="h-full bg-[#29B28D] rounded-full transition-[width] duration-700"
                     style={{ width: `${goalPct}%` }}
                   />
                 </div>
@@ -964,7 +964,7 @@ export default function VendorDashboard() {
                     setGoalInputValue(String(dailyGoal));
                     setShowGoalModal(true);
                   }}
-                  className="mt-2 text-[10px] text-[#3ecf8e] hover:text-white font-bold flex items-center gap-1 bg-transparent border-0 cursor-pointer transition-colors"
+                  className="mt-2 text-[10px] text-[#29B28D] hover:text-white font-bold flex items-center gap-1 bg-transparent border-0 cursor-pointer transition-colors"
                 >
                   <Plus size={10} />
                   <span className="uppercase tracking-wider">{language === "km" ? "កំណត់គោលដៅ" : "Set Goal"}</span>
@@ -1011,7 +1011,7 @@ export default function VendorDashboard() {
                   className="h-full rounded-full transition-[width] duration-[600ms] ease-in-out"
                   style={{
                     width: `${usagePct}%`,
-                    background: usagePct > 80 ? "#f59e0b" : "#3ecf8e",
+                    background: usagePct > 80 ? "#f59e0b" : "#29B28D",
                   }}
                 />
               </div>
@@ -1021,7 +1021,7 @@ export default function VendorDashboard() {
                 {usage.limit - usage.used} logs remaining ·{" "}
                 <Link
                   href="/vendor/pricing"
-                  className="text-[#3ecf8e] no-underline font-semibold"
+                  className="text-[#29B28D] no-underline font-semibold"
                 >
                   Upgrade
                 </Link>
@@ -1047,7 +1047,7 @@ export default function VendorDashboard() {
                 </div>
                 <button
                   onClick={logTraffic}
-                  className="flex items-center gap-2 bg-[#3ecf8e] text-[#0d1117] font-bold text-[13px] px-4 py-2.5 rounded-[10px] border-0 cursor-pointer shadow-[0_4px_12px_rgba(62,207,142,0.2)] active:scale-95 transition-all"
+                  className="flex items-center gap-2 bg-[#29B28D] text-[#0d1117] font-bold text-[13px] px-4 py-2.5 rounded-[10px] border-0 cursor-pointer shadow-[0_4px_12px_rgba(41,178,141,0.2)] active:scale-95 transition-all"
                 >
                   <Users size={14} /> +1 Log
                 </button>
@@ -1314,7 +1314,7 @@ export default function VendorDashboard() {
                 </div>
               </div>
               {expLogged && (
-                <span className="inline-flex items-center gap-[5px] px-3 py-[5px] rounded-full bg-[rgba(62,207,142,0.12)] text-[#3ecf8e] text-xs font-bold border border-[rgba(62,207,142,0.2)]">
+                <span className="inline-flex items-center gap-[5px] px-3 py-[5px] rounded-full bg-[rgba(41,178,141,0.12)] text-[#29B28D] text-xs font-bold border border-[rgba(41,178,141,0.2)]">
                   <CheckCircle2 size={13} /> Logged!
                 </span>
               )}
@@ -1373,7 +1373,7 @@ export default function VendorDashboard() {
                   សកម្មភាពថ្មីៗ
                 </div>
               </div>
-              <Link href="/vendor/sales" className="text-[12px] font-bold text-[#3ecf8e] no-underline hover:underline">
+              <Link href="/vendor/sales" className="text-[12px] font-bold text-[#29B28D] no-underline hover:underline">
                 View All
               </Link>
             </div>
@@ -1395,7 +1395,7 @@ export default function VendorDashboard() {
                         <td className="px-[26px] py-4">
                           <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
                             act.type === 'sale' 
-                              ? "bg-[rgba(62,207,142,0.1)] text-[#3ecf8e] border border-[#3ecf8e]/20" 
+                              ? "bg-[rgba(41,178,141,0.1)] text-[#29B28D] border border-[#29B28D]/20" 
                               : "bg-[rgba(239,68,68,0.1)] text-[#ef4444] border border-[#ef4444]/20"
                           }`}>
                             {act.type}
@@ -1412,7 +1412,7 @@ export default function VendorDashboard() {
                             {new Date(act.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                           </div>
                         </td>
-                        <td className={`px-[26px] py-4 text-right font-bold ${act.type === 'sale' ? "text-[#3ecf8e]" : "text-[#ef4444]"}`}>
+                        <td className={`px-[26px] py-4 text-right font-bold ${act.type === 'sale' ? "text-[#29B28D]" : "text-[#ef4444]"}`}>
                           {act.type === 'sale' ? "+" : "-"}${parseFloat(act.amount).toFixed(2)}
                         </td>
                       </tr>
@@ -1443,7 +1443,7 @@ export default function VendorDashboard() {
                 </div>
               </div>
               {isDayLocked && (
-                <span className="inline-flex items-center gap-[5px] px-[14px] py-1.5 rounded-full bg-[rgba(62,207,142,0.15)] text-[#3ecf8e] text-xs font-bold border border-[rgba(62,207,142,0.25)]">
+                <span className="inline-flex items-center gap-[5px] px-[14px] py-1.5 rounded-full bg-[rgba(41,178,141,0.15)] text-[#29B28D] text-xs font-bold border border-[rgba(41,178,141,0.25)]">
                   <CheckCircle2 size={13} /> Day Locked
                 </span>
               )}
@@ -1473,14 +1473,14 @@ export default function VendorDashboard() {
                     {summary.expenses}
                   </div>
                 </div>
-                <div className="px-5 py-[18px] bg-[rgba(62,207,142,0.10)] rounded-xl text-center border border-[rgba(62,207,142,0.20)]">
-                  <div className="text-[11px] font-semibold text-[#3ecf8e] mb-0.5">
+                <div className="px-5 py-[18px] bg-[rgba(41,178,141,0.10)] rounded-xl text-center border border-[rgba(41,178,141,0.20)]">
+                  <div className="text-[11px] font-semibold text-[#29B28D] mb-0.5">
                     Net Profit
                   </div>
                   <div className="text-[10px] text-[#4d5562] mb-[10px]">
                     ប្រាក់ចំណេញ
                   </div>
-                  <div className="font-bold text-[26px] text-[#3ecf8e]">
+                  <div className="font-bold text-[26px] text-[#29B28D]">
                     {summary.profit}
                   </div>
                 </div>
@@ -1513,7 +1513,7 @@ export default function VendorDashboard() {
                       console.error("Failed to lock day:", e);
                     }
                   }}
-                  className="w-full flex items-center justify-center gap-[9px] bg-[#3ecf8e] text-[#0d1117] font-bold text-[15px] py-4 rounded-[11px] border-0 cursor-pointer transition-all duration-200 shadow-[0_4px_22px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a]"
+                  className="w-full flex items-center justify-center gap-[9px] bg-[#29B28D] text-[#0d1117] font-bold text-[15px] py-4 rounded-[11px] border-0 cursor-pointer transition-all duration-200 shadow-[0_4px_22px_rgba(41,178,141,0.28)] hover:bg-[#239979]"
                 >
                   <Lock size={16} />
                   Confirm &amp; Lock Day
@@ -1521,7 +1521,7 @@ export default function VendorDashboard() {
                 </button>
               ) : (
                 <div className="w-full flex items-center justify-center gap-2 bg-white/[0.05] text-[#7d8590] font-semibold text-sm py-4 rounded-[11px] border border-white/[0.08]">
-                  <CheckCircle2 size={16} className="text-[#3ecf8e]" />
+                  <CheckCircle2 size={16} className="text-[#29B28D]" />
                   Day Locked — Records Finalized
                 </div>
               )}
@@ -1536,7 +1536,7 @@ export default function VendorDashboard() {
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#0E1319]/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="absolute inset-0" onClick={() => setShowGoalModal(false)} />
           <div className="bg-[#0b0f15] rounded-[24px] w-full max-w-sm p-8 shadow-[0_32px_128px_rgba(0,0,0,0.6)] relative z-10 border border-white/10">
-            <div className="w-12 h-12 bg-[#3ecf8e]/10 rounded-2xl flex items-center justify-center mb-6 text-[#3ecf8e]">
+            <div className="w-12 h-12 bg-[#29B28D]/10 rounded-2xl flex items-center justify-center mb-6 text-[#29B28D]">
               <Target size={24} />
             </div>
             <h3 className="text-xl font-bold text-white mb-2">
@@ -1547,13 +1547,13 @@ export default function VendorDashboard() {
             </p>
             <div className="space-y-6">
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-[#3ecf8e]">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-[#29B28D]">$</span>
                 <input
                   type="number"
                   autoFocus
                   value={goalInputValue}
                   onChange={(e) => setGoalInputValue(e.target.value)}
-                  className="w-full pl-10 pr-4 py-4 bg-[#161B22] border-2 border-white/5 rounded-[16px] text-2xl font-black text-white outline-none focus:border-[#3ecf8e] transition-all"
+                  className="w-full pl-10 pr-4 py-4 bg-[#161B22] border-2 border-white/5 rounded-[16px] text-2xl font-black text-white outline-none focus:border-[#29B28D] transition-all"
                 />
               </div>
               <div className="flex gap-3">
@@ -1565,7 +1565,7 @@ export default function VendorDashboard() {
                 </button>
                 <button
                   onClick={handleUpdateGoal}
-                  className="flex-2 py-4 bg-[#3ecf8e] hover:bg-[#34b27b] text-[#0E1319] font-extrabold rounded-xl transition-all shadow-lg border-0 cursor-pointer px-8"
+                  className="flex-2 py-4 bg-[#29B28D] hover:bg-[#239979] text-[#0E1319] font-extrabold rounded-xl transition-all shadow-lg border-0 cursor-pointer px-8"
                 >
                   {t("dashboard.actions.save")}
                 </button>
@@ -1579,7 +1579,7 @@ export default function VendorDashboard() {
       {showGoalReachedNotification && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[80] w-[calc(100%-32px)] max-w-md animate-in slide-in-from-top-4 duration-500 fill-mode-forwards px-4">
           <div className="bg-[#0E1319] dark:bg-white rounded-[24px] p-5 shadow-[0_32px_128px_rgba(0,0,0,0.4)] border border-white/15 dark:border-black/5 flex items-center gap-5">
-            <div className="w-14 h-14 bg-[#3ecf8e] rounded-2xl flex items-center justify-center shrink-0 relative overflow-hidden">
+            <div className="w-14 h-14 bg-[#29B28D] rounded-2xl flex items-center justify-center shrink-0 relative overflow-hidden">
                <div className="absolute inset-0 bg-white/20 animate-pulse" />
                <Sparkles className="w-7 h-7 text-[#0E1319] relative z-10" />
             </div>

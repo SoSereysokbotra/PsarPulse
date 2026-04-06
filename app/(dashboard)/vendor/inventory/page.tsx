@@ -213,7 +213,7 @@ export default function FreeInventoryPage() {
             t.type === "warning" ? "bg-[#FFF4E5] text-[#B76E00] border-[#FFE2B7]" :
             "bg-white text-slate-900 border-slate-200"
           }`}>
-            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#3ecf8e]" /> : 
+            {t.type === "success" ? <CheckCircle2 size={16} className="text-[#29B28D]" /> : 
              t.type === "warning" ? <AlertTriangle size={16} className="text-[#f59e0b]" /> :
              <AlertCircle size={16} className="text-red-500" />}
             <span className="flex-1">{t.msg}</span>
@@ -230,7 +230,7 @@ export default function FreeInventoryPage() {
           setIsSidebarCollapsed={setIsSidebarCollapsed}
           setIsMobileSidebarOpen={setIsSidebarOpen}
           rightActions={
-            <button onClick={openAdd} className="flex items-center gap-2 bg-[#0d1117] text-[#3ecf8e] px-4 py-[9px] rounded-[10px] font-bold text-[13px] border border-[#3ecf8e]/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:bg-black transition-all">
+            <button onClick={openAdd} className="flex items-center gap-2 bg-[#0d1117] text-[#29B28D] px-4 py-[9px] rounded-[10px] font-bold text-[13px] border border-[#29B28D]/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:bg-black transition-all">
               <Plus size={14} /> {t("inventory.addProduct")}
             </button>
           }
@@ -253,9 +253,9 @@ export default function FreeInventoryPage() {
 
             {/* Upgrade Banner if limit approached */}
             {inventory.length >= 25 && (
-              <div className="bg-gradient-to-r from-[#0d1117] to-[#1a222e] rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl border border-[#3ecf8e]/10">
+              <div className="bg-gradient-to-r from-[#0d1117] to-[#1a222e] rounded-2xl p-6 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl border border-[#29B28D]/10">
                 <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 rounded-2xl bg-[#3ecf8e]/10 border border-[#3ecf8e]/20 flex items-center justify-center text-[#3ecf8e] shrink-0">
+                  <div className="w-14 h-14 rounded-2xl bg-[#29B28D]/10 border border-[#29B28D]/20 flex items-center justify-center text-[#29B28D] shrink-0">
                     <Sparkles className="w-7 h-7" />
                   </div>
                   <div>
@@ -263,7 +263,7 @@ export default function FreeInventoryPage() {
                     <p className="text-slate-400 text-sm mt-1">{t("inventory.upgrade.desc")}</p>
                   </div>
                 </div>
-                <Link href="/vendor/pricing" className="bg-[#3ecf8e] text-[#0d1117] px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-[#4dd49a] transition-all no-underline whitespace-nowrap">
+                <Link href="/vendor/pricing" className="bg-[#29B28D] text-[#0d1117] px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-[#249e7d] transition-all no-underline whitespace-nowrap">
                   {t("inventory.upgrade.button")} <ArrowRight size={16} />
                 </Link>
               </div>
@@ -280,8 +280,8 @@ export default function FreeInventoryPage() {
             <div className={`border rounded-[14px] overflow-hidden shadow-sm ${isDark ? "bg-dark-surface border-white/5" : "bg-white border-[#e8eaed]"}`}>
               <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between flex-wrap gap-4">
                 <h3 className="font-semibold text-sm">{t("inventory.productList")}</h3>
-                <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-60 focus-within:border-[#3ecf8e]/30 group">
-                  <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#3ecf8e]" />
+                <div className="flex items-center gap-2.5 px-4 py-2 rounded-full border border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 transition-all w-60 focus-within:border-[#29B28D]/30 group">
+                  <Search className="w-4 h-4 text-slate-300 dark:text-slate-500 transition-colors group-focus-within:text-[#29B28D]" />
                   <input type="text" placeholder={t("inventory.searchPlaceholder")} value={search} onChange={(e) => setSearch(e.target.value)} className="bg-transparent border-none outline-none text-[13px] w-full placeholder:text-slate-400 dark:text-white" />
                 </div>
               </div>
@@ -304,13 +304,13 @@ export default function FreeInventoryPage() {
                           <div className={`font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{item.name}</div>
                           <div className="text-[11px] text-slate-500 mt-0.5">{item.khmerName || "—"}</div>
                         </td>
-                        <td className="px-6 py-4 font-bold text-[#3ecf8e]">${parseFloat(item.price?.toString() || "0").toFixed(2)}</td>
+                        <td className="px-6 py-4 font-bold text-[#29B28D]">${parseFloat(item.price?.toString() || "0").toFixed(2)}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <span className="font-bold">{item.stock}</span>
                             <div className="w-24 h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                               <div className={`h-full rounded-full transition-all duration-700 ${
-                                item.stock === 0 ? "bg-red-500" : item.stock <= item.threshold ? "bg-orange-500" : "bg-[#3ecf8e]"
+                                item.stock === 0 ? "bg-red-500" : item.stock <= item.threshold ? "bg-orange-500" : "bg-[#29B28D]"
                               }`} style={{ width: `${Math.min((item.stock / (item.threshold * 2)) * 100, 100)}%` }} />
                             </div>
                           </div>
@@ -326,7 +326,7 @@ export default function FreeInventoryPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="inline-flex gap-1">
-                            <button onClick={() => openEdit(item)} className="p-2 text-slate-400 hover:text-[#3ecf8e] hover:bg-[#3ecf8e]/10 rounded-lg transition-colors"><Edit2 size={15} /></button>
+                            <button onClick={() => openEdit(item)} className="p-2 text-slate-400 hover:text-[#29B28D] hover:bg-[#29B28D]/10 rounded-lg transition-colors"><Edit2 size={15} /></button>
                             <button onClick={() => setDeleteTarget(item)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"><X size={15} /></button>
                           </div>
                         </td>
@@ -356,30 +356,30 @@ export default function FreeInventoryPage() {
             <form onSubmit={handleSave} className="p-7 space-y-4">
               <div>
                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.nameLabel")} *</label>
-                <input required type="text" placeholder="e.g. Cafe Latte" value={fName} onChange={(e) => setFName(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
+                <input required type="text" placeholder="e.g. Cafe Latte" value={fName} onChange={(e) => setFName(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
               </div>
               <div>
                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.khmerNameLabel")}</label>
-                <input type="text" placeholder={t("inventory.modal.khmerNamePlaceholder")} value={fKhName} onChange={(e) => setFKhName(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] font-khmer border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
+                <input type="text" placeholder={t("inventory.modal.khmerNamePlaceholder")} value={fKhName} onChange={(e) => setFKhName(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] font-khmer border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.priceLabel")} *</label>
-                  <input required type="number" step="0.01" placeholder="0.00" value={fPrice} onChange={(e) => setFPrice(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] font-bold border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
+                  <input required type="number" step="0.01" placeholder="0.00" value={fPrice} onChange={(e) => setFPrice(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] font-bold border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.stockLabel")} *</label>
-                  <input required type="number" placeholder="0" value={fStock} onChange={(e) => setFStock(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
+                  <input required type="number" placeholder="0" value={fStock} onChange={(e) => setFStock(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
                 </div>
               </div>
               <div>
                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.thresholdLabel")}</label>
-                <input type="number" value={fThreshold} onChange={(e) => setFThreshold(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#3ecf8e]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#3ecf8e]"}`} />
+                <input type="number" value={fThreshold} onChange={(e) => setFThreshold(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
               </div>
 
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={closeModal} className={`flex-1 py-4 rounded-xl font-bold transition-all ${isDark ? "bg-white/5 text-slate-400 hover:bg-white/10" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>{t("dashboard.actions.cancel")}</button>
-                <button type="submit" disabled={saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#3ecf8e] font-bold rounded-xl shadow-lg border border-[#3ecf8e]/20 hover:bg-black disabled:opacity-50 transition-all">{saving ? t("inventory.modal.saving") : editTarget ? t("inventory.modal.update") : t("inventory.addProduct")}</button>
+                <button type="submit" disabled={saving} className="flex-[1.5] py-4 bg-[#0d1117] text-[#29B28D] font-bold rounded-xl shadow-lg border border-[#29B28D]/20 hover:bg-black disabled:opacity-50 transition-all">{saving ? t("inventory.modal.saving") : editTarget ? t("inventory.modal.update") : t("inventory.addProduct")}</button>
               </div>
             </form>
           </div>

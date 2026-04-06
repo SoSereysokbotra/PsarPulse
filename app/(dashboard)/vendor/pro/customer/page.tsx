@@ -356,7 +356,7 @@ export default function ProCustomerPage() {
                   disabled={crmSubmitting || !crmName.trim()}
                   className="w-full bg-psar-primary hover:opacity-90 text-white font-bold py-3.5 rounded-xl transition-colors mt-2 disabled:opacity-60"
                 >
-                  {crmSubmitting ? t("dashboard.customerSection.crmSaving") : crmSuccess ? `✓ ${t("dashboard.customerSection.crmSaved")}` : t("dashboard.customerSection.crmSave")}
+                  {crmSubmitting ? t("dashboard.customerSection.crmSaving") : crmSuccess ? `${t("dashboard.customerSection.crmSaved")}` : t("dashboard.customerSection.crmSave")}
                 </button>
               </form>
             </div>
@@ -463,7 +463,7 @@ export default function ProCustomerPage() {
               </div>
               <button 
                 onClick={() => setIsCRMModalOpen(true)}
-                className="flex items-center gap-2 bg-[#3ecf8e] text-[#0d1117] px-4 py-2 rounded-xl text-sm font-bold shadow-[0_2px_14px_rgba(62,207,142,0.28)] hover:bg-[#4dd49a] transition-all cursor-pointer border-0"
+                className="flex items-center gap-2 bg-[#29B28D] text-[#0d1117] px-4 py-2 rounded-xl text-sm font-bold shadow-[0_2px_14px_rgba(41,178,141,0.28)] hover:bg-[#249e7d] transition-all cursor-pointer border-0"
               >
                 <Plus className="w-4 h-4" /> {"Add Customer"}
               </button>
@@ -482,7 +482,7 @@ export default function ProCustomerPage() {
                   {customers.map((customer: any) => (
                     <tr
                       key={customer.id}
-                      className="hover:bg-psar-primary/10/30 transition-colors"
+                      className="hover:bg-psar-primary/10 transition-colors"
                     >
                       <td className="px-5 py-3">
                         <div className="text-[14px] font-bold text-slate-900 dark:text-white">
@@ -493,7 +493,7 @@ export default function ProCustomerPage() {
                         </div>
                       </td>
                       <td className="px-5 py-3">
-                        <span className="font-bold text-[#3ecf8e] text-[15px]">
+                        <span className="font-bold text-[#29B28D] text-[15px]">
                           ${parseFloat(customer.totalSpent || 0).toFixed(2)}
                         </span>
                       </td>

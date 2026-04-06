@@ -723,13 +723,13 @@ export default function ProDashboard() {
         <div className="bg-[#0d1117] rounded-[14px] border border-white/[0.06] px-[26px] py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
           {/* Left — greeting */}
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[17px] font-extrabold text-white shrink-0 shadow-[0_0_0_3px_rgba(62,207,142,0.2)]">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#29B28D] to-[#219072] flex items-center justify-center text-[17px] font-extrabold text-white shrink-0 shadow-[0_0_0_3px_rgba(41,178,141,0.2)]">
               {loading ? ".." : displayInitials}
             </div>
             <div>
               <div className="flex items-baseline gap-2">
                   <span className="text-[18px] font-extrabold text-[#e6edf3]" suppressHydrationWarning>
-                    {greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName} 👋
+                    {greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName}
                   </span>
               </div>
                 <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2" suppressHydrationWarning>
@@ -759,7 +759,7 @@ export default function ProDashboard() {
                   cy="44"
                   r={radius}
                   fill="none"
-                  stroke="#3ecf8e"
+                  stroke="#29B28D"
                   strokeWidth="7"
                   strokeLinecap="round"
                   strokeDasharray={`${strokeDash} ${circum}`}
@@ -778,8 +778,8 @@ export default function ProDashboard() {
             {/* Goal text */}
             <div>
               <div className="flex items-center gap-1.5 mb-1">
-                <Target size={12} className="text-[#3ecf8e]" />
-                <span className="text-[11px] font-bold text-[#3ecf8e] uppercase tracking-[0.06em]">
+                <Target size={12} className="text-[#29B28D]" />
+                <span className="text-[11px] font-bold text-[#29B28D] uppercase tracking-[0.06em]">
                   Daily Goal
                 </span>
               </div>
@@ -791,7 +791,7 @@ export default function ProDashboard() {
               </div>
               <div className="mt-2 w-[120px] h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#3ecf8e] rounded-full transition-[width] duration-700"
+                  className="h-full bg-[#29B28D] rounded-full transition-[width] duration-700"
                   style={{ width: `${goalPct}%` }}
                 />
               </div>
@@ -1108,7 +1108,7 @@ export default function ProDashboard() {
                 {hasData ? (
                   isKhmer ? (
                     <>
-                      📊 <strong>ការអនុវត្តល្អណាស់!</strong> អ្នកបានកត់ត្រាការលក់ចំនួន {stats.transactions} នៅថ្ងៃនេះ។ 
+                      <strong>ការអនុវត្តល្អណាស់!</strong> អ្នកបានកត់ត្រាការលក់ចំនួន {stats.transactions} នៅថ្ងៃនេះ។ ខ្លាំងណាស់!
                       {bestSellingProducts.length > 0 && (
                         <> <strong>{bestSellingProducts[0].khmer || bestSellingProducts[0].name}</strong> គឺជាផលិតផលដែលលក់ដាច់បំផុតរបស់អ្នក។</>
                       )}
@@ -1118,7 +1118,7 @@ export default function ProDashboard() {
                     </>
                   ) : (
                     <>
-                      📊 <strong>Great performance!</strong> You have logged {stats.transactions} sales today. 
+                      <strong>Great performance!</strong> You have logged {stats.transactions} sales today. Strong work!
                       {bestSellingProducts.length > 0 && (
                         <> <strong>{bestSellingProducts[0].name}</strong> is your top performer.</>
                       )}

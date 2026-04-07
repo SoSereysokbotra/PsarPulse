@@ -1,5 +1,5 @@
 import { NodemailerProvider } from "../../email/providers/nodemailer.provider";
-import { getVerificationEmailTemplate } from "@/lib/email/templates/verification.template";
+import { getVerificationEmailTemplate } from "../../email/templates/verification.template";
 import { getPasswordResetEmailTemplate } from "@/lib/email/templates/password-reset.template";
 import {
   getClassInvitationEmailTemplate,
@@ -8,6 +8,10 @@ import {
 import { getTeacherInvitationEmailTemplate } from "@/lib/email/templates/teacher-invitation.template";
 import { getVendorApprovedEmailTemplate } from "@/lib/email/templates/vendor-approved.template";
 import { getVendorRejectedEmailTemplate } from "@/lib/email/templates/vendor-rejected.template";
+import {
+  getAdminInvitationEmailTemplate,
+  getVipVendorInvitationEmailTemplate,
+} from "@/lib/email/templates/admin-invitation.template";
 
 export class EmailService {
   private static provider = new NodemailerProvider();
@@ -15,16 +19,18 @@ export class EmailService {
   static async sendPasswordResetEmail(
     email: string,
     code: string,
+    userName?: string,
   ): Promise<void> {
-    const html = getPasswordResetEmailTemplate(code);
+    const html = getPasswordResetEmailTemplate(code, userName);
     await this.provider.sendEmail(email, "Password Reset", html);
   }
 
   static async sendVerificationEmail(
     email: string,
     code: string,
+    userName?: string,
   ): Promise<void> {
-    const html = getVerificationEmailTemplate(code);
+    const html = getVerificationEmailTemplate(code, userName);
     await this.provider.sendEmail(email, "Email Verification", html);
   }
   static async sendClassInvitationEmail(
@@ -63,17 +69,7 @@ export class EmailService {
       origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const link = `${baseUrl}/admin/register?token=${token}`;
     const subject = `You're invited to be an Admin on PsarPulse KH`;
-    const html = `
-      <div style="font-family: sans-serif; padding: 20px;">
-        <h2>Admin Invitation</h2>
-        <p>You have been invited to join the administrative team for PsarPulse KH.</p>
-        <p>Please click the link below to set up your account.</p>
-        <a href="${link}" style="display: inline-block; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
-          Accept Invitation
-        </a>
-        <p style="margin-top: 20px; font-size: 12px; color: #666;">This link will expire in 24 hours.</p>
-      </div>
-    `;
+    const html = getAdminInvitationEmailTemplate(link);
     await this.provider.sendEmail(email, subject, html);
   }
 
@@ -86,17 +82,7 @@ export class EmailService {
       origin || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const link = `${baseUrl}/vendor/vip?token=${token}`;
     const subject = `You're invited as a VIP Vendor on PsarPulse KH`;
-    const html = `
-      <div style="font-family: sans-serif; padding: 20px;">
-        <h2>VIP Vendor Invitation</h2>
-        <p>You have been invited to join PsarPulse KH as a VIP Vendor.</p>
-        <p>Please click the secure link below to complete your account setup.</p>
-        <a href="${link}" style="display: inline-block; padding: 10px 20px; background-color: #0f766e; color: white; text-decoration: none; border-radius: 5px; margin-top: 10px;">
-          Accept Invitation
-        </a>
-        <p style="margin-top: 20px; font-size: 12px; color: #666;">This link will expire in 24 hours.</p>
-      </div>
-    `;
+    const html = getVipVendorInvitationEmailTemplate(link);
     await this.provider.sendEmail(email, subject, html);
   }
 

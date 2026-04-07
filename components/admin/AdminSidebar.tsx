@@ -6,24 +6,39 @@ import {
   LayoutDashboard,
   Store,
   Map,
-  TrendingUp,
   Settings,
   CreditCard,
   LogOut,
 } from "lucide-react";
-
-const navItems = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Vendor Directory", href: "/admin/vendors", icon: Store },
-  { name: "Stall Map", href: "/admin/map", icon: Map },
-  { name: "Billing", href: "/admin/billing", icon: CreditCard },
-];
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
+  const navItems = [
+    {
+      name: isKhmer ? "ផ្ទាំងគ្រប់គ្រង" : "Dashboard",
+      href: "/admin",
+      icon: LayoutDashboard,
+    },
+    {
+      name: isKhmer ? "បញ្ជីអាជីវករ" : "Vendor Directory",
+      href: "/admin/vendors",
+      icon: Store,
+    },
+    { name: isKhmer ? "ផែនទីតូប" : "Stall Map", href: "/admin/map", icon: Map },
+    {
+      name: isKhmer ? "ការបង់ប្រាក់" : "Billing",
+      href: "/admin/billing",
+      icon: CreditCard,
+    },
+  ];
 
   return (
-    <div className="flex h-screen w-64 flex-col bg-slate-900 text-white shadow-xl transition-all duration-300">
+    <div
+      className={`flex h-screen w-64 flex-col bg-slate-900 text-white shadow-xl transition-all duration-300 ${isKhmer ? "font-battambang" : ""}`}
+    >
       {/* Logo/Header */}
       <div className="flex h-16 items-center border-b border-slate-800 px-6 font-bold text-xl tracking-tight">
         <span className="text-emerald-400">PsarPulse</span>
@@ -33,7 +48,7 @@ export function AdminSidebar() {
       {/* Navigation Links */}
       <nav className="flex-1 space-y-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-700">
         <div className="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-400 px-2">
-          Management
+          {isKhmer ? "ការគ្រប់គ្រង" : "Management"}
         </div>
         {navItems.map((item) => {
           const isActive =
@@ -52,7 +67,7 @@ export function AdminSidebar() {
               }`}
             >
               <Icon
-                className={`mr-3 h-5 w-5 flex-shrink-0 transition-colors ${
+                className={`mr-3 h-5 w-5 shrink-0 transition-colors ${
                   isActive
                     ? "text-emerald-400"
                     : "text-slate-400 group-hover:text-white"
@@ -68,14 +83,14 @@ export function AdminSidebar() {
         })}
 
         <div className="mt-8 mb-4 text-xs font-semibold uppercase tracking-wider text-slate-400 px-2">
-          Options
+          {isKhmer ? "ជម្រើស" : "Options"}
         </div>
         <Link
           href="/admin/settings"
           className="group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all"
         >
           <Settings className="mr-3 h-5 w-5 text-slate-400 group-hover:text-white transition-colors" />
-          Settings
+          {isKhmer ? "ការកំណត់" : "Settings"}
         </Link>
       </nav>
 
@@ -87,16 +102,16 @@ export function AdminSidebar() {
           </div>
           <div className="flex flex-col min-w-0">
             <span className="truncate text-sm font-medium text-white">
-              Admin User
+              {isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin User"}
             </span>
             <span className="truncate text-xs text-slate-400 flex items-center">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></div>
-              Market Manager
+              {isKhmer ? "អ្នកគ្រប់គ្រងទីផ្សារ" : "Market Manager"}
             </span>
           </div>
           <button
             className="ml-auto p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700 rounded-md transition-colors"
-            title="Sign out"
+            title={isKhmer ? "ចាកចេញ" : "Sign out"}
           >
             <LogOut className="h-4 w-4" />
           </button>

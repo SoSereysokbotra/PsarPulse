@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         businessName: vendorRequests.businessName,
         businessEmail: vendorRequests.businessEmail,
         businessPhone: vendorRequests.businessPhone,
-        businessAddress: vendorRequests.businessAddress,
+
         businessDescription: vendorRequests.businessDescription,
         businessCategory: vendorRequests.businessCategory,
         status: vendorRequests.status,

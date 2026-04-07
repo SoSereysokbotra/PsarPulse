@@ -8,7 +8,6 @@ import {
   Lock,
   Phone,
   Store,
-  MapPin,
   FileText,
   Loader2,
   Upload,
@@ -37,7 +36,6 @@ export default function VendorRegisterPage() {
     storeName: "",
     businessCategory: "apparel",
     businessLogo: "",
-    businessAddress: "",
     description: "",
     password: "",
     latitude: "",
@@ -47,8 +45,10 @@ export default function VendorRegisterPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState("");
-  
-  const [mapCenter, setMapCenter] = useState<[number, number]>([11.5564, 104.9282]);
+
+  const [mapCenter, setMapCenter] = useState<[number, number]>([
+    11.5564, 104.9282,
+  ]);
   const [mapZoom, setMapZoom] = useState(13);
   const [isLocating, setIsLocating] = useState(false);
 
@@ -65,17 +65,17 @@ export default function VendorRegisterPage() {
         const lng = position.coords.longitude;
         setMapCenter([lat, lng]);
         setMapZoom(15);
-        setFormData(prev => ({ 
-          ...prev, 
-          latitude: lat.toString(), 
-          longitude: lng.toString() 
+        setFormData((prev) => ({
+          ...prev,
+          latitude: lat.toString(),
+          longitude: lng.toString(),
         }));
         setIsLocating(false);
       },
       () => {
         alert("Unable to retrieve your location");
         setIsLocating(false);
-      }
+      },
     );
   };
 
@@ -93,9 +93,9 @@ export default function VendorRegisterPage() {
         body: uploadData,
       });
       const result = await res.json();
-      
+
       if (result.success && result.url) {
-        setFormData(prev => ({ ...prev, businessLogo: result.url }));
+        setFormData((prev) => ({ ...prev, businessLogo: result.url }));
       } else {
         setError("Failed to upload image. Please try again.");
       }
@@ -128,7 +128,6 @@ export default function VendorRegisterPage() {
         businessName: formData.storeName,
         businessEmail: formData.email,
         phone: formData.phone,
-        businessAddress: formData.businessAddress,
         businessCategory: formData.businessCategory,
         businessLogo: formData.businessLogo,
         description: formData.description,
@@ -151,15 +150,23 @@ export default function VendorRegisterPage() {
 
   if (isSuccess) {
     return (
-      <div className={`min-h-screen w-full flex items-center justify-center p-6 ${isDark ? "bg-dark-bg" : "bg-slate-50"}`}>
-        <div className={`max-w-md w-full rounded-3xl p-10 shadow-xl text-center border ${isDark ? "bg-dark-surface border-dark-border" : "bg-white border-slate-100"}`}>
+      <div
+        className={`min-h-screen w-full flex items-center justify-center p-6 ${isDark ? "bg-dark-bg" : "bg-slate-50"}`}
+      >
+        <div
+          className={`max-w-md w-full rounded-3xl p-10 shadow-xl text-center border ${isDark ? "bg-dark-surface border-dark-border" : "bg-white border-slate-100"}`}
+        >
           <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6 mx-auto">
             <Store className="h-10 w-10 text-emerald-600" />
           </div>
-          <h2 className={`text-3xl font-extrabold mb-4 tracking-tight ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}>
+          <h2
+            className={`text-3xl font-extrabold mb-4 tracking-tight ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}
+          >
             {t("auth.register.successTitle")}
           </h2>
-          <p className={`mb-8 leading-relaxed ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}>
+          <p
+            className={`mb-8 leading-relaxed ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
+          >
             {t("auth.register.successDesc")}
           </p>
           <Link
@@ -200,10 +207,14 @@ export default function VendorRegisterPage() {
       backHref="/"
     >
       <header className="mb-10">
-        <h1 className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}>
+        <h1
+          className={`text-3xl sm:text-4xl font-extrabold tracking-tight mb-3 ${isDark ? "text-white" : "text-slate-900"} ${isKhmer ? "font-battambang" : ""}`}
+        >
           {t("auth.register.title")}
         </h1>
-        <p className={`font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}>
+        <p
+          className={`font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
+        >
           {t("auth.register.subtitle")}
         </p>
       </header>
@@ -263,18 +274,29 @@ export default function VendorRegisterPage() {
           disabled={isLoading}
         />
 
-        <div className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}>
-          <label className={`block text-sm font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-battambang" : ""}`}>
+        <div
+          className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}
+        >
+          <label
+            className={`block text-sm font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-battambang" : ""}`}
+          >
             Store Category
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Store className={`h-5 w-5 ${isDark ? "text-slate-500" : "text-slate-400"}`} />
+              <Store
+                className={`h-5 w-5 ${isDark ? "text-slate-500" : "text-slate-400"}`}
+              />
             </div>
             <select
               name="businessCategory"
               value={formData.businessCategory}
-              onChange={(e) => setFormData(prev => ({ ...prev, businessCategory: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  businessCategory: e.target.value,
+                }))
+              }
               disabled={isLoading}
               className={`w-full pl-11 pr-4 py-3 rounded-xl border text-sm font-medium transition-all appearance-none outline-none ${
                 isDark
@@ -292,71 +314,90 @@ export default function VendorRegisterPage() {
           </div>
         </div>
 
-        <div className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}>
-          <label className={`block text-sm font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-battambang" : ""}`}>
+        <div
+          className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}
+        >
+          <label
+            className={`block text-sm font-bold mb-2 ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-battambang" : ""}`}
+          >
             Shop Image
           </label>
-          <div className={`flex items-center gap-4 p-4 border rounded-xl ${isDark ? "bg-[#0B1121] border-white/10" : "bg-white border-slate-200"}`}>
-            <div className={`w-16 h-16 rounded-xl flex items-center justify-center shrink-0 border-2 overflow-hidden ${isDark ? "bg-[#1C2128] border-white/10" : "bg-slate-50 border-slate-100"}`}>
+          <div
+            className={`flex items-center gap-4 p-4 border rounded-xl ${isDark ? "bg-[#0B1121] border-white/10" : "bg-white border-slate-200"}`}
+          >
+            <div
+              className={`w-16 h-16 rounded-xl flex items-center justify-center shrink-0 border-2 overflow-hidden ${isDark ? "bg-[#1C2128] border-white/10" : "bg-slate-50 border-slate-100"}`}
+            >
               {formData.businessLogo ? (
-                <img src={formData.businessLogo} alt="Shop Preview" className="w-full h-full object-cover" />
+                <img
+                  src={formData.businessLogo}
+                  alt="Shop Preview"
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <Store className={`h-8 w-8 ${isDark ? "text-slate-600" : "text-slate-300"}`} />
+                <Store
+                  className={`h-8 w-8 ${isDark ? "text-slate-600" : "text-slate-300"}`}
+                />
               )}
             </div>
             <div className="flex-1">
-              <label className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold rounded-lg cursor-pointer transition-all ${
-                isDark 
-                  ? "bg-slate-800 hover:bg-slate-700 text-white" 
-                  : "bg-slate-100 hover:bg-slate-200 text-slate-700"
-              } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}>
-                {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              <label
+                className={`inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold rounded-lg cursor-pointer transition-all ${
+                  isDark
+                    ? "bg-slate-800 hover:bg-slate-700 text-white"
+                    : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                } ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                {isUploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Upload className="w-4 h-4" />
+                )}
                 {isUploading ? "Uploading..." : "Upload Image"}
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  className="hidden" 
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
                   onChange={handleFileUpload}
                   disabled={isUploading || isLoading}
                 />
               </label>
-              <p className={`text-xs mt-2 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+              <p
+                className={`text-xs mt-2 ${isDark ? "text-slate-500" : "text-slate-400"}`}
+              >
                 Recommended size: 800x600px. Max size: 2MB.
               </p>
             </div>
           </div>
         </div>
 
-        <FormInput
-          id="businessAddress"
-          name="businessAddress"
-          type="text"
-          label={t("auth.register.businessAddress")}
-          icon={MapPin}
-          placeholder={t("auth.register.addressPlaceholder")}
-          value={formData.businessAddress}
-          onChange={handleInputChange}
-          required
-          disabled={isLoading}
-        />
-
-        <div className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}>
+        <div
+          className={`relative ${isDark ? "text-slate-200" : "text-slate-800"} mb-5`}
+        >
           <div className="flex items-center justify-between mb-2">
-            <label className={`block text-sm font-bold ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-battambang" : ""}`}>
+            <label
+              className={`block text-sm font-bold ${isDark ? "text-slate-300" : "text-slate-700"} ${isKhmer ? "font-battambang" : ""}`}
+            >
               Stall Location (Optional)
             </label>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={handleLocateMe}
               className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors border ${
-                isDark ? "bg-[#111216] hover:bg-[#1a1c23] border-white/10 text-psar-primary" : "bg-white hover:bg-slate-50 border-slate-200 text-psar-primary shadow-sm"
+                isDark
+                  ? "bg-[#111216] hover:bg-[#1a1c23] border-white/10 text-psar-primary"
+                  : "bg-white hover:bg-slate-50 border-slate-200 text-psar-primary shadow-sm"
               }`}
             >
-              <LocateFixed className={`w-3.5 h-3.5 ${isLocating ? "animate-pulse" : ""}`} />
+              <LocateFixed
+                className={`w-3.5 h-3.5 ${isLocating ? "animate-pulse" : ""}`}
+              />
               {isLocating ? "Locating..." : "Use My Location"}
             </button>
           </div>
-          <div className={`h-[300px] w-full rounded-xl overflow-hidden border ${isDark ? "border-white/10" : "border-slate-200"} relative z-0`}>
+          <div
+            className={`h-[300px] w-full rounded-xl overflow-hidden border ${isDark ? "border-white/10" : "border-slate-200"} relative z-0`}
+          >
             <PigeonMap
               center={mapCenter}
               zoom={mapZoom}
@@ -365,27 +406,39 @@ export default function VendorRegisterPage() {
                 setMapZoom(zoom);
               }}
               onClick={({ latLng }) => {
-                setFormData(prev => ({
+                setFormData((prev) => ({
                   ...prev,
                   latitude: latLng[0].toString(),
-                  longitude: latLng[1].toString()
+                  longitude: latLng[1].toString(),
                 }));
               }}
             >
               <ZoomControl />
               {formData.latitude && formData.longitude && (
-                <Overlay anchor={[parseFloat(formData.latitude), parseFloat(formData.longitude)]} offset={[16, 32]}>
+                <Overlay
+                  anchor={[
+                    parseFloat(formData.latitude),
+                    parseFloat(formData.longitude),
+                  ]}
+                  offset={[16, 32]}
+                >
                   <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white bg-psar-primary`}>
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-lg border-2 border-white bg-psar-primary`}
+                    >
                       <Store className="w-4 h-4" />
                     </div>
-                    <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] -mt-1 border-t-psar-primary`}></div>
+                    <div
+                      className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] -mt-1 border-t-psar-primary`}
+                    ></div>
                   </div>
                 </Overlay>
               )}
             </PigeonMap>
           </div>
-          <p className={`text-xs mt-2 ${isDark ? "text-slate-500" : "text-slate-400"}`}>
+          <p
+            className={`text-xs mt-2 ${isDark ? "text-slate-500" : "text-slate-400"}`}
+          >
             Click on the map to pin your exact stall location.
           </p>
         </div>
@@ -442,7 +495,9 @@ export default function VendorRegisterPage() {
         </button>
       </form>
 
-      <p className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}>
+      <p
+        className={`mt-8 text-center font-medium ${isDark ? "text-[#8A8F98]" : "text-slate-500"} ${isKhmer ? "font-battambang" : ""}`}
+      >
         {t("auth.register.alreadyVendor")}{" "}
         <Link
           href="/login"

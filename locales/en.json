@@ -415,5 +415,168 @@
       "button": "Unlock Unlimited"
     },
     "empty": "No products found."
+  },
+  "superadmin": {
+    "nav": {
+      "overview": "Overview",
+      "invitations": "Invitations",
+      "plans": "Plans",
+      "auditLog": "Audit Log",
+      "settings": "Settings",
+      "systemControl": "System Control",
+      "adminView": "Admin View",
+      "signOut": "Sign out"
+    },
+    "sidebar": {
+      "plansPricing": "Plans & Pricing",
+      "configuration": "Configuration"
+    },
+    "common": {
+      "systemAdmin": "System Admin",
+      "godMode": "God Mode"
+    },
+    "overview": {
+      "title": "Platform Overview",
+      "subtitle": "Monitor global metrics, manage administrators, and configure system settings.",
+      "cards": {
+        "adminAccounts": "Admin Accounts",
+        "adminAccountsSub": "Active platform administrators",
+        "activePlans": "Active Plans",
+        "activePlansSub": "Free · Pro · Premium",
+        "platformSettings": "Platform Settings",
+        "platformSettingsSub": "Currency, tax, & locale configs",
+        "global": "Global",
+        "auditEvents": "Audit Events",
+        "auditEventsSub": "Recent system events"
+      },
+      "systemAdministrators": "System Administrators",
+      "manageAccess": "Manage access and roles",
+      "table": {
+        "administrator": "Administrator",
+        "role": "Role",
+        "accessScope": "Access Scope",
+        "actions": "Actions"
+      },
+      "loadingAdministrators": "Loading administrators...",
+      "noAdmins": "No admin accounts found.",
+      "unknownUser": "Unknown User",
+      "noEmail": "No email",
+      "roles": {
+        "superAdmin": "Super Admin",
+        "admin": "Admin"
+      },
+      "scopes": {
+        "vendors": "Vendors",
+        "users": "Users",
+        "plans": "Plans"
+      },
+      "quickActions": "Quick Actions",
+      "switchToAdmin": "Switch to Admin",
+      "quickActionDesc": {
+        "plans": "Manage subscription tiers",
+        "settings": "Currency, tax, locale",
+        "switchToAdmin": "View as standard admin"
+      }
+    },
+    "invitations": {
+      "title": "Invitation Center",
+      "subtitle": "Superadmin can invite Admin users and VIP Vendors from one secure flow.",
+      "inviteEmail": "Invite Email",
+      "emailPlaceholder": "user@example.com",
+      "inviteRole": "Invite Role",
+      "roles": {
+        "admin": "Admin",
+        "vipVendor": "VIP Vendor"
+      },
+      "sendInvite": "Send {{role}} Invite",
+      "refresh": "Refresh",
+      "recentInvitations": "Recent Invitations",
+      "records": "{{count}} records",
+      "table": {
+        "email": "Email",
+        "role": "Role",
+        "status": "Status",
+        "expires": "Expires",
+        "created": "Created"
+      },
+      "loading": "Loading invitations...",
+      "empty": "No invitations found",
+      "status": {
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "expired": "Expired"
+      },
+      "errors": {
+        "loadFailed": "Failed to load invitations",
+        "sendFailed": "Failed to send invitation"
+      }
+    },
+    "plans": {
+      "title": "Plans & Pricing",
+      "subtitle": "Manage subscription tiers and their limits.",
+      "planNames": {
+        "free": "Free",
+        "pro": "Pro",
+        "premium": "Premium"
+      },
+      "perMonth": "/mo",
+      "yearlyPricing": "${{yearlyPrice}}/yr (save 20%)",
+      "metrics": {
+        "maxProducts": "Max Products",
+        "maxCustomers": "Max Customers",
+        "teamMembers": "Team Members",
+        "activeVendors": "Active Vendors",
+        "unlimited": "Unlimited"
+      }
+    },
+    "auditLog": {
+      "title": "Full Audit Log",
+      "subtitle": "All sensitive platform actions. Sorted newest first.",
+      "filterPlaceholder": "Filter by action or entity...",
+      "table": {
+        "timestamp": "Timestamp",
+        "action": "Action",
+        "entity": "Entity",
+        "entityId": "Entity ID",
+        "ip": "IP"
+      },
+      "empty": "No log entries found",
+      "actions": {
+        "deactivate": "Deactivate",
+        "reactivate": "Reactivate",
+        "approve": "Approve",
+        "reject": "Reject"
+      }
+    },
+    "settings": {
+      "title": "Platform Settings",
+      "subtitle": "Configure app-wide defaults for currency, locale, tax, and system operations. Changes here affect all administrative and public-facing interfaces.",
+      "tabs": {
+        "general": {
+          "label": "General",
+          "title": "General Settings",
+          "desc": "Platform info & contact"
+        }
+      },
+      "fields": {
+        "platformName": {
+          "label": "Platform Name",
+          "desc": "The global name displayed across the platform."
+        },
+        "supportEmail": {
+          "label": "Support Email",
+          "desc": "Primary email address for user support inquiries."
+        }
+      },
+      "advanced": {
+        "title": "Advanced System Configuration",
+        "desc": "Cache management, cron job triggers, and database maintenance tools will be available here in v2.0."
+      },
+      "actions": {
+        "saving": "Saving...",
+        "saved": "Saved",
+        "saveChanges": "Save Changes"
+      }
+    }
   }
 }

@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const pastInvites = [
   {
@@ -39,6 +40,8 @@ const pastInvites = [
 
 export default function InvitesPage() {
   const { resolvedTheme } = useTheme();
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
 
   const [copied, setCopied] = useState(false);
@@ -92,11 +95,12 @@ export default function InvitesPage() {
           <h1
             className={`text-3xl font-bold tracking-tight transition-colors ${isDark ? "text-white" : "text-slate-900"}`}
           >
-            Secure Invitations
+            {isKhmer ? "ការអញ្ជើញសុវត្ថិភាព" : "Secure Invitations"}
           </h1>
           <p className="text-slate-500 mt-1 transition-colors">
-            Generate magic links for Co-Admins or VIP Vendors to bypass manual
-            approval.
+            {isKhmer
+              ? "បង្កើតតំណភ្ជាប់ពិសេសសម្រាប់ Co-Admins ឬ VIP Vendors ដើម្បីរំលងការអនុម័តដៃ។"
+              : "Generate magic links for Co-Admins or VIP Vendors to bypass manual approval."}
           </p>
         </div>
       </div>
@@ -117,7 +121,7 @@ export default function InvitesPage() {
             <h2
               className={`font-semibold transition-colors ${isDark ? "text-white" : "text-slate-900"}`}
             >
-              Create Invite Link
+              {isKhmer ? "បង្កើតតំណអញ្ជើញ" : "Create Invite Link"}
             </h2>
           </div>
 
@@ -127,7 +131,7 @@ export default function InvitesPage() {
                 <label
                   className={`block text-sm font-medium mb-1 transition-colors ${isDark ? "text-slate-300" : "text-slate-700"}`}
                 >
-                  Invite Role
+                  {isKhmer ? "តួនាទីអញ្ជើញ" : "Invite Role"}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -173,7 +177,7 @@ export default function InvitesPage() {
                     <label
                       className={`block text-sm font-medium mb-1 transition-colors ${isDark ? "text-slate-300" : "text-slate-700"}`}
                     >
-                      Incentive Tier
+                      {isKhmer ? "កម្រិតអត្ថប្រយោជន៍" : "Incentive Tier"}
                     </label>
                     <select
                       className={`w-full px-3 py-2 border rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/50 transition-colors ${
@@ -182,16 +186,28 @@ export default function InvitesPage() {
                           : "bg-slate-50/50 border-slate-200 text-slate-900"
                       }`}
                     >
-                      <option>1 Month Premium Free</option>
-                      <option>3 Months Pro Free</option>
-                      <option>No Promo (Bypass Approval Only)</option>
+                      <option>
+                        {isKhmer
+                          ? "Premium ឥតគិតថ្លៃ ១ ខែ"
+                          : "1 Month Premium Free"}
+                      </option>
+                      <option>
+                        {isKhmer ? "Pro ឥតគិតថ្លៃ ៣ ខែ" : "3 Months Pro Free"}
+                      </option>
+                      <option>
+                        {isKhmer
+                          ? "មិនមានប្រូម៉ូសិន (រំលងការអនុម័តប៉ុណ្ណោះ)"
+                          : "No Promo (Bypass Approval Only)"}
+                      </option>
                     </select>
                   </div>
                   <div>
                     <label
                       className={`block text-sm font-medium mb-1 transition-colors ${isDark ? "text-slate-300" : "text-slate-700"}`}
                     >
-                      Recipient Email (Optional)
+                      {isKhmer
+                        ? "អ៊ីមែលអ្នកទទួល (ជម្រើស)"
+                        : "Recipient Email (Optional)"}
                     </label>
                     <input
                       type="email"
@@ -205,7 +221,9 @@ export default function InvitesPage() {
                       }`}
                     />
                     <p className="text-xs text-slate-500 mt-1">
-                      If left blank, link can be copied and shared via Telegram.
+                      {isKhmer
+                        ? "បើទុកទទេ អាចចម្លងតំណ និងចែករំលែកតាម Telegram បាន។"
+                        : "If left blank, link can be copied and shared via Telegram."}
                     </p>
                   </div>
                 </div>
@@ -227,8 +245,9 @@ export default function InvitesPage() {
                   <p
                     className={`text-[11px] transition-colors ${isDark ? "text-red-300" : "text-red-600"}`}
                   >
-                    This link grants full administrative access to the platform.
-                    Only send to trusted market managers.
+                    {isKhmer
+                      ? "តំណនេះផ្តល់សិទ្ធិគ្រប់គ្រងពេញលេញលើវេទិកា។ សូមផ្ញើតែទៅអ្នកគ្រប់គ្រងដែលទុកចិត្តបាន។"
+                      : "This link grants full administrative access to the platform. Only send to trusted market managers."}
                   </p>
                 </div>
               )}
@@ -250,10 +269,16 @@ export default function InvitesPage() {
                   <RefreshCw className="h-4 w-4" />
                 )}
                 {isLoading
-                  ? "Processing..."
+                  ? isKhmer
+                    ? "កំពុងដំណើរការ..."
+                    : "Processing..."
                   : emailInput
-                    ? "Send Invite Email"
-                    : "Generate Link"}
+                    ? isKhmer
+                      ? "ផ្ញើអ៊ីមែលអញ្ជើញ"
+                      : "Send Invite Email"
+                    : isKhmer
+                      ? "បង្កើតតំណ"
+                      : "Generate Link"}
               </button>
             </form>
 
@@ -272,13 +297,16 @@ export default function InvitesPage() {
                   <h4
                     className={`text-sm font-semibold transition-colors ${isDark ? "text-emerald-400" : "text-emerald-800"}`}
                   >
-                    Invitation Sent Successfully!
+                    {isKhmer
+                      ? "បានផ្ញើការអញ្ជើញដោយជោគជ័យ!"
+                      : "Invitation Sent Successfully!"}
                   </h4>
                   <p
                     className={`text-xs mt-1 transition-colors ${isDark ? "text-emerald-500" : "text-emerald-600"}`}
                   >
-                    An email with the registration link has been dispatched to{" "}
-                    {emailInput}.
+                    {isKhmer
+                      ? `អ៊ីមែលដែលមានតំណចុះឈ្មោះត្រូវបានផ្ញើទៅ ${emailInput}។`
+                      : `An email with the registration link has been dispatched to ${emailInput}.`}
                   </p>
                 </div>
               </div>
@@ -291,7 +319,9 @@ export default function InvitesPage() {
                 <label
                   className={`block text-sm font-medium mb-2 transition-colors ${isDark ? "text-slate-300" : "text-slate-700"}`}
                 >
-                  Shareable Link (Single Use)
+                  {isKhmer
+                    ? "តំណចែករំលែក (ប្រើបានម្តង)"
+                    : "Shareable Link (Single Use)"}
                 </label>
                 <div className="flex items-center gap-2">
                   <div className="relative flex-1">
@@ -344,7 +374,7 @@ export default function InvitesPage() {
               <h2
                 className={`font-semibold transition-colors ${isDark ? "text-white" : "text-slate-900"}`}
               >
-                Invitation History
+                {isKhmer ? "ប្រវត្តិការអញ្ជើញ" : "Invitation History"}
               </h2>
             </div>
           </div>
@@ -359,11 +389,21 @@ export default function InvitesPage() {
                       : "bg-slate-50/50 border-slate-200 text-slate-500"
                   }`}
                 >
-                  <th className="px-6 py-4">Target / Email</th>
-                  <th className="px-6 py-4">Granted Role</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Created</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th className="px-6 py-4">
+                    {isKhmer ? "គោលដៅ / អ៊ីមែល" : "Target / Email"}
+                  </th>
+                  <th className="px-6 py-4">
+                    {isKhmer ? "តួនាទីដែលបានផ្តល់" : "Granted Role"}
+                  </th>
+                  <th className="px-6 py-4">
+                    {isKhmer ? "ស្ថានភាព" : "Status"}
+                  </th>
+                  <th className="px-6 py-4">
+                    {isKhmer ? "បង្កើត" : "Created"}
+                  </th>
+                  <th className="px-6 py-4 text-right">
+                    {isKhmer ? "សកម្មភាព" : "Actions"}
+                  </th>
                 </tr>
               </thead>
               <tbody
@@ -404,7 +444,7 @@ export default function InvitesPage() {
                       {invite.status === "Pending" && (
                         <button
                           className={`transition-colors p-1 ${isDark ? "text-slate-500 hover:text-red-400" : "text-slate-400 hover:text-red-500"}`}
-                          title="Revoke Invitation"
+                          title={isKhmer ? "ដកការអញ្ជើញ" : "Revoke Invitation"}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>

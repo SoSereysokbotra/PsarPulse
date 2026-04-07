@@ -94,7 +94,9 @@ export default function AdminDashboardPage() {
   const handleAction = async (id: string, status: "approved" | "rejected") => {
     if (
       !confirm(
-        `Are you sure you want to ${status === "approved" ? "approve" : "reject"} this vendor?`,
+        isKhmer
+          ? `តើអ្នកប្រាកដថាចង់${status === "approved" ? "អនុម័ត" : "បដិសេធ"}អាជីវករនេះមែនទេ?`
+          : `Are you sure you want to ${status === "approved" ? "approve" : "reject"} this vendor?`,
       )
     )
       return;
@@ -110,13 +112,21 @@ export default function AdminDashboardPage() {
         if (json.success) {
           setVendorRequests((prev) => prev.filter((req) => req.id !== id));
         } else {
-          alert("Error: " + json.message);
+          alert((isKhmer ? "កំហុស៖ " : "Error: ") + json.message);
         }
       } else {
-        alert("Server error while performing action.");
+        alert(
+          isKhmer
+            ? "ម៉ាស៊ីនមេមានបញ្ហាពេលអនុវត្តសកម្មភាព។"
+            : "Server error while performing action.",
+        );
       }
     } catch (e) {
-      alert("Failed to connect to the server.");
+      alert(
+        isKhmer
+          ? "បរាជ័យក្នុងការតភ្ជាប់ទៅម៉ាស៊ីនមេ។"
+          : "Failed to connect to the server.",
+      );
     }
   };
 
@@ -305,13 +315,17 @@ export default function AdminDashboardPage() {
 
           <div className="space-y-2 mt-4">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">Free</span>
+              <span className="text-slate-500">
+                {isKhmer ? "ឥតគិតថ្លៃ" : "Free"}
+              </span>
               <span className="font-medium text-slate-700">
                 {stats.subscriptionsBreakdown?.free || 0}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-emerald-600 font-medium">Paid</span>
+              <span className="text-emerald-600 font-medium">
+                {isKhmer ? "បង់ប្រាក់" : "Paid"}
+              </span>
               <span className="font-medium text-slate-700">
                 {stats.subscriptionsBreakdown?.paid || 0}
               </span>
@@ -371,9 +385,15 @@ export default function AdminDashboardPage() {
               onChange={setTimeRange}
               isDark={isDark}
               options={[
-                { value: "7d", label: isKhmer ? "៧ ថ្ងៃចុងក្រោយ" : "Last 7 Days" },
-                { value: "30d", label: isKhmer ? "៣០ ថ្ងៃចុងក្រោយ" : "Last 30 Days" },
-                { value: "1y", label: isKhmer ? "ឆ្នាំនេះ" : "This Year" }
+                {
+                  value: "7d",
+                  label: isKhmer ? "៧ ថ្ងៃចុងក្រោយ" : "Last 7 Days",
+                },
+                {
+                  value: "30d",
+                  label: isKhmer ? "៣០ ថ្ងៃចុងក្រោយ" : "Last 30 Days",
+                },
+                { value: "1y", label: isKhmer ? "ឆ្នាំនេះ" : "This Year" },
               ]}
             />
           </div>
@@ -437,11 +457,13 @@ export default function AdminDashboardPage() {
                         </div>
                         <div className="flex items-center gap-1.5 overflow-hidden">
                           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
-                          Revenue: ${data.revenue.toLocaleString()}
+                          {isKhmer ? "ចំណូល" : "Revenue"}: $
+                          {data.revenue.toLocaleString()}
                         </div>
                         <div className="flex items-center gap-1.5 overflow-hidden">
                           <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0" />
-                          Footfall: {data.footfall.toLocaleString()}
+                          {isKhmer ? "ចំនួនអ្នកដើរ" : "Footfall"}:{" "}
+                          {data.footfall.toLocaleString()}
                         </div>
                       </div>
 
@@ -534,14 +556,14 @@ export default function AdminDashboardPage() {
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleAction(req.id, "approved")}
-                        title="Approve"
+                        title={isKhmer ? "អនុម័ត" : "Approve"}
                         className={`p-1.5 rounded-md transition-colors ${isDark ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"}`}
                       >
                         <CheckCircle2 className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleAction(req.id, "rejected")}
-                        title="Reject"
+                        title={isKhmer ? "បដិសេធ" : "Reject"}
                         className={`p-1.5 rounded-md transition-colors ${isDark ? "bg-red-500/10 text-red-500 hover:bg-red-500/20" : "bg-red-50 text-red-600 hover:bg-red-100"}`}
                       >
                         <XCircle className="h-4 w-4" />

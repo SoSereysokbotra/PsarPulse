@@ -250,7 +250,7 @@ export class AuthService {
     });
 
     // Send verification email
-    await EmailService.sendVerificationEmail(user.email, code);
+    await EmailService.sendVerificationEmail(user.email, code, user.fullName);
 
     // If an invitation was successfully used, mark it as accepted
     if (invitation) {
@@ -475,7 +475,7 @@ export class AuthService {
     });
 
     // Send verification email
-    await EmailService.sendVerificationEmail(user.email, code);
+    await EmailService.sendVerificationEmail(user.email, code, user.fullName);
 
     return {
       success: true,

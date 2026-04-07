@@ -73,7 +73,7 @@ export class PasswordService {
     });
 
     // Send reset email
-    await EmailService.sendPasswordResetEmail(user.email, code);
+    await EmailService.sendPasswordResetEmail(user.email, code, user.fullName);
 
     return {
       success: true,
@@ -157,8 +157,9 @@ export class PasswordService {
       lastSentAt: new Date(),
     });
 
-    // Send reset email
-    await EmailService.sendPasswordResetEmail(payload.email, code);
+    // Fetch user for personalized greeting
+    const user = await UserRepository.findById(payload.id);
+    await EmailService.sendPasswordResetEmail(payload.email, code, user?.fullName);
 
     return {
       success: true,

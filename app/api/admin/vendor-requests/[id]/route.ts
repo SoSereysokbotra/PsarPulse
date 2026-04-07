@@ -118,7 +118,6 @@ export async function PATCH(
         businessName: existingReq.businessName,
         businessEmail: existingReq.businessEmail,
         businessPhone: existingReq.businessPhone,
-        businessAddress: existingReq.businessAddress,
         businessDescription: existingReq.businessDescription,
         category: existingReq.businessCategory,
         businessLogo: existingReq.businessLogo,

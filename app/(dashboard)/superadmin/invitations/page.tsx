@@ -10,6 +10,7 @@ import {
   Star,
 } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 type InviteRole = "admin" | "vip_vendor";
 
@@ -24,6 +25,8 @@ type InvitationItem = {
 
 export default function SuperadminInvitationsPage() {
   const { resolvedTheme } = useTheme();
+  const { language, t } = useLanguage();
+  const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
 
   const [email, setEmail] = useState("");
@@ -35,8 +38,10 @@ export default function SuperadminInvitationsPage() {
   const [invitations, setInvitations] = useState<InvitationItem[]>([]);
 
   const roleLabel = useMemo(() => {
-    return role === "admin" ? "Admin" : "VIP Vendor";
-  }, [role]);
+    return role === "admin"
+      ? t("superadmin.invitations.roles.admin")
+      : t("superadmin.invitations.roles.vipVendor");
+  }, [role, t]);
 
   const loadInvitations = async () => {
     setIsLoading(true);
@@ -49,12 +54,18 @@ export default function SuperadminInvitationsPage() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || "Failed to load invitations");
+        throw new Error(
+          data.message || t("superadmin.invitations.errors.loadFailed"),
+        );
       }
 
       setInvitations(data.data || []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load invitations");
+      setError(
+        e instanceof Error
+          ? e.message
+          : t("superadmin.invitations.errors.loadFailed"),
+      );
     } finally {
       setIsLoading(false);
     }
@@ -86,7 +97,9 @@ export default function SuperadminInvitationsPage() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        throw new Error(data.message || "Failed to send invitation");
+        throw new Error(
+          data.message || t("superadmin.invitations.errors.sendFailed"),
+        );
       }
 
       setSuccessMessage(
@@ -95,10 +108,24 @@ export default function SuperadminInvitationsPage() {
       setEmail("");
       await loadInvitations();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to send invitation");
+      setError(
+        e instanceof Error
+          ? e.message
+          : t("superadmin.invitations.errors.sendFailed"),
+      );
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const statusLabel = (status: InvitationItem["status"]) => {
+    if (status === "accepted") {
+      return t("superadmin.invitations.status.accepted");
+    }
+    if (status === "pending") {
+      return t("superadmin.invitations.status.pending");
+    }
+    return t("superadmin.invitations.status.expired");
   };
 
   const statusClass = (status: InvitationItem["status"]) => {
@@ -118,18 +145,17 @@ export default function SuperadminInvitationsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${isKhmer ? "font-battambang" : ""}`}>
       <div>
         <h1
           className={`text-2xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}
         >
-          Invitation Center
+          {t("superadmin.invitations.title")}
         </h1>
         <p
           className={`text-sm mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}
         >
-          Superadmin can invite Admin users and VIP Vendors from one secure
-          flow.
+          {t("superadmin.invitations.subtitle")}
         </p>
       </div>
 
@@ -142,7 +168,7 @@ export default function SuperadminInvitationsPage() {
               <label
                 className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${isDark ? "text-slate-400" : "text-slate-500"}`}
               >
-                Invite Email
+                {t("superadmin.invitations.inviteEmail")}
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -150,7 +176,7 @@ export default function SuperadminInvitationsPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="user@example.com"
+                  placeholder={t("superadmin.invitations.emailPlaceholder")}
                   className={`w-full rounded-lg border pl-9 pr-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-violet-500/25 ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
                   required
                 />
@@ -161,7 +187,7 @@ export default function SuperadminInvitationsPage() {
               <label
                 className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${isDark ? "text-slate-400" : "text-slate-500"}`}
               >
-                Invite Role
+                {t("superadmin.invitations.inviteRole")}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -170,7 +196,7 @@ export default function SuperadminInvitationsPage() {
                   className={`rounded-lg px-3 py-2.5 text-xs font-semibold border transition-all flex items-center justify-center gap-1.5 ${role === "admin" ? "bg-violet-600 text-white border-violet-600" : isDark ? "border-white/10 text-slate-300 hover:bg-white/5" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  Admin
+                  {t("superadmin.invitations.roles.admin")}
                 </button>
                 <button
                   type="button"
@@ -178,7 +204,7 @@ export default function SuperadminInvitationsPage() {
                   className={`rounded-lg px-3 py-2.5 text-xs font-semibold border transition-all flex items-center justify-center gap-1.5 ${role === "vip_vendor" ? "bg-teal-600 text-white border-teal-600" : isDark ? "border-white/10 text-slate-300 hover:bg-white/5" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
                 >
                   <Star className="w-3.5 h-3.5" />
-                  VIP Vendor
+                  {t("superadmin.invitations.roles.vipVendor")}
                 </button>
               </div>
             </div>
@@ -195,7 +221,7 @@ export default function SuperadminInvitationsPage() {
               ) : (
                 <Send className="w-4 h-4" />
               )}
-              Send {roleLabel} Invite
+              {t("superadmin.invitations.sendInvite", { role: roleLabel })}
             </button>
             <button
               type="button"
@@ -206,7 +232,7 @@ export default function SuperadminInvitationsPage() {
               <RefreshCcw
                 className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
               />
-              Refresh
+              {t("superadmin.invitations.refresh")}
             </button>
           </div>
 
@@ -236,12 +262,14 @@ export default function SuperadminInvitationsPage() {
           <h2
             className={`text-sm font-semibold ${isDark ? "text-white" : "text-slate-900"}`}
           >
-            Recent Invitations
+            {t("superadmin.invitations.recentInvitations")}
           </h2>
           <span
             className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}
           >
-            {invitations.length} records
+            {t("superadmin.invitations.records", {
+              count: invitations.length,
+            })}
           </span>
         </div>
 
@@ -249,16 +277,20 @@ export default function SuperadminInvitationsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className={isDark ? "bg-white/5" : "bg-slate-50"}>
-                {["Email", "Role", "Status", "Expires", "Created"].map(
-                  (header) => (
-                    <th
-                      key={header}
-                      className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? "text-slate-400" : "text-slate-500"}`}
-                    >
-                      {header}
-                    </th>
-                  ),
-                )}
+                {[
+                  t("superadmin.invitations.table.email"),
+                  t("superadmin.invitations.table.role"),
+                  t("superadmin.invitations.table.status"),
+                  t("superadmin.invitations.table.expires"),
+                  t("superadmin.invitations.table.created"),
+                ].map((header) => (
+                  <th
+                    key={header}
+                    className={`px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? "text-slate-400" : "text-slate-500"}`}
+                  >
+                    {header}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -269,7 +301,7 @@ export default function SuperadminInvitationsPage() {
                     className="px-6 py-10 text-center text-slate-400"
                   >
                     <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
-                    Loading invitations...
+                    {t("superadmin.invitations.loading")}
                   </td>
                 </tr>
               ) : invitations.length === 0 ? (
@@ -278,7 +310,7 @@ export default function SuperadminInvitationsPage() {
                     colSpan={5}
                     className="px-6 py-10 text-center text-slate-400"
                   >
-                    No invitations found
+                    {t("superadmin.invitations.empty")}
                   </td>
                 </tr>
               ) : (
@@ -293,13 +325,15 @@ export default function SuperadminInvitationsPage() {
                       {invite.email}
                     </td>
                     <td className="px-6 py-4 text-xs font-medium text-slate-500">
-                      {invite.role === "admin" ? "Admin" : "VIP Vendor"}
+                      {invite.role === "admin"
+                        ? t("superadmin.invitations.roles.admin")
+                        : t("superadmin.invitations.roles.vipVendor")}
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${statusClass(invite.status)}`}
                       >
-                        {invite.status}
+                        {statusLabel(invite.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-xs text-slate-500">

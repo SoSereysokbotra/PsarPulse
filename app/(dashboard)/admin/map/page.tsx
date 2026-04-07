@@ -22,16 +22,18 @@ import {
   Phone,
 } from "lucide-react";
 import Link from "next/link";
-
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 export default function VendorMapPage() {
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
   const [pins, setPins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/admin/vendors")
-      .then(r => r.json())
-      .then(d => {
+      .then((r) => r.json())
+      .then((d) => {
         if (d.success) {
           const mapped = d.data.map((v: any, index: number) => {
             return {
@@ -43,7 +45,7 @@ export default function VendorMapPage() {
               lat: parseFloat(v.latitude) || 11.5564,
               lng: parseFloat(v.longitude) || 104.9282,
               publicVisible: v.status === "Active",
-              visitors: Math.floor(Math.random() * 500)
+              visitors: Math.floor(Math.random() * 500),
             };
           });
           setPins(mapped);
@@ -81,13 +83,17 @@ export default function VendorMapPage() {
   });
 
   const togglePublicVisibility = async (pinId: string) => {
-    const pin = pins.find(p => p.id === pinId);
+    const pin = pins.find((p) => p.id === pinId);
     if (!pin) return;
-    
+
     const newPublic = !pin.publicVisible;
-    
+
     // Optimistic update
-    setPins(current => current.map(p => p.id === pinId ? { ...p, publicVisible: newPublic } : p));
+    setPins((current) =>
+      current.map((p) =>
+        p.id === pinId ? { ...p, publicVisible: newPublic } : p,
+      ),
+    );
     if (selectedPin?.id === pinId) {
       setSelectedPin({ ...selectedPin, publicVisible: newPublic });
     }
@@ -96,17 +102,25 @@ export default function VendorMapPage() {
       const res = await fetch(`/api/admin/vendors/${pinId}/public`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublic: newPublic })
+        body: JSON.stringify({ isPublic: newPublic }),
       });
-      
+
       if (!res.ok) throw new Error("Failed to update visibility");
     } catch (error) {
       // Revert on error
-      setPins(current => current.map(p => p.id === pinId ? { ...p, publicVisible: !newPublic } : p));
+      setPins((current) =>
+        current.map((p) =>
+          p.id === pinId ? { ...p, publicVisible: !newPublic } : p,
+        ),
+      );
       if (selectedPin?.id === pinId) {
         setSelectedPin({ ...selectedPin, publicVisible: !newPublic });
       }
-      alert("Error updating visibility. Please try again.");
+      alert(
+        isKhmer
+          ? "កំហុសក្នុងការកែប្រែភាពមើលឃើញ។ សូមព្យាយាមម្តងទៀត។"
+          : "Error updating visibility. Please try again.",
+      );
     }
   };
 
@@ -116,10 +130,12 @@ export default function VendorMapPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2 transition-colors">
             <MapIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-            Vendor Mapping
+            {isKhmer ? "ផែនទីអាជីវករ" : "Vendor Mapping"}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 transition-colors">
-            Manage vendor geolocations, zones & public visibility.
+            {isKhmer
+              ? "គ្រប់គ្រងទីតាំងអាជីវករ តំបន់ និងភាពមើលឃើញសាធារណៈ។"
+              : "Manage vendor geolocations, zones & public visibility."}
           </p>
         </div>
 
@@ -143,7 +159,7 @@ export default function VendorMapPage() {
                   : ""
               }`}
             />
-            Internal Ops
+            {isKhmer ? "ប្រតិបត្តិការផ្ទៃក្នុង" : "Internal Ops"}
           </button>
           <button
             onClick={() => {
@@ -163,7 +179,7 @@ export default function VendorMapPage() {
                   : ""
               }`}
             />
-            Public Map
+            {isKhmer ? "ផែនទីសាធារណៈ" : "Public Map"}
           </button>
         </div>
       </div>
@@ -174,7 +190,7 @@ export default function VendorMapPage() {
           <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 transition-colors">
             <h2 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
               <Filter className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
-              Map Controls
+              {isKhmer ? "ការគ្រប់គ្រងផែនទី" : "Map Controls"}
             </h2>
           </div>
 
@@ -184,7 +200,7 @@ export default function VendorMapPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
                 <input
                   type="text"
-                  placeholder="Search pins..."
+                  placeholder={isKhmer ? "ស្វែងរកចំណុច..." : "Search pins..."}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-1 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-all font-medium text-slate-700 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500"
@@ -196,13 +212,16 @@ export default function VendorMapPage() {
               <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
                 <div>
                   <label className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                    <Layers className="h-3 w-3" /> Status Layer
+                    <Layers className="h-3 w-3" />{" "}
+                    {isKhmer ? "ស្រទាប់ស្ថានភាព" : "Status Layer"}
                   </label>
                   <div className="space-y-2.5">
                     <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
                       <div className="flex items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-                        Verified (Active)
+                        {isKhmer
+                          ? "បានផ្ទៀងផ្ទាត់ (សកម្ម)"
+                          : "Verified (Active)"}
                       </div>
                       <input
                         type="checkbox"
@@ -219,7 +238,7 @@ export default function VendorMapPage() {
                     <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
                       <div className="flex items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span>
-                        Pending Verif.
+                        {isKhmer ? "កំពុងរង់ចាំផ្ទៀងផ្ទាត់" : "Pending Verif."}
                       </div>
                       <input
                         type="checkbox"
@@ -236,7 +255,7 @@ export default function VendorMapPage() {
                     <label className="flex items-center justify-between group cursor-pointer p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 transition-colors">
                       <div className="flex items-center gap-3 text-sm font-medium text-slate-700 dark:text-slate-300">
                         <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]"></span>
-                        Suspended/Off
+                        {isKhmer ? "ផ្អាក/បិទ" : "Suspended/Off"}
                       </div>
                       <input
                         type="checkbox"
@@ -257,12 +276,14 @@ export default function VendorMapPage() {
               <div className="space-y-6 animate-in fade-in slide-in-from-left-4 duration-300">
                 <div>
                   <label className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
-                    <Navigation className="h-3 w-3" /> Public Curation
+                    <Navigation className="h-3 w-3" />{" "}
+                    {isKhmer ? "ការរៀបចំសាធារណៈ" : "Public Curation"}
                   </label>
                   <div className="p-4 bg-gradient-to-br from-indigo-50 to-blue-50/50 dark:from-indigo-900/30 dark:to-blue-900/20 border border-indigo-100/60 dark:border-indigo-500/20 rounded-xl shadow-sm">
                     <p className="text-sm font-medium text-indigo-900 dark:text-indigo-200 mb-3 leading-relaxed">
-                      You are previewing exactly what users see within the
-                      custom PsarPulse consumer app.
+                      {isKhmer
+                        ? "អ្នកកំពុងមើលជាមុននូវអ្វីដែលអ្នកប្រើឃើញក្នុងកម្មវិធីអតិថិជន PsarPulse។"
+                        : "You are previewing exactly what users see within the custom PsarPulse consumer app."}
                     </p>
                   </div>
                 </div>
@@ -274,7 +295,7 @@ export default function VendorMapPage() {
             <div className="grid grid-cols-2 gap-3 text-center">
               <div className="bg-white dark:bg-slate-800 py-3 rounded-lg border border-slate-100 dark:border-slate-700 shadow-sm transition-colors">
                 <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
-                  Total Mapped
+                  {isKhmer ? "ចំនួនដែលបានដាក់ផែនទី" : "Total Mapped"}
                 </p>
                 <p className="text-xl font-black text-slate-800 dark:text-white tracking-tight">
                   {filteredPins.length}
@@ -400,17 +421,19 @@ export default function VendorMapPage() {
                           Since
                         </span>
                         <span className="font-semibold text-slate-600 dark:text-slate-400 flex items-center justify-end gap-1">
-                          <Clock className="w-3.5 h-3.5" />{" "}
-                          {selectedPin.joined}
+                          <Clock className="w-3.5 h-3.5" /> {selectedPin.joined}
                         </span>
                       </div>
                     </div>
 
                     <div className="space-y-2 mb-4 px-1">
-                       <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                          <Phone className="w-3.5 h-3.5 text-emerald-500" />
-                          <span>{selectedPin.phone || "No phone"}</span>
-                       </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                        <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>
+                          {selectedPin.phone ||
+                            (isKhmer ? "មិនមានលេខទូរស័ព្ទ" : "No phone")}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -418,7 +441,8 @@ export default function VendorMapPage() {
                         href={`/admin/vendors?search=${encodeURIComponent(selectedPin.name)}`}
                         className="flex items-center justify-center gap-2 w-full py-2.5 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl text-sm font-semibold transition-all shadow-md shadow-slate-900/10 dark:shadow-none"
                       >
-                        View Full Details <ChevronRight className="w-4 h-4" />
+                        {isKhmer ? "មើលព័ត៌មានលម្អិត" : "View Full Details"}{" "}
+                        <ChevronRight className="w-4 h-4" />
                       </Link>
 
                       {selectedPin.status === "Active" &&
@@ -439,8 +463,12 @@ export default function VendorMapPage() {
                               <Eye className="h-3.5 w-3.5" />
                             )}
                             {selectedPin.publicVisible
-                              ? "Hide from Consumers"
-                              : "Publish to App"}
+                              ? isKhmer
+                                ? "លាក់ពីអ្នកប្រើ"
+                                : "Hide from Consumers"
+                              : isKhmer
+                                ? "បង្ហាញក្នុងកម្មវិធី"
+                                : "Publish to App"}
                           </button>
                         )}
                     </div>

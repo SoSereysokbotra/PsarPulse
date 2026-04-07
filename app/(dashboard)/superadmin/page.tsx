@@ -6,14 +6,12 @@ import {
   ShieldCheck,
   CreditCard,
   ScrollText,
-  TrendingUp,
   ArrowUpRight,
-  Activity,
   Settings,
   MoreHorizontal,
-  Lock,
 } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import Link from "next/link";
 
 // Renamed and styled to match your Admin StatCard
@@ -70,6 +68,8 @@ function StatCard({
 
 export default function SuperadminPage() {
   const { resolvedTheme } = useTheme();
+  const { language, t } = useLanguage();
+  const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
   const [admins, setAdmins] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
@@ -94,20 +94,21 @@ export default function SuperadminPage() {
   }, []);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div
+      className={`space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 ${isKhmer ? "font-battambang" : ""}`}
+    >
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1
             className={`text-3xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}
           >
-            Platform Overview
+            {t("superadmin.overview.title")}
           </h1>
           <p
             className={`text-sm mt-1.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}
           >
-            Monitor global metrics, manage administrators, and configure system
-            settings.
+            {t("superadmin.overview.subtitle")}
           </p>
         </div>
       </div>
@@ -115,38 +116,38 @@ export default function SuperadminPage() {
       {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         <StatCard
-          title="Admin Accounts"
+          title={t("superadmin.overview.cards.adminAccounts")}
           value={admins.length || "-"}
-          sub="Active platform administrators"
+          sub={t("superadmin.overview.cards.adminAccountsSub")}
           icon={ShieldCheck}
           colorClass="bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300"
-          href="/superadmin/permissions"
+          href="#"
           isDark={isDark}
         />
         <StatCard
-          title="Active Plans"
+          title={t("superadmin.overview.cards.activePlans")}
           value={plans.length.toString()}
-          sub="Free · Pro · Premium"
+          sub={t("superadmin.overview.cards.activePlansSub")}
           icon={CreditCard}
           colorClass="bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
           href="/superadmin/plans"
           isDark={isDark}
         />
         <StatCard
-          title="Platform Settings"
-          value="Global"
-          sub="Currency, tax, & locale configs"
+          title={t("superadmin.overview.cards.platformSettings")}
+          value={t("superadmin.overview.cards.global")}
+          sub={t("superadmin.overview.cards.platformSettingsSub")}
           icon={Settings}
           colorClass="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
           href="/superadmin/settings"
           isDark={isDark}
         />
         <StatCard
-          title="Audit Events"
+          title={t("superadmin.overview.cards.auditEvents")}
           value={
             auditLogs.length > 99 ? "99+" : auditLogs.length.toString() || "-"
           }
-          sub="Recent system events"
+          sub={t("superadmin.overview.cards.auditEventsSub")}
           icon={ScrollText}
           colorClass="bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
           href="/superadmin/audit-log"
@@ -166,20 +167,14 @@ export default function SuperadminPage() {
               <h2
                 className={`font-semibold text-lg ${isDark ? "text-white" : "text-slate-900"}`}
               >
-                System Administrators
+                {t("superadmin.overview.systemAdministrators")}
               </h2>
               <p
                 className={`text-xs mt-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}
               >
-                Manage access and roles
+                {t("superadmin.overview.manageAccess")}
               </p>
             </div>
-            <Link
-              href="/superadmin/permissions"
-              className="text-sm px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg font-medium transition-colors shadow-sm"
-            >
-              Manage Roles
-            </Link>
           </div>
 
           <div className="overflow-x-auto">
@@ -193,16 +188,16 @@ export default function SuperadminPage() {
               >
                 <tr>
                   <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">
-                    Administrator
+                    {t("superadmin.overview.table.administrator")}
                   </th>
                   <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">
-                    Role
+                    {t("superadmin.overview.table.role")}
                   </th>
                   <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">
-                    Access Scope
+                    {t("superadmin.overview.table.accessScope")}
                   </th>
                   <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right">
-                    Actions
+                    {t("superadmin.overview.table.actions")}
                   </th>
                 </tr>
               </thead>
@@ -215,7 +210,7 @@ export default function SuperadminPage() {
                       colSpan={4}
                       className="px-6 py-12 text-center text-slate-400"
                     >
-                      Loading administrators...
+                      {t("superadmin.overview.loadingAdministrators")}
                     </td>
                   </tr>
                 ) : admins.length === 0 ? (
@@ -224,7 +219,7 @@ export default function SuperadminPage() {
                       colSpan={4}
                       className="px-6 py-12 text-center text-slate-400"
                     >
-                      No admin accounts found.
+                      {t("superadmin.overview.noAdmins")}
                     </td>
                   </tr>
                 ) : (
@@ -242,12 +237,14 @@ export default function SuperadminPage() {
                             <p
                               className={`font-medium ${isDark ? "text-slate-200" : "text-slate-900"}`}
                             >
-                              {admin.userFullName || "Unknown User"}
+                              {admin.userFullName ||
+                                t("superadmin.overview.unknownUser")}
                             </p>
                             <p
                               className={`text-xs ${isDark ? "text-slate-500" : "text-slate-400"}`}
                             >
-                              {admin.userEmail || "No email"}
+                              {admin.userEmail ||
+                                t("superadmin.overview.noEmail")}
                             </p>
                           </div>
                         </div>
@@ -261,16 +258,19 @@ export default function SuperadminPage() {
                           }`}
                         >
                           {admin.role === "super_admin"
-                            ? "Super Admin"
-                            : "Admin"}
+                            ? t("superadmin.overview.roles.superAdmin")
+                            : t("superadmin.overview.roles.admin")}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1">
                           {[
-                            admin.canManageVendors && "Vendors",
-                            admin.canManageUsers && "Users",
-                            admin.canManagePlans && "Plans",
+                            admin.canManageVendors &&
+                              t("superadmin.overview.scopes.vendors"),
+                            admin.canManageUsers &&
+                              t("superadmin.overview.scopes.users"),
+                            admin.canManagePlans &&
+                              t("superadmin.overview.scopes.plans"),
                           ]
                             .filter(Boolean)
                             .map((scope) => (
@@ -305,26 +305,26 @@ export default function SuperadminPage() {
           <h3
             className={`font-semibold text-lg mb-4 ${isDark ? "text-white" : "text-slate-900"}`}
           >
-            Quick Actions
+            {t("superadmin.overview.quickActions")}
           </h3>
           <div className="space-y-3">
             {[
               {
-                label: "Plans & Pricing",
+                label: t("superadmin.sidebar.plansPricing"),
                 href: "/superadmin/plans",
-                desc: "Manage subscription tiers",
+                desc: t("superadmin.overview.quickActionDesc.plans"),
                 icon: CreditCard,
               },
               {
-                label: "Platform Settings",
+                label: t("superadmin.overview.cards.platformSettings"),
                 href: "/superadmin/settings",
-                desc: "Currency, tax, locale",
+                desc: t("superadmin.overview.quickActionDesc.settings"),
                 icon: Settings,
               },
               {
-                label: "Switch to Admin",
+                label: t("superadmin.overview.switchToAdmin"),
                 href: "/admin",
-                desc: "View as standard admin",
+                desc: t("superadmin.overview.quickActionDesc.switchToAdmin"),
                 icon: Users,
               },
             ].map((item) => (

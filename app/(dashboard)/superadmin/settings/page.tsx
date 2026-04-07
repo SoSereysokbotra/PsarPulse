@@ -5,97 +5,49 @@ import {
   Settings,
   Save,
   Loader2,
-  Globe,
-  CreditCard,
   Database,
   Building2,
   Mail,
-  Clock,
-  Percent,
-  DollarSign,
 } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 
 const DEFAULT_SETTINGS = [
   {
     key: "platform_name",
     label: "Platform Name",
+    labelKey: "superadmin.settings.fields.platformName.label",
     value: "PsarPulse KH",
     group: "general",
     icon: Building2,
     desc: "The global name displayed across the platform.",
+    descKey: "superadmin.settings.fields.platformName.desc",
   },
   {
     key: "support_email",
     label: "Support Email",
+    labelKey: "superadmin.settings.fields.supportEmail.label",
     value: "support@psarpulse.com",
     group: "general",
     icon: Mail,
     desc: "Primary email address for user support inquiries.",
-  },
-  {
-    key: "locale",
-    label: "Default Locale",
-    value: "en-US",
-    group: "regional",
-    icon: Globe,
-    desc: "Standard language and formatting locale.",
-  },
-  {
-    key: "timezone",
-    label: "Timezone",
-    value: "Asia/Phnom_Penh",
-    group: "regional",
-    icon: Clock,
-    desc: "Global timezone for system operations and logs.",
-  },
-  {
-    key: "currency",
-    label: "Currency Code",
-    value: "USD",
-    group: "financial",
-    icon: DollarSign,
-    desc: "Base currency used for billing and subscriptions.",
-  },
-  {
-    key: "tax_rate",
-    label: "Tax Rate (%)",
-    value: "10",
-    group: "financial",
-    icon: Percent,
-    desc: "Default tax rate applied to platform transactions.",
+    descKey: "superadmin.settings.fields.supportEmail.desc",
   },
 ];
 
 const TABS = [
   {
     id: "general",
-    label: "General",
+    labelKey: "superadmin.settings.tabs.general.label",
     icon: Settings,
-    desc: "Platform info & contact",
-  },
-  {
-    id: "regional",
-    label: "Localization",
-    icon: Globe,
-    desc: "Region & time settings",
-  },
-  {
-    id: "financial",
-    label: "Financial",
-    icon: CreditCard,
-    desc: "Currency & tax rates",
-  },
-  {
-    id: "system",
-    label: "System",
-    icon: Database,
-    desc: "Advanced configuration",
+    descKey: "superadmin.settings.tabs.general.desc",
   },
 ];
 
 export default function SuperadminSettingsPage() {
   const { resolvedTheme } = useTheme();
+  const { language, t } = useLanguage();
+  const isKhmer = language === "km";
   const isDark = resolvedTheme === "dark";
 
   const [activeTab, setActiveTab] = useState("general");
@@ -132,7 +84,7 @@ export default function SuperadminSettingsPage() {
         body: JSON.stringify({ key, value, label }),
       });
       const data = await res.json();
-      
+
       if (data.success) {
         setSaved(key);
         setTimeout(() => setSaved(null), 2000);
@@ -154,20 +106,20 @@ export default function SuperadminSettingsPage() {
   }));
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div
+      className={`space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 ${isKhmer ? "font-battambang" : ""}`}
+    >
       {/* Header */}
       <div>
         <h1
           className={`text-3xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}
         >
-          Platform Settings
+          {t("superadmin.settings.title")}
         </h1>
         <p
           className={`text-sm mt-1.5 max-w-2xl ${isDark ? "text-slate-400" : "text-slate-500"}`}
         >
-          Configure app-wide defaults for currency, locale, tax, and system
-          operations. Changes here affect all administrative and public-facing
-          interfaces.
+          {t("superadmin.settings.subtitle")}
         </p>
       </div>
 
@@ -197,12 +149,12 @@ export default function SuperadminSettingsPage() {
                   />
                   <div>
                     <span className="block font-medium text-sm">
-                      {tab.label}
+                      {t(tab.labelKey)}
                     </span>
                     <span
                       className={`block text-xs mt-0.5 ${isActive ? "opacity-80" : "opacity-60"}`}
                     >
-                      {tab.desc}
+                      {t(tab.descKey)}
                     </span>
                   </div>
                 </button>
@@ -221,12 +173,12 @@ export default function SuperadminSettingsPage() {
             <h2
               className={`font-semibold text-lg capitalize ${isDark ? "text-white" : "text-slate-800"}`}
             >
-              {activeTab} Settings
+              {t(`superadmin.settings.tabs.${activeTab}.title`)}
             </h2>
             <p
               className={`text-sm mt-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}
             >
-              {TABS.find((t) => t.id === activeTab)?.desc}
+              {t(`superadmin.settings.tabs.${activeTab}.desc`)}
             </p>
           </div>
 
@@ -246,11 +198,10 @@ export default function SuperadminSettingsPage() {
                   <Database className="w-8 h-8 opacity-50" />
                 </div>
                 <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
-                  Advanced System Configuration
+                  {t("superadmin.settings.advanced.title")}
                 </h3>
                 <p className="text-sm max-w-sm">
-                  Cache management, cron job triggers, and database maintenance
-                  tools will be available here in v2.0.
+                  {t("superadmin.settings.advanced.desc")}
                 </p>
               </div>
             ) : (
@@ -275,12 +226,12 @@ export default function SuperadminSettingsPage() {
                         <label
                           className={`block text-sm font-semibold mb-1 ${isDark ? "text-slate-200" : "text-slate-800"}`}
                         >
-                          {setting.label}
+                          {t(setting.labelKey)}
                         </label>
                         <p
                           className={`text-xs mb-3 ${isDark ? "text-slate-400" : "text-slate-500"}`}
                         >
-                          {setting.desc}
+                          {t(setting.descKey)}
                         </p>
                         <input
                           type="text"
@@ -313,13 +264,15 @@ export default function SuperadminSettingsPage() {
                     >
                       {saving === setting.key ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+                          <Loader2 className="w-4 h-4 animate-spin" />{" "}
+                          {t("superadmin.settings.actions.saving")}
                         </>
                       ) : saved === setting.key ? (
-                        "Saved ✓"
+                        t("superadmin.settings.actions.saved")
                       ) : (
                         <>
-                          <Save className="w-4 h-4" /> Save Changes
+                          <Save className="w-4 h-4" />{" "}
+                          {t("superadmin.settings.actions.saveChanges")}
                         </>
                       )}
                     </button>

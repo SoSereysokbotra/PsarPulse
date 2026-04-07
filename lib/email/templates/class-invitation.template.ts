@@ -1,3 +1,5 @@
+import { escapeHtml, renderMjmlTemplate } from "./mjml-layout";
+
 export interface ClassInvitationData {
   className: string;
   inviteLink: string;
@@ -5,139 +7,29 @@ export interface ClassInvitationData {
 
 export const getClassInvitationEmailTemplate = (
   data: ClassInvitationData,
-): string => `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Class Invitation</title>
-  <style>
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      line-height: 1.5;
-      color: #1f2937;
-      background-color: #f8fafc;
-      margin: 0;
-      padding: 0;
-    }
-    .wrapper {
-      width: 100%;
-      padding: 48px 0;
-      background-color: #f8fafc;
-    }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    }
-    .header {
-      padding: 32px 40px 0;
-      text-align: center;
-    }
-    .logo-text {
-      font-size: 20px;
-      font-weight: 800;
-      color: #FF5A36;
-      letter-spacing: -0.02em;
-    }
-    .content {
-      padding: 40px;
-      text-align: center;
-    }
-    h1 {
-      font-size: 24px;
-      font-weight: 700;
-      color: #111827;
-      margin: 24px 0 12px;
-    }
-    .class-name {
-      font-size: 18px;
-      font-weight: 600;
-      color: #FF5A36;
-      margin: 16px 0;
-    }
-    .description {
-      font-size: 16px;
-      color: #64748b;
-      margin-bottom: 32px;
-    }
-    .button {
-      display: inline-block;
-      padding: 12px 32px;
-      background-color: #FF5A36;
-      color: #ffffff;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 600;
-      margin: 24px 0;
-      transition: background-color 0.3s;
-    }
-    .button:hover {
-      background-color: #e84e2a;
-    }
-    .expiry-tag {
-      display: inline-block;
-      margin-top: 24px;
-      padding: 6px 12px;
-      background-color: #f1f5f9;
-      color: #475569;
-      font-size: 13px;
-      font-weight: 500;
-      border-radius: 6px;
-    }
-    .footer {
-      padding: 32px 40px;
-      text-align: center;
-      border-top: 1px solid #f1f5f9;
-    }
-    .footer-text {
-      font-size: 12px;
-      color: #94a3b8;
-      margin: 0;
-    }
-    @media only screen and (max-width: 500px) {
-      .content { padding: 32px 24px !important; }
-    }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="container">
-      <div class="header">
-        <span class="logo-text">Watmean</span>
-      </div>
-      
-      <div class="content">
-        <h1>You've been invited to a class</h1>
-        <div class="class-name">${data.className}</div>
-        <p class="description">
-          You have been invited to join a class on Watmean. Click the button below to accept the invitation.
-        </p>
-        
-        <a href="${data.inviteLink}" class="button">Accept Invitation</a>
-        
-        <div class="expiry-tag">
-          This invitation expires in 7 days
-        </div>
-        
-        <p style="font-size: 13px; color: #94a3b8; margin-top: 40px;">
-          If you didn't expect this invitation, you can safely ignore this message.
-        </p>
-      </div>
-      
-      <div class="footer">
-        <p class="footer-text">
-          &copy; ${new Date().getFullYear()} Watmean Attendance Tracker<br>
-          Phnom Penh, Cambodia
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-</html>
-`;
+): string => {
+  const safeClassName = escapeHtml(data.className);
+  const safeInviteLink = escapeHtml(data.inviteLink);
+
+  const content = `
+  <mj-section padding="20px 24px 0">
+    <mj-column>
+      <mj-text align="center" font-size="22px" font-weight="700">You have been invited to a class</mj-text>
+      <mj-text align="center" font-size="18px" font-weight="700" color="#29B28D">${safeClassName}</mj-text>
+      <mj-text align="center" color="#555555">Accept your invitation to join this class.</mj-text>
+    </mj-column>
+  </mj-section>
+
+  <mj-section padding="8px 24px">
+    <mj-column>
+      <mj-button href="${safeInviteLink}">Accept Invitation</mj-button>
+      <mj-text align="center" color="#666666" font-size="12px">This invitation expires in 7 days.</mj-text>
+    </mj-column>
+  </mj-section>
+  `;
+
+  return renderMjmlTemplate({
+    subject: "Class Invitation",
+    content,
+  });
+};

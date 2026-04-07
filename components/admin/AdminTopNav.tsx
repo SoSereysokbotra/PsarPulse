@@ -37,8 +37,15 @@ export function AdminTopNav() {
     return name.trim().slice(0, 2).toUpperCase();
   };
 
-  const displayName = user?.fullName || (loading ? "..." : (isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin"));
-  const displayInitials = user?.fullName ? getInitials(user.fullName) : (loading ? ".." : (isKhmer ? "អ" : "A"));
+  const displayName =
+    user?.fullName || (loading ? "..." : isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin");
+  const displayInitials = user?.fullName
+    ? getInitials(user.fullName)
+    : loading
+      ? ".."
+      : isKhmer
+        ? "អ"
+        : "A";
 
   const navItems = [
     {
@@ -90,7 +97,7 @@ export function AdminTopNav() {
 
         {/* Admin label */}
         <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-          Admin
+          {isKhmer ? "អ្នកគ្រប់គ្រង" : "Admin"}
         </span>
 
         {/* Divider */}
@@ -138,7 +145,9 @@ export function AdminTopNav() {
             className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-colors text-xs font-semibold whitespace-nowrap"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Superadmin</span>
+            <span className="hidden md:inline">
+              {isKhmer ? "អ្នកគ្រប់គ្រងកំពូល" : "Superadmin"}
+            </span>
           </Link>
 
           {/* Notification Bell */}
@@ -157,10 +166,18 @@ export function AdminTopNav() {
                 {loading ? ".." : displayInitials}
               </div>
               <div className="hidden md:flex flex-col items-start leading-tight text-left">
-                <span className="text-xs font-semibold text-white">{displayName}</span>
+                <span className="text-xs font-semibold text-white">
+                  {displayName}
+                </span>
                 <span className="text-[10px] text-slate-400 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                  {user?.role === "super_admin" ? (isKhmer ? "អ្នកគ្រប់គ្រងកំពូល" : "Super Admin") : (isKhmer ? "អ្នកគ្រប់គ្រងទីផ្សារ" : "Market Manager")}
+                  {user?.role === "super_admin"
+                    ? isKhmer
+                      ? "អ្នកគ្រប់គ្រងកំពូល"
+                      : "Super Admin"
+                    : isKhmer
+                      ? "អ្នកគ្រប់គ្រងទីផ្សារ"
+                      : "Market Manager"}
                 </span>
               </div>
               <ChevronDown

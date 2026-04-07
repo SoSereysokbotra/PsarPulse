@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  serverExternalPackages: [],
+  serverExternalPackages: ["mjml", "mjml-core"],
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },

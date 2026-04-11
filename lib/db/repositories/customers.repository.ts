@@ -33,22 +33,7 @@ export class CustomersRepository {
     });
   }
 
-  static async update(id: string, data: Partial<typeof vendorCustomers.$inferInsert>) {
-    const [result] = await db
-      .update(vendorCustomers)
-      .set(data)
-      .where(eq(vendorCustomers.id, id))
-      .returning();
-    return result;
-  }
 
-  static async delete(id: string) {
-    const [result] = await db
-      .delete(vendorCustomers)
-      .where(eq(vendorCustomers.id, id))
-      .returning();
-    return result;
-  }
 
   static async getAvgLTV(vendorId: string) {
     const result = await db

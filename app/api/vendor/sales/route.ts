@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       }
 
       const newStock = currentStock - qty;
-      let newStatus = inventoryItem.status;
+      let newStatus: "good" | "low" | "out" | null = inventoryItem.status as "good" | "low" | "out" | null;
       if (newStock === 0) newStatus = "out";
       else if (newStock <= inventoryItem.threshold) newStatus = "low";
       else newStatus = "good";

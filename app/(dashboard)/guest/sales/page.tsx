@@ -64,12 +64,12 @@ const now  = () => new Date().toLocaleTimeString("en-US", { hour: "numeric", min
 
 // ─── Initial Data ─────────────────────────────────────────────────
 const INITIAL: Transaction[] = [
-  { id: uid(), time: "1:45 PM",  items: "2x Coffee Latte, 1x Spring Roll", amount: 10.80, method: "ABA/KHQR" },
-  { id: uid(), time: "1:15 PM",  items: "1x Mango Sticky Rice",            amount:  2.00, method: "Cash"     },
-  { id: uid(), time: "12:30 PM", items: "3x Fried Rice",                   amount:  7.50, method: "Cash"     },
-  { id: uid(), time: "11:55 AM", items: "2x Green Tea, 2x Coconut Water",  amount:  6.40, method: "ABA/KHQR" },
-  { id: uid(), time: "10:20 AM", items: "1x Coffee Latte",                 amount:  4.50, method: "Other"    },
-  { id: uid(), time: "9:44 AM",  items: "1x Fried Rice, 1x Spring Roll",   amount:  4.30, method: "Cash"     },
+  { id: uid(), time: "1:45 PM",  items: "2x Phone Case, 1x Hair Clips Set", amount: 10.80, method: "ABA/KHQR" },
+  { id: uid(), time: "1:15 PM",  items: "1x Earbuds",                       amount:  2.00, method: "Cash"     },
+  { id: uid(), time: "12:30 PM", items: "3x Notebook",                      amount:  7.50, method: "Cash"     },
+  { id: uid(), time: "11:55 AM", items: "2x USB Cable, 2x Screen Protector",amount:  6.40, method: "ABA/KHQR" },
+  { id: uid(), time: "10:20 AM", items: "1x Phone Case",                    amount:  4.50, method: "Other"    },
+  { id: uid(), time: "9:44 AM",  items: "1x Notebook, 1x Hair Clips Set",   amount:  4.30, method: "Cash"     },
 ];
 
 const STATS: Record<Period, { revenue: number; change: string; positive: boolean }> = {

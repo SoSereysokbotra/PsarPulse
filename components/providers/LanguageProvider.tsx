@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import en from "@/locales/en.json";
 import km from "@/locales/kh.json";
 
@@ -10,10 +17,15 @@ const locales = { en, km };
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (keyPath: string, replacements?: Record<string, string | number>) => string;
+  t: (
+    keyPath: string,
+    replacements?: Record<string, string | number>,
+  ) => string;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+const LanguageContext = createContext<LanguageContextType | undefined>(
+  undefined,
+);
 
 export function LanguageProvider({
   children,
@@ -33,32 +45,46 @@ export function LanguageProvider({
     }
   }, [storageKey]);
 
-  const setLanguage = (lang: Language) => {
-    localStorage.setItem(storageKey, lang);
-    setLanguageState(lang);
-  };
+  const setLanguage = useCallback(
+    (lang: Language) => {
+      localStorage.setItem(storageKey, lang);
+      setLanguageState(lang);
+    },
+    [storageKey],
+  );
 
-  const t = (keyPath: string, replacements?: Record<string, string | number>): string => {
-    const keys = keyPath.split(".");
-    let current: any = locales[language];
+  const t = useCallback(
+    (
+      keyPath: string,
+      replacements?: Record<string, string | number>,
+    ): string => {
+      const keys = keyPath.split(".");
+      let current: any = locales[language];
 
-    for (const key of keys) {
-      if (!current || current[key] === undefined) return keyPath;
-      current = current[key];
-    }
+      for (const key of keys) {
+        if (!current || current[key] === undefined) return keyPath;
+        current = current[key];
+      }
 
-    let result = current as string;
-    if (replacements) {
-      Object.entries(replacements).forEach(([key, value]) => {
-        result = result.replace(new RegExp(`{{${key}}}`, "g"), String(value));
-      });
-    }
+      let result = current as string;
+      if (replacements) {
+        Object.entries(replacements).forEach(([key, value]) => {
+          result = result.replace(new RegExp(`{{${key}}}`, "g"), String(value));
+        });
+      }
 
-    return result;
-  };
+      return result;
+    },
+    [language],
+  );
+
+  const value = useMemo(
+    () => ({ language, setLanguage, t }),
+    [language, setLanguage, t],
+  );
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );

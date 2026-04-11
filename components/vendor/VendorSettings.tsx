@@ -4,9 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   User,
-  Bell,
-  Shield,
-  Paintbrush,
   Save,
   Globe,
   Mail,
@@ -30,13 +27,7 @@ import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
-type SettingsTab =
-  | "profile"
-  | "billing"
-  | "notifications"
-  | "security"
-  | "appearance"
-  | "system";
+type SettingsTab = "profile" | "billing";
 
 interface VendorSettingsProps {
   tier: "free" | "pro" | "premium";
@@ -130,7 +121,15 @@ function QRCode({ bank }: { bank: "aba" | "acleda" | "bakong" }) {
   );
 }
 
-function SuccessView({ plan, onReset, t }: { plan: string; onReset: () => void; t: any }) {
+function SuccessView({
+  plan,
+  onReset,
+  t,
+}: {
+  plan: string;
+  onReset: () => void;
+  t: any;
+}) {
   return (
     <div className="h-full flex flex-col items-center justify-center p-12 text-center animate-in fade-in zoom-in-95 duration-500">
       <div className="w-24 h-24 bg-[#29B28D]/10 rounded-full flex items-center justify-center mb-8 relative">
@@ -184,10 +183,12 @@ export default function VendorSettings({
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab") as SettingsTab;
+  const isValidTab = (tab: string | null): tab is SettingsTab => {
+    return tab === "profile" || tab === "billing";
+  };
+  const initialTab: SettingsTab = isValidTab(tabParam) ? tabParam : "profile";
 
-  const [activeTab, setActiveTab] = useState<SettingsTab>(
-    tabParam || "profile",
-  );
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [profile, setProfile] = useState<any>(null);
@@ -209,9 +210,16 @@ export default function VendorSettings({
         email: user.email || "",
         phoneNumber: vendor?.businessPhone || "012 345 678",
         stallLocation: vendor?.businessAddress || "Phnom Penh Market",
-        role: user.role === "vendor" ? (isKhmer ? "អ្នកគ្រប់គ្រងអាជីវករ" : "Merchant Administrator") : user.role,
+        role:
+          user.role === "vendor"
+            ? isKhmer
+              ? "អ្នកគ្រប់គ្រងអាជីវករ"
+              : "Merchant Administrator"
+            : user.role,
         language: isKhmer ? "Khmer" : "English",
-        timezone: isKhmer ? "(UTC+07:00) ម៉ោងនៅកម្ពុជា" : "(UTC+07:00) Indochina Time",
+        timezone: isKhmer
+          ? "(UTC+07:00) ម៉ោងនៅកម្ពុជា"
+          : "(UTC+07:00) Indochina Time",
       });
     }
   }, [user, vendor, language]);
@@ -261,7 +269,7 @@ export default function VendorSettings({
   useEffect(() => {
     let mounted = true;
     setIsLoadingProfile(true);
-    
+
     authClient
       .getProfile()
       .then((res: any) => {
@@ -284,16 +292,32 @@ export default function VendorSettings({
 
   // Sync tab with URL
   useEffect(() => {
-    if (tabParam && tabParam !== activeTab) {
+    if (!isValidTab(tabParam)) {
+      if (tabParam !== null) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("tab", "profile");
+        window.history.replaceState(
+          {},
+          "",
+          `${currentPath}?${params.toString()}`,
+        );
+      }
+      if (activeTab !== "profile") {
+        setActiveTab("profile");
+      }
+      return;
+    }
+
+    if (tabParam !== activeTab) {
       setActiveTab(tabParam);
     }
-  }, [tabParam, activeTab]);
+  }, [tabParam, activeTab, searchParams, currentPath]);
 
   const handleTabChange = (tab: SettingsTab) => {
     setActiveTab(tab);
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tab);
-    router.replace(`${currentPath}?${params.toString()}`);
+    window.history.replaceState({}, "", `${currentPath}?${params.toString()}`);
   };
 
   // Billing states
@@ -309,12 +333,12 @@ export default function VendorSettings({
   const handleSave = async () => {
     setIsSaving(true);
     setSaveSuccess(false);
-    
+
     try {
       if (user) {
-        await authClient.updateProfile({ 
+        await authClient.updateProfile({
           fullName: personalInfo.fullName,
-          avatarUrl: tempAvatarUrl || user.avatarUrl 
+          avatarUrl: tempAvatarUrl || user.avatarUrl,
         });
         await refreshProfile();
       }
@@ -330,10 +354,6 @@ export default function VendorSettings({
   const tabs = [
     { id: "profile", label: t("settings.profile"), icon: User },
     { id: "billing", label: t("settings.subscriptions"), icon: Sparkles },
-    { id: "notifications", label: t("settings.notifications"), icon: Bell },
-    { id: "security", label: t("settings.security"), icon: Shield },
-    { id: "appearance", label: t("settings.appearance"), icon: Paintbrush },
-    { id: "system", label: t("settings.system"), icon: Globe },
   ] as const;
 
   return (
@@ -465,23 +485,37 @@ export default function VendorSettings({
                                 : "bg-[#f0f4ff] border-white text-[#4f46e5]/40"
                             }`}
                           >
-                            {(tempAvatarUrl || user?.avatarUrl) ? (
+                            {tempAvatarUrl || user?.avatarUrl ? (
                               <img
                                 src={tempAvatarUrl || user?.avatarUrl}
                                 alt="Profile"
                                 className="w-full h-full object-cover"
                               />
+                            ) : userLoading ? (
+                              "..."
+                            ) : user?.fullName ? (
+                              user.fullName.trim().split(/\s+/).length >= 2 ? (
+                                (
+                                  user.fullName.trim().split(/\s+/)[0][0] +
+                                  user.fullName
+                                    .trim()
+                                    .split(/\s+/)
+                                    .slice(-1)[0][0]
+                                ).toUpperCase()
+                              ) : (
+                                user.fullName.trim().slice(0, 2).toUpperCase()
+                              )
                             ) : (
-                              userLoading ? "..." : (user?.fullName ? (user.fullName.trim().split(/\s+/).length >= 2 ? (user.fullName.trim().split(/\s+/)[0][0] + user.fullName.trim().split(/\s+/).slice(-1)[0][0]).toUpperCase() : user.fullName.trim().slice(0, 2).toUpperCase()) : "U")
+                              "U"
                             )}
-                            
+
                             {isUploading && (
                               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                                 <Loader2 className="w-8 h-8 text-white animate-spin" />
                               </div>
                             )}
                           </div>
-                          <button 
+                          <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploading}
                             className="absolute bottom-0 right-0 w-9 h-9 bg-slate-900 rounded-full flex items-center justify-center border-4 border-white text-white text-xs hover:bg-[#29B28D] transition-all shadow-lg shadow-slate-200 active:scale-90 disabled:opacity-50"
@@ -758,10 +792,14 @@ export default function VendorSettings({
               {activeTab === "billing" && (
                 <div className="h-full p-8 sm:p-10 animate-in fade-in duration-300">
                   <div className="flex flex-col mb-10">
-                    <h2 className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-800"}`}>
+                    <h2
+                      className={`text-xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-800"}`}
+                    >
                       {t("settings.subscriptions")}
                     </h2>
-                    <p className={`text-sm mt-1 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>
+                    <p
+                      className={`text-sm mt-1 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
+                    >
                       {t("settings.billingDesc")}
                     </p>
                   </div>
@@ -769,17 +807,23 @@ export default function VendorSettings({
                   {isLoadingProfile ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
                       <div className="w-10 h-10 rounded-full border-4 border-psar-primary/20 border-t-psar-primary animate-spin" />
-                      <p className="text-sm font-medium text-slate-400">{t("settings.loadingBilling")}</p>
+                      <p className="text-sm font-medium text-slate-400">
+                        {t("settings.loadingBilling")}
+                      </p>
                     </div>
                   ) : profile?.vendor ? (
                     <div className="space-y-8">
                       {/* Active Subscription Card */}
-                      <div className={`p-8 rounded-[32px] border relative overflow-hidden ${
-                        isDark ? "bg-[#1C2128] border-white/5" : "bg-white border-slate-100 shadow-xl shadow-slate-200/20"
-                      }`}>
+                      <div
+                        className={`p-8 rounded-[32px] border relative overflow-hidden ${
+                          isDark
+                            ? "bg-[#1C2128] border-white/5"
+                            : "bg-white border-slate-100 shadow-xl shadow-slate-200/20"
+                        }`}
+                      >
                         {/* Decorative background element */}
                         <div className="absolute top-0 right-0 w-64 h-64 bg-psar-primary/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-                        
+
                         <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                           <div className="flex items-center gap-6">
                             <div className="w-16 h-16 bg-psar-primary/10 rounded-2xl flex items-center justify-center shrink-0">
@@ -787,28 +831,37 @@ export default function VendorSettings({
                             </div>
                             <div>
                               <div className="flex items-center gap-3 mb-1">
-                                <h3 className={`text-2xl font-black uppercase tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
-                                  {profile.vendor.plan?.name === "pro" 
-                                    ? t("plans.pro") 
-                                    : profile.vendor.plan?.name === "premium" 
-                                      ? t("plans.premium") 
+                                <h3
+                                  className={`text-2xl font-black uppercase tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}
+                                >
+                                  {profile.vendor.plan?.name === "pro"
+                                    ? t("plans.pro")
+                                    : profile.vendor.plan?.name === "premium"
+                                      ? t("plans.premium")
                                       : t("plans.free")}
                                 </h3>
                                 {profile.vendor.subscriptions?.[0]?.status && (
-                                  <span className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg tracking-wider ${
-                                    profile.vendor.subscriptions[0].status === "active" 
-                                      ? "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
-                                      : "bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400"
-                                  }`}>
-                                    {t(`dashboard.status.${profile.vendor.subscriptions[0].status.toLowerCase()}`) || profile.vendor.subscriptions[0].status}
+                                  <span
+                                    className={`px-2.5 py-1 text-[10px] font-black uppercase rounded-lg tracking-wider ${
+                                      profile.vendor.subscriptions[0].status ===
+                                      "active"
+                                        ? "bg-emerald-100 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
+                                        : "bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400"
+                                    }`}
+                                  >
+                                    {t(
+                                      `dashboard.status.${profile.vendor.subscriptions[0].status.toLowerCase()}`,
+                                    ) || profile.vendor.subscriptions[0].status}
                                   </span>
                                 )}
                               </div>
-                              <p className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>
-                                {profile.vendor.plan?.name === "pro" 
-                                  ? t("plans.proDesc") 
-                                  : profile.vendor.plan?.name === "premium" 
-                                    ? t("plans.premiumDesc") 
+                              <p
+                                className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
+                              >
+                                {profile.vendor.plan?.name === "pro"
+                                  ? t("plans.proDesc")
+                                  : profile.vendor.plan?.name === "premium"
+                                    ? t("plans.premiumDesc")
                                     : t("plans.freeDesc")}
                               </p>
                             </div>
@@ -816,40 +869,69 @@ export default function VendorSettings({
 
                           <div className="text-left md:text-right">
                             <div className="flex items-baseline gap-1 md:justify-end mb-1">
-                              <span className={`text-3xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>
+                              <span
+                                className={`text-3xl font-black ${isDark ? "text-white" : "text-slate-900"}`}
+                              >
                                 ${profile.vendor.plan?.monthlyPrice || "0.00"}
                               </span>
-                              <span className="text-slate-500 font-bold text-[11px]">/month</span>
+                              <span className="text-slate-500 font-bold text-[11px]">
+                                /month
+                              </span>
                             </div>
                             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                              {isKhmer 
+                              {isKhmer
                                 ? `បង់ ${profile.vendor.subscriptions?.[0]?.billingCycle === "yearly" ? "រៀងរាល់ឆ្នាំ" : "រៀងរាល់ខែ"}`
                                 : `Billed ${profile.vendor.subscriptions?.[0]?.billingCycle || "monthly"}`}
                             </p>
                           </div>
                         </div>
 
-                        <div className={`mt-10 pt-8 border-t grid grid-cols-1 sm:grid-cols-3 gap-6 ${isDark ? "border-white/5" : "border-slate-50"}`}>
+                        <div
+                          className={`mt-10 pt-8 border-t grid grid-cols-1 sm:grid-cols-3 gap-6 ${isDark ? "border-white/5" : "border-slate-50"}`}
+                        >
                           <div className="space-y-1">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("settings.memberSince")}</p>
-                            <p className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}>
-                              {new Date(profile.vendor.createdAt).toLocaleDateString()}
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              {t("settings.memberSince")}
+                            </p>
+                            <p
+                              className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}
+                            >
+                              {new Date(
+                                profile.vendor.createdAt,
+                              ).toLocaleDateString()}
                             </p>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("settings.nextBilling")}</p>
-                            <p className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}>
-                              {profile.vendor.subscriptions?.[0]?.nextBillingDate 
-                                ? new Date(profile.vendor.subscriptions[0].nextBillingDate).toLocaleDateString()
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              {t("settings.nextBilling")}
+                            </p>
+                            <p
+                              className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}
+                            >
+                              {profile.vendor.subscriptions?.[0]
+                                ?.nextBillingDate
+                                ? new Date(
+                                    profile.vendor.subscriptions[0]
+                                      .nextBillingDate,
+                                  ).toLocaleDateString()
                                 : "N/A"}
                             </p>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t("settings.autoRenew")}</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              {t("settings.autoRenew")}
+                            </p>
                             <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${profile.vendor.subscriptions?.[0]?.isAutoRenew !== false ? "bg-emerald-500" : "bg-slate-300"}`} />
-                              <p className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}>
-                                {profile.vendor.subscriptions?.[0]?.isAutoRenew !== false ? t("settings.enabled") : t("settings.disabled")}
+                              <div
+                                className={`w-2 h-2 rounded-full ${profile.vendor.subscriptions?.[0]?.isAutoRenew !== false ? "bg-emerald-500" : "bg-slate-300"}`}
+                              />
+                              <p
+                                className={`text-sm font-bold ${isDark ? "text-white" : "text-slate-800"}`}
+                              >
+                                {profile.vendor.subscriptions?.[0]
+                                  ?.isAutoRenew !== false
+                                  ? t("settings.enabled")
+                                  : t("settings.disabled")}
                               </p>
                             </div>
                           </div>
@@ -858,30 +940,79 @@ export default function VendorSettings({
 
                       {/* Plan Limits */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className={`p-6 rounded-3xl border ${isDark ? "bg-[#0d1117] border-white/5" : "bg-slate-50/50 border-slate-100"}`}>
-                          <h4 className={`text-xs font-black uppercase tracking-widest mb-6 ${isDark ? "text-[#7d8590]" : "text-slate-400"}`}>{t("settings.planFeatures")}</h4>
+                        <div
+                          className={`p-6 rounded-3xl border ${isDark ? "bg-[#0d1117] border-white/5" : "bg-slate-50/50 border-slate-100"}`}
+                        >
+                          <h4
+                            className={`text-xs font-black uppercase tracking-widest mb-6 ${isDark ? "text-[#7d8590]" : "text-slate-400"}`}
+                          >
+                            {t("settings.planFeatures")}
+                          </h4>
                           <ul className="space-y-4">
                             {[
-                              { label: t("settings.maxProducts"), value: profile.vendor.plan?.maxProducts || t("settings.unlimited") },
-                              { label: t("settings.maxTeamMembers"), value: profile.vendor.plan?.maxUsers || t("settings.unlimited") },
-                              { label: t("settings.advancedReports"), value: profile.vendor.plan?.hasAdvancedReports ? t("settings.included") : t("settings.notIncluded") },
-                              { label: t("settings.apiAccess"), value: profile.vendor.plan?.hasAPI ? t("settings.included") : t("settings.notIncluded") },
+                              {
+                                label: t("settings.maxProducts"),
+                                value:
+                                  profile.vendor.plan?.maxProducts ||
+                                  t("settings.unlimited"),
+                              },
+                              {
+                                label: t("settings.maxTeamMembers"),
+                                value:
+                                  profile.vendor.plan?.maxUsers ||
+                                  t("settings.unlimited"),
+                              },
+                              {
+                                label: t("settings.advancedReports"),
+                                value: profile.vendor.plan?.hasAdvancedReports
+                                  ? t("settings.included")
+                                  : t("settings.notIncluded"),
+                              },
+                              {
+                                label: t("settings.apiAccess"),
+                                value: profile.vendor.plan?.hasAPI
+                                  ? t("settings.included")
+                                  : t("settings.notIncluded"),
+                              },
                             ].map((feature, i) => (
-                              <li key={i} className="flex justify-between items-center text-sm">
-                                <span className={`font-medium ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>{feature.label}</span>
-                                <span className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}>{feature.value}</span>
+                              <li
+                                key={i}
+                                className="flex justify-between items-center text-sm"
+                              >
+                                <span
+                                  className={`font-medium ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
+                                >
+                                  {feature.label}
+                                </span>
+                                <span
+                                  className={`font-bold ${isDark ? "text-white" : "text-slate-800"}`}
+                                >
+                                  {feature.value}
+                                </span>
                               </li>
                             ))}
                           </ul>
                         </div>
 
-                        <div className={`p-8 rounded-3xl border flex flex-col justify-center items-center text-center ${
-                          isDark ? "bg-psar-primary/5 border-psar-primary/10" : "bg-psar-primary/5 border-psar-primary/10"
-                        }`}>
+                        <div
+                          className={`p-8 rounded-3xl border flex flex-col justify-center items-center text-center ${
+                            isDark
+                              ? "bg-psar-primary/5 border-psar-primary/10"
+                              : "bg-psar-primary/5 border-psar-primary/10"
+                          }`}
+                        >
                           <Sparkles className="w-10 h-10 text-psar-primary mb-4" />
-                          <h4 className={`text-lg font-bold mb-2 ${isDark ? "text-white" : "text-slate-900"}`}>{t("settings.needMorePower")}</h4>
-                          <p className={`text-xs mb-8 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}>{t("settings.upgradeTierDesc")}</p>
-                          <button 
+                          <h4
+                            className={`text-lg font-bold mb-2 ${isDark ? "text-white" : "text-slate-900"}`}
+                          >
+                            {t("settings.needMorePower")}
+                          </h4>
+                          <p
+                            className={`text-xs mb-8 ${isDark ? "text-[#7d8590]" : "text-slate-500"}`}
+                          >
+                            {t("settings.upgradeTierDesc")}
+                          </p>
+                          <button
                             onClick={() => router.push("/vendor/pricing")}
                             className="w-full py-3.5 bg-psar-primary text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-xl shadow-psar-primary/20 hover:-translate-y-1 transition-all active:scale-95"
                           >
@@ -895,27 +1026,14 @@ export default function VendorSettings({
                       <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mb-6">
                         <AlertCircle className="w-10 h-10 text-slate-300" />
                       </div>
-                      <h3 className="text-lg font-bold text-slate-800">{t("settings.noVendorData")}</h3>
-                      <p className="text-sm text-slate-500 max-w-xs mt-2">{t("settings.noVendorDataDesc")}</p>
+                      <h3 className="text-lg font-bold text-slate-800">
+                        {t("settings.noVendorData")}
+                      </h3>
+                      <p className="text-sm text-slate-500 max-w-xs mt-2">
+                        {t("settings.noVendorDataDesc")}
+                      </p>
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* End View placeholders */}
-              {["notifications", "security", "appearance", "system"].includes(
-                activeTab,
-              ) && (
-                <div className="p-16 text-center animate-in fade-in duration-300 flex items-center justify-center flex-col min-h-[500px]">
-                  <div className="w-20 h-20 bg-slate-50 rounded-[1.5rem] flex items-center justify-center mb-6 text-slate-200 border-2 border-dashed border-slate-100">
-                    <AlertCircle size={32} />
-                  </div>
-                  <h2 className="text-lg font-bold text-slate-800 mb-2 capitalize">
-                    {t(`settings.${activeTab}`) || activeTab}
-                  </h2>
-                  <p className="text-xs text-slate-400 font-semibold max-w-xs mx-auto leading-loose">
-                    {t("settings.underDevelopment")}
-                  </p>
                 </div>
               )}
             </div>

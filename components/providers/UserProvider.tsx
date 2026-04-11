@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { authClient } from "@/lib/auth/utils/client-auth";
 
 interface User {
@@ -33,7 +40,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       const response: any = await authClient.getProfile();
-      
+
       if (response.success && response.data) {
         setUser(response.data.user);
         setVendor(response.data.vendor);
@@ -60,19 +67,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     fetchProfile();
   }, [fetchProfile]);
 
-  return (
-    <UserContext.Provider
-      value={{
-        user,
-        vendor,
-        loading,
-        error,
-        refreshProfile: fetchProfile,
-      }}
-    >
-      {children}
-    </UserContext.Provider>
+  const value = useMemo(
+    () => ({
+      user,
+      vendor,
+      loading,
+      error,
+      refreshProfile: fetchProfile,
+    }),
+    [user, vendor, loading, error, fetchProfile],
   );
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 }
 
 export function useUser() {

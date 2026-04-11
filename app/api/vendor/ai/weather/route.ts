@@ -111,10 +111,10 @@ If the inventory is empty, suggest generic market items relevant to ${weather.co
            return {
             ...weather,
             suggestions: [
-              { product: "Cold Beverages", change: "+20%", reason: "Hot weather increases demand for cold drinks." },
-              { product: "Fresh Fruits", change: "+15%", reason: "Seasonal produce sees higher traffic in warm conditions." }
+              { product: "Sunglasses & Hats", change: "+20%", reason: "Hot weather increases demand for sun protection accessories." },
+              { product: "Portable Fans & Batteries", change: "+15%", reason: "Warm conditions drive demand for cooling accessories and power supplies." }
             ]
-          };
+           };
         }
         throw rateLimitErr;
       }

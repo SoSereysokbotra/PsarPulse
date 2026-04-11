@@ -161,7 +161,7 @@
       "editCustomerTitle": "កែប្រែព័ត៌មានអតិថិជន",
       "addCustomerTitle": "បន្ថែមអតិថិជនថ្មី",
       "notePlaceholder": "ឧទាហរណ៍៖ ទិញទំនិញនៅផ្សារ",
-      "itemsPlaceholder": "ឧទាហរណ៍៖ កាហ្វេ ២ កែវ"
+      "itemsPlaceholder": "ឧទាហរណ៍៖ កែសទូរស័ព្ទ ២"
     },
     "methods": {
       "cash": "សាច់ប្រាក់",
@@ -172,7 +172,7 @@
       "other": "ផ្សេងៗ"
     },
     "categories": {
-      "ingredients": "គ្រឿងផ្សំ",
+      "ingredients": "ទិញស្តុក",
       "rent": "ថ្លៃជួល",
       "transport": "ការធ្វើដំណើរ",
       "electricity": "អគ្គិសនី",
@@ -196,7 +196,8 @@
       "exportCsv": "ទាញយកជា CSV",
       "exportStock": "ទាញយកបញ្ជីស្តុក",
       "viewAll": "មើលទាំងអស់",
-      "addCategory": "ប្រភេទចំណាយផ្ទាល់ខ្លួន"
+      "addCategory": "ប្រភេទចំណាយផ្ទាល់ខ្លួន",
+      "addCustomer": "បន្ថែមអតិថិជន"
     },
     "customerSection": {
       "title": "អតិថិជនរបស់ខ្ញុំ",

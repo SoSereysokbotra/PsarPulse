@@ -62,9 +62,9 @@ export default function LandingPage() {
       useCase1Title: "Night Market Stalls",
       useCase1Desc:
         "Track sales, predict busy nights, and manage inventory across Phnom Penh's busiest markets.",
-      useCase2Title: "Street Food Carts",
+      useCase2Title: "Market Goods Stalls",
       useCase2Desc:
-        "One-tap sale logging designed for speed when customers are lining up.",
+        "Sell clothing, accessories, electronics, and household items — with one-tap sale logging designed for speed.",
       useCase3Title: "Small Retail Shops",
       useCase3Desc:
         "Full inventory management with low-stock SMS alerts and AI-powered restock suggestions.",
@@ -977,7 +977,7 @@ export default function LandingPage() {
               <div className="absolute inset-0 flex items-center justify-center">
                 <img
                   src="https://res.cloudinary.com/dg5grwcd5/image/upload/v1774485450/siem-reap-market_ixrzqt.jpg"
-                  alt="Street Food Vendors"
+                  alt="Market Goods Vendors"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>

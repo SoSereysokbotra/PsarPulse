@@ -48,6 +48,7 @@ export default function ProInventoryPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", khmerName: "", price: "", stock: 0, threshold: 10 });
 
   const fetchInventory = async () => {
@@ -86,7 +87,16 @@ export default function ProInventoryPage() {
     } catch (error) { console.error(error); }
   };
 
-  const openAdd = () => { setFormData({ name: "", khmerName: "", price: "", stock: 0, threshold: 10 }); setEditingItem(null); setIsModalOpen(true); };
+  const openAdd = () => {
+    if (inventoryItems.length >= 100) {
+      setNotice("Pro inventory limit reached (100/100).");
+      return;
+    }
+    setNotice(null);
+    setFormData({ name: "", khmerName: "", price: "", stock: 0, threshold: 10 });
+    setEditingItem(null);
+    setIsModalOpen(true);
+  };
   const openEdit = (item: any) => { setFormData({ name: item.name, khmerName: item.khmerName || "", price: item.price, stock: item.stock, threshold: item.threshold }); setEditingItem(item); setIsModalOpen(true); };
 
   const handleExportCSV = () => {
@@ -144,6 +154,11 @@ export default function ProInventoryPage() {
       }
     >
       <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7">
+        {notice && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+            {notice}
+          </div>
+        )}
           {/* ══ INVENTORY HEADER ══════════════════════════════════════ */}
           <div className="pt-1 pb-2">
             <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
@@ -165,7 +180,7 @@ export default function ProInventoryPage() {
               value={summaryData.totalItems}
               icon={Package}
               isPositive={true}
-              trend="Unlimited"
+              trend="Max 100"
             />
             <VendorSummaryCard
               title={t("LowStock")}

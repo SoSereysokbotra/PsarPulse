@@ -1,5 +1,4 @@
 "use client";
-// dev-bump: 2026-03-26T11:29:00Z
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
@@ -35,7 +34,7 @@ import { offlineFetch } from "@/lib/pwa/offline-fetch";
 // ─── Types ────────────────────────────────────────────────────────
 export type Period = "Day" | "Week" | "Month";
 export type Category =
-  | "Ingredients"
+  | "Stock Purchase"
   | "Rent"
   | "Transport"
   | "Electricity"
@@ -65,7 +64,7 @@ const CATEGORIES: {
   color: string;
 }[] = [
   {
-    value: "Ingredients",
+    value: "Stock Purchase",
     labelKey: "dashboard.categories.ingredients",
     color: "#29B28D",
   },
@@ -89,7 +88,7 @@ const CATEGORIES: {
 ];
 
 const CAT_BADGE: Record<string, string> = {
-  Ingredients:
+  "Stock Purchase":
     "bg-[rgba(41,178,141,0.12)] text-[#29B28D] border border-[rgba(41,178,141,0.25)]",
   Rent: "bg-[rgba(59,130,246,0.1)] text-[#3b82f6] border border-[rgba(59,130,246,0.2)]",
   Transport:
@@ -127,7 +126,7 @@ export default function ExpensesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Expense | null>(null);
   const [fAmount, setFAmount] = useState("");
-  const [fCategory, setFCategory] = useState<Category>("Ingredients");
+  const [fCategory, setFCategory] = useState<Category>("Stock Purchase");
   const [fNote, setFNote] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -188,7 +187,7 @@ export default function ExpensesPage() {
   const openAdd = () => {
     setEditTarget(null);
     setFAmount("");
-    setFCategory("Ingredients");
+    setFCategory("Stock Purchase");
     setFNote("");
     setModalOpen(true);
   };

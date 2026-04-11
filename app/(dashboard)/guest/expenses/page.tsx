@@ -19,7 +19,7 @@ import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useUser } from "@/components/providers/UserProvider";
 
 // ─── Types ────────────────────────────────────────────────────────
-type Category = "Ingredients" | "Rent" | "Transport" | "Electricity" | "Labor" | "Others";
+type Category = "Stock Purchase" | "Rent" | "Transport" | "Electricity" | "Labor" | "Others";
 type ToastT   = { id: number; msg: string; type: "success" | "error" | "undo" | "locked"; expId?: string };
 
 interface NavItemProps { icon: React.ElementType; title: string; href: string; active?: boolean; collapsed?: boolean; }
@@ -64,7 +64,7 @@ const nowTime = () => new Date().toLocaleTimeString("en-US", { hour: "numeric", 
 
 // ─── Constants ────────────────────────────────────────────────────
 const CATEGORIES: { value: Category; label: string; khmer: string; color: string }[] = [
-  { value: "Ingredients", label: "Ingredients", khmer: "គ្រឿងផ្សំ",    color: "#3ecf8e" },
+  { value: "Stock Purchase", label: "Stock Purchase", khmer: "ទិញស្តុក",    color: "#3ecf8e" },
   { value: "Rent",        label: "Rent",        khmer: "ថ្លៃជួល",      color: "#3b82f6" },
   { value: "Transport",   label: "Transport",   khmer: "ការធ្វើដំណើរ", color: "#8b5cf6" },
   { value: "Electricity", label: "Electricity", khmer: "អគ្គិសនី",     color: "#f59e0b" },
@@ -75,7 +75,7 @@ const CATEGORIES: { value: Category; label: string; khmer: string; color: string
 const CAT_MAP = Object.fromEntries(CATEGORIES.map(c => [c.value, c]));
 
 const INITIAL_EXPENSES: Expense[] = [
-  { id: uid(), time: "2:15 PM",   category: "Ingredients", note: "Pork and Vegetables",   amount: 25.00, hasReceipt: false },
+  { id: uid(), time: "2:15 PM",   category: "Stock Purchase", note: "Wholesale stock reorder",   amount: 25.00, hasReceipt: false },
   { id: uid(), time: "10:00 AM",  category: "Transport",   note: "TukTuk to market",       amount:  3.50, hasReceipt: false },
   { id: uid(), time: "Yesterday", category: "Electricity", note: "Weekly stall power",     amount: 15.00, hasReceipt: true  },
   { id: uid(), time: "Yesterday", category: "Labor",       note: "Assistant pay",          amount: 10.00, hasReceipt: false },
@@ -133,7 +133,7 @@ export default function ExpensesDemoDashboard() {
   const filtered    = active.filter(e => e.note.toLowerCase().includes(search.toLowerCase()) || e.category.toLowerCase().includes(search.toLowerCase()));
   const todayTotal  = active.reduce((s, e) => s + e.amount, 0);
   const weeklyTotal = 180.50;
-  const topCat      = CATEGORIES.find(c => c.value === "Ingredients")!;
+  const topCat      = CATEGORIES.find(c => c.value === "Stock Purchase")!;
 
   return (
     <div className={`flex flex-col h-screen overflow-hidden transition-colors duration-500 ${isDark ? "bg-[#0b0f14]" : "bg-[#f0f2f5]"} ${isKhmer ? "font-battambang" : ""}`}>

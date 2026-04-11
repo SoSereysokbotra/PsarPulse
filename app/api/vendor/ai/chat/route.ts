@@ -113,6 +113,6 @@ function getFallbackReply(message: string): string {
   if (m.includes("profit"))
     return "Your Net Profit = Total Sales − Total Expenses. It's shown in real-time on the dashboard summary cards.";
   if (m.includes("weather") || m.includes("rain"))
-    return "🌧️ Rainy conditions typically increase demand for hot beverages by 25-35%. Consider stocking up on hot latte supplies!";
+    return "🌧️ Rainy conditions typically increase demand for umbrellas and rain gear by 25-35%. Consider stocking up on waterproof phone cases too!";
   return "I'm your AI-powered Premium business assistant! Ask me about sales trends, inventory, forecasts, or any business question. Please configure GEMINI_API_KEY for full AI capabilities.";
 }

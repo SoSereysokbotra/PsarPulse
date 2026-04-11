@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
         type: "expense"
       },
       {
-        name: "Morning Peak Coffee",
-        khmer: "កាហ្វេពេលព្រឹក",
+        name: "Morning Peak Sales",
+        khmer: "ការលក់ពេលព្រឹក",
         amount: "$22.50",
         frequency: "Daily",
         nextDue: "Tomorrow, 8AM",

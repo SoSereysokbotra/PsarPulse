@@ -29,18 +29,53 @@ import { offlineFetch } from "@/lib/pwa/offline-fetch";
 export type Period = "Day" | "Week" | "Month";
 
 const PRO_NAV = [
-  { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor/pro" },
-  { icon: CircleDollarSign, title: "Sales", khmerTitle: "ការលក់", href: "/vendor/pro/sales", active: true },
-  { icon: Receipt, title: "Expenses", khmerTitle: "ចំណាយ", href: "/vendor/pro/expenses" },
-  { icon: Users, title: "Customers", khmerTitle: "អតិថិជន", href: "/vendor/pro/customer" },
-  { icon: Package, title: "Inventory", khmerTitle: "ស្តុក", href: "/vendor/pro/inventory" },
-  { icon: FileBarChart, title: "Reports", khmerTitle: "របាយការណ៍", href: "/vendor/pro/reports" },
+  {
+    icon: LayoutDashboard,
+    title: "Dashboard",
+    khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
+    href: "/vendor/pro",
+  },
+  {
+    icon: CircleDollarSign,
+    title: "Sales",
+    khmerTitle: "ការលក់",
+    href: "/vendor/pro/sales",
+    active: true,
+  },
+  {
+    icon: Receipt,
+    title: "Expenses",
+    khmerTitle: "ចំណាយ",
+    href: "/vendor/pro/expenses",
+  },
+  {
+    icon: Users,
+    title: "Customers",
+    khmerTitle: "អតិថិជន",
+    href: "/vendor/pro/customer",
+  },
+  {
+    icon: Package,
+    title: "Inventory",
+    khmerTitle: "ស្តុក",
+    href: "/vendor/pro/inventory",
+  },
+  {
+    icon: FileBarChart,
+    title: "Reports",
+    khmerTitle: "របាយការណ៍",
+    href: "/vendor/pro/reports",
+  },
 ];
 
 export default function ProSalesPage() {
   const { t, language } = useLanguage();
   const [quickAmount, setQuickAmount] = useState("");
   const [quickItem, setQuickItem] = useState("");
+  const [quickInventoryItemId, setQuickInventoryItemId] = useState<
+    string | null
+  >(null);
+  const [quickQuantity, setQuickQuantity] = useState<number>(1);
   const [quickMethod, setQuickMethod] = useState("Cash");
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
   const [period, setPeriod] = useState<Period>("Day");
@@ -58,11 +93,11 @@ export default function ProSalesPage() {
       try {
         const [salesRes, invRes] = await Promise.all([
           offlineFetch("/api/vendor/sales"),
-          offlineFetch("/api/vendor/inventory")
+          offlineFetch("/api/vendor/inventory"),
         ]);
         const salesJson = await salesRes.json();
         const invJson = await invRes.json();
-        
+
         if (salesJson.success) setTransactions(salesJson.data);
         if (invJson.success) setInventory(invJson.data);
       } catch (error) {
@@ -77,6 +112,21 @@ export default function ProSalesPage() {
   const handleQuickLog = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!quickAmount || isSubmitting) return;
+
+    if (quickInventoryItemId) {
+      const selectedItem = inventory.find((i) => i.id === quickInventoryItemId);
+      const availableStock = Number(selectedItem?.stock ?? 0);
+      const isOut = selectedItem?.status === "out" || availableStock <= 0;
+      if (!selectedItem || isOut || quickQuantity > availableStock) {
+        window.alert(
+          isOut
+            ? "This item is out of stock."
+            : `Insufficient stock. Available: ${availableStock}`,
+        );
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
       const res = await offlineFetch("/api/vendor/sales", {
@@ -86,6 +136,8 @@ export default function ProSalesPage() {
           amount: parseFloat(quickAmount),
           method: quickMethod,
           items: quickItem || "Quick Sale",
+          inventoryItemId: quickInventoryItemId,
+          quantity: quickQuantity,
         }),
       });
       if (res.ok) {
@@ -93,6 +145,8 @@ export default function ProSalesPage() {
         setTransactions((prev) => [json.data, ...prev]);
         setQuickAmount("");
         setQuickItem("");
+        setQuickInventoryItemId(null);
+        setQuickQuantity(1);
         setQuickMethod("Cash");
         setSubmitSuccess(true);
         setTimeout(() => {
@@ -110,7 +164,9 @@ export default function ProSalesPage() {
   const handleDelete = async (id: string) => {
     if (!window.confirm(t("dashboard.modals.deleteConfirmDesc"))) return;
     // Optimistically remove from UI
-    setTransactions((prev) => prev.filter((transaction) => transaction.id !== id));
+    setTransactions((prev) =>
+      prev.filter((transaction) => transaction.id !== id),
+    );
   };
 
   const handleExportPDF = () => window.print();
@@ -152,15 +208,22 @@ export default function ProSalesPage() {
     return sortOrder === "desc" ? bAmt - aAmt : aAmt - bAmt;
   });
 
-  const totalRevenue = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount || "0"), 0);
+  const totalRevenue = transactions.reduce(
+    (sum, transaction) => sum + parseFloat(transaction.amount || "0"),
+    0,
+  );
   const avgSaleNum = totalRevenue / (transactions.length || 1);
 
   const getTranslatedPeriod = (p: Period) => {
     switch (p) {
-      case "Day": return t("Day");
-      case "Week": return t("Week");
-      case "Month": return t("Month");
-      default: return p;
+      case "Day":
+        return t("Day");
+      case "Week":
+        return t("Week");
+      case "Month":
+        return t("Month");
+      default:
+        return p;
     }
   };
 
@@ -201,7 +264,14 @@ export default function ProSalesPage() {
 
           {/* Add Sale */}
           <button
-            onClick={() => setIsQuickLogModalOpen(true)}
+            onClick={() => {
+              setQuickAmount("");
+              setQuickItem("");
+              setQuickInventoryItemId(null);
+              setQuickQuantity(1);
+              setQuickMethod("Cash");
+              setIsQuickLogModalOpen(true);
+            }}
             className="flex items-center gap-[7px] bg-psar-primary text-white border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer shadow-[0_2px_14px_rgba(41,178,141,0.28)] hover:bg-[#249e7d] transition-colors"
           >
             <Plus size={14} /> {t("dashboard.actions.addSale")}
@@ -218,14 +288,19 @@ export default function ProSalesPage() {
             </h2>
             <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
               {t("dashboard.titles.salesSubtitle")} ·{" "}
-              <span className="text-[#9ca3af] font-khmer">តាមដាន និងគ្រប់គ្រងការលក់</span>
+              <span className="text-[#9ca3af] font-khmer">
+                តាមដាន និងគ្រប់គ្រងការលក់
+              </span>
             </p>
           </div>
 
           {/* Quick Log Modal */}
           {isQuickLogModalOpen && (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-              <div className="absolute inset-0" onClick={() => !isSubmitting && setIsQuickLogModalOpen(false)} />
+              <div
+                className="absolute inset-0"
+                onClick={() => !isSubmitting && setIsQuickLogModalOpen(false)}
+              />
               <div className="bg-white dark:bg-dark-surface rounded-2xl w-full max-w-lg p-6 md:p-8 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200">
                 <button
                   onClick={() => setIsQuickLogModalOpen(false)}
@@ -239,50 +314,149 @@ export default function ProSalesPage() {
                     <CircleDollarSign className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="font-bold text-[22px] text-slate-900 dark:text-white">{t("dashboard.modals.addSaleTitle")}</h2>
-                    <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590]">{t("dashboard.actions.quickLogSub")}</p>
+                    <h2 className="font-bold text-[22px] text-slate-900 dark:text-white">
+                      {t("dashboard.modals.addSaleTitle")}
+                    </h2>
+                    <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590]">
+                      {t("dashboard.actions.quickLogSub")}
+                    </p>
                   </div>
                 </div>
 
                 {submitSuccess ? (
                   <div className="flex flex-col items-center justify-center py-10 gap-3">
                     <CheckCircle2 className="w-14 h-14 text-psar-primary" />
-                    <p className="font-bold text-lg text-slate-900 dark:text-white">{t("dashboard.status.logged")}</p>
+                    <p className="font-bold text-lg text-slate-900 dark:text-white">
+                      {t("dashboard.status.logged")}
+                    </p>
                   </div>
                 ) : (
-                  <form onSubmit={handleQuickLog} className="flex flex-col gap-5">
+                  <form
+                    onSubmit={handleQuickLog}
+                    className="flex flex-col gap-5"
+                  >
                     {/* Inventory Picker */}
                     <div>
                       <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3 block">
-                        {t("inventory.modal.pickLabel")} {language === "km" ? "(ជ្រើសរើសពីស្តុក)" : ""}
+                        {t("inventory.modal.pickLabel")}{" "}
+                        {language === "km" ? "(ជ្រើសរើសពីស្តុក)" : ""}
                       </label>
                       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
                         {inventory.length > 0 ? (
-                          inventory.map((item) => (
-                            <button
-                              key={item.id}
-                              type="button"
-                              onClick={() => {
-                                setQuickAmount(item.price.toString());
-                                setQuickItem(item.name);
-                              }}
-                              className={`shrink-0 px-4 py-2.5 rounded-xl border text-[13px] font-bold transition-all flex flex-col items-start gap-1 min-w-[120px] ${
-                                quickItem === item.name 
-                                  ? "bg-psar-primary border-psar-primary text-white shadow-md" 
-                                  : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10"
-                              }`}
-                            >
-                              <span className="truncate w-full text-left">{item.name}</span>
-                              <span className={`text-[11px] ${quickItem === item.name ? "text-white/80" : "text-slate-500"}`}>${parseFloat(item.price).toFixed(2)}</span>
-                            </button>
-                          ))
+                          inventory.map((item) =>
+                            (() => {
+                              const isSelected =
+                                quickInventoryItemId === item.id;
+                              const stock = Number(item.stock ?? 0);
+                              const isOut = item.status === "out" || stock <= 0;
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  disabled={isOut}
+                                  onClick={() => {
+                                    if (isOut) return;
+                                    if (isSelected) {
+                                      setQuickInventoryItemId(null);
+                                      setQuickQuantity(1);
+                                      setQuickAmount("");
+                                      setQuickItem("");
+                                    } else {
+                                      setQuickInventoryItemId(item.id);
+                                      setQuickQuantity(1);
+                                      setQuickAmount(item.price.toString());
+                                      setQuickItem(`1x ${item.name}`);
+                                    }
+                                  }}
+                                  className={`shrink-0 px-4 py-2.5 rounded-xl border text-[13px] font-bold transition-all flex flex-col items-start gap-1 min-w-[120px] ${
+                                    isOut
+                                      ? "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-400 cursor-not-allowed opacity-70"
+                                      : isSelected
+                                        ? "bg-psar-primary border-psar-primary text-white shadow-md"
+                                        : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10"
+                                  }`}
+                                >
+                                  <span className="truncate w-full text-left">
+                                    {item.name}
+                                  </span>
+                                  <span
+                                    className={`text-[11px] ${isSelected ? "text-white/80" : "text-slate-500"}`}
+                                  >
+                                    ${parseFloat(item.price).toFixed(2)}
+                                  </span>
+                                  <span className="text-[10px] text-slate-400">
+                                    {isOut ? "Out of stock" : `Stock: ${stock}`}
+                                  </span>
+                                </button>
+                              );
+                            })(),
+                          )
                         ) : (
-                          <Link href="/vendor/pro/inventory" className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 dark:border-white/10 text-slate-500 text-xs no-underline hover:border-psar-primary transition-all">
-                            <Package size={14} /> {t("inventory.modal.quickPickEmpty")}
+                          <Link
+                            href="/vendor/pro/inventory"
+                            className="flex items-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 dark:border-white/10 text-slate-500 text-xs no-underline hover:border-psar-primary transition-all"
+                          >
+                            <Package size={14} />{" "}
+                            {t("inventory.modal.quickPickEmpty")}
                           </Link>
                         )}
                       </div>
                     </div>
+
+                    {quickInventoryItemId && (
+                      <div className="flex items-center justify-between p-3 rounded-xl border border-psar-primary/30 bg-psar-primary/5">
+                        <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300">
+                          Quantity
+                        </span>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newQty = Math.max(1, quickQuantity - 1);
+                              setQuickQuantity(newQty);
+                              const item = inventory.find(
+                                (i) => i.id === quickInventoryItemId,
+                              );
+                              if (item) {
+                                setQuickAmount(
+                                  (parseFloat(item.price) * newQty).toString(),
+                                );
+                                setQuickItem(`${newQty}x ${item.name}`);
+                              }
+                            }}
+                            className="w-8 h-8 rounded-full bg-white dark:bg-[#0d1117] border shadow-sm flex items-center justify-center text-slate-500 hover:text-psar-primary cursor-pointer border-0"
+                          >
+                            -
+                          </button>
+                          <span className="font-bold w-4 text-center dark:text-white text-black">
+                            {quickQuantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const item = inventory.find(
+                                (i) => i.id === quickInventoryItemId,
+                              );
+                              const availableStock = Number(item?.stock ?? 0);
+                              const newQty = Math.min(
+                                availableStock,
+                                quickQuantity + 1,
+                              );
+                              setQuickQuantity(newQty);
+                              if (item) {
+                                setQuickAmount(
+                                  (parseFloat(item.price) * newQty).toString(),
+                                );
+                                setQuickItem(`${newQty}x ${item.name}`);
+                              }
+                            }}
+                            className="w-8 h-8 rounded-full bg-white dark:bg-[#0d1117] border shadow-sm flex items-center justify-center text-slate-500 hover:text-psar-primary cursor-pointer border-0"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Amount */}
                     <div className="relative group mt-2">
@@ -294,12 +468,17 @@ export default function ProSalesPage() {
                         step="0.01"
                         placeholder="0.00"
                         value={quickAmount}
-                        onChange={(e) => setQuickAmount(e.target.value)}
+                        onChange={(e) => {
+                          setQuickAmount(e.target.value);
+                          setQuickInventoryItemId(null);
+                        }}
+                        disabled={!!quickInventoryItemId}
                         required
-                        className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-xl font-bold placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                        className={`block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-xl font-bold placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px] ${quickInventoryItemId ? "opacity-50 cursor-not-allowed" : ""}`}
                       />
                       <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] transition-colors group-focus-within:text-psar-primary">
-                        {t("inventory.modal.amountLabel")} <span className="text-red-500">*</span>
+                        {t("inventory.modal.amountLabel")}{" "}
+                        <span className="text-red-500">*</span>
                       </div>
                     </div>
 
@@ -312,8 +491,12 @@ export default function ProSalesPage() {
                         type="text"
                         placeholder={t("dashboard.modals.itemsPlaceholder")}
                         value={quickItem}
-                        onChange={(e) => setQuickItem(e.target.value)}
-                        className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
+                        onChange={(e) => {
+                          setQuickItem(e.target.value);
+                          setQuickInventoryItemId(null);
+                        }}
+                        disabled={!!quickInventoryItemId}
+                        className={`block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px] ${quickInventoryItemId ? "opacity-50 cursor-not-allowed" : ""}`}
                       />
                       <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] transition-colors group-focus-within:text-psar-primary">
                         {t("inventory.modal.itemsLabel")}
@@ -327,11 +510,21 @@ export default function ProSalesPage() {
                         onChange={(e) => setQuickMethod(e.target.value)}
                         className="block w-full px-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 rounded-xl text-slate-900 dark:text-white text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px] appearance-none cursor-pointer"
                       >
-                        <option value="Cash">{t("dashboard.methods.cash")}</option>
-                        <option value="ABA">{t("dashboard.methods.aba")}</option>
-                        <option value="Wing">{t("dashboard.methods.wing")}</option>
-                        <option value="Card">{t("dashboard.methods.card")}</option>
-                        <option value="Other">{t("dashboard.methods.other")}</option>
+                        <option value="Cash">
+                          {t("dashboard.methods.cash")}
+                        </option>
+                        <option value="ABA">
+                          {t("dashboard.methods.aba")}
+                        </option>
+                        <option value="Wing">
+                          {t("dashboard.methods.wing")}
+                        </option>
+                        <option value="Card">
+                          {t("dashboard.methods.card")}
+                        </option>
+                        <option value="Other">
+                          {t("dashboard.methods.other")}
+                        </option>
                       </select>
                       <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] transition-colors group-focus-within:text-psar-primary">
                         {t("inventory.modal.paymentMethodLabel")}
@@ -352,7 +545,11 @@ export default function ProSalesPage() {
                         className="flex-[2] bg-psar-primary hover:opacity-90 text-white font-bold text-[16px] py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer disabled:opacity-60"
                       >
                         <Plus className="w-5 h-5" />
-                        <span>{isSubmitting ? t("inventory.modal.saving") : t("dashboard.actions.save")}</span>
+                        <span>
+                          {isSubmitting
+                            ? t("inventory.modal.saving")
+                            : t("dashboard.actions.save")}
+                        </span>
                       </button>
                     </div>
                   </form>
@@ -387,8 +584,12 @@ export default function ProSalesPage() {
           <div className="bg-white dark:bg-dark-surface rounded-2xl border border-slate-200 dark:border-white/5 shadow-sm overflow-hidden flex flex-col transition-colors">
             <div className="p-5 md:p-6 border-b border-slate-100 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">{t("dashboard.titles.history")}</h3>
-                <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">ប្រវត្តិប្រតិបត្តិការ</p>
+                <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">
+                  {t("dashboard.titles.history")}
+                </h3>
+                <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
+                  ប្រវត្តិប្រតិបត្តិការ
+                </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
@@ -405,7 +606,9 @@ export default function ProSalesPage() {
                 </div>
                 {/* Sort by amount */}
                 <button
-                  onClick={() => setSortOrder((o) => (o === "desc" ? "asc" : "desc"))}
+                  onClick={() =>
+                    setSortOrder((o) => (o === "desc" ? "asc" : "desc"))
+                  }
                   title="Sort by amount"
                   className="p-2 border border-slate-200 dark:border-white/5 rounded-xl text-slate-500 dark:text-[#7d8590] hover:bg-slate-50 dark:hover:bg-white/5 bg-white dark:bg-dark-surface transition-colors min-h-[40px] cursor-pointer"
                 >
@@ -422,27 +625,45 @@ export default function ProSalesPage() {
                     <th className="px-6 py-4">{t("dashboard.table.items")}</th>
                     <th className="px-6 py-4">{t("dashboard.table.method")}</th>
                     <th className="px-6 py-4">{t("dashboard.table.amount")}</th>
-                    <th className="px-6 py-4 text-center">{t("dashboard.table.actions")}</th>
+                    <th className="px-6 py-4 text-center">
+                      {t("dashboard.table.actions")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                   {loading ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-slate-400">Loading…</td>
+                      <td
+                        colSpan={5}
+                        className="px-6 py-12 text-center text-slate-400"
+                      >
+                        Loading…
+                      </td>
                     </tr>
                   ) : filteredTransactions.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-slate-500 dark:text-[#7d8590]">
-                        {searchQuery ? "No results found." : "No transactions logged yet."}
+                      <td
+                        colSpan={5}
+                        className="px-6 py-12 text-center text-slate-500 dark:text-[#7d8590]"
+                      >
+                        {searchQuery
+                          ? "No results found."
+                          : "No transactions logged yet."}
                       </td>
                     </tr>
                   ) : (
                     filteredTransactions.map((txn) => (
-                      <tr key={txn.id} className="hover:bg-psar-primary/5 transition-colors group">
+                      <tr
+                        key={txn.id}
+                        className="hover:bg-psar-primary/5 transition-colors group"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900 dark:text-white">
                             <Clock className="w-4 h-4 text-slate-400" />
-                            {new Date(txn.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            {new Date(txn.createdAt).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </div>
                           <div className="text-[11px] text-slate-400 mt-0.5">
                             {new Date(txn.createdAt).toLocaleDateString()}
@@ -482,8 +703,15 @@ export default function ProSalesPage() {
             {!loading && (
               <div className="p-4 border-t border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-[#0d1117] flex items-center justify-between text-[13px] transition-colors">
                 <span className="text-slate-500 dark:text-[#7d8590]">
-                  Showing <strong className="text-slate-900 dark:text-white">{filteredTransactions.length}</strong>{" "}
-                  of <strong className="text-slate-900 dark:text-white">{transactions.length}</strong> records
+                  Showing{" "}
+                  <strong className="text-slate-900 dark:text-white">
+                    {filteredTransactions.length}
+                  </strong>{" "}
+                  of{" "}
+                  <strong className="text-slate-900 dark:text-white">
+                    {transactions.length}
+                  </strong>{" "}
+                  records
                 </span>
                 <button
                   onClick={handleExportCSV}

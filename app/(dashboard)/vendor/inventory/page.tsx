@@ -33,7 +33,7 @@ import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
-export type Category = "Food" | "Drink" | "Snack" | "Main" | "Other";
+export type Category = "Clothing" | "Electronics" | "Household" | "Stationery" | "Personal Care" | "Toys" | "Hardware" | "Other";
 
 export interface InventoryItem {
   id: string;
@@ -356,7 +356,7 @@ export default function FreeInventoryPage() {
             <form onSubmit={handleSave} className="p-7 space-y-4">
               <div>
                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.nameLabel")} *</label>
-                <input required type="text" placeholder="e.g. Cafe Latte" value={fName} onChange={(e) => setFName(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
+                <input required type="text" placeholder="e.g. Phone Case" value={fName} onChange={(e) => setFName(e.target.value)} className={`w-full px-4 py-3.5 rounded-xl text-[14px] border outline-none transition-all ${isDark ? "bg-[#0d1117] border-white/10 text-white focus:border-[#29B28D]" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-[#29B28D]"}`} />
               </div>
               <div>
                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 block">{t("inventory.modal.khmerNameLabel")}</label>

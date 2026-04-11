@@ -108,7 +108,7 @@ const catColorMap: Record<string, { badge: string; iconBg: string; iconText: str
     recurBg: "bg-slate-50/50",
     recurBorder: "border-slate-100",
   },
-  Ingredients: {
+  "Stock Purchase": {
     badge: "bg-emerald-50 text-emerald-700 border-emerald-100",
     iconBg: "bg-emerald-50",
     iconText: "text-emerald-500",
@@ -136,8 +136,8 @@ const catColorMap: Record<string, { badge: string; iconBg: string; iconText: str
 
 const pushAlerts = [
   {
-    title: "Unusual Ingredient Cost",
-    message: "Your spending on 'Ingredients' is 24% higher than last Tuesday. Check duplicate logs?",
+    title: "Unusual Stock Purchase Cost",
+    message: "Your spending on 'Stock Purchase' is 24% higher than last Tuesday. Check duplicate logs?",
     time: "2h ago",
     icon: AlertTriangle,
   },
@@ -160,7 +160,7 @@ const aiInsights = [
     tagColor: "#8b5cf6",
     icon: Brain,
     title: "Supplier Consolidation",
-    detail: "You are buying from 4 different beverage vendors. Consolidating to 1 could save you 8% through bulk discounts.",
+    detail: "You are buying from 4 different wholesale suppliers. Consolidating to 1 could save you 8% through bulk discounts.",
     action: "Compare Prices",
   },
   {
@@ -182,13 +182,13 @@ const aiInsights = [
 ];
 
 const forecastItems = [
-  { category: "Ingredients", reason: "Khmer New Year approaching", predicted: "$120.00", change: "+15%", up: true },
+  { category: "Stock Purchase", reason: "Khmer New Year approaching", predicted: "$120.00", change: "+15%", up: true },
   { category: "Utilities", reason: "Stable usage pattern", predicted: "$42.02", change: "-2%", up: false },
   { category: "Marketing", reason: "End of month promotion", predicted: "$15.00", change: "Same", up: null },
 ];
 
 const geminiTips = [
-  { tip: "Buy ingredients Tuesday 6–8 AM at Orussey Market", saving: "Save ~$4.50/week", emoji: "" },
+  { tip: "Buy stock Tuesday 6–8 AM at Orussey Market", saving: "Save ~$4.50/week", emoji: "" },
   { tip: "Batch electricity usage — turn off fans after 9 PM", saving: "Save ~$2/week", emoji: "" },
   { tip: "Share TukTuk with Stall B41 for shared market runs", saving: "Save ~$1.50/trip", emoji: "" },
 ];
@@ -231,7 +231,7 @@ export default function PremiumExpensesPage() {
   const [customCategoryName, setCustomCategoryName] = useState("");
   
   const [expenseAmount, setExpenseAmount] = useState("");
-  const [expenseCategory, setExpenseCategory] = useState("Ingredients");
+  const [expenseCategory, setExpenseCategory] = useState("Stock Purchase");
   const [expenseVendor, setExpenseVendor] = useState("");
   const [expenseNote, setExpenseNote] = useState("");
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -243,7 +243,7 @@ export default function PremiumExpensesPage() {
   const [selectedPeriod, setSelectedPeriod] = useState<"Day" | "Week" | "Month">("Week");
 
   const [categoriesList, setCategoriesList] = useState([
-    { name: "Ingredients", khmer: "គ្រឿងផ្សំ", color: "emerald" as CatColor, icon: ShoppingCart },
+    { name: "Stock Purchase", khmer: "ទិញស្តុក", color: "emerald" as CatColor, icon: ShoppingCart },
     { name: "Rent", khmer: "ថ្លៃជួល", color: "indigo" as CatColor, icon: Home },
     { name: "Transport", khmer: "ការធ្វើដំណើរ", color: "violet" as CatColor, icon: Car },
     { name: "Electricity", khmer: "អគ្គិសនី", color: "amber" as CatColor, icon: Bolt },

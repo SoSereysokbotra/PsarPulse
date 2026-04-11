@@ -62,45 +62,12 @@ interface Product {
 
 // ─── Constants ─────────────────────────────────────────────────────
 const PRODUCT_LIBRARY: Product[] = [
-  { id: "1", name: "Coffee Latte", price: 4.5 },
-  { id: "2", name: "Green Tea", price: 3.2 },
-  { id: "3", name: "Fried Rice", price: 2.5 },
-  { id: "4", name: "Spring Roll", price: 1.8 },
-  { id: "5", name: "Coconut Water", price: 1.5 },
-  { id: "6", name: "Mango Sticky Rice", price: 2.0 },
-];
-
-const EXP_BREAKDOWN = [
-  {
-    key: "ingredients",
-    label: "គ្រឿងផ្សំ",
-    labelEn: "Ingredients",
-    pct: 43,
-    color: "#29B28D",
-  },
-  { key: "rent", label: "ថ្លៃដូរ", labelEn: "Rent", pct: 25, color: "#3b82f6" },
-  {
-    key: "labor",
-    label: "ពលកម្ម",
-    labelEn: "Labor",
-    pct: 16,
-    color: "#f59e0b",
-  },
-  {
-    key: "electricity",
-    label: "អំពើពន្លឺ",
-    labelEn: "Electric",
-    pct: 9,
-    color: "#ef4444",
-  },
-  {
-    key: "transport",
-    label: "អគ្គិសនី",
-    labelEn: "Transport",
-    pct: 5,
-    color: "#8b5cf6",
-  },
-  { key: "other", label: "ផ្សេងៗ", labelEn: "Other", pct: 2, color: "#6366f1" },
+  { id: "1", name: "Phone Case", price: 4.5 },
+  { id: "2", name: "USB Cable", price: 3.0 },
+  { id: "3", name: "Notebook", price: 1.5 },
+  { id: "4", name: "Hair Clip Set", price: 2.0 },
+  { id: "5", name: "Ballpoint Pen", price: 0.5 },
+  { id: "6", name: "Screen Protector", price: 3.5 },
 ];
 
 const GOAL_DATA = {
@@ -137,18 +104,31 @@ export default function VendorDashboard() {
     user?.fullName ||
     (user as any)?.full_name ||
     vendor?.businessName ||
-    (user?.email ? user.email.split('@')[0] : (loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : (isKhmer ? "អ្នកប្រើប្រាស់" : "User")));
+    (user?.email
+      ? user.email.split("@")[0]
+      : loading
+        ? isKhmer
+          ? "កំពុងទាញយក..."
+          : "Loading..."
+        : isKhmer
+          ? "អ្នកប្រើប្រាស់"
+          : "User");
 
   const displayInitials = getInitials(
     user?.fullName ||
-    (user as any)?.full_name ||
-    vendor?.businessName ||
-    (user?.email ? user.email.split('@')[0] : (isKhmer ? "អ្នកប្រើប្រាស់" : "User"))
+      (user as any)?.full_name ||
+      vendor?.businessName ||
+      (user?.email
+        ? user.email.split("@")[0]
+        : isKhmer
+          ? "អ្នកប្រើប្រាស់"
+          : "User"),
   );
 
   const [isDayLocked, setIsDayLocked] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
-  const [showGoalReachedNotification, setShowGoalReachedNotification] = useState(false);
+  const [showGoalReachedNotification, setShowGoalReachedNotification] =
+    useState(false);
   const [dailyGoal, setDailyGoal] = useState(200);
   const [goalReachedNotified, setGoalReachedNotified] = useState(false);
   const [goalInputValue, setGoalInputValue] = useState("");
@@ -168,8 +148,9 @@ export default function VendorDashboard() {
     weeklySales: [0, 0, 0, 0, 0, 0, 0],
     monthlySales: [0, 0, 0, 0],
     todaySales: 0,
-    recentActivity: [] as any[]
+    recentActivity: [] as any[],
   });
+  const [expensesRaw, setExpensesRaw] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -177,27 +158,43 @@ export default function VendorDashboard() {
         const [salesRes, expRes, custRes] = await Promise.all([
           offlineFetch("/api/vendor/sales"),
           offlineFetch("/api/vendor/expenses"),
-          offlineFetch("/api/vendor/customers")
+          offlineFetch("/api/vendor/customers"),
         ]);
         const [salesData, expData, custData] = await Promise.all([
           salesRes.json(),
           expRes.json(),
-          custRes.json()
+          custRes.json(),
         ]);
 
         if (salesData.success && expData.success && custData.success) {
           const salesArr = salesData.data || [];
-          const totalSales = salesArr.reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
-          const totalExp = (expData.data || []).reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
-          
+          const totalSales = salesArr.reduce(
+            (s: number, t: any) => s + parseFloat(t.amount || "0"),
+            0,
+          );
+          const expensesArr = expData.data || [];
+          const totalExp = expensesArr.reduce(
+            (s: number, t: any) => s + parseFloat(t.amount || "0"),
+            0,
+          );
+          setExpensesRaw(expensesArr);
+
           const now = new Date();
-          const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          
+          const startOfToday = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+          );
+
           // Weekly grouping (Mon-Sun)
           const weeklySales = [0, 0, 0, 0, 0, 0, 0];
-          const currentDay = now.getDay(); 
+          const currentDay = now.getDay();
           const mondayDiff = currentDay === 0 ? 6 : currentDay - 1;
-          const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - mondayDiff);
+          const startOfWeek = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() - mondayDiff,
+          );
           startOfWeek.setHours(0, 0, 0, 0);
 
           // Monthly grouping (4 blocks of ~7 days)
@@ -213,7 +210,7 @@ export default function VendorDashboard() {
             if (d >= startOfToday) todaySales += amt;
 
             if (d >= startOfWeek) {
-              const dayIdx = (d.getDay() + 6) % 7; 
+              const dayIdx = (d.getDay() + 6) % 7;
               weeklySales[dayIdx] += amt;
             }
 
@@ -224,22 +221,24 @@ export default function VendorDashboard() {
           });
 
           // Recent Activity
-          const recentSales = salesArr.slice(-5).map((s: any) => ({ 
-            id: s.id, 
-            type: 'sale', 
-            amount: s.amount, 
+          const recentSales = salesArr.slice(-5).map((s: any) => ({
+            id: s.id,
+            type: "sale",
+            amount: s.amount,
             title: s.items || "Sale",
-            date: s.createdAt 
+            date: s.createdAt,
           }));
-          const recentExps = (expData.data || []).slice(-5).map((e: any) => ({ 
-            id: e.id, 
-            type: 'expense', 
-            amount: e.amount, 
+          const recentExps = (expData.data || []).slice(-5).map((e: any) => ({
+            id: e.id,
+            type: "expense",
+            amount: e.amount,
             title: e.category || "Expense",
-            date: e.expenseDate || e.createdAt
+            date: e.expenseDate || e.createdAt,
           }));
           const recentActivity = [...recentSales, ...recentExps]
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .sort(
+              (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+            )
             .slice(0, 5);
 
           setStats({
@@ -250,7 +249,7 @@ export default function VendorDashboard() {
             weeklySales,
             monthlySales,
             todaySales,
-            recentActivity
+            recentActivity,
           });
         }
       } catch (e) {
@@ -297,36 +296,63 @@ export default function VendorDashboard() {
     }
   };
 
-  const hasData = stats.transactions > 0 || stats.expenses > 0 || stats.customers > 0;
+  const hasData =
+    stats.transactions > 0 || stats.expenses > 0 || stats.customers > 0;
 
   const summary = {
     sales: `$${stats.sales.toFixed(2)}`,
     expenses: `$${stats.expenses.toFixed(2)}`,
     profit: `$${(stats.sales - stats.expenses).toFixed(2)}`,
     customers: String(stats.customers),
-    avgCustomer: stats.transactions > 0 ? `$${(stats.sales / stats.transactions).toFixed(2)}` : "$0.00",
+    avgCustomer:
+      stats.transactions > 0
+        ? `$${(stats.sales / stats.transactions).toFixed(2)}`
+        : "$0.00",
     trends: {
       sales: hasData ? "+0%" : "",
       expenses: hasData ? "+0%" : "",
       profit: hasData ? "+0%" : "",
-      customers: hasData ? "+0%" : ""
-    }
+      customers: hasData ? "+0%" : "",
+    },
   };
 
   const GOAL = { ...GOAL_DATA, current: stats.todaySales, target: dailyGoal };
 
-  const expenseCategories = [
-    { label: "គ្រឿងផ្សំ", value: 38, color: "#29B28D" },
-    { label: "ថ្លៃជួល", value: 22, color: "#3b82f6" },
-    { label: "ពលកម្ម", value: 18, color: "#f59e0b" },
-    { label: "ដឹកជញ្ជូន", value: 10, color: "#ef4444" },
-    { label: "អគ្គិសនី", value: 5, color: "#8b5cf6" },
-    { label: "ទីផ្សារ", value: 4, color: "#ec4899", custom: true },
-    { label: "ផ្សេងៗ", value: 3, color: "#94a3b8" },
+  const EXPENSE_COLORS = [
+    "#29B28D",
+    "#3b82f6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6",
+    "#ec4899",
+    "#94a3b8",
   ];
 
+  const expenseCategories = React.useMemo(() => {
+    if (!expensesRaw.length) return [];
+
+    const totals = new Map<string, number>();
+    expensesRaw.forEach((expense) => {
+      const category =
+        String(expense.category || expense.type || "Other").trim() || "Other";
+      const amount = parseFloat(expense.amount || "0");
+      totals.set(category, (totals.get(category) || 0) + amount);
+    });
+
+    const sorted = Array.from(totals.entries()).sort((a, b) => b[1] - a[1]);
+    const totalExpenses =
+      sorted.reduce((sum, [, amount]) => sum + amount, 0) || 1;
+
+    return sorted.map(([label, amount], index) => ({
+      label,
+      value: Math.round((amount / totalExpenses) * 100),
+      amount,
+      color: EXPENSE_COLORS[index % EXPENSE_COLORS.length],
+    }));
+  }, [expensesRaw]);
+
   // Avoid hydration mismatch by leaving initialization neutral or using client-side boundary logic.
-  // Given hasData is statically false, the mismatch implies a dev transient reload. 
+  // Given hasData is statically false, the mismatch implies a dev transient reload.
   // Defining it as a simple state bypasses the warning.
   const usage = { used: stats.transactions, limit: 500 };
   const usagePct = Math.min((usage.used / usage.limit) * 100, 100);
@@ -335,15 +361,21 @@ export default function VendorDashboard() {
   const [greetingState, setGreetingState] = useState({
     greeting: "",
     greetingKh: "",
-    dateStr: ""
+    dateStr: "",
   });
 
   useEffect(() => {
     if (!mounted) return;
     const now = new Date();
     const hour = now.getHours();
-    const g = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-    const gKh = hour < 12 ? "អរុណសួស្តី" : hour < 17 ? "ទិវាសួស្តី" : "សាយ័ណ្ហសួស្តី";
+    const g =
+      hour < 12
+        ? "Good morning"
+        : hour < 17
+          ? "Good afternoon"
+          : "Good evening";
+    const gKh =
+      hour < 12 ? "អរុណសួស្តី" : hour < 17 ? "ទិវាសួស្តី" : "សាយ័ណ្ហសួស្តី";
     const d = now.toLocaleDateString("en-KH", {
       weekday: "long",
       month: "long",
@@ -425,7 +457,9 @@ export default function VendorDashboard() {
     if (!cart.length) return;
 
     try {
-      const itemsStr = cart.map(i => `${i.qty}x ${i.product.name}`).join(", ");
+      const itemsStr = cart
+        .map((i) => `${i.qty}x ${i.product.name}`)
+        .join(", ");
       const res = await offlineFetch("/api/vendor/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -438,10 +472,10 @@ export default function VendorDashboard() {
 
       if (res.ok) {
         // Optimistically update local stats or just refetch
-        setStats(prev => ({
+        setStats((prev) => ({
           ...prev,
           sales: prev.sales + cartTotal,
-          transactions: prev.transactions + 1
+          transactions: prev.transactions + 1,
         }));
 
         setCart([]);
@@ -474,7 +508,10 @@ export default function VendorDashboard() {
     }
   };
 
-  const logQuickExpense = async (amount: number, category: string = "Other") => {
+  const logQuickExpense = async (
+    amount: number,
+    category: string = "Other",
+  ) => {
     try {
       const res = await offlineFetch("/api/vendor/expenses", {
         method: "POST",
@@ -542,10 +579,11 @@ export default function VendorDashboard() {
           <div ref={quickSaleRef} className="relative">
             <button
               onClick={() => setQuickSaleOpen((o) => !o)}
-              className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer transition-all duration-200 ${quickSaleOpen
+              className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer transition-all duration-200 ${
+                quickSaleOpen
                   ? "bg-psar-primary text-white"
                   : "bg-[#29B28D] text-white shadow-[0_2px_14px_rgba(41,178,141,0.28)]"
-                }`}
+              }`}
             >
               {quickSaleOpen ? (
                 <>
@@ -566,22 +604,25 @@ export default function VendorDashboard() {
             {/* Dropdown panel */}
             {quickSaleOpen && (
               <div
-                className={`absolute top-[calc(100%+10px)] right-0 w-[330px] rounded-[14px] shadow-[0_20px_56px_rgba(0,0,0,0.18)] overflow-hidden transition-colors ${isDark
+                className={`absolute top-[calc(100%+10px)] right-0 w-[330px] rounded-[14px] shadow-[0_20px_56px_rgba(0,0,0,0.18)] overflow-hidden transition-colors ${
+                  isDark
                     ? "bg-dark-surface border border-white/5"
                     : "bg-white border border-[#e8eaed]"
-                  }`}
+                }`}
                 style={{ zIndex: 9999 }}
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 {/* Header */}
                 <div
-                  className={`flex items-center gap-2 px-[18px] py-[14px] border-b ${isDark ? "border-white/5" : "border-[#e8eaed]"
-                    }`}
+                  className={`flex items-center gap-2 px-[18px] py-[14px] border-b ${
+                    isDark ? "border-white/5" : "border-[#e8eaed]"
+                  }`}
                 >
                   <ShoppingCart size={14} className="text-[#29B28D]" />
                   <span
-                    className={`font-bold text-sm ${isDark ? "text-white" : "text-[#111827]"
-                      }`}
+                    className={`font-bold text-sm ${
+                      isDark ? "text-white" : "text-[#111827]"
+                    }`}
                   >
                     {t("dashboard.actions.quickSale")}
                   </span>
@@ -597,26 +638,29 @@ export default function VendorDashboard() {
                   <div className="relative mb-[14px]">
                     <Search
                       size={13}
-                      className={`absolute left-[11px] top-1/2 -translate-y-1/2 pointer-events-none ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"
-                        }`}
+                      className={`absolute left-[11px] top-1/2 -translate-y-1/2 pointer-events-none ${
+                        isDark ? "text-[#7d8590]" : "text-[#6b7280]"
+                      }`}
                     />
                     <input
                       ref={searchRef}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={t("dashboard.placeholders.searchProduct")}
-                      className={`w-full pl-[33px] pr-[11px] py-[9px] rounded-[9px] text-[13px] outline-none transition-colors ${isDark
+                      className={`w-full pl-[33px] pr-[11px] py-[9px] rounded-[9px] text-[13px] outline-none transition-colors ${
+                        isDark
                           ? "bg-[#0d1117] border border-white/5 text-white focus:border-[#29B28D]"
                           : "bg-[#f7f8fa] border border-[#e8eaed] text-[#111827] focus:border-[#29B28D]"
-                        }`}
+                      }`}
                       style={{ fontFamily: "inherit" }}
                     />
                     {searchQuery && (
                       <div
-                        className={`absolute top-full left-0 right-0 rounded-b-[9px] overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-colors ${isDark
+                        className={`absolute top-full left-0 right-0 rounded-b-[9px] overflow-hidden shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-colors ${
+                          isDark
                             ? "bg-dark-surface border border-white/5 border-t-0"
                             : "bg-white border border-[#e8eaed] border-t-0"
-                          }`}
+                        }`}
                         style={{ zIndex: 10 }}
                       >
                         {filteredProducts.length ? (
@@ -627,22 +671,27 @@ export default function VendorDashboard() {
                                 e.preventDefault();
                                 addToCart(p);
                               }}
-                              className={`w-full flex justify-between items-center px-[13px] py-[9px] bg-transparent border-0 cursor-pointer text-[13px] text-left transition-colors ${isDark
+                              className={`w-full flex justify-between items-center px-[13px] py-[9px] bg-transparent border-0 cursor-pointer text-[13px] text-left transition-colors ${
+                                isDark
                                   ? "text-white hover:bg-white/5"
                                   : "text-[#111827] hover:bg-[#f7f8fa]"
-                                }`}
+                              }`}
                               style={{ fontFamily: "inherit" }}
                             >
                               <span>{p.name}</span>
                               <span className="text-[#29B28D] font-bold">
-                                ${parseFloat(p.price?.toString() || "0").toFixed(2)}
+                                $
+                                {parseFloat(p.price?.toString() || "0").toFixed(
+                                  2,
+                                )}
                               </span>
                             </button>
                           ))
                         ) : (
                           <div
-                            className={`px-[13px] py-[10px] text-[12.5px] ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"
-                              }`}
+                            className={`px-[13px] py-[10px] text-[12.5px] ${
+                              isDark ? "text-[#7d8590]" : "text-[#6b7280]"
+                            }`}
                           >
                             No products found
                           </div>
@@ -655,8 +704,9 @@ export default function VendorDashboard() {
                   {!searchQuery && (
                     <div className="mb-[14px]">
                       <div
-                        className={`text-[10px] font-bold uppercase tracking-[0.07em] mb-2 ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"
-                          }`}
+                        className={`text-[10px] font-bold uppercase tracking-[0.07em] mb-2 ${
+                          isDark ? "text-[#7d8590]" : "text-[#6b7280]"
+                        }`}
                       >
                         Tap to add
                       </div>
@@ -673,34 +723,40 @@ export default function VendorDashboard() {
                                   e.preventDefault();
                                   addToCart(p);
                                 }}
-                                className={`px-3 py-[9px] rounded-[9px] text-left cursor-pointer transition-all duration-[120ms] relative border ${inCart
+                                className={`px-3 py-[9px] rounded-[9px] text-left cursor-pointer transition-all duration-[120ms] relative border ${
+                                  inCart
                                     ? isDark
                                       ? "bg-[#29B28D]/15 border-[#29B28D]/30"
                                       : "bg-[rgba(41,178,141,0.12)] border-[#29B28D]"
                                     : isDark
                                       ? "bg-[#1a1a1a] border-white/5 hover:bg-[#222222]"
                                       : "bg-[#f7f8fa] border-[#e8eaed] hover:bg-[#eff0f2]"
-                                  }`}
+                                }`}
                               >
                                 <div
-                                  className={`text-xs font-semibold truncate mb-0.5 ${inCart
+                                  className={`text-xs font-semibold truncate mb-0.5 ${
+                                    inCart
                                       ? "text-[#29B28D]"
                                       : isDark
                                         ? "text-white"
                                         : "text-[#111827]"
-                                    }`}
+                                  }`}
                                 >
                                   {p.name}
                                 </div>
                                 <div
-                                  className={`text-[11px] font-bold ${inCart
+                                  className={`text-[11px] font-bold ${
+                                    inCart
                                       ? "text-[#29B28D]"
                                       : isDark
                                         ? "text-[#7d8590]"
                                         : "text-[#6b7280]"
-                                    }`}
+                                  }`}
                                 >
-                                  ${parseFloat(p.price?.toString() || "0").toFixed(2)}
+                                  $
+                                  {parseFloat(
+                                    p.price?.toString() || "0",
+                                  ).toFixed(2)}
                                 </div>
                                 {inCart && (
                                   <span className="absolute top-1.5 right-2 bg-[#29B28D] text-[#0d1117] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
@@ -711,8 +767,12 @@ export default function VendorDashboard() {
                             );
                           })
                         ) : (
-                          <div className={`col-span-2 py-8 flex flex-col items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}>
-                            <span className={`text-[13px] font-bold ${isDark ? "text-white/40" : "text-slate-400"}`}>
+                          <div
+                            className={`col-span-2 py-8 flex flex-col items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}
+                          >
+                            <span
+                              className={`text-[13px] font-bold ${isDark ? "text-white/40" : "text-slate-400"}`}
+                            >
                               No data. Add item
                             </span>
                             <span className="text-[10px] text-slate-300 mt-1">
@@ -727,42 +787,48 @@ export default function VendorDashboard() {
                   {/* Cart items */}
                   {cart.length > 0 && (
                     <div
-                      className={`mb-3 max-h-[140px] overflow-y-auto ${isDark ? "border-white/5" : "border-[#f0f2f5]"
-                        }`}
+                      className={`mb-3 max-h-[140px] overflow-y-auto ${
+                        isDark ? "border-white/5" : "border-[#f0f2f5]"
+                      }`}
                     >
                       {cart.map((item) => (
                         <div
                           key={item.product.id}
-                          className={`flex items-center gap-2 py-[7px] border-b ${isDark ? "border-white/5" : "border-[#f0f2f5]"
-                            }`}
+                          className={`flex items-center gap-2 py-[7px] border-b ${
+                            isDark ? "border-white/5" : "border-[#f0f2f5]"
+                          }`}
                         >
                           <span
-                            className={`text-[12.5px] flex-1 ${isDark ? "text-white" : "text-[#111827]"
-                              }`}
+                            className={`text-[12.5px] flex-1 ${
+                              isDark ? "text-white" : "text-[#111827]"
+                            }`}
                           >
                             {item.product.name}
                           </span>
                           <div
-                            className={`flex items-center rounded-[7px] overflow-hidden border ${isDark
+                            className={`flex items-center rounded-[7px] overflow-hidden border ${
+                              isDark
                                 ? "bg-[#0d1117] border-white/5"
                                 : "bg-[#f7f8fa] border-[#e8eaed]"
-                              }`}
+                            }`}
                           >
                             <button
                               onMouseDown={(e) => {
                                 e.preventDefault();
                                 changeQty(item.product.id, -1);
                               }}
-                              className={`w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center transition-colors ${isDark
+                              className={`w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center transition-colors ${
+                                isDark
                                   ? "text-[#7d8590] hover:bg-white/5"
                                   : "text-[#6b7280] hover:bg-[#e8eaed]"
-                                }`}
+                              }`}
                             >
                               <Minus size={10} />
                             </button>
                             <span
-                              className={`text-xs font-bold min-w-[18px] text-center ${isDark ? "text-white" : "text-[#111827]"
-                                }`}
+                              className={`text-xs font-bold min-w-[18px] text-center ${
+                                isDark ? "text-white" : "text-[#111827]"
+                              }`}
                             >
                               {item.qty}
                             </span>
@@ -771,17 +837,19 @@ export default function VendorDashboard() {
                                 e.preventDefault();
                                 changeQty(item.product.id, 1);
                               }}
-                              className={`w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center transition-colors ${isDark
+                              className={`w-6 h-6 bg-transparent border-0 cursor-pointer flex items-center justify-center transition-colors ${
+                                isDark
                                   ? "text-[#7d8590] hover:bg-white/5"
                                   : "text-[#6b7280] hover:bg-[#e8eaed]"
-                                }`}
+                              }`}
                             >
                               <Plus size={10} />
                             </button>
                           </div>
                           <span
-                            className={`text-[12.5px] font-bold min-w-[48px] text-right ${isDark ? "text-white" : "text-[#111827]"
-                              }`}
+                            className={`text-[12.5px] font-bold min-w-[48px] text-right ${
+                              isDark ? "text-white" : "text-[#111827]"
+                            }`}
                           >
                             ${(item.product.price * item.qty).toFixed(2)}
                           </span>
@@ -792,36 +860,41 @@ export default function VendorDashboard() {
 
                   {/* Customers */}
                   <div
-                    className={`flex items-center justify-between py-2 border-t mb-3 ${isDark ? "border-white/5" : "border-[#f0f2f5]"
-                      }`}
+                    className={`flex items-center justify-between py-2 border-t mb-3 ${
+                      isDark ? "border-white/5" : "border-[#f0f2f5]"
+                    }`}
                   >
                     <span
-                      className={`text-xs font-medium ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"
-                        }`}
+                      className={`text-xs font-medium ${isKhmer ? "font-battambang" : ""} ${
+                        isDark ? "text-[#7d8590]" : "text-[#6b7280]"
+                      }`}
                     >
                       {t("dashboard.customers")} · អតិថិជន
                     </span>
                     <div
-                      className={`flex items-center rounded-[8px] overflow-hidden border ${isDark
+                      className={`flex items-center rounded-[8px] overflow-hidden border ${
+                        isDark
                           ? "bg-[#0d1117] border-white/5"
                           : "bg-[#f7f8fa] border-[#e8eaed]"
-                        }`}
+                      }`}
                     >
                       <button
                         onMouseDown={(e) => {
                           e.preventDefault();
                           setCustomers((c) => Math.max(1, c - 1));
                         }}
-                        className={`w-7 h-7 bg-transparent border-0 cursor-pointer flex items-center justify-center transition-colors ${isDark
+                        className={`w-7 h-7 bg-transparent border-0 cursor-pointer flex items-center justify-center transition-colors ${
+                          isDark
                             ? "text-[#7d8590] hover:bg-white/5"
                             : "text-[#6b7280] hover:bg-[#e8eaed]"
-                          }`}
+                        }`}
                       >
                         <Minus size={11} />
                       </button>
                       <span
-                        className={`text-[13px] font-bold min-w-5 text-center ${isDark ? "text-white" : "text-[#111827]"
-                          }`}
+                        className={`text-[13px] font-bold min-w-5 text-center ${
+                          isDark ? "text-white" : "text-[#111827]"
+                        }`}
                       >
                         {customers}
                       </span>
@@ -830,10 +903,11 @@ export default function VendorDashboard() {
                           e.preventDefault();
                           setCustomers((c) => c + 1);
                         }}
-                        className={`w-7 h-7 bg-transparent border-0 cursor-pointer flex items-center justify-center transition-colors ${isDark
+                        className={`w-7 h-7 bg-transparent border-0 cursor-pointer flex items-center justify-center transition-colors ${
+                          isDark
                             ? "text-[#7d8590] hover:bg-white/5"
                             : "text-[#6b7280] hover:bg-[#e8eaed]"
-                          }`}
+                        }`}
                       >
                         <Plus size={11} />
                       </button>
@@ -843,8 +917,9 @@ export default function VendorDashboard() {
                   {/* Total */}
                   <div className="flex items-center justify-between mb-3">
                     <span
-                      className={`text-xs ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"
-                        }`}
+                      className={`text-xs ${
+                        isDark ? "text-[#7d8590]" : "text-[#6b7280]"
+                      }`}
                     >
                       {cartItems} item{cartItems !== 1 ? "s" : ""}
                     </span>
@@ -860,12 +935,13 @@ export default function VendorDashboard() {
                       if (cart.length) completeSale();
                     }}
                     disabled={cart.length === 0}
-                    className={`w-full py-3 font-bold text-[13.5px] border-0 rounded-[10px] flex items-center justify-center gap-[7px] transition-all ${cart.length
+                    className={`w-full py-3 font-bold text-[13.5px] border-0 rounded-[10px] flex items-center justify-center gap-[7px] transition-all ${
+                      cart.length
                         ? "bg-[#29B28D] text-[#0d1117] cursor-pointer shadow-[0_4px_14px_rgba(41,178,141,0.28)] hover:bg-[#239979]"
                         : isDark
                           ? "bg-[#1a1a1a] text-[#4d5562] cursor-not-allowed"
                           : "bg-[#f0f2f5] text-[#6b7280] cursor-not-allowed"
-                      }`}
+                    }`}
                   >
                     <CheckCircle2 size={15} /> {t("dashboard.actions.complete")}
                   </button>
@@ -890,11 +966,22 @@ export default function VendorDashboard() {
               </div>
               <div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[18px] font-extrabold text-[#e6edf3]" suppressHydrationWarning>
-                    {greeting}, {loading ? (isKhmer ? "កំពុងទាញយក..." : "Loading...") : displayName}
+                  <span
+                    className="text-[18px] font-extrabold text-[#e6edf3]"
+                    suppressHydrationWarning
+                  >
+                    {greeting},{" "}
+                    {loading
+                      ? isKhmer
+                        ? "កំពុងទាញយក..."
+                        : "Loading..."
+                      : displayName}
                   </span>
                 </div>
-                <div className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2" suppressHydrationWarning>
+                <div
+                  className="text-[11px] text-[#7d8590] mt-0.5 flex items-center gap-2"
+                  suppressHydrationWarning
+                >
                   <span>{greetingKh}</span>
                   <span className="w-[3px] h-[3px] rounded-full bg-[#4d5562] inline-block" />
                   <Clock size={10} className="inline-block" />
@@ -949,7 +1036,7 @@ export default function VendorDashboard() {
                   ${GOAL.current.toFixed(2)}
                 </div>
                 <div className="text-[11px] text-[#7d8590] mt-1">
-                  {language === "km" 
+                  {language === "km"
                     ? `នៃគោលដៅ $${GOAL.target.toFixed(2)}`
                     : `of $${GOAL.target.toFixed(2)} target`}
                 </div>
@@ -959,7 +1046,7 @@ export default function VendorDashboard() {
                     style={{ width: `${goalPct}%` }}
                   />
                 </div>
-                <button 
+                <button
                   onClick={() => {
                     setGoalInputValue(String(dailyGoal));
                     setShowGoalModal(true);
@@ -967,7 +1054,9 @@ export default function VendorDashboard() {
                   className="mt-2 text-[10px] text-[#29B28D] hover:text-white font-bold flex items-center gap-1 bg-transparent border-0 cursor-pointer transition-colors"
                 >
                   <Plus size={10} />
-                  <span className="uppercase tracking-wider">{language === "km" ? "កំណត់គោលដៅ" : "Set Goal"}</span>
+                  <span className="uppercase tracking-wider">
+                    {language === "km" ? "កំណត់គោលដៅ" : "Set Goal"}
+                  </span>
                 </button>
               </div>
             </div>
@@ -1004,8 +1093,9 @@ export default function VendorDashboard() {
                 </span>
               </div>
               <div
-                className={`w-full h-1.5 rounded-full overflow-hidden ${isDark ? "bg-[#1a1a1a]" : "bg-[#f0f2f5]"
-                  }`}
+                className={`w-full h-1.5 rounded-full overflow-hidden ${
+                  isDark ? "bg-[#1a1a1a]" : "bg-[#f0f2f5]"
+                }`}
               >
                 <div
                   className="h-full rounded-full transition-[width] duration-[600ms] ease-in-out"
@@ -1160,7 +1250,9 @@ export default function VendorDashboard() {
                       >
                         <div
                           className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
-                          style={{ height: `${Math.max((val / (Math.max(...monthlyData, 1))) * 100, 2)}%` }}
+                          style={{
+                            height: `${Math.max((val / Math.max(...monthlyData, 1)) * 100, 2)}%`,
+                          }}
                         />
                       </div>
                       <span
@@ -1171,8 +1263,12 @@ export default function VendorDashboard() {
                     </div>
                   ))
                 ) : (
-                  <div className={`w-full h-full flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}>
-                    <span className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                  <div
+                    className={`w-full h-full flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}
+                  >
+                    <span
+                      className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                    >
                       No data. Add item
                     </span>
                   </div>
@@ -1207,7 +1303,9 @@ export default function VendorDashboard() {
                       >
                         <div
                           className="absolute bottom-0 w-full bg-[#29B28D] rounded-t-[7px] transition-all duration-500 group-hover:opacity-80"
-                          style={{ height: `${Math.max((height / (Math.max(...weeklyData, 1))) * 100, 2)}%` }}
+                          style={{
+                            height: `${Math.max((height / Math.max(...weeklyData, 1)) * 100, 2)}%`,
+                          }}
                         />
                       </div>
                       <span
@@ -1218,8 +1316,12 @@ export default function VendorDashboard() {
                     </div>
                   ))
                 ) : (
-                  <div className={`w-full h-full flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}>
-                    <span className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                  <div
+                    className={`w-full h-full flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}
+                  >
+                    <span
+                      className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                    >
                       No data. Add item
                     </span>
                   </div>
@@ -1282,8 +1384,12 @@ export default function VendorDashboard() {
                     </div>
                   ))
                 ) : (
-                  <div className={`w-full py-8 flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}>
-                    <span className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                  <div
+                    className={`w-full py-8 flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}
+                  >
+                    <span
+                      className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                    >
                       No data. Add item
                     </span>
                   </div>
@@ -1294,10 +1400,11 @@ export default function VendorDashboard() {
 
           {/* ── Expenses Breakdown ── */}
           <div
-            className={`rounded-[14px] px-[26px] py-[22px] border ${isDark
+            className={`rounded-[14px] px-[26px] py-[22px] border ${
+              isDark
                 ? "bg-dark-surface border-white/5 shadow-none"
                 : "bg-white border-[#e8eaed] shadow-sm"
-              }`}
+            }`}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-[20px]">
@@ -1322,34 +1429,40 @@ export default function VendorDashboard() {
 
             {/* Horizontal bar chart rows */}
             <div className="flex flex-col gap-[16px] mb-[24px]">
-              {hasData ? (
-                EXP_BREAKDOWN.map((item) => (
-                  <div key={item.key} className="flex items-center gap-4">
-                    {/* Khmer label */}
+              {hasData && expenseCategories.length > 0 ? (
+                expenseCategories.map((item, index) => (
+                  <div
+                    key={`${item.label}-${index}`}
+                    className="flex items-center gap-4"
+                  >
                     <div className="w-[90px] shrink-0">
                       <div
-                        className={`text-[12.5px] font-medium leading-tight ${isDark ? "text-white" : "text-[#111827]"
-                          }`}
+                        className={`text-[12.5px] font-medium leading-tight ${isDark ? "text-white" : "text-[#111827]"}`}
                       >
                         {item.label}
                       </div>
                     </div>
-                    {/* Track */}
                     <div className="flex-1 h-[6px] bg-[#f0f2f5] rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-[width] duration-700 ease-out"
-                        style={{ width: `${item.pct}%`, background: item.color }}
+                        style={{
+                          width: `${item.value}%`,
+                          background: item.color,
+                        }}
                       />
                     </div>
-                    {/* Percent */}
                     <div className="w-[36px] text-right text-[12.5px] font-bold text-[#6b7280] shrink-0">
-                      {item.pct}%
+                      {item.value}%
                     </div>
                   </div>
                 ))
               ) : (
-                <div className={`w-full py-10 flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}>
-                  <span className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}>
+                <div
+                  className={`w-full py-10 flex items-center justify-center rounded-lg border border-dashed ${isDark ? "border-white/10" : "border-[#e8eaed]"}`}
+                >
+                  <span
+                    className={`text-sm font-medium ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
+                  >
                     No data. Add item
                   </span>
                 </div>
@@ -1359,28 +1472,36 @@ export default function VendorDashboard() {
 
           {/* ── Recent Activity Table ── */}
           <div
-            className={`rounded-[14px] overflow-hidden border ${isDark
+            className={`rounded-[14px] overflow-hidden border ${
+              isDark
                 ? "bg-dark-surface border-white/5 shadow-none"
                 : "bg-white border-[#e8eaed] shadow-sm"
-              }`}
+            }`}
           >
             <div className="px-[26px] py-[18px] border-b border-white/5 flex items-center justify-between">
               <div>
-                <div className={`text-[15px] font-bold ${isDark ? "text-white" : "text-[#111827]"}`}>
+                <div
+                  className={`text-[15px] font-bold ${isDark ? "text-white" : "text-[#111827]"}`}
+                >
                   Recent Activity
                 </div>
                 <div className={`text-[11px] text-[#7d8590] mt-0.5`}>
                   សកម្មភាពថ្មីៗ
                 </div>
               </div>
-              <Link href="/vendor/sales" className="text-[12px] font-bold text-[#29B28D] no-underline hover:underline">
+              <Link
+                href="/vendor/sales"
+                className="text-[12px] font-bold text-[#29B28D] no-underline hover:underline"
+              >
                 View All
               </Link>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className={`text-[10.5px] uppercase font-bold ${isDark ? "text-[#4d5562]" : "text-slate-500"} border-b border-white/5`}>
+                <thead
+                  className={`text-[10.5px] uppercase font-bold ${isDark ? "text-[#4d5562]" : "text-slate-500"} border-b border-white/5`}
+                >
                   <tr>
                     <th className="px-[26px] py-3">Type</th>
                     <th className="px-[26px] py-3">Details</th>
@@ -1391,35 +1512,56 @@ export default function VendorDashboard() {
                 <tbody className="divide-y divide-white/5">
                   {stats.recentActivity.length > 0 ? (
                     stats.recentActivity.map((act) => (
-                      <tr key={act.id} className="text-[13px] group hover:bg-white/[0.02]">
+                      <tr
+                        key={act.id}
+                        className="text-[13px] group hover:bg-white/[0.02]"
+                      >
                         <td className="px-[26px] py-4">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                            act.type === 'sale' 
-                              ? "bg-[rgba(41,178,141,0.1)] text-[#29B28D] border border-[#29B28D]/20" 
-                              : "bg-[rgba(239,68,68,0.1)] text-[#ef4444] border border-[#ef4444]/20"
-                          }`}>
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                              act.type === "sale"
+                                ? "bg-[rgba(41,178,141,0.1)] text-[#29B28D] border border-[#29B28D]/20"
+                                : "bg-[rgba(239,68,68,0.1)] text-[#ef4444] border border-[#ef4444]/20"
+                            }`}
+                          >
                             {act.type}
                           </span>
                         </td>
-                        <td className={`px-[26px] py-4 font-medium ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
+                        <td
+                          className={`px-[26px] py-4 font-medium ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}
+                        >
                           {act.title}
                         </td>
                         <td className="px-[26px] py-4">
-                          <div className={`text-[12px] ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}>
-                            {new Date(act.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          <div
+                            className={`text-[12px] ${isDark ? "text-[#e6edf3]" : "text-[#111827]"}`}
+                          >
+                            {new Date(act.date).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
                           </div>
                           <div className="text-[10px] text-[#7d8590]">
-                            {new Date(act.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                            {new Date(act.date).toLocaleTimeString("en-US", {
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}
                           </div>
                         </td>
-                        <td className={`px-[26px] py-4 text-right font-bold ${act.type === 'sale' ? "text-[#29B28D]" : "text-[#ef4444]"}`}>
-                          {act.type === 'sale' ? "+" : "-"}${parseFloat(act.amount).toFixed(2)}
+                        <td
+                          className={`px-[26px] py-4 text-right font-bold ${act.type === "sale" ? "text-[#29B28D]" : "text-[#ef4444]"}`}
+                        >
+                          {act.type === "sale" ? "+" : "-"}$
+                          {parseFloat(act.amount).toFixed(2)}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="px-6 py-10 text-center text-slate-500 text-sm">
+                      <td
+                        colSpan={4}
+                        className="px-6 py-10 text-center text-slate-500 text-sm"
+                      >
                         No recent activity logged.
                       </td>
                     </tr>
@@ -1503,7 +1645,7 @@ export default function VendorDashboard() {
                           totalSales: stats.sales,
                           totalExpenses: stats.expenses,
                           netProfit: stats.sales - stats.expenses,
-                          isLocked: true
+                          isLocked: true,
                         }),
                       });
                       if (res.ok) {
@@ -1534,7 +1676,10 @@ export default function VendorDashboard() {
       {/* Goal Setting Modal */}
       {showGoalModal && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#0E1319]/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="absolute inset-0" onClick={() => setShowGoalModal(false)} />
+          <div
+            className="absolute inset-0"
+            onClick={() => setShowGoalModal(false)}
+          />
           <div className="bg-[#0b0f15] rounded-[24px] w-full max-w-sm p-8 shadow-[0_32px_128px_rgba(0,0,0,0.6)] relative z-10 border border-white/10">
             <div className="w-12 h-12 bg-[#29B28D]/10 rounded-2xl flex items-center justify-center mb-6 text-[#29B28D]">
               <Target size={24} />
@@ -1547,7 +1692,9 @@ export default function VendorDashboard() {
             </p>
             <div className="space-y-6">
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-[#29B28D]">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-[#29B28D]">
+                  $
+                </span>
                 <input
                   type="number"
                   autoFocus
@@ -1580,8 +1727,8 @@ export default function VendorDashboard() {
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[80] w-[calc(100%-32px)] max-w-md animate-in slide-in-from-top-4 duration-500 fill-mode-forwards px-4">
           <div className="bg-[#0E1319] dark:bg-white rounded-[24px] p-5 shadow-[0_32px_128px_rgba(0,0,0,0.4)] border border-white/15 dark:border-black/5 flex items-center gap-5">
             <div className="w-14 h-14 bg-[#29B28D] rounded-2xl flex items-center justify-center shrink-0 relative overflow-hidden">
-               <div className="absolute inset-0 bg-white/20 animate-pulse" />
-               <Sparkles className="w-7 h-7 text-[#0E1319] relative z-10" />
+              <div className="absolute inset-0 bg-white/20 animate-pulse" />
+              <Sparkles className="w-7 h-7 text-[#0E1319] relative z-10" />
             </div>
             <div className="flex-1">
               <h4 className="text-lg font-black text-white dark:text-[#0E1319] leading-tight mb-0.5">
@@ -1591,7 +1738,7 @@ export default function VendorDashboard() {
                 {t("settings.goalSuccessDesc")}
               </p>
             </div>
-            <button 
+            <button
               onClick={() => setShowGoalReachedNotification(false)}
               className="w-10 h-10 flex items-center justify-center text-[#7d8590] hover:text-white dark:hover:text-[#0E1319] transition-colors rounded-full hover:bg-white/10 dark:hover:bg-black/5 border-0 bg-transparent cursor-pointer"
             >

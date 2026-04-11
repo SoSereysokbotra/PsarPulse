@@ -77,7 +77,7 @@ export default function ProExpensePage() {
   const { t, language } = useLanguage();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [expenseAmount, setExpenseAmount] = useState("");
-  const [expenseCategory, setExpenseCategory] = useState("Ingredients");
+  const [expenseCategory, setExpenseCategory] = useState("Stock Purchase");
   const [expenseVendor, setExpenseVendor] = useState("");
   const [expenseNote, setExpenseNote] = useState("");
   const [isQuickLogModalOpen, setIsQuickLogModalOpen] = useState(false);
@@ -86,7 +86,7 @@ export default function ProExpensePage() {
 
   // Categories mixing default and custom for Pro Plan
   const [categories, setCategories] = useState([
-    { value: "Ingredients", label: "Ingredients (គ្រឿងផ្សំ)", isCustom: false },
+    { value: "Stock Purchase", label: "Stock Purchase (ទិញស្តុក)", isCustom: false },
     { value: "Rent", label: "Rent (ថ្លៃជួល)", isCustom: false },
     { value: "Transport", label: "Transport (ការធ្វើដំណើរ)", isCustom: false },
     { value: "Electricity", label: "Electricity (អគ្គិសនី)", isCustom: false },

@@ -49,12 +49,12 @@ interface Product {
 
 // ─── Constants ─────────────────────────────────────────────────────
 const PRODUCT_LIBRARY: Product[] = [
-  { id: "1", name: "Coffee Latte", price: 4.5 },
-  { id: "2", name: "Green Tea", price: 3.2 },
-  { id: "3", name: "Fried Rice", price: 2.5 },
-  { id: "4", name: "Spring Roll", price: 1.8 },
-  { id: "5", name: "Coconut Water", price: 1.5 },
-  { id: "6", name: "Mango Sticky Rice", price: 2.0 },
+  { id: "1", name: "Phone Case", price: 4.5 },
+  { id: "2", name: "USB Cable", price: 3.0 },
+  { id: "3", name: "Notebook", price: 1.5 },
+  { id: "4", name: "Hair Clip Set", price: 2.0 },
+  { id: "5", name: "Ballpoint Pen", price: 0.5 },
+  { id: "6", name: "Screen Protector", price: 3.5 },
 ];
 
 const GOAL_DATA = {

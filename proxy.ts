@@ -52,6 +52,20 @@ const planProtectedPaths: Record<string, string[]> = {
   "/vendor/premium": ["premium"],
 };
 
+const SUBSCRIPTION_CACHE_COOKIE = "psarpulse-subscription-cache";
+const SUBSCRIPTION_CACHE_TTL_MS = 60_000;
+const SUBSCRIPTION_CACHE_MAX_AGE_SECONDS = 60;
+
+type SubscriptionData = {
+  planName: string | null;
+  subscriptionStatus: string | null;
+  isVendor: boolean;
+};
+
+type CachedSubscriptionData = SubscriptionData & {
+  ts: number;
+};
+
 function isPublicPath(pathname: string): boolean {
   return publicPaths.some(
     (path) => pathname === path || pathname.startsWith(path + "/"),
@@ -86,11 +100,7 @@ function getRequiredPlans(pathname: string): string[] | null {
  */
 async function checkVendorSubscription(
   request: NextRequest,
-): Promise<{
-  planName: string | null;
-  subscriptionStatus: string | null;
-  isVendor: boolean;
-} | null> {
+): Promise<SubscriptionData | null> {
   try {
     const checkUrl = new URL(
       "/api/vendor/subscription/check",
@@ -121,8 +131,52 @@ async function checkVendorSubscription(
   }
 }
 
+function getCachedSubscription(request: NextRequest): SubscriptionData | null {
+  const cached = request.cookies.get(SUBSCRIPTION_CACHE_COOKIE)?.value;
+  if (!cached) return null;
+
+  try {
+    const parsed = JSON.parse(
+      decodeURIComponent(cached),
+    ) as CachedSubscriptionData;
+    if (!parsed || typeof parsed.ts !== "number") return null;
+
+    const isFresh = Date.now() - parsed.ts < SUBSCRIPTION_CACHE_TTL_MS;
+    if (!isFresh) return null;
+
+    return {
+      planName: parsed.planName ?? null,
+      subscriptionStatus: parsed.subscriptionStatus ?? null,
+      isVendor: Boolean(parsed.isVendor),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  let subscriptionDataToCache: SubscriptionData | null = null;
+
+  const attachSubscriptionCache = (
+    response: NextResponse,
+    subscriptionData?: SubscriptionData | null,
+  ) => {
+    const dataToCache = subscriptionData ?? subscriptionDataToCache;
+    if (!dataToCache) return response;
+
+    const value = encodeURIComponent(
+      JSON.stringify({ ...dataToCache, ts: Date.now() }),
+    );
+    response.cookies.set(SUBSCRIPTION_CACHE_COOKIE, value, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: SUBSCRIPTION_CACHE_MAX_AGE_SECONDS,
+    });
+    return response;
+  };
 
   // Skip public paths and static files
   if (
@@ -177,22 +231,55 @@ export default async function proxy(request: NextRequest) {
 
     // Check plan-based access for vendor routes
     const requiredPlans = getRequiredPlans(pathname);
-    const isFreeVendorPath = pathname === "/vendor" || /^\/vendor\/(sales|expenses|inventory|customer|reports|settings)$/.test(pathname);
+    const isFreeVendorPath =
+      pathname === "/vendor" ||
+      /^\/vendor\/(sales|expenses|inventory|customer|reports|settings)$/.test(
+        pathname,
+      );
 
     if (requiredPlans || isFreeVendorPath) {
-      const subscriptionData = await checkVendorSubscription(request);
-      console.log(`[Middleware] Path: ${pathname}, Plan Data:`, subscriptionData);
+      let subscriptionData = getCachedSubscription(request);
+      const hadCachedSubscription = Boolean(subscriptionData);
+      if (!subscriptionData) {
+        subscriptionData = await checkVendorSubscription(request);
+        if (subscriptionData) {
+          subscriptionDataToCache = subscriptionData;
+        }
+      }
+
+      const refreshSubscriptionData = async () => {
+        const fresh = await checkVendorSubscription(request);
+        if (fresh) {
+          subscriptionData = fresh;
+          subscriptionDataToCache = fresh;
+        }
+        return fresh;
+      };
+      console.log(
+        `[Middleware] Path: ${pathname}, Plan Data:`,
+        subscriptionData,
+      );
 
       // Handle auto-redirect for free dashboard paths if vendor has a higher plan
-      if (isFreeVendorPath && subscriptionData?.isVendor && subscriptionData.subscriptionStatus && ["active", "trial"].includes(subscriptionData.subscriptionStatus)) {
+      if (
+        isFreeVendorPath &&
+        subscriptionData?.isVendor &&
+        subscriptionData.subscriptionStatus &&
+        ["active", "trial"].includes(subscriptionData.subscriptionStatus)
+      ) {
         const planName = subscriptionData.planName;
         if (planName === "premium" || planName === "pro") {
-          const isProExempt = planName === "pro" && pathname.endsWith("/settings");
+          const isProExempt =
+            planName === "pro" && pathname.endsWith("/settings");
           if (!isProExempt) {
-            const targetPath = pathname === "/vendor" 
-              ? `/vendor/${planName}` 
-              : pathname.replace("/vendor", `/vendor/${planName}`);
-            return NextResponse.redirect(new URL(targetPath, request.url));
+            const targetPath =
+              pathname === "/vendor"
+                ? `/vendor/${planName}`
+                : pathname.replace("/vendor", `/vendor/${planName}`);
+            return attachSubscriptionCache(
+              NextResponse.redirect(new URL(targetPath, request.url)),
+              subscriptionData,
+            );
           }
         }
       }
@@ -200,18 +287,26 @@ export default async function proxy(request: NextRequest) {
       if (requiredPlans) {
         // If we couldn't verify subscription, deny access (fail-closed)
         if (!subscriptionData || !subscriptionData.isVendor) {
-          console.log(`[Middleware] Redirecting to pricing: No subscription or not vendor`);
-          if (pathname.startsWith("/api/")) {
-            return NextResponse.json(
-              {
-                success: false,
-                message: "Forbidden - Vendor account required",
-              },
-              { status: 403 },
-            );
+          if (hadCachedSubscription) {
+            await refreshSubscriptionData();
           }
-          const pricingUrl = new URL("/vendor/pricing", request.url);
-          return NextResponse.redirect(pricingUrl);
+
+          if (!subscriptionData || !subscriptionData.isVendor) {
+            console.log(
+              `[Middleware] Redirecting to pricing: No subscription or not vendor`,
+            );
+            if (pathname.startsWith("/api/")) {
+              return NextResponse.json(
+                {
+                  success: false,
+                  message: "Forbidden - Vendor account required",
+                },
+                { status: 403 },
+              );
+            }
+            const pricingUrl = new URL("/vendor/pricing", request.url);
+            return attachSubscriptionCache(NextResponse.redirect(pricingUrl));
+          }
         }
 
         // Check if subscription is active
@@ -220,20 +315,31 @@ export default async function proxy(request: NextRequest) {
           !subscriptionData.subscriptionStatus ||
           !activeStatuses.includes(subscriptionData.subscriptionStatus)
         ) {
-          console.log(`[Middleware] Redirecting to pricing: Status is ${subscriptionData.subscriptionStatus}`);
-          if (pathname.startsWith("/api/")) {
-            return NextResponse.json(
-              {
-                success: false,
-                message:
-                  "Forbidden - Active subscription required. Please renew your plan.",
-              },
-              { status: 403 },
-            );
+          if (hadCachedSubscription) {
+            await refreshSubscriptionData();
           }
-          const pricingUrl = new URL("/vendor/pricing", request.url);
-          pricingUrl.searchParams.set("reason", "expired");
-          return NextResponse.redirect(pricingUrl);
+
+          if (
+            !subscriptionData?.subscriptionStatus ||
+            !activeStatuses.includes(subscriptionData.subscriptionStatus)
+          ) {
+            console.log(
+              `[Middleware] Redirecting to pricing: Status is ${subscriptionData.subscriptionStatus}`,
+            );
+            if (pathname.startsWith("/api/")) {
+              return NextResponse.json(
+                {
+                  success: false,
+                  message:
+                    "Forbidden - Active subscription required. Please renew your plan.",
+                },
+                { status: 403 },
+              );
+            }
+            const pricingUrl = new URL("/vendor/pricing", request.url);
+            pricingUrl.searchParams.set("reason", "expired");
+            return attachSubscriptionCache(NextResponse.redirect(pricingUrl));
+          }
         }
 
         // Check if vendor's plan is in the list of allowed plans
@@ -241,22 +347,33 @@ export default async function proxy(request: NextRequest) {
           !subscriptionData.planName ||
           !requiredPlans.includes(subscriptionData.planName)
         ) {
-          console.log(`[Middleware] Redirecting to pricing: Plan mismatch. Required: ${requiredPlans.join(",")}, Found: ${subscriptionData.planName}`);
-          
-          // If this is an internal data fetch (/api/), return 403 JSON instead of 307 Redirect
-          // to avoid "enqueueModel" hydration errors in the browser.
-          if (pathname.startsWith("/api/")) {
-            return NextResponse.json(
-              {
-                success: false,
-                message: `Forbidden - This feature requires a ${requiredPlans[0] || 'higher'} plan.`,
-              },
-              { status: 403 },
-            );
+          if (hadCachedSubscription) {
+            await refreshSubscriptionData();
           }
-          const pricingUrl = new URL("/vendor/pricing", request.url);
-          pricingUrl.searchParams.set("reason", "upgrade");
-          return NextResponse.redirect(pricingUrl);
+
+          if (
+            !subscriptionData?.planName ||
+            !requiredPlans.includes(subscriptionData.planName)
+          ) {
+            console.log(
+              `[Middleware] Redirecting to pricing: Plan mismatch. Required: ${requiredPlans.join(",")}, Found: ${subscriptionData.planName}`,
+            );
+
+            // If this is an internal data fetch (/api/), return 403 JSON instead of 307 Redirect
+            // to avoid "enqueueModel" hydration errors in the browser.
+            if (pathname.startsWith("/api/")) {
+              return NextResponse.json(
+                {
+                  success: false,
+                  message: `Forbidden - This feature requires a ${requiredPlans[0] || "higher"} plan.`,
+                },
+                { status: 403 },
+              );
+            }
+            const pricingUrl = new URL("/vendor/pricing", request.url);
+            pricingUrl.searchParams.set("reason", "upgrade");
+            return attachSubscriptionCache(NextResponse.redirect(pricingUrl));
+          }
         }
         console.log(`[Middleware] Access granted to ${pathname}`);
       }
@@ -268,11 +385,13 @@ export default async function proxy(request: NextRequest) {
     requestHeaders.set("x-user-email", payload.email as string);
     requestHeaders.set("x-user-role", payload.role as string);
 
-    return NextResponse.next({
+    const response = NextResponse.next({
       request: {
         headers: requestHeaders,
       },
     });
+
+    return attachSubscriptionCache(response);
   } catch (error) {
     // Token is invalid or expired
     if (pathname.startsWith("/api/")) {

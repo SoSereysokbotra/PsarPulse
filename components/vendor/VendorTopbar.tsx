@@ -107,7 +107,7 @@ export default function VendorTopbar({
                 </div>
                 <div className="max-h-[300px] overflow-y-auto">
                   {[
-                    { title: "AI Smart Alert", desc: "Demand for Hot Lattes is spiking. Suggest moving cups to front.", time: "10 min ago", unread: true },
+                    { title: "AI Smart Alert", desc: "Demand for Phone Cases is spiking. Suggest restocking front display.", time: "10 min ago", unread: true },
                     { title: "Goal Reached", desc: "You hit your daily revenue target!", time: "2 hours ago", unread: true },
                     { title: "Automated Warning", desc: "Sales dropped 15% in the last hour.", time: "5 hours ago", unread: true }
                   ].map((notif, i) => (

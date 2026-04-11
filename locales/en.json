@@ -161,7 +161,7 @@
       "editCustomerTitle": "Edit Customer",
       "addCustomerTitle": "Log New Customer",
       "notePlaceholder": "e.g. Market run",
-      "itemsPlaceholder": "e.g. 2x Coffee"
+      "itemsPlaceholder": "e.g. 2x Phone Case"
     },
     "methods": {
       "cash": "Cash",
@@ -172,7 +172,7 @@
       "other": "Other"
     },
     "categories": {
-      "ingredients": "Ingredients",
+      "ingredients": "Stock Purchase",
       "rent": "Rent",
       "transport": "Transport",
       "electricity": "Electricity",
@@ -196,7 +196,8 @@
       "exportCsv": "Export CSV",
       "exportStock": "Export Stock",
       "viewAll": "View All",
-      "addCategory": "Custom Category"
+      "addCategory": "Custom Category",
+      "addCustomer": "Add Customer"
     },
     "customerSection": {
       "title": "My Customers",

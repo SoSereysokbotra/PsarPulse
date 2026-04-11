@@ -22,9 +22,9 @@ export async function POST(request: NextRequest) {
     const model = getGeminiModel(`You are a Smart Sales Assistant for PsarPulse. 
 Parse the following natural language sales log into structured data.
 Extract:
-1. amount: Total price/revenue (number). IMPORTANT: Distinguish between item count (e.g., "3 coffee") and total price (e.g., "12$"). The amount is the currency value.
+1. amount: Total price/revenue (number). IMPORTANT: Distinguish between item count (e.g., "3 phone cases") and total price (e.g., "12$"). The amount is the currency value.
 2. items: Description of what was sold (string).
-3. category: Single best category (one of: Food, Beverage, Apparel, Electronics, Household, Service, Other).
+3. category: Single best category (one of: Clothing, Electronics, Household, Stationery, Personal Care, Toys, Hardware, Other).
 4. method: Payment method (one of: "Cash", "ABA/KHQR", "Other"). Look for keywords like "aba", "khqr", "transfer", "cash".`);
 
     if (!model) {

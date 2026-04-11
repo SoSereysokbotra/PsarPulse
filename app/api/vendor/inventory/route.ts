@@ -33,32 +33,37 @@ export async function POST(request: NextRequest) {
     const vendor = await VendorRepository.findByUserId(payload.id);
     if (!vendor) return NextResponse.json({ message: "Vendor not found" }, { status: 404 });
 
-    // Enforce plan-based limits
-    const currentCount = await InventoryRepository.countByVendorId(vendor.id);
-    const maxProducts = vendor.plan?.maxProducts;
-
-    if (maxProducts !== null && maxProducts !== undefined && currentCount >= maxProducts) {
-      return NextResponse.json({ 
-        success: false, 
-        message: `Inventory limit reached. Your plan allows up to ${maxProducts} products.`,
-        limitReached: true
-      }, { status: 403 });
-    }
-
     const body = await request.json();
-    
-    // Check for active Pro/Premium subscription
-    const activeSub = vendor.subscriptions?.find((s: any) => s.status === "active" && s.plan?.name !== "free");
-    const isPro = activeSub || vendor.plan?.name !== "free";
 
-    // Enforce 30-item limit ONLY for Free Tier (no active Pro/Premium subscription)
-    if (!isPro) {
-      const inventory = await InventoryRepository.findByVendorId(vendor.id);
-      if (inventory.length >= 30) {
-        return NextResponse.json({ 
-          success: false, 
-          message: "Inventory limit reached (30/30). Please upgrade to Pro for unlimited items." 
-        }, { status: 403 });
+    // Resolve the highest active plan name
+    // Priority: active subscription plan → vendor base plan → fallback "free"
+    const activeSub = vendor.subscriptions?.find(
+      (s: any) => s.status === "active",
+    );
+    const planName: string =
+      activeSub?.plan?.name || vendor.plan?.name || "free";
+
+    const planLimits: Record<string, number | null> = {
+      free: 30,
+      pro: 100,
+      premium: null, // null = unlimited
+    };
+
+    // Use `in` to safely look up the limit — avoids `null ?? 30` coercing premium to 30
+    const maxProducts: number | null =
+      planName in planLimits ? planLimits[planName] : 30;
+
+    if (maxProducts !== null) {
+      const currentCount = await InventoryRepository.countByVendorId(vendor.id);
+      if (currentCount >= maxProducts) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `Inventory limit reached (${maxProducts}/${maxProducts}). Please upgrade for more items.`,
+            limitReached: true,
+          },
+          { status: 403 },
+        );
       }
     }
 

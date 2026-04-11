@@ -56,7 +56,7 @@ export default function SettingsPage() {
       fallback={<div className="min-h-screen animate-pulse bg-slate-50/30" />}
     >
       <VendorSettings
-        tier="premium"
+        tier="pro"
         navLinks={PREMIUM_NAV}
         currentPath="/vendor/pro/settings"
       />

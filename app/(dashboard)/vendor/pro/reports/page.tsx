@@ -62,11 +62,11 @@ const salesData = {
   totalSales: 342,
   avgOrderValue: "$7.16",
   topItems: [
-    { name: "Iced Coffee", khmer: "កាហ្វេទឹកកក", qty: 112, revenue: "$168.00", pct: 100 },
-    { name: "Noodle Soup", khmer: "គុយទាវ", qty: 85, revenue: "$255.00", pct: 75 },
-    { name: "Hot Latte", khmer: "ឡាតេក្តៅ", qty: 64, revenue: "$128.00", pct: 57 },
-    { name: "Mango Sticky Rice", khmer: "បាយដំណើបស្វាយ", qty: 45, revenue: "$112.50", pct: 40 },
-    { name: "Matcha Frappe", khmer: "ម៉ាឆា", qty: 36, revenue: "$108.00", pct: 32 },
+    { name: "Phone Case", khmer: "កែសទូរស័ព្ទ", qty: 112, revenue: "$168.00", pct: 100 },
+    { name: "USB Cable", khmer: "ខ្សែ USB", qty: 85, revenue: "$255.00", pct: 75 },
+    { name: "Earbuds", khmer: "កាស", qty: 64, revenue: "$128.00", pct: 57 },
+    { name: "Notebook", khmer: "សៀវភៅកត់ត្រា", qty: 45, revenue: "$112.50", pct: 40 },
+    { name: "Screen Protector", khmer: "ស្រោមការពារអេក្រង់", qty: 36, revenue: "$108.00", pct: 32 },
   ],
   // trend: simple % heights for a sparkline-like bar chart across 7 periods
   trend: [45, 60, 50, 85, 75, 100, 65],
@@ -75,7 +75,7 @@ const salesData = {
 
 const expenseData = {
   categories: [
-    { name: "Ingredients", khmer: "គ្រឿងផ្សំ", amount: "$420.00", pct: 47, color: "#6366f1" },
+    { name: "Stock Purchase", khmer: "ទិញស្តុក", amount: "$420.00", pct: 47, color: "#6366f1" },
     { name: "Rent", khmer: "ថ្លៃជួល", amount: "$200.00", pct: 22, color: "#8b5cf6" },
     { name: "Labor", khmer: "កម្លាំងពលកម្ម", amount: "$150.00", pct: 16, color: "#f43f5e" },
     { name: "Transport", khmer: "ការធ្វើដំណើរ", amount: "$65.00", pct: 7, color: "#f59e0b" },
@@ -111,14 +111,14 @@ const customerData = {
 
 const inventoryData = {
   lowStockItems: [
-    { name: "Hot Latte", khmer: "ឡាតេក្តៅ", stock: 8, threshold: 10, status: "low" as const },
-    { name: "Croissant", khmer: "នំខូសង់", stock: 5, threshold: 8, status: "low" as const },
-    { name: "Mango Sticky Rice", khmer: "បាយដំណើបស្វាយ", stock: 0, threshold: 5, status: "out" as const },
+    { name: "Phone Case", khmer: "កែសទូរស័ព្ទ", stock: 8, threshold: 10, status: "low" as const },
+    { name: "Hair Clips Set", khmer: "ឈុតកន្ទាក់សក់", stock: 5, threshold: 8, status: "low" as const },
+    { name: "Notebook", khmer: "សៀវភៅកត់ត្រា", stock: 0, threshold: 5, status: "out" as const },
   ],
   topMovers: [
-    { name: "Iced Coffee", sold: 112, restocked: 150 },
-    { name: "Noodle Soup", sold: 85, restocked: 100 },
-    { name: "Matcha Frappe", sold: 36, restocked: 50 },
+    { name: "Phone Case", sold: 112, restocked: 150 },
+    { name: "USB Cable", sold: 85, restocked: 100 },
+    { name: "Screen Protector", sold: 36, restocked: 50 },
   ],
   totalValue: "$1,245.50",
   totalItems: 48,

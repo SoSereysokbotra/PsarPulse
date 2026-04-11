@@ -46,12 +46,12 @@ interface Product {
 
 // ─── Constants ─────────────────────────────────────────────────────
 const PRODUCT_LIBRARY: Product[] = [
-  { id: "1", name: "Coffee Latte", price: 4.5 },
-  { id: "2", name: "Green Tea", price: 3.2 },
-  { id: "3", name: "Fried Rice", price: 2.5 },
-  { id: "4", name: "Spring Roll", price: 1.8 },
-  { id: "5", name: "Coconut Water", price: 1.5 },
-  { id: "6", name: "Mango Sticky Rice", price: 2.0 },
+  { id: "1", name: "Phone Case", price: 4.5 },
+  { id: "2", name: "USB Cable", price: 3.2 },
+  { id: "3", name: "Notebook", price: 2.5 },
+  { id: "4", name: "Hair Clips Set", price: 1.8 },
+  { id: "5", name: "Screen Protector", price: 1.5 },
+  { id: "6", name: "Earbuds", price: 2.0 },
 ];
 
 const GOAL_TARGET = 200;
@@ -279,7 +279,7 @@ export default function ProDashboard() {
       const soldMap: Record<string, number> = {};
       salesRaw.forEach((t) => {
         const itemStr: string = t.items || "";
-        // parse "2x Coffee, 1x Tea" style strings
+        // parse "2x Phone Case, 1x USB Cable" style strings
         const parts = itemStr.split(",").map((s: string) => s.trim());
         parts.forEach((part) => {
           const match = part.match(/^(\d+)x?\s+(.+)$/i);

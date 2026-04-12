@@ -29,11 +29,14 @@ export async function GET(request: NextRequest) {
         try {
           const md5Str = crypto.createHash("md5").update(payment.qrString).digest("hex");
           
-          const bkRes = await fetch(`${process.env.BAKONG_API_URL}/check-transaction-by-md5`, {
+          const cleanApiUrl = process.env.BAKONG_API_URL.trim();
+          const cleanApiKey = process.env.BAKONG_API_KEY.trim();
+
+          const bkRes = await fetch(`${cleanApiUrl}/check-transaction-by-md5`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "Authorization": `Bearer ${process.env.BAKONG_API_KEY}`
+              "Authorization": `Bearer ${cleanApiKey}`
             },
             body: JSON.stringify({ md5: md5Str }),
             cache: "no-store"

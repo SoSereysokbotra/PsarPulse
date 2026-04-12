@@ -141,33 +141,69 @@ function CheckoutContent() {
   };
 
   useEffect(() => {
-    if (step !== "details" || !transactionId || paymentStatus !== "waiting") {
+    if (step !== "details" || !transactionId || paymentStatus !== "waiting" || !md5Hash) {
       return;
     }
 
     let stopped = false;
+    const BAKONG_TOKEN = process.env.NEXT_PUBLIC_BAKONG_API_KEY || "";
+    let useBrowserDirect = true; // Try browser-direct first
 
     const poll = async () => {
       while (!stopped) {
-        try {
-          const res = await offlineFetch(
-            `/api/bakong/status?transactionId=${encodeURIComponent(transactionId)}`,
-            { cache: "no-store" },
-          );
+        // Strategy 1: Call Bakong directly from the user's browser (Cambodia IP — not blocked)
+        if (useBrowserDirect && BAKONG_TOKEN) {
+          try {
+            const bkRes = await fetch("https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${BAKONG_TOKEN}`,
+              },
+              body: JSON.stringify({ md5: md5Hash }),
+            });
 
-          if (res.ok) {
-            const data = await res.json();
-            if (data?.status === "completed") {
-              handlePaymentCompleted();
-              return;
-            } else if (data?.status === "failed") {
-              setPaymentStatus("failed");
-              setPaymentError("Payment failed. Please try again.");
-              return;
+            if (bkRes.ok) {
+              const bkData = await bkRes.json();
+              console.log("[Bakong Browser Check]", bkData);
+
+              if (bkData?.responseCode === 0 || bkData?.errorCode === 0) {
+                // REAL payment confirmed by Bakong!
+                await offlineFetch("/api/bakong/verify", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ transactionId }),
+                }).catch(() => {});
+                handlePaymentCompleted();
+                return;
+              }
             }
+          } catch (err) {
+            // CORS blocked — disable browser-direct, use server fallback
+            console.warn("[Bakong] Browser-direct blocked (CORS), switching to server poll", err);
+            useBrowserDirect = false;
           }
-        } catch {
-          // Keep polling on transient network failures
+        }
+
+        // Strategy 2: Fallback to our server endpoint
+        if (!useBrowserDirect) {
+          try {
+            const res = await offlineFetch(
+              `/api/bakong/status?transactionId=${encodeURIComponent(transactionId)}`,
+              { cache: "no-store" },
+            );
+            if (res.ok) {
+              const data = await res.json();
+              if (data?.status === "completed") {
+                handlePaymentCompleted();
+                return;
+              } else if (data?.status === "failed") {
+                setPaymentStatus("failed");
+                setPaymentError("Payment failed. Please try again.");
+                return;
+              }
+            }
+          } catch {}
         }
 
         await new Promise((r) => setTimeout(r, 3000));
@@ -220,7 +256,7 @@ function CheckoutContent() {
     return () => {
       stopped = true;
     };
-  }, [step, transactionId, paymentStatus, router, planId]);
+  }, [step, transactionId, paymentStatus, md5Hash, router, planId]);
 
 
   const getMethodDetails = (m: PaymentMethod) => {

@@ -120,6 +120,7 @@ export async function POST(request: NextRequest) {
       {
         transactionId: payment.transactionId,
         qrString: payment.qrString,
+        md5: payment.md5,
         amount,
         currency: plan.currency,
         planName: plan.name,

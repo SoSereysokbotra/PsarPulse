@@ -40,9 +40,13 @@ export async function generateKhqrPayment(payment: PaymentRequest) {
   const qrString = response?.data
     ? ((response.data as { qr?: string }).qr ?? "")
     : "";
+  const md5Hash = response?.data
+    ? ((response.data as { md5?: string }).md5 ?? "")
+    : "";
 
   return {
     qrString,
+    md5: md5Hash,
     transactionId: payment.transactionRef,
   };
 }

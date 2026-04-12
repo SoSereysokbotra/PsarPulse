@@ -4,6 +4,7 @@ import { paymentTransactions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getPayment } from "@/lib/payments/transaction-store";
 import crypto from "crypto";
+import axios from "axios";
 
 export async function GET(request: NextRequest) {
   const transactionId = request.nextUrl.searchParams.get("transactionId") || "";
@@ -25,58 +26,65 @@ export async function GET(request: NextRequest) {
     if (payment) {
       let _debugBakong: any = null;
 
-      if (payment.status === "pending" && payment.qrString && process.env.BAKONG_API_URL && process.env.BAKONG_API_KEY) {
+      if (payment.status === "pending" && payment.qrString && process.env.BAKONG_API_KEY) {
         try {
           const md5Str = crypto.createHash("md5").update(payment.qrString).digest("hex");
-          
-          const bakongUrl = process.env.BAKONG_API_URL!.trim();
-          const bkRes = await fetch(`${bakongUrl}/check_transaction_by_md5`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${process.env.BAKONG_API_KEY}`
-            },
-            body: JSON.stringify({ md5: md5Str }),
-            cache: "no-store"
-          });
+          const bakongUrl = (process.env.BAKONG_API_URL || "https://api-bakong.nbc.gov.kh/v1").trim();
 
-          if (bkRes.ok) {
-            const bkData = await bkRes.json();
-            _debugBakong = bkData; // For network tab inspection during pending attempts
-            
-            if (bkData?.responseCode === 0 || bkData?.errorCode === 0 || bkData?.responseMessage?.includes("Success")) {
-              const protoStr = request.headers.get("x-forwarded-proto") || "https";
-              const hostStr = request.headers.get("host") || "localhost:3000";
-              const localWebhookUrl = `${protoStr}://${hostStr}/api/bakong/webhook`;
-
-              const webhookRes = await fetch(localWebhookUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  transactionId: payment.transactionId,
-                  status: "SUCCESS"
-                })
-              });
-
-              if (webhookRes.ok) {
-                return NextResponse.json(
-                  {
-                    transactionId: payment.transactionId,
-                    status: "completed",
-                    updatedAt: new Date(),
-                  },
-                  { status: 200 }
-                );
-              } else {
-                 _debugBakong.webhookError = await webhookRes.text();
-              }
+          // Use axios with browser-like headers to bypass CloudFront WAF
+          const bkRes = await axios.post(
+            `${bakongUrl}/check_transaction_by_md5`,
+            { md5: md5Str },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.BAKONG_API_KEY}`,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Origin": "https://bakong.nbc.gov.kh",
+                "Referer": "https://bakong.nbc.gov.kh/",
+              },
+              timeout: 10000,
+              validateStatus: () => true, // Don't throw on non-2xx
             }
-          } else {
-            _debugBakong = { status: bkRes.status, text: await bkRes.text() };
+          );
+
+          _debugBakong = bkRes.data;
+
+          if (bkRes.status === 200 && (bkRes.data?.responseCode === 0 || bkRes.data?.errorCode === 0)) {
+            // Payment confirmed by Bakong! Trigger internal webhook.
+            const protoStr = request.headers.get("x-forwarded-proto") || "https";
+            const hostStr = request.headers.get("host") || "localhost:3000";
+            const localWebhookUrl = `${protoStr}://${hostStr}/api/bakong/webhook`;
+
+            const webhookRes = await fetch(localWebhookUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                transactionId: payment.transactionId,
+                status: "SUCCESS"
+              })
+            });
+
+            if (webhookRes.ok) {
+              return NextResponse.json(
+                {
+                  transactionId: payment.transactionId,
+                  status: "completed",
+                  updatedAt: new Date(),
+                },
+                { status: 200 }
+              );
+            } else {
+              _debugBakong = { ..._debugBakong, webhookError: await webhookRes.text() };
+            }
+          } else if (bkRes.status !== 200) {
+            _debugBakong = { status: bkRes.status, statusText: bkRes.statusText, data: typeof bkRes.data === 'string' ? bkRes.data.substring(0, 200) : bkRes.data };
           }
         } catch (e: any) {
-          console.error("Bakong REAL Check Error:", e);
-          _debugBakong = { error: e?.message };
+          console.error("Bakong check error:", e?.message);
+          _debugBakong = { error: e?.message, code: e?.code };
         }
       }
 

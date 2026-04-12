@@ -141,61 +141,35 @@ function CheckoutContent() {
   };
 
   useEffect(() => {
-    if (step !== "details" || !transactionId || paymentStatus !== "waiting" || !md5Hash) {
+    if (step !== "details" || !transactionId || paymentStatus !== "waiting") {
       return;
     }
 
     let stopped = false;
-    const BAKONG_TOKEN = process.env.NEXT_PUBLIC_BAKONG_API_KEY || "";
 
-    const pollBakong = async () => {
+    const poll = async () => {
       while (!stopped) {
         try {
-          // Try calling Bakong API directly from the browser.
-          // User's browser is in Cambodia so CloudFront won't block it.
-          const bkRes = await fetch("https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${BAKONG_TOKEN}`,
-            },
-            body: JSON.stringify({ md5: md5Hash }),
-          });
+          const res = await offlineFetch(
+            `/api/bakong/status?transactionId=${encodeURIComponent(transactionId)}`,
+            { cache: "no-store" },
+          );
 
-          if (bkRes.ok) {
-            const bkData = await bkRes.json();
-
-            if (bkData?.responseCode === 0 || bkData?.errorCode === 0) {
-              // Payment confirmed by Bakong! Tell our server to complete the flow.
-              try {
-                await offlineFetch("/api/bakong/verify", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ transactionId }),
-                });
-              } catch (e) {
-                console.error("Verify call failed:", e);
-              }
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.status === "completed") {
               handlePaymentCompleted();
+              return;
+            } else if (data?.status === "failed") {
+              setPaymentStatus("failed");
+              setPaymentError("Payment failed. Please try again.");
               return;
             }
           }
         } catch {
-          // CORS blocked or network issue — fallback: check our own server status
-          try {
-            const statusRes = await offlineFetch(
-              `/api/bakong/status?transactionId=${encodeURIComponent(transactionId)}`,
-              { cache: "no-store" },
-            );
-            const statusData = await statusRes.json();
-            if (statusData?.status === "completed") {
-              handlePaymentCompleted();
-              return;
-            }
-          } catch {}
+          // Keep polling on transient network failures
         }
 
-        // Wait 3 seconds before next poll
         await new Promise((r) => setTimeout(r, 3000));
       }
     };
@@ -207,15 +181,12 @@ function CheckoutContent() {
       setStep("success");
       setIsRedirecting(true);
 
-      // Refresh JWT so the new role=vendor and plan are encoded in the access token cookie.
       try {
         await authClient.refreshToken();
       } catch (refreshErr) {
         console.warn("Token refresh after payment failed:", refreshErr);
       }
 
-      // Wait for the webhook DB transaction to fully commit by polling
-      // the subscription check API until the plan is confirmed active.
       const targetDashboard = planId === "premium" ? "/vendor/premium" : "/vendor/pro";
       let confirmed = false;
 
@@ -241,16 +212,15 @@ function CheckoutContent() {
         }
       }
 
-      // Redirect to the correct dashboard
       window.location.href = targetDashboard;
     };
 
-    pollBakong();
+    poll();
 
     return () => {
       stopped = true;
     };
-  }, [step, transactionId, paymentStatus, md5Hash, router, planId]);
+  }, [step, transactionId, paymentStatus, router, planId]);
 
 
   const getMethodDetails = (m: PaymentMethod) => {

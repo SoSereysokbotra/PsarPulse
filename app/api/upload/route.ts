@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+import { v2 as cloudinary } from "cloudinary";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,37 +25,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const timestamp = Math.round(new Date().getTime() / 1000).toString();
-    const signatureToSign = `timestamp=${timestamp}${apiSecret}`;
-    const signature = crypto.createHash("sha1").update(signatureToSign).digest("hex");
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
+    });
 
-    const cloudinaryFormData = new FormData();
-    cloudinaryFormData.append("file", file);
-    cloudinaryFormData.append("api_key", apiKey);
-    cloudinaryFormData.append("timestamp", timestamp);
-    cloudinaryFormData.append("signature", signature);
+    // Convert file to base64
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64Data = buffer.toString("base64");
+    const fileUri = `data:${file.type};base64,${base64Data}`;
 
-    const uploadResponse = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: "POST",
-        body: cloudinaryFormData,
-      }
-    );
-
-    const data = await uploadResponse.json();
-
-    if (!uploadResponse.ok) {
-      console.error("Cloudinary upload failed:", data);
-      return NextResponse.json(
-        { success: false, error: "Failed to upload image" },
-        { status: 500 }
-      );
-    }
+    // Upload to Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(fileUri, {
+      folder: "psarpulse_uploads",
+    });
 
     return NextResponse.json({
       success: true,
-      url: data.secure_url,
+      url: uploadResult.secure_url,
     });
   } catch (error) {
     console.error("Upload error:", error);

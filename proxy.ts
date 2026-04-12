@@ -34,6 +34,7 @@ const publicPaths = [
   "/manifest.webmanifest",
   "/explore",
   "/api/public",
+  "/api/upload",
 ];
 
 // Paths that require specific roles

@@ -611,29 +611,6 @@ function CheckoutContent() {
                       Open your {activeMethod.name} app to scan and pay.
                     </p>
 
-                    {/* SIMULATION BUTTON FOR LOCAL DEVELOPMENT */}
-                    {process.env.NODE_ENV === "development" && (
-                      <button
-                        onClick={async () => {
-                          try {
-                            // Simulate Bakong Webhook
-                            await offlineFetch("/api/bakong/webhook", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({
-                                transactionId: transactionId,
-                                status: "SUCCESS",
-                              }),
-                            });
-                          } catch (e) {
-                            console.error("Simulation failed:", e);
-                          }
-                        }}
-                        className="mt-4 w-[220px] py-2 bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-200 hover:border-purple-300 rounded-lg text-xs font-bold transition-colors"
-                      >
-                        [DEV] Simulate Payment Success
-                      </button>
-                    )}
                   </>
                 )}
 

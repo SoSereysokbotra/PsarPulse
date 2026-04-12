@@ -147,14 +147,15 @@ function CheckoutContent() {
 
     let stopped = false;
     const BAKONG_TOKEN = process.env.NEXT_PUBLIC_BAKONG_API_KEY || "";
-    let useBrowserDirect = true; // Try browser-direct first
+    const PROXY_URL = process.env.NEXT_PUBLIC_BAKONG_PROXY_URL || "";
 
     const poll = async () => {
       while (!stopped) {
-        // Strategy 1: Call Bakong directly from the user's browser (Cambodia IP — not blocked)
-        if (useBrowserDirect && BAKONG_TOKEN) {
+        // Call Bakong via Cloudflare Worker proxy (bypasses WAF + CORS)
+        const checkUrl = PROXY_URL || "https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5";
+        if (BAKONG_TOKEN && checkUrl) {
           try {
-            const bkRes = await fetch("https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5", {
+            const bkRes = await fetch(checkUrl, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -165,7 +166,7 @@ function CheckoutContent() {
 
             if (bkRes.ok) {
               const bkData = await bkRes.json();
-              console.log("[Bakong Browser Check]", bkData);
+              console.log("[Bakong Check]", bkData);
 
               if (bkData?.responseCode === 0 || bkData?.errorCode === 0) {
                 // REAL payment confirmed by Bakong!
@@ -179,32 +180,28 @@ function CheckoutContent() {
               }
             }
           } catch (err) {
-            // CORS blocked — disable browser-direct, use server fallback
-            console.warn("[Bakong] Browser-direct blocked (CORS), switching to server poll", err);
-            useBrowserDirect = false;
+            console.warn("[Bakong] Proxy check failed, will retry", err);
           }
         }
 
-        // Strategy 2: Fallback to our server endpoint
-        if (!useBrowserDirect) {
-          try {
-            const res = await offlineFetch(
-              `/api/bakong/status?transactionId=${encodeURIComponent(transactionId)}`,
-              { cache: "no-store" },
-            );
-            if (res.ok) {
-              const data = await res.json();
-              if (data?.status === "completed") {
-                handlePaymentCompleted();
-                return;
-              } else if (data?.status === "failed") {
-                setPaymentStatus("failed");
-                setPaymentError("Payment failed. Please try again.");
-                return;
-              }
+        // Also check our server DB status (in case webhook already completed it)
+        try {
+          const res = await offlineFetch(
+            `/api/bakong/status?transactionId=${encodeURIComponent(transactionId)}`,
+            { cache: "no-store" },
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.status === "completed") {
+              handlePaymentCompleted();
+              return;
+            } else if (data?.status === "failed") {
+              setPaymentStatus("failed");
+              setPaymentError("Payment failed. Please try again.");
+              return;
             }
-          } catch {}
-        }
+          }
+        } catch {}
 
         await new Promise((r) => setTimeout(r, 3000));
       }

@@ -47,16 +47,6 @@ interface Product {
   price: number;
 }
 
-// ─── Constants ─────────────────────────────────────────────────────
-const PRODUCT_LIBRARY: Product[] = [
-  { id: "1", name: "Phone Case", price: 4.5 },
-  { id: "2", name: "USB Cable", price: 3.0 },
-  { id: "3", name: "Notebook", price: 1.5 },
-  { id: "4", name: "Hair Clip Set", price: 2.0 },
-  { id: "5", name: "Ballpoint Pen", price: 0.5 },
-  { id: "6", name: "Screen Protector", price: 3.5 },
-];
-
 const GOAL_DATA = {
   label: "Daily Revenue Goal",
   khmer: "គោលដៅចំណូលប្រចាំថ្ងៃ",

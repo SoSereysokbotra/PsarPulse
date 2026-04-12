@@ -61,15 +61,6 @@ interface Product {
 }
 
 // ─── Constants ─────────────────────────────────────────────────────
-const PRODUCT_LIBRARY: Product[] = [
-  { id: "1", name: "Phone Case", price: 4.5 },
-  { id: "2", name: "USB Cable", price: 3.0 },
-  { id: "3", name: "Notebook", price: 1.5 },
-  { id: "4", name: "Hair Clip Set", price: 2.0 },
-  { id: "5", name: "Ballpoint Pen", price: 0.5 },
-  { id: "6", name: "Screen Protector", price: 3.5 },
-];
-
 const GOAL_DATA = {
   label: "Daily Revenue Goal",
   khmer: "គោលដៅចំណូលប្រចាំថ្ងៃ",
@@ -151,22 +142,28 @@ export default function VendorDashboard() {
     recentActivity: [] as any[],
   });
   const [expensesRaw, setExpensesRaw] = useState<any[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [salesRes, expRes, custRes] = await Promise.all([
+        const [salesRes, expRes, custRes, invRes] = await Promise.all([
           offlineFetch("/api/vendor/sales"),
           offlineFetch("/api/vendor/expenses"),
           offlineFetch("/api/vendor/customers"),
+          offlineFetch("/api/vendor/inventory"),
         ]);
-        const [salesData, expData, custData] = await Promise.all([
+        const [salesData, expData, custData, invData] = await Promise.all([
           salesRes.json(),
           expRes.json(),
           custRes.json(),
+          invRes.json(),
         ]);
 
         if (salesData.success && expData.success && custData.success) {
+          if (invData.success) {
+            setInventoryItems(invData.data || []);
+          }
           const salesArr = salesData.data || [];
           const totalSales = salesArr.reduce(
             (s: number, t: any) => s + parseFloat(t.amount || "0"),
@@ -426,7 +423,7 @@ export default function VendorDashboard() {
     return () => document.removeEventListener("mousedown", fn);
   }, [quickSaleOpen]);
 
-  const filteredProducts = PRODUCT_LIBRARY.filter((p) =>
+  const filteredProducts = inventoryItems.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
@@ -450,7 +447,7 @@ export default function VendorDashboard() {
         .filter((i) => i.qty > 0),
     );
 
-  const cartTotal = cart.reduce((sum, i) => sum + i.product.price * i.qty, 0);
+  const cartTotal = cart.reduce((sum, i) => sum + Number(i.product.price) * i.qty, 0);
   const cartItems = cart.reduce((sum, i) => sum + i.qty, 0);
 
   const completeSale = async () => {
@@ -681,9 +678,7 @@ export default function VendorDashboard() {
                               <span>{p.name}</span>
                               <span className="text-[#29B28D] font-bold">
                                 $
-                                {parseFloat(p.price?.toString() || "0").toFixed(
-                                  2,
-                                )}
+                                {Number(p.price || 0).toFixed(2)}
                               </span>
                             </button>
                           ))
@@ -711,8 +706,8 @@ export default function VendorDashboard() {
                         Tap to add
                       </div>
                       <div className="grid grid-cols-2 gap-1.5">
-                        {hasData ? (
-                          PRODUCT_LIBRARY.map((p) => {
+                        {inventoryItems.length > 0 ? (
+                          inventoryItems.map((p) => {
                             const inCart = cart.find(
                               (i) => i.product.id === p.id,
                             );
@@ -754,9 +749,7 @@ export default function VendorDashboard() {
                                   }`}
                                 >
                                   $
-                                  {parseFloat(
-                                    p.price?.toString() || "0",
-                                  ).toFixed(2)}
+                                  {Number(p.price || 0).toFixed(2)}
                                 </div>
                                 {inCart && (
                                   <span className="absolute top-1.5 right-2 bg-[#29B28D] text-[#0d1117] rounded-full w-[17px] h-[17px] text-[9px] font-extrabold flex items-center justify-center">
@@ -851,7 +844,7 @@ export default function VendorDashboard() {
                               isDark ? "text-white" : "text-[#111827]"
                             }`}
                           >
-                            ${(item.product.price * item.qty).toFixed(2)}
+                            ${(Number(item.product.price) * item.qty).toFixed(2)}
                           </span>
                         </div>
                       ))}

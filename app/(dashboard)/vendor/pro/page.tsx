@@ -44,16 +44,6 @@ interface Product {
   price: number;
 }
 
-// ─── Constants ─────────────────────────────────────────────────────
-const PRODUCT_LIBRARY: Product[] = [
-  { id: "1", name: "Phone Case", price: 4.5 },
-  { id: "2", name: "USB Cable", price: 3.2 },
-  { id: "3", name: "Notebook", price: 2.5 },
-  { id: "4", name: "Hair Clips Set", price: 1.8 },
-  { id: "5", name: "Screen Protector", price: 1.5 },
-  { id: "6", name: "Earbuds", price: 2.0 },
-];
-
 const GOAL_TARGET = 200;
 
 const EXPENSE_COLORS = [

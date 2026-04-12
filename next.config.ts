@@ -16,8 +16,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
-  // @ts-ignore Next.js 15.x flag for ngrok dev usage
-  allowedDevOrigins: ["logogrammatic-bryanna-justifyingly.ngrok-free.dev"],
 };
 
 export default nextConfig;

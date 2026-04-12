@@ -37,9 +37,9 @@ export async function POST(request: NextRequest) {
     const report = await ReportsRepository.createOrUpdate({
       vendorId: vendor.id,
       reportDate: new Date(body.date),
-      totalSales: body.totalSales,
-      totalExpenses: body.totalExpenses,
-      netProfit: body.netProfit,
+      totalSales: body.totalSales?.toString() || "0",
+      totalExpenses: body.totalExpenses?.toString() || "0",
+      netProfit: body.netProfit?.toString() || "0",
       isLocked: body.isLocked ? 1 : 0,
     });
 

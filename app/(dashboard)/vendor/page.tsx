@@ -147,22 +147,31 @@ export default function VendorDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [salesRes, expRes, custRes, invRes] = await Promise.all([
+        const [salesRes, expRes, custRes, invRes, repRes] = await Promise.all([
           offlineFetch("/api/vendor/sales"),
           offlineFetch("/api/vendor/expenses"),
           offlineFetch("/api/vendor/customers"),
           offlineFetch("/api/vendor/inventory"),
+          offlineFetch("/api/vendor/reports"),
         ]);
-        const [salesData, expData, custData, invData] = await Promise.all([
+        const [salesData, expData, custData, invData, repData] = await Promise.all([
           salesRes.json(),
           expRes.json(),
           custRes.json(),
           invRes.json(),
+          repRes.json(),
         ]);
 
         if (salesData.success && expData.success && custData.success) {
           if (invData.success) {
             setInventoryItems(invData.data || []);
+          }
+          if (repData && repData.success) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const todayReport = repData.data.find((r: any) => r.reportDate.startsWith(todayStr));
+            if (todayReport && todayReport.isLocked === 1) {
+              setIsDayLocked(true);
+            }
           }
           const salesArr = salesData.data || [];
           const totalSales = salesArr.reduce(
@@ -451,7 +460,7 @@ export default function VendorDashboard() {
   const cartItems = cart.reduce((sum, i) => sum + i.qty, 0);
 
   const completeSale = async () => {
-    if (!cart.length) return;
+    if (isDayLocked || !cart.length) return;
 
     try {
       const itemsStr = cart
@@ -575,11 +584,14 @@ export default function VendorDashboard() {
           {/* ─── QUICK SALE ─── */}
           <div ref={quickSaleRef} className="relative">
             <button
+              disabled={isDayLocked}
               onClick={() => setQuickSaleOpen((o) => !o)}
-              className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] cursor-pointer transition-all duration-200 ${
-                quickSaleOpen
-                  ? "bg-psar-primary text-white"
-                  : "bg-[#29B28D] text-white shadow-[0_2px_14px_rgba(41,178,141,0.28)]"
+              className={`flex items-center gap-[7px] border-0 rounded-[10px] px-4 py-[9px] font-bold text-[13px] transition-all duration-200 ${
+                isDayLocked
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none dark:bg-white/5 dark:text-[#7d8590]"
+                  : quickSaleOpen
+                    ? "bg-psar-primary text-white cursor-pointer"
+                    : "bg-[#29B28D] text-white shadow-[0_2px_14px_rgba(41,178,141,0.28)] cursor-pointer"
               }`}
             >
               {quickSaleOpen ? (

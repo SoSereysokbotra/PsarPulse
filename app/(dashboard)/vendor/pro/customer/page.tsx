@@ -79,6 +79,7 @@ export default function ProCustomerPage() {
   const { resolvedTheme } = useTheme();
   const { t, language } = useLanguage();
   const isDark = resolvedTheme === "dark";
+  const isKhmer = language === "km";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [customCount, setCustomCount] = useState(1);
   const [qExpAmount, setQExpAmount] = useState("");
@@ -280,8 +281,7 @@ export default function ProCustomerPage() {
             {t("dashboard.customerSection.title")}
           </h2>
           <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-            {t("dashboard.customerSection.subtitle")} ·{" "}
-            <span className="text-[#9ca3af] font-khmer">តាមដាន និងកត់ត្រាអតិថិជន</span>
+            {isKhmer ? "តាមដាន និងកត់ត្រាអតិថិជន" : t("dashboard.customerSection.subtitle")}
           </p>
         </div>
 
@@ -465,7 +465,7 @@ export default function ProCustomerPage() {
                 onClick={() => setIsCRMModalOpen(true)}
                 className="flex items-center gap-2 bg-psar-primary text-white px-4 py-2 rounded-xl text-sm font-bold shadow-[0_2px_14px_rgba(41,178,141,0.28)] hover:bg-[#249e7d] transition-all cursor-pointer border-0"
               >
-                <Plus className="w-4 h-4" /> {"Add Customer"}
+                <Plus className="w-4 h-4" /> {isKhmer ? "បន្ថែមអតិថិជន" : "Add Customer"}
               </button>
             </div>
 

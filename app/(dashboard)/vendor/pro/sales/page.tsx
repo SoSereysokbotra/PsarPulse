@@ -70,6 +70,7 @@ const PRO_NAV = [
 
 export default function ProSalesPage() {
   const { t, language } = useLanguage();
+  const isKhmer = language === "km";
   const [quickAmount, setQuickAmount] = useState("");
   const [quickItem, setQuickItem] = useState("");
   const [quickInventoryItemId, setQuickInventoryItemId] = useState<
@@ -287,10 +288,7 @@ export default function ProSalesPage() {
               {t("dashboard.titles.mySales")}
             </h2>
             <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-              {t("dashboard.titles.salesSubtitle")} ·{" "}
-              <span className="text-[#9ca3af] font-khmer">
-                តាមដាន និងគ្រប់គ្រងការលក់
-              </span>
+              {isKhmer ? "តាមដាន និងគ្រប់គ្រងការលក់" : t("dashboard.titles.salesSubtitle")}
             </p>
           </div>
 
@@ -587,9 +585,6 @@ export default function ProSalesPage() {
                 <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">
                   {t("dashboard.titles.history")}
                 </h3>
-                <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
-                  ប្រវត្តិប្រតិបត្តិការ
-                </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">

@@ -75,6 +75,7 @@ const PRO_NAV = [
 
 export default function ProExpensePage() {
   const { t, language } = useLanguage();
+  const isKhmer = language === "km";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [expenseAmount, setExpenseAmount] = useState("");
   const [expenseCategory, setExpenseCategory] = useState("Stock Purchase");
@@ -86,13 +87,13 @@ export default function ProExpensePage() {
 
   // Categories mixing default and custom for Pro Plan
   const [categories, setCategories] = useState([
-    { value: "Stock Purchase", label: "Stock Purchase (ទិញស្តុក)", isCustom: false },
-    { value: "Rent", label: "Rent (ថ្លៃជួល)", isCustom: false },
-    { value: "Transport", label: "Transport (ការធ្វើដំណើរ)", isCustom: false },
-    { value: "Electricity", label: "Electricity (អគ្គិសនី)", isCustom: false },
-    { value: "Labor", label: "Labor (កម្លាំងពលកម្ម)", isCustom: false },
-    { value: "Marketing", label: "Marketing (ទីផ្សារ)", isCustom: true },
-    { value: "Others", label: "Others (ផ្សេងៗ)", isCustom: false },
+    { value: "Stock Purchase", label: "Stock Purchase", isCustom: false },
+    { value: "Rent", label: "Rent", isCustom: false },
+    { value: "Transport", label: "Transport", isCustom: false },
+    { value: "Electricity", label: "Electricity", isCustom: false },
+    { value: "Labor", label: "Labor", isCustom: false },
+    { value: "Marketing", label: "Marketing", isCustom: true },
+    { value: "Others", label: "Others", isCustom: false },
   ]);
 
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -196,8 +197,7 @@ export default function ProExpensePage() {
             {t("dashboard.titles.myExpenses")}
           </h2>
           <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-            Track and manage your expenses ·{" "}
-            <span className="text-[#9ca3af] font-khmer">តាមដាន និងគ្រប់គ្រងការចំណាយ</span>
+            {isKhmer ? "តាមដាន និងគ្រប់គ្រងការចំណាយ" : "Track and manage your expenses"}
           </p>
         </div>
 
@@ -262,11 +262,22 @@ export default function ProExpensePage() {
                         onChange={(e) => setExpenseCategory(e.target.value)}
                         className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all h-full min-h-[60px] appearance-none cursor-pointer"
                       >
-                        {categories.map((cat, idx) => (
-                          <option key={idx} value={cat.value}>
-                            {cat.label} {cat.isCustom ? "(Custom)" : ""}
-                          </option>
-                        ))}
+                        {categories.map((cat, idx) => {
+                          const displayLabel = cat.isCustom ? cat.label : (
+                            cat.value === "Stock Purchase" ? (isKhmer ? "ទិញស្តុក" : "Stock Purchase") :
+                            cat.value === "Rent" ? (isKhmer ? "ថ្លៃជួល" : "Rent") :
+                            cat.value === "Transport" ? (isKhmer ? "ការធ្វើដំណើរ" : "Transport") :
+                            cat.value === "Electricity" ? (isKhmer ? "អគ្គិសនី" : "Electricity") :
+                            cat.value === "Labor" ? (isKhmer ? "កម្លាំងពលកម្ម" : "Labor") :
+                            cat.value === "Marketing" ? (isKhmer ? "ទីផ្សារ" : "Marketing") :
+                            cat.value === "Others" ? (isKhmer ? "ផ្សេងៗ" : "Others") : cat.label
+                          );
+                          return (
+                            <option key={idx} value={cat.value}>
+                              {displayLabel} {cat.isCustom ? (isKhmer ? "(ផ្ទាល់ខ្លួន)" : "(Custom)") : ""}
+                            </option>
+                          );
+                        })}
                       </select>
                       <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] flex items-center justify-between w-[calc(100%-32px)] transition-colors group-focus-within:text-psar-primary">
                         <span>{t("dashboard.table.category")}</span>
@@ -425,9 +436,6 @@ export default function ProExpensePage() {
               <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">
                 {t("dashboard.titles.history")}
               </h3>
-              <p className="text-sm font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
-                ប្រវត្តិការចំណាយ
-              </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">

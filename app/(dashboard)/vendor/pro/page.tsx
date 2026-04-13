@@ -444,6 +444,18 @@ export default function ProDashboard() {
     trends: { sales: "", profit: "", expenses: "", customers: "" },
   };
 
+  const lowStockNotifications = React.useMemo(() => {
+    return inventoryItems
+      .filter((i) => i.status !== "good")
+      .map((item) => ({
+        title: item.status === "out" ? "Out of Stock" : "Low Stock Alert",
+        desc: `${item.name} is ${item.status === "out" ? "out of stock" : "running low"} (${item.stock} left).`,
+        time: "Just now",
+        unread: true,
+        type: item.status === "out" ? "error" : "warning",
+      }));
+  }, [inventoryItems]);
+
   const goalKhmer = "គោលដៅចំណូលប្រចាំថ្ងៃ";
 
   return (
@@ -456,6 +468,7 @@ export default function ProDashboard() {
       userName={displayName}
       userInitials={displayInitials}
       userEmail={user?.email || ""}
+      notifications={lowStockNotifications}
       planBadge={{ label: "PRO", icon: Crown }}
       rightActions={
         <>
@@ -1003,37 +1016,6 @@ export default function ProDashboard() {
             )}
           </div>
         </div>
-
-        {/* Low Stock Alerts */}
-        {hasData && inventoryItems.filter((i) => i.status !== "good").length > 0 && (
-          <div className="bg-orange-50 border border-orange-200 rounded-[14px] p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="w-5 h-5 text-orange-500" />
-              <h4 className="font-semibold text-[14px] text-orange-800">
-                Low Stock Alert
-              </h4>
-            </div>
-            <div className="space-y-2">
-              {inventoryItems
-                .filter((i) => i.status !== "good")
-                .map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between py-2 px-3 bg-white dark:bg-dark-surface rounded-[10px] border border-orange-100"
-                  >
-                    <span className="text-[13px] font-medium text-[#111827] dark:text-white">
-                      {item.name}
-                    </span>
-                    <span
-                      className={`text-[12px] font-bold ${item.status === "out" ? "text-red-600" : "text-orange-600"}`}
-                    >
-                      {item.stock} left
-                    </span>
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
 
         {/* End-of-Day Summary */}
         <div className="bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 rounded-[14px] shadow-sm overflow-hidden">

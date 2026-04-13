@@ -115,12 +115,6 @@ export default function VendorTopbar({
           </div>
         </div>
 
-        {/* Profile Icon */}
-        <button className="w-9 h-9 rounded-full bg-[#f7f8fa] dark:bg-white/5 border border-[#e8eaed] dark:border-white/10 flex items-center justify-center cursor-pointer transition-colors hover:border-[#3ecf8e]">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#3ecf8e] to-[#1a9c65] flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
-            {userInitials || "U"}
-          </div>
-        </button>
       </div>
     </header>
   );

@@ -188,8 +188,12 @@ export default function VendorSidebar({
                 onClick={isGuest ? onLockedClick : () => setUserMenuOpen((o) => !o)}
                 className="w-full flex items-center gap-3 px-3 pt-4 pb-2 cursor-pointer bg-transparent border-0 text-left"
               >
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#29B28D] to-[#1a9c65] flex items-center justify-center text-[13px] font-bold text-white shrink-0">
-                  {userInitials}
+                <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-[#29B28D] to-[#1a9c65] flex items-center justify-center text-[13px] font-bold text-white shrink-0">
+                  {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt={userName} className="w-full h-full object-cover" />
+                  ) : (
+                    userInitials
+                  )}
                 </div>
                 <span className="text-[14px] font-medium text-[#e6edf3] flex-1">
                   {userName}
@@ -242,8 +246,12 @@ export default function VendorSidebar({
 
         {collapsed && (
           <div className="flex justify-center pt-3 pb-1">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#29B28D] to-[#1a9c65] flex items-center justify-center text-[13px] font-bold text-white">
-              {userInitials}
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-[#29B28D] to-[#1a9c65] flex items-center justify-center text-[13px] font-bold text-white">
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt="User" className="w-full h-full object-cover" />
+              ) : (
+                userInitials
+              )}
             </div>
           </div>
         )}

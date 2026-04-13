@@ -142,13 +142,6 @@ export default function ProInventoryPage() {
       currentPath="/vendor/pro/inventory"
       title={t("inventory.title")}
       planBadge={{ label: "PRO", icon: Crown }}
-      notifications={notice ? [{
-        title: "Limit Reached",
-        desc: notice,
-        time: "Just now",
-        unread: true,
-        type: "error"
-      }] : []}
       rightActions={
         <>
           <button
@@ -161,13 +154,21 @@ export default function ProInventoryPage() {
       }
     >
       <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-7">
+        {notice && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+            {notice}
+          </div>
+        )}
           {/* ══ INVENTORY HEADER ══════════════════════════════════════ */}
           <div className="pt-1 pb-2">
             <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
-              {t("inventory.title")}
+              {t("dashboard.customerSection.title") === "My Customers" ? "My Inventory" : "ស្តុករបស់ខ្ញុំ"}
             </h2>
             <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-              {t("inventory.subtitle")}
+              {t("inventory.subtitle")} ·{" "}
+              <span className="text-[#9ca3af] font-khmer">
+                តាមដាន និងគ្រប់គ្រងស្តុកទំនិញ
+              </span>
             </p>
           </div>
 
@@ -221,6 +222,9 @@ export default function ProInventoryPage() {
                 <h3 className="font-bold text-[17px] text-slate-900 dark:text-white">
                   {t("inventory.table.masterList")}
                 </h3>
+                <p className="text-[13px] font-khmer text-slate-500 dark:text-[#7d8590] mt-0.5">
+                  បញ្ជីផលិតផលមេ
+                </p>
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-3">

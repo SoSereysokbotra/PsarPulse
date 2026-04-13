@@ -290,7 +290,7 @@ export default function ProExpensePage() {
                           }}
                           className="text-psar-primary hover:text-psar-primary/80 flex items-center border-0 bg-transparent cursor-pointer"
                         >
-                          <Plus className="w-3 h-3" /> {t("dashboard.placeholders.searchProduct") === "Search products..." ? "New" : "ថ្មី"}
+                          <Plus className="w-3 h-3" /> {isKhmer ? "ថ្មី" : "New"}
                         </button>
                       </div>
                     </div>
@@ -310,7 +310,7 @@ export default function ProExpensePage() {
                       className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-[15px] placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all min-h-[60px]"
                     />
                     <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] transition-colors group-focus-within:text-psar-primary">
-                      {t("auth.register.storeName") === "Store Name" ? "Vendor" : "អ្នកផ្គត់ផ្គង់"}
+                      {isKhmer ? "អ្នកផ្គត់ផ្គង់" : "Vendor"}
                     </div>
                   </div>
 
@@ -331,7 +331,7 @@ export default function ProExpensePage() {
                       title="Upload Receipt"
                     >
                       <Camera className="w-5 h-5" />
-                      <span className="text-[12px]">{t("dashboard.placeholders.searchProduct") === "Search products..." ? "Add Receipt" : "បន្ថែមវិក្កយបត្រ"}</span>
+                      <span className="text-[12px]">{isKhmer ? "បន្ថែមវិក្កយបត្រ" : "Add Receipt"}</span>
                     </button>
 
                     <button
@@ -371,7 +371,7 @@ export default function ProExpensePage() {
                     {t("dashboard.actions.addCategory")}
                   </h3>
                   <p className="text-[12px] text-slate-500 dark:text-[#7d8590]">
-                     {t("auth.register.businessDesc") === "Business Description" ? "Create your own expense category tag." : "បង្កើតប្រភេទចំណាយផ្ទាល់ខ្លួនរបស់អ្នក។"}
+                     {isKhmer ? "បង្កើតប្រភេទចំណាយផ្ទាល់ខ្លួនរបស់អ្នក។" : "Create your own expense category tag."}
                   </p>
                 </div>
               </div>

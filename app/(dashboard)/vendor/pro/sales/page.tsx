@@ -337,7 +337,7 @@ export default function ProSalesPage() {
                     <div>
                       <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3 block">
                         {t("inventory.modal.pickLabel")}{" "}
-                        {language === "km" ? "(ជ្រើសរើសពីស្តុក)" : ""}
+                        {isKhmer ? "(ជ្រើសរើសពីស្តុក)" : ""}
                       </label>
                       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
                         {inventory.length > 0 ? (

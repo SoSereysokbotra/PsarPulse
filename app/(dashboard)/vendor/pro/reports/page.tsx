@@ -22,12 +22,15 @@ import {
   AlertTriangle,
   Crown,
   FileText,
-  MousePointerClick
+  MousePointerClick,
+  Calendar
 } from "lucide-react";
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import { useLanguage } from "@/components/providers/LanguageProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import { offlineFetch } from "@/lib/pwa/offline-fetch";
+import { Select } from "@/components/ui/Select";
 
 const PRO_NAV = [
   { icon: LayoutDashboard, title: "Dashboard", khmerTitle: "ផ្ទាំងគ្រប់គ្រង", href: "/vendor/pro" },
@@ -128,7 +131,9 @@ const inventoryData = {
 // ─── MAIN PAGE ────────────────────────────────────────
 export default function ProReportsPage() {
   const { language } = useLanguage();
+  const { resolvedTheme } = useTheme();
   const isKhmer = language === "km";
+  const isDark = resolvedTheme === "dark";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dateRange, setDateRange] = useState("This Week");
   const [activeTab, setActiveTab] = useState("pl");
@@ -177,6 +182,17 @@ export default function ProReportsPage() {
           custRes.json(),
           invRes.json(),
         ]);
+
+        let msAgo = 7 * 24 * 60 * 60 * 1000; // "This Week"
+        if (dateRange === "Today") msAgo = 24 * 60 * 60 * 1000;
+        else if (dateRange === "This Month") msAgo = 30 * 24 * 60 * 60 * 1000;
+        else if (dateRange === "Last 3 Months (Pro)") msAgo = 90 * 24 * 60 * 60 * 1000;
+        else if (dateRange === "Last 12 Months (Pro)") msAgo = 365 * 24 * 60 * 60 * 1000;
+        const cutoff = new Date(Date.now() - msAgo);
+
+        if (salesDataRes.success) salesDataRes.data = salesDataRes.data.filter((d: any) => new Date(d.createdAt) >= cutoff);
+        if (expDataRes.success) expDataRes.data = expDataRes.data.filter((d: any) => new Date(d.createdAt) >= cutoff);
+        if (custDataRes.success) custDataRes.data = custDataRes.data.filter((d: any) => new Date(d.createdAt) >= cutoff);
 
         if (salesDataRes.success && expDataRes.success && custDataRes.success) {
           const totalSales = salesDataRes.data.reduce((s: number, t: any) => s + parseFloat(t.amount || "0"), 0);
@@ -360,7 +376,7 @@ export default function ProReportsPage() {
       }
     };
     fetchStats();
-  }, []);
+  }, [dateRange]);
 
   const dynamicPlData = {
     ...plData,
@@ -403,17 +419,21 @@ export default function ProReportsPage() {
       rightActions={
         <>
           <div className="flex items-center gap-3">
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="bg-slate-50 dark:bg-[#0d1117] border border-slate-200 text-sm font-medium rounded-xl px-3.5 py-2.5 outline-none focus:border-psar-primary focus:ring-1 focus:ring-psar-primary min-h-[40px] hidden md:block"
-            >
-              <option>Today</option>
-              <option>This Week</option>
-              <option>This Month</option>
-              <option>Last 3 Months (Pro)</option>
-              <option>Last 12 Months (Pro)</option>
-            </select>
+            <div className="hidden md:block">
+              <Select
+                options={[
+                  { value: "Today", label: "Today" },
+                  { value: "This Week", label: "This Week" },
+                  { value: "This Month", label: "This Month" },
+                  { value: "Last 3 Months (Pro)", label: "Last 3 Months (Pro)" },
+                  { value: "Last 12 Months (Pro)", label: "Last 12 Months (Pro)" }
+                ]}
+                value={dateRange}
+                onChange={setDateRange}
+                isDark={isDark}
+                icon={Calendar}
+              />
+            </div>
             <button onClick={handleExportPDF} className="hidden lg:flex items-center gap-2 bg-psar-dark hover:opacity-90 text-white font-medium px-4 py-2.5 rounded-xl transition-colors text-sm min-h-[40px] border-0 cursor-pointer">
               <Download className="w-4 h-4" /> Export PDF
             </button>

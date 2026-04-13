@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
+import { useLanguage } from "@/components/providers/LanguageProvider";
 import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 const PRO_NAV = [
@@ -126,6 +127,8 @@ const inventoryData = {
 
 // ─── MAIN PAGE ────────────────────────────────────────
 export default function ProReportsPage() {
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dateRange, setDateRange] = useState("This Week");
   const [activeTab, setActiveTab] = useState("pl");
@@ -435,8 +438,7 @@ export default function ProReportsPage() {
                     : "border-b-transparent text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:text-white"
                 }`}
               >
-                <span>{tab.label}</span>
-                <span className="text-[10px] text-[#9ca3af]">{tab.khmer}</span>
+                <span>{isKhmer ? tab.khmer : tab.label}</span>
               </button>
             ))}
           </div>
@@ -446,8 +448,7 @@ export default function ProReportsPage() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <div className="w-1.5 h-6 bg-psar-primary rounded-full"></div>
-              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">Profit & Loss</h2>
-              <span className="text-[12px] font-khmer text-slate-400 ml-1">ចំណេញ និង ខាត</span>
+              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">{isKhmer ? "ចំណេញ និង ខាត" : "Profit & Loss"}</h2>
             </div>
 
             {/* P&L Metric Cards - 4 items in Pro */}
@@ -532,16 +533,14 @@ export default function ProReportsPage() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <div className="w-1.5 h-6 bg-psar-primary rounded-full"></div>
-              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">Sales Report</h2>
-              <span className="text-[12px] font-khmer text-slate-400 ml-1">របាយការណ៍ការលក់</span>
+              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">{isKhmer ? "របាយការណ៍ការលក់" : "Sales Report"}</h2>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Top Selling Items */}
               <div className="lg:col-span-2 bg-white dark:bg-dark-surface border border-slate-200 dark:bg-dark-surface dark:border-white/5 rounded-2xl shadow-sm overflow-hidden">
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5">
-                  <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white">Top Selling Items</h3>
-                  <p className="text-[12px] font-khmer text-slate-400 mt-0.5">ទំនិញលក់ដាច់ជាងគេ</p>
+                  <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white">{isKhmer ? "ទំនិញលក់ដាច់ជាងគេ" : "Top Selling Items"}</h3>
                 </div>
                 <div className="p-5 space-y-4">
                   {realTopItems.length === 0 ? (
@@ -631,8 +630,7 @@ export default function ProReportsPage() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <div className="w-1.5 h-6 bg-psar-primary rounded-full"></div>
-              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">Expense Breakdown</h2>
-              <span className="text-[12px] font-khmer text-slate-400 ml-1">ការបែងចែកចំណាយ</span>
+              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">{isKhmer ? "ការបែងចែកចំណាយ" : "Expense Breakdown"}</h2>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -728,8 +726,7 @@ export default function ProReportsPage() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <div className="w-1.5 h-6 bg-psar-primary rounded-full"></div>
-              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">Customer Analytics</h2>
-              <span className="text-[12px] font-khmer text-slate-400 ml-1">ការវិភាគអតិថិជន</span>
+              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">{isKhmer ? "ការវិភាគអតិថិជន" : "Customer Analytics"}</h2>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 md:grid-cols-2 gap-5 mb-6">
@@ -818,8 +815,7 @@ export default function ProReportsPage() {
           <section className="pb-4">
             <div className="flex items-center gap-2 mb-5">
               <div className="w-1.5 h-6 bg-psar-primary rounded-full"></div>
-              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">Inventory Report</h2>
-              <span className="text-[12px] font-khmer text-slate-400 ml-1">របាយការណ៍ស្តុក</span>
+              <h2 className="font-bold text-[19px] text-slate-900 dark:text-white">{isKhmer ? "របាយការណ៍ស្តុក" : "Inventory Report"}</h2>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -828,8 +824,7 @@ export default function ProReportsPage() {
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 flex items-center gap-3">
                   <AlertTriangle className="w-5 h-5 text-orange-500" />
                   <div>
-                    <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white">Low Stock Alerts</h3>
-                    <p className="text-[12px] font-khmer text-slate-400 mt-0.5">ស្តុកជិតអស់</p>
+                    <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white">{isKhmer ? "ស្តុកជិតអស់" : "Low Stock Alerts"}</h3>
                   </div>
                 </div>
                 <div className="p-5 space-y-4">
@@ -872,8 +867,7 @@ export default function ProReportsPage() {
                 <div className="px-6 py-5 border-b border-slate-100 dark:border-white/5 flex items-center gap-3">
                   <Package className="w-5 h-5 text-slate-400" />
                   <div>
-                    <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white">Stock Movement</h3>
-                    <p className="text-[12px] font-khmer text-slate-400 mt-0.5">ចលនាស្តុក</p>
+                    <h3 className="font-semibold text-[15px] text-slate-900 dark:text-white">{isKhmer ? "ចលនាស្តុក" : "Stock Movement"}</h3>
                   </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -943,12 +937,14 @@ function PLCard({
   accentColor: string;
   highlight?: boolean;
 }) {
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
+  
   return (
     <div className={`p-5 rounded-2xl ${highlight ? "bg-psar-primary text-white border-transparent shadow-md" : "bg-white dark:bg-dark-surface border-slate-200 shadow-sm"}`}>
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h4 className={`text-sm font-semibold ${highlight ? "text-white/90" : "text-slate-500 dark:text-[#7d8590]"}`}>{title}</h4>
-          <p className={`text-[11px] font-khmer mt-0.5 ${highlight ? "text-white/70" : "text-slate-400"}`}>{khmer}</p>
+          <h4 className={`text-sm font-semibold ${highlight ? "text-white/90" : "text-slate-500 dark:text-[#7d8590]"}`}>{isKhmer ? khmer : title}</h4>
         </div>
         <div className={`p-2 rounded-xl ${highlight ? "bg-white/20" : `${accentColor}/10 text-psar-primary border border-slate-100 dark:border-white/5`}`}>
           {icon}
@@ -975,10 +971,12 @@ function MiniCard({
   value: string;
   accent?: boolean;
 }) {
+  const { language } = useLanguage();
+  const isKhmer = language === "km";
+
   return (
     <div className={`p-4 rounded-2xl border ${accent ? "bg-psar-primary/10 border-psar-primary/20" : "bg-white dark:bg-dark-surface border-slate-200 shadow-sm"}`}>
-      <p className="text-[12px] font-semibold text-slate-500 dark:text-[#7d8590] mb-0.5">{title}</p>
-      <p className="text-[10px] font-khmer text-slate-400">{khmer}</p>
+      <p className="text-[12px] font-semibold text-slate-500 dark:text-[#7d8590] mb-0.5">{isKhmer ? khmer : title}</p>
       <h3 className={`text-[22px] font-bold mt-2 ${accent ? "text-psar-primary" : "text-slate-900 dark:text-white"}`}>{value}</h3>
     </div>
   );

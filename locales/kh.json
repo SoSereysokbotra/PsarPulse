@@ -377,8 +377,10 @@
       "productInfo": "ព័ត៌មានទំនិញ",
       "price": "តម្លៃ",
       "stockLevel": "កម្រិតស្តុក",
+      "lastRestock": "ស្តុកចុងក្រោយ",
       "status": "ស្ថានភាព",
-      "actions": "សកម្មភាព"
+      "actions": "សកម្មភាព",
+      "masterList": "បញ្ជីផលិតផលមេ"
     },
     "status": {
       "outOfStock": "អស់ពីស្តុក",

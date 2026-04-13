@@ -1417,12 +1417,7 @@ export default function VendorDashboard() {
                 <div
                   className={`text-sm font-semibold ${isDark ? "text-white" : "text-[#111827]"}`}
                 >
-                  {t("dashboard.metrics.breakdown")}
-                </div>
-                <div
-                  className={`text-[11px] mt-0.5 ${isKhmer ? "font-battambang" : ""} ${isDark ? "text-[#7d8590]" : "text-[#6b7280]"}`}
-                >
-                  {isKhmer ? "ការបែងចែកចំណាយ" : "Expense Details"}
+                  {isKhmer ? "ការបែងចែកចំណាយ" : t("dashboard.metrics.breakdown") || "Expense Details"}
                 </div>
               </div>
               {expLogged && (
@@ -1488,10 +1483,7 @@ export default function VendorDashboard() {
                 <div
                   className={`text-[15px] font-bold ${isDark ? "text-white" : "text-[#111827]"}`}
                 >
-                  Recent Activity
-                </div>
-                <div className={`text-[11px] text-[#7d8590] mt-0.5`}>
-                  សកម្មភាពថ្មីៗ
+                  {isKhmer ? "សកម្មភាពថ្មីៗ" : "Recent Activity"}
                 </div>
               </div>
               <Link
@@ -1583,10 +1575,7 @@ export default function VendorDashboard() {
             <div className="px-[26px] py-[18px] border-b border-white/[0.07] flex items-center justify-between">
               <div>
                 <div className="text-[15px] font-bold text-[#e6edf3]">
-                  End-of-Day Summary
-                </div>
-                <div className="text-[11px] text-[#7d8590] mt-0.5">
-                  សង្ខេបចុងថ្ងៃ
+                  {isKhmer ? "សង្ខេបចុងថ្ងៃ" : "End-of-Day Summary"}
                 </div>
               </div>
               {isDayLocked && (
@@ -1599,33 +1588,24 @@ export default function VendorDashboard() {
             <div className="px-[26px] py-[22px]">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-[18px]">
                 <div className="px-5 py-[18px] bg-white/[0.05] rounded-xl text-center border border-white/[0.07]">
-                  <div className="text-[11px] font-semibold text-[#7d8590] mb-0.5">
-                    Total Sales
-                  </div>
-                  <div className="text-[10px] text-[#4d5562] mb-[10px]">
-                    ការលក់សរុប
+                  <div className="text-[11px] font-semibold text-[#7d8590] mb-2">
+                    {isKhmer ? "ការលក់សរុប" : "Total Sales"}
                   </div>
                   <div className="font-bold text-[26px] text-[#e6edf3]">
                     {summary.sales}
                   </div>
                 </div>
                 <div className="px-5 py-[18px] bg-[rgba(239,68,68,0.08)] rounded-xl text-center border border-[rgba(239,68,68,0.15)]">
-                  <div className="text-[11px] font-semibold text-[rgba(239,68,68,0.85)] mb-0.5">
-                    Total Expenses
-                  </div>
-                  <div className="text-[10px] text-[#4d5562] mb-[10px]">
-                    ចំណាយសរុប
+                  <div className="text-[11px] font-semibold text-[rgba(239,68,68,0.85)] mb-2">
+                    {isKhmer ? "ចំណាយសរុប" : "Total Expenses"}
                   </div>
                   <div className="font-bold text-[26px] text-[#ef4444]">
                     {summary.expenses}
                   </div>
                 </div>
                 <div className="px-5 py-[18px] bg-[rgba(41,178,141,0.10)] rounded-xl text-center border border-[rgba(41,178,141,0.20)]">
-                  <div className="text-[11px] font-semibold text-[#29B28D] mb-0.5">
-                    Net Profit
-                  </div>
-                  <div className="text-[10px] text-[#4d5562] mb-[10px]">
-                    ប្រាក់ចំណេញ
+                  <div className="text-[11px] font-semibold text-[#29B28D] mb-2">
+                    {isKhmer ? "ប្រាក់ចំណេញ" : "Net Profit"}
                   </div>
                   <div className="font-bold text-[26px] text-[#29B28D]">
                     {summary.profit}
@@ -1663,8 +1643,7 @@ export default function VendorDashboard() {
                   className="w-full flex items-center justify-center gap-[9px] bg-psar-primary text-white font-bold text-[15px] py-4 rounded-[11px] border-0 cursor-pointer transition-all duration-200 shadow-[0_4px_22px_rgba(41,178,141,0.28)] hover:bg-[#239979]"
                 >
                   <Lock size={16} />
-                  Confirm &amp; Lock Day
-                  <span className="text-xs opacity-65">បញ្ជាក់ និងចាក់សោ</span>
+                  {isKhmer ? "បញ្ជាក់ និងចាក់សោ" : "Confirm & Lock Day"}
                 </button>
               ) : (
                 <div className="w-full flex items-center justify-center gap-2 bg-white/[0.05] text-[#7d8590] font-semibold text-sm py-4 rounded-[11px] border border-white/[0.08]">

@@ -509,10 +509,7 @@ export default function ProDashboard() {
                 <div className="flex items-center gap-2 px-[18px] py-[14px] border-b border-[#e8eaed] dark:border-white/5">
                   <ShoppingCart className="w-4 h-4 text-[#29B28D]" />
                   <span className="font-bold text-sm text-[#111827] dark:text-white">
-                    Quick Sale
-                  </span>
-                  <span className="text-[11px] text-[#6b7280] dark:text-[#7d8590] ml-auto">
-                    ការលក់រហ័ស
+                    {isKhmer ? "ការលក់រហ័ស" : "Quick Sale"}
                   </span>
                 </div>
                 <div className="p-[14px_18px] max-h-[60vh] overflow-y-auto">
@@ -656,7 +653,7 @@ export default function ProDashboard() {
 
                   <div className="flex items-center justify-between py-2 border-t border-[#f0f2f5] mb-3 mt-1">
                     <span className="text-xs text-[#6b7280] dark:text-[#7d8590] font-medium">
-                      Customers · អតិថិជន
+                      {isKhmer ? "អតិថិជន" : "Customers"}
                     </span>
                     <div className="flex items-center bg-[#f7f8fa] dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/5 rounded-[8px] overflow-hidden">
                       <button
@@ -847,12 +844,9 @@ export default function ProDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Weekly Revenue */}
           <div className="bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 rounded-[14px] p-6 shadow-sm">
-            <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white mb-1">
-              Weekly Revenue
+            <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white mb-5">
+              {isKhmer ? "ចំណូលប្រចាំសប្តាហ៍" : "Weekly Revenue"}
             </h3>
-            <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-5">
-              ចំណូលប្រចាំសប្តាហ៍
-            </p>
             <div className="h-40 flex items-end gap-1.5">
               {hasData ? (() => {
                 const maxVal = Math.max(...weeklyData, 0.01);
@@ -880,10 +874,9 @@ export default function ProDashboard() {
 
           {/* Monthly Revenue */}
           <div className="bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 rounded-[14px] p-6 shadow-sm">
-            <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white mb-1">
-              Monthly Revenue
+            <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white mb-5">
+              {isKhmer ? "ចំណូលប្រចាំខែ" : "Monthly Revenue"}
             </h3>
-            <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-5">ចំណូលប្រចាំខែ</p>
             <div className="h-40 flex items-end gap-2">
               {hasData ? (() => {
                 const maxVal = Math.max(...monthlyData, 0.01);
@@ -909,9 +902,9 @@ export default function ProDashboard() {
 
           {/* Expenses */}
           <div className="bg-white dark:bg-dark-surface border border-[#e8eaed] dark:border-white/5 rounded-[14px] p-6 shadow-sm col-span-1 lg:col-span-2">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-[15px] text-[#111827] dark:text-white">
-                Expenses
+                {isKhmer ? "ការចំណាយ" : "Expenses"}
               </h3>
               {expLogged && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[10px] font-bold border border-[rgba(41,178,141,0.2)] uppercase tracking-wider">
@@ -919,7 +912,6 @@ export default function ProDashboard() {
                 </span>
               )}
             </div>
-            <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mb-4">ការចំណាយ</p>
             <div className="space-y-3">
               {hasData ? (
                 expenseCategories.map((item, i) => (
@@ -964,11 +956,8 @@ export default function ProDashboard() {
           <div className="px-6 py-5 border-b border-[#f0f2f5] flex items-center justify-between">
             <div>
               <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
-                Best Selling Products
+                {isKhmer ? "ផលិតផលលក់ដាច់ជាងគេ" : "Best Selling Products"}
               </h3>
-              <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                ផលិតផលលក់ដាច់ជាងគេ
-              </p>
             </div>
             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[11px] font-bold rounded-full border border-[rgba(41,178,141,0.2)]">
               <Crown className="w-3 h-3" /> Pro Feature
@@ -1022,9 +1011,8 @@ export default function ProDashboard() {
           <div className="px-6 py-5 border-b border-[#f0f2f5] flex items-center justify-between">
             <div>
               <h3 className="font-bold text-[17px] text-[#111827] dark:text-white">
-                End-of-Day Summary
+                {isKhmer ? "សង្ខេបចុងថ្ងៃ" : "End-of-Day Summary"}
               </h3>
-              <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">សង្ខេបចុងថ្ងៃ</p>
             </div>
             {isDayLocked && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[12px] font-bold border border-[rgba(41,178,141,0.2)]">
@@ -1035,29 +1023,24 @@ export default function ProDashboard() {
           <div className="p-6">
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="p-4 bg-[#f7f8fa] dark:bg-[#0d1117] rounded-[11px] text-center">
-                <p className="text-[12px] font-semibold text-[#6b7280] dark:text-[#7d8590] mb-1">
-                  Total Sales
+                <p className="text-[12px] font-semibold text-[#6b7280] dark:text-[#7d8590] mb-2">
+                  {isKhmer ? "ការលក់សរុប" : "Total Sales"}
                 </p>
-                <p className="text-[12px] text-[#9ca3af] mb-2">ការលក់សរុប</p>
                 <p className="text-[22px] font-bold text-[#111827] dark:text-white">
                   {summaryData.sales}
                 </p>
               </div>
               <div className="p-4 bg-[#f7f8fa] dark:bg-[#0d1117] rounded-[11px] text-center">
-                <p className="text-[12px] font-semibold text-[#6b7280] dark:text-[#7d8590] mb-1">
-                  Total Expenses
+                <p className="text-[12px] font-semibold text-[#6b7280] dark:text-[#7d8590] mb-2">
+                  {isKhmer ? "ចំណាយសរុប" : "Total Expenses"}
                 </p>
-                <p className="text-[12px] text-[#9ca3af] mb-2">ចំណាយសរុប</p>
                 <p className="text-[22px] font-bold text-red-500">
               {summaryData.expenses}
                 </p>
               </div>
               <div className="p-4 bg-[rgba(41,178,141,0.08)] rounded-[11px] text-center border border-[rgba(41,178,141,0.18)]">
-                <p className="text-[12px] font-semibold text-[#29B28D] mb-1">
-                  Net Profit
-                </p>
-                <p className="text-[12px] text-[#29B28D]/60 mb-2">
-                  ប្រាក់ចំណេញ
+                <p className="text-[12px] font-semibold text-[#29B28D] mb-2">
+                  {isKhmer ? "ប្រាក់ចំណេញ" : "Net Profit"}
                 </p>
                 <p className="text-[22px] font-bold text-[#29B28D]">
                   {summaryData.profit}
@@ -1121,7 +1104,7 @@ export default function ProDashboard() {
                 }`}
                 >
                 <Lock className="w-5 h-5" />
-                <span>Confirm &amp; Lock Day (បញ្ជាក់ និងចាក់សោ)</span>
+                <span>{isKhmer ? "បញ្ជាក់ និងចាក់សោ" : "Confirm & Lock Day"}</span>
               </button>
             ) : (
               <div className="w-full flex items-center justify-center gap-2.5 bg-[#f7f8fa] dark:bg-[#0d1117] text-[#6b7280] dark:text-[#7d8590] font-bold text-[16px] py-4 rounded-[11px] border border-[#e8eaed] dark:border-white/5 min-h-[56px]">
@@ -1163,7 +1146,7 @@ export default function ProDashboard() {
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g., Marketing (ទីផ្សារ)"
+                  placeholder={isKhmer ? "ឧទាហរណ៍៖ ទីផ្សារ" : "e.g., Marketing"}
                   value={customCategoryName}
                   onChange={(e) => setCustomCategoryName(e.target.value)}
                   className="w-full px-4 py-3 bg-[#f7f8fa] dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/5 rounded-[10px] text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-[#29B28D] outline-none transition-all min-h-[48px]"

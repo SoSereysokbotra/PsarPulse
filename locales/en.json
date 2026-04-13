@@ -377,8 +377,10 @@
       "productInfo": "Product Info",
       "price": "Price",
       "stockLevel": "Stock Level",
+      "lastRestock": "Last Restock",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "masterList": "Master List"
     },
     "status": {
       "outOfStock": "Out of Stock",

@@ -25,6 +25,7 @@ interface VendorDashboardLayoutProps {
   userName?: string;
   userInitials?: string;
   userEmail?: string;
+  notifications?: { title: string; desc: string; time: string; unread: boolean; type?: string }[];
 }
 
 export default function VendorDashboardLayout({
@@ -39,6 +40,7 @@ export default function VendorDashboardLayout({
   userName,
   userInitials,
   userEmail,
+  notifications,
 }: VendorDashboardLayoutProps) {
   const { language } = useLanguage();
   const isKhmer = language === "km";
@@ -90,6 +92,7 @@ export default function VendorDashboardLayout({
           rightActions={rightActions}
           userName={userName}
           userInitials={userInitials}
+          notifications={notifications}
         />
 
         {/* ── Page Content ── */}

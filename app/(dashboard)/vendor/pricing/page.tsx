@@ -115,22 +115,22 @@ const plans: Plan[] = [
 ];
 
 const gradientTextStyle: React.CSSProperties = {
-  background: "linear-gradient(to right, #29B28D, #6366f1, #a855f7)",
+  background: "linear-gradient(to right, #29B28D, #22c55e, #10b981)",
   WebkitBackgroundClip: "text",
   WebkitTextFillColor: "transparent",
   backgroundClip: "text",
 };
 
 const proGradientStyle: React.CSSProperties = {
-  background: "linear-gradient(to right, #6366f1, #4f46e5)",
+  background: "linear-gradient(to right, #29B28D, #1eb980)",
 };
 
 const premiumGradientStyle: React.CSSProperties = {
-  background: "linear-gradient(to right, #a855f7, #d946ef, #a855f7)",
+  background: "linear-gradient(to right, #1a9c65, #0f766e, #1a9c65)",
 };
 
 const premiumIconStyle: React.CSSProperties = {
-  background: "linear-gradient(to right, #a855f7, #d946ef)",
+  background: "linear-gradient(to right, #1a9c65, #0f766e)",
 };
 
 import { useRouter } from "next/navigation";
@@ -280,21 +280,21 @@ export default function PricingPage() {
                 key={plan.id}
                 className={`relative rounded-2xl border-2 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
                   plan.id === "premium"
-                    ? "border-purple-300 shadow-lg shadow-purple-100"
+                    ? "border-[#1a9c65] shadow-lg shadow-[#1a9c65]/20"
                     : plan.id === "pro"
-                      ? "border-indigo-300 shadow-lg shadow-indigo-100"
+                      ? "border-[#29B28D] shadow-lg shadow-[#29B28D]/20"
                       : "border-slate-200 bg-white shadow-sm"
                 }`}
                 style={
                   plan.id === "premium"
                     ? {
                         background:
-                          "linear-gradient(to bottom, rgba(250,245,255,0.5), white)",
+                          "linear-gradient(to bottom, rgba(26,156,101,0.05), white)",
                       }
                     : plan.id === "pro"
                       ? {
                           background:
-                            "linear-gradient(to bottom, rgba(238,242,255,0.3), white)",
+                            "linear-gradient(to bottom, rgba(41,178,141,0.05), white)",
                         }
                       : undefined
                 }
@@ -328,7 +328,7 @@ export default function PricingPage() {
                         plan.id === "premium"
                           ? premiumIconStyle
                           : plan.id === "pro"
-                            ? { backgroundColor: "#6366f1" }
+                            ? { backgroundColor: "#29B28D" }
                             : { backgroundColor: "#f1f5f9", color: "#64748b" }
                       }
                     >
@@ -378,15 +378,15 @@ export default function PricingPage() {
                         plan.id === "premium"
                           ? {
                               background:
-                                "linear-gradient(to right, #a855f7, #d946ef)",
+                                "linear-gradient(to right, #1a9c65, #0f766e)",
                               boxShadow:
-                                "0 10px 15px -3px rgba(168,85,247,0.2)",
+                                "0 10px 15px -3px rgba(26,156,101,0.2)",
                             }
                           : plan.id === "pro"
                             ? {
-                                backgroundColor: "#6366f1",
+                                backgroundColor: "#29B28D",
                                 boxShadow:
-                                  "0 10px 15px -3px rgba(99,102,241,0.2)",
+                                  "0 10px 15px -3px rgba(41,178,141,0.2)",
                               }
                             : { backgroundColor: "#0f172a" }
                       }
@@ -411,13 +411,13 @@ export default function PricingPage() {
                             style={
                               plan.id === "premium"
                                 ? {
-                                    backgroundColor: "#f3e8ff",
-                                    color: "#9333ea",
+                                    backgroundColor: "rgba(26,156,101,0.1)",
+                                    color: "#1a9c65",
                                   }
                                 : plan.id === "pro"
                                   ? {
-                                      backgroundColor: "#e0e7ff",
-                                      color: "#4f46e5",
+                                      backgroundColor: "rgba(41,178,141,0.1)",
+                                      color: "#29B28D",
                                     }
                                   : {
                                       backgroundColor: "rgba(41,178,141,0.1)",

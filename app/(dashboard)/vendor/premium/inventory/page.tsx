@@ -22,6 +22,7 @@ import {
 
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
@@ -47,6 +48,7 @@ export default function InventoryPage() {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, id: string | null}>({isOpen: false, id: null});
   const [formData, setFormData] = useState({
     name: "",
     khmerName: "",
@@ -135,8 +137,14 @@ export default function InventoryPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this item?")) return;
+  const handleDelete = (id: string) => {
+    setDeleteModal({ isOpen: true, id });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.id) return;
+    const id = deleteModal.id;
+    setDeleteModal({ isOpen: false, id: null });
     setIsDeleting(id);
     try {
       const res = await offlineFetch(`/api/vendor/inventory/${id}`, { method: "DELETE" });
@@ -340,6 +348,14 @@ export default function InventoryPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+        title={isKhmer ? "លុបទំនិញ" : "Delete Item"}
+        description={isKhmer ? "តើអ្នកពិតជាចង់លុបទំនិញនេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។" : "Are you sure you want to delete this item? This action cannot be undone."}
+      />
     </VendorDashboardLayout>
   );
 }

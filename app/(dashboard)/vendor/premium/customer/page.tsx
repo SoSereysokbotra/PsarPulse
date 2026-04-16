@@ -72,6 +72,7 @@ export default function CustomersPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [isLogLogging, setIsLogLogging] = useState(false);
   const [isLogDeleting, setIsLogDeleting] = useState<string | null>(null);
+  const [logDeleteModal, setLogDeleteModal] = useState<{isOpen: boolean, id: string | null}>({ isOpen: false, id: null });
   const [todaySales, setTodaySales] = useState(0);
 
   useEffect(() => {
@@ -125,10 +126,16 @@ export default function CustomersPage() {
     }
   };
 
-  const handleDeleteLog = async (id: string, e: React.MouseEvent) => {
+  const handleDeleteLog = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if (isLogDeleting === id) return;
-    if (!window.confirm("Delete this traffic log?")) return;
+    setLogDeleteModal({ isOpen: true, id });
+  };
+
+  const confirmDeleteLog = async () => {
+    if (!logDeleteModal.id) return;
+    const id = logDeleteModal.id;
+    setLogDeleteModal({ isOpen: false, id: null });
     setIsLogDeleting(id);
     try {
       const res = await offlineFetch(`/api/vendor/customers?id=${id}&type=traffic`, { method: "DELETE" });
@@ -491,6 +498,13 @@ export default function CustomersPage() {
         title={isKhmer ? "លុបព័ត៌មានអតិថិជន?" : "Delete Customer Profile?"} 
         description={isKhmer ? "សកម្មភាពនេះមិនអាចផ្លាស់ប្តូរវិញបានទេ។ រាល់ប្រវត្តិចំណាយ និងពិន្ទុភាពស្មោះត្រង់នឹងត្រូវបានលុបជាអចិន្ត្រៃយ៍។" : "This action cannot be undone. All spending history and loyalty points will be permanently removed."} 
         confirmText={isKhmer ? "បាទ, លុបព័ត៌មាន" : "Yes, Delete Profile"} 
+      />
+      <ConfirmModal
+        isOpen={logDeleteModal.isOpen}
+        onClose={() => setLogDeleteModal({ isOpen: false, id: null })}
+        onConfirm={confirmDeleteLog}
+        title={isKhmer ? "លុបកំណត់ហេតុចរាចរណ៍" : "Delete Traffic Log"}
+        description={isKhmer ? "តើអ្នកពិតជាចង់លុបកំណត់ហេតុចរាចរណ៍នេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។" : "Are you sure you want to delete this traffic log? This action cannot be undone."}
       />
     </VendorDashboardLayout>
   );

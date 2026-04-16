@@ -22,7 +22,7 @@ export default function LandingPage() {
       login: "Log in",
       signup: "Sign up",
       heroTitle1: "Smart business for",
-      heroTitle2: "Cambodia's night markets",
+      heroTitle2: "Cambodia's market vendors",
       heroDesc:
         "Data-driven analytics and AI forecasting built exclusively for Cambodia's informal economy. Log sales, track growth, and let AI prepare your next move.",
       btnVendor: "Get Started as Vendor →",
@@ -33,7 +33,7 @@ export default function LandingPage() {
       loginCustomer: "Customer log in",
       loginCustomerDesc: "Browse & follow stalls",
       signupVendor: "I'm a Vendor",
-      signupVendorDesc: "Sell at night markets",
+      signupVendorDesc: "Sell at local markets",
       signupCustomer: "I'm a Customer",
       signupCustomerDesc: "Browse & follow stalls",
       tryDemo: "Try Demo →",
@@ -59,10 +59,10 @@ export default function LandingPage() {
       paymentIntegrationDesc: "KHQR • ABA PayWay",
       useCasesTitle: "Real-World Applications",
       useCasesSubtitle: "The Cambodian Context",
-      useCase1Title: "Night Market Stalls",
+      useCase1Title: "Market Stalls",
       useCase1Desc:
-        "Track sales, predict busy nights, and manage inventory across Phnom Penh's busiest markets.",
-      useCase2Title: "Market Goods Stalls",
+        "Track sales, predict busy days, and manage inventory across busy local markets.",
+      useCase2Title: "General Retail Stalls",
       useCase2Desc:
         "Sell clothing, accessories, electronics, and household items — with one-tap sale logging designed for speed.",
       useCase3Title: "Small Retail Shops",
@@ -92,7 +92,7 @@ export default function LandingPage() {
         "FB post auto-generator",
       ],
       footerTagline:
-        "Smart business analytics for Cambodia's night market vendors. Track sales, forecast demand, and grow with AI-powered insights.",
+        "Smart business analytics for Cambodia's market vendors. Track sales, forecast demand, and grow with AI-powered insights.",
       footerProduct: "Product",
       footerCompany: "Company",
       footerResources: "Resources",
@@ -127,7 +127,7 @@ export default function LandingPage() {
       login: "ចូលគណនី",
       signup: "ចុះឈ្មោះ",
       heroTitle1: "អាជីវកម្មឆ្លាតវៃសម្រាប់",
-      heroTitle2: "ផ្សាររាត្រីនៅកម្ពុជា",
+      heroTitle2: "អ្នកលក់តាមផ្សារនៅកម្ពុជា",
       heroDesc:
         "ការវិភាគទিন្នន័យ និងការព្យាករណ៍ AI សម្រាប់សេដ្ឋកិច្ចក្រៅប្រព័ន្ធរបស់កម្ពុជា។ កត់ត្រាការលក់តាមដាននិងអនុញ្ញាតឱ្យ AI រៀបចំដំណើរការអាជីវកម្មអ្នក។",
       btnVendor: "ចាប់ផ្តើមជាអ្នកលក់ →",
@@ -138,7 +138,7 @@ export default function LandingPage() {
       loginCustomer: "ចូលគណនីអតិថិជន",
       loginCustomerDesc: "ស្វែងរក និងតាមដានស្តង់",
       signupVendor: "ខ្ញុំជាអ្នកលក់",
-      signupVendorDesc: "លក់នៅផ្សាររាត្រី",
+      signupVendorDesc: "លក់នៅតាមទីផ្សារ",
       signupCustomer: "ខ្ញុំជាអតិថិជន",
       signupCustomerDesc: "ស្វែងរក និងតាមដានស្តង់",
       tryDemo: "សាកល្បង Demo →",
@@ -164,12 +164,12 @@ export default function LandingPage() {
       paymentIntegrationDesc: "KHQR • ABA PayWay",
       useCasesTitle: "កម្មវិធីប្រើប្រាស់ក្នុងពិភពពិត",
       useCasesSubtitle: "បរិបទកម្ពុជា",
-      useCase1Title: "ស្តង់ផ្សាររាត្រី",
+      useCase1Title: "ស្តង់លក់ទំនិញ",
       useCase1Desc:
-        "តាមដានការលក់ ព្យាករណ៍យប់ដែលមមាញឹក និងគ្រប់គ្រងសារពើភ័ណ្ឌនៅទូទាំងទីផ្សារដែលមមាញឹកបំផុតរបស់ភ្នំពេញ។",
-      useCase2Title: "រទេះអាហារតាមផ្លូវ",
+        "តាមដានការលក់ ព្យាករណ៍ថ្ងៃដែលមមាញឹក និងគ្រប់គ្រងសារពើភ័ណ្ឌនៅទូទាំងទីផ្សារ។",
+      useCase2Title: "ស្តង់លក់ឥវ៉ាន់ទូទៅ",
       useCase2Desc:
-        "ការកត់ត្រាការលក់ដោយចុចតែម្តងរចនាឡើងសម្រាប់ភាពរហ័សនៅពេលអតិថិជនកំពុងតម្រង់ជួរ។",
+        "លក់សម្លៀកបំពាក់ គ្រឿងអលង្ការ គ្រឿងអេឡិចត្រូនិក និងសម្ភារៈប្រើប្រាស់ — ជាមួយការកត់ត្រាការលក់ដោយចុចតែម្តងដ៏រហ័ស។",
       useCase3Title: "ហាងលក់រាយតូចៗ",
       useCase3Desc:
         "ការគ្រប់គ្រងសារពើភ័ណ្ឌពេញលេញជាមួយនឹងការផ្ញើសារជូនដំណឹងនៅពេលទំនិញជិតអស់ និងការណែនាំអំពីការបំពេញទំនិញដែលដំណើរការដោយ AI ។",
@@ -197,7 +197,7 @@ export default function LandingPage() {
         "ការបង្កើតការបង្ហោះ FB ស្វ័យប្រវត្តិ",
       ],
       footerTagline:
-        "ការវិភាគអាជីវកម្មឆ្លាតវៃសម្រាប់អ្នកលក់នៅផ្សាររាត្រីរបស់កម្ពុជា។ តាមដានការលក់ ព្យាករណ៍តម្រូវការ និងរីកលូតលាស់ជាមួយនឹងការយល់ដឹងដែលដំណើរការដោយ AI ។",
+        "ការវិភាគអាជីវកម្មឆ្លាតវៃសម្រាប់អ្នកលក់តាមផ្សារនៅកម្ពុជា។ តាមដានការលក់ ព្យាករណ៍តម្រូវការ និងរីកលូតលាស់ជាមួយនឹងការយល់ដឹងដែលដំណើរការដោយ AI ។",
       footerProduct: "ផលិតផល",
       footerCompany: "ក្រុមហ៊ុន",
       footerResources: "ធនធាន",

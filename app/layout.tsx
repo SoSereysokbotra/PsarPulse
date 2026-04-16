@@ -9,7 +9,7 @@ import { UserProvider } from "@/components/providers/UserProvider";
 
 
 export const metadata: Metadata = {
-  title: "PsarPulse KH — Smart Analytics for Cambodian Night Markets",
+  title: "PsarPulse KH — Smart Analytics for Cambodian Market Vendors",
   description:
     "Data-driven analytics and AI forecasting built exclusively for Cambodia's informal economy. Log sales, track growth, and get AI-powered insights.",
 };

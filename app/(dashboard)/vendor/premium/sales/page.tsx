@@ -29,6 +29,7 @@ import {
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
 import VendorSummaryCard from "@/components/vendor/VendorSummaryCard";
 import AIHub from "@/components/vendor/premium/AIHub";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { offlineFetch } from "@/lib/pwa/offline-fetch";
@@ -139,6 +140,7 @@ export default function PremiumSalesPage() {
   const [toasts, setToasts] = useState<ToastT[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [isChatLoading, setIsChatLoading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{isOpen: boolean, id: string | null}>({ isOpen: false, id: null });
 
   const showToast = useCallback(
     (msg: string, type: ToastT["type"] = "success") => {
@@ -330,8 +332,14 @@ export default function PremiumSalesPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this sale record?")) return;
+  const handleDelete = (id: string) => {
+    setDeleteModal({ isOpen: true, id });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.id) return;
+    const id = deleteModal.id;
+    setDeleteModal({ isOpen: false, id: null });
     try {
       // optimistic ui not used here for reliability, but could be added
       const res = await offlineFetch(`/api/vendor/sales?id=${id}`, {
@@ -968,6 +976,14 @@ export default function PremiumSalesPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, id: null })}
+        onConfirm={confirmDelete}
+        title={isKhmer ? "លុបបញ្ជីលក់" : "Delete Sale Record"}
+        description={isKhmer ? "តើអ្នកពិតជាចង់លុបបញ្ជីលក់នេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។" : "Are you sure you want to delete this sale record? This action cannot be undone."}
+      />
     </VendorDashboardLayout>
   );
 }

@@ -6,6 +6,8 @@ import { Settings, ChevronRight, X, Crown, Sparkles, LogOut, User, CreditCard as
 import VendorNavItem from "./VendorNavItem";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useUser } from "@/components/providers/UserProvider";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/utils/client-auth";
 
 interface NavLink {
   icon: React.ElementType;
@@ -75,6 +77,17 @@ export default function VendorSidebar({
   const { user, loading } = useUser();
   const isKhmer = language === "km";
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await authClient.logout();
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   // Initials logic
   const getInitials = (name: string) => {
@@ -232,7 +245,10 @@ export default function VendorSidebar({
                         <BillingIcon size={16} className="text-[#6b7280]" />
                         {t("settings.subscriptions")}
                       </Link>
-                      <button className="w-full flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] bg-transparent border-0 cursor-pointer hover:bg-[#f7f8fa] transition-colors text-left">
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3.5 px-5 py-3 text-[14px] text-[#111827] bg-transparent border-0 cursor-pointer hover:bg-[#f7f8fa] transition-colors text-left"
+                      >
                         <LogOut size={16} className="text-[#6b7280]" />
                         Logout
                       </button>

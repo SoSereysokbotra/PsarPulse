@@ -12,13 +12,20 @@ import { notifyPaymentSubmitted } from "@/lib/notifications/telegram";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { transactionId } = body;
+    const { transactionId, receiptUrl } = body;
 
     if (!transactionId) {
       return NextResponse.json(
         { error: "transactionId is required" },
         { status: 400 }
       );
+    }
+
+    // Save receiptUrl if provided
+    if (receiptUrl) {
+      await db.update(paymentTransactions)
+        .set({ receiptUrl, updatedAt: new Date() })
+        .where(eq(paymentTransactions.transactionId, transactionId));
     }
 
     // Fetch transaction with vendor/user details
@@ -58,6 +65,7 @@ export async function POST(request: NextRequest) {
       amount: tx.amount,
       currency: tx.currency,
       method: tx.method,
+      receiptUrl: tx.receiptUrl || receiptUrl,
     }).catch((err) => {
       console.error("[Notify] Telegram notification failed:", err);
     });

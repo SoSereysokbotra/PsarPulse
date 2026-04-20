@@ -14,6 +14,8 @@ import {
   ArrowLeft,
   Info,
   Box,
+  Upload,
+  Image as ImageIcon,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { authClient } from "@/lib/auth/utils/client-auth";
@@ -48,6 +50,8 @@ function CheckoutContent() {
     "idle" | "creating" | "waiting" | "completed" | "failed"
   >("idle");
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     // Graceful error handling in case authClient isn't ready
@@ -146,17 +150,45 @@ function CheckoutContent() {
     // We now rely on user's manual confirmation to move to the success screen, and allow Admins to verify the payment manually from the backend.
   }, [step, transactionId, paymentStatus, md5Hash, router, planId]);
 
-  const handleManualConfirmation = () => {
-    setPaymentStatus("completed");
-    setStep("success");
+  const handleManualConfirmation = async () => {
+    if (!transactionId) return;
 
-    // Notify superadmin via Telegram (fire-and-forget)
-    if (transactionId) {
+    if (!receiptFile) {
+      setPaymentError("Please upload your payment screenshot first.");
+      return;
+    }
+
+    setIsUploading(true);
+    setPaymentError(null);
+
+    try {
+      // 1. Upload the receipt to Cloudinary
+      const formData = new FormData();
+      formData.append("file", receiptFile);
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error("Failed to upload receipt");
+      const uploadData = await uploadRes.json();
+      const receiptUrl = uploadData.url;
+
+      // 2. Complete payment UI state
+      setPaymentStatus("completed");
+      setStep("success");
+
+      // 3. Notify superadmin via Telegram with the receipt URL
       offlineFetch("/api/bakong/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transactionId }),
+        body: JSON.stringify({ transactionId, receiptUrl }),
       }).catch(() => {});
+    } catch (err: any) {
+      console.error(err);
+      setPaymentError(err.message || "Something went wrong.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -611,13 +643,44 @@ function CheckoutContent() {
               {paymentStatus === "waiting" && (
                 <div className="space-y-4">
                   <p>
-                    Please scan the KHQR above with your banking application. Once you have successfully finalized the transfer, click the button below.
+                    Please scan the KHQR above with your banking application. Once you have successfully finalized the transfer, please upload a screenshot of your payment receipt to verify.
                   </p>
+
+                  <div className="mt-4">
+                    <label className="block text-xs font-bold text-slate-700 mb-2">
+                      Upload Payment Screenshot <span className="text-red-500">*</span>
+                    </label>
+                    <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${receiptFile ? 'border-[#00b06f] bg-[#00b06f]/5' : 'border-slate-300 bg-white hover:bg-slate-50'}`}>
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        {receiptFile ? (
+                          <>
+                            <ImageIcon className="w-8 h-8 text-[#00b06f] mb-2" />
+                            <p className="text-sm font-semibold text-[#00b06f]">{receiptFile.name}</p>
+                            <p className="text-xs text-slate-500 mt-1">Tap to change file</p>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="w-8 h-8 text-slate-400 mb-2" />
+                            <p className="text-sm font-medium text-slate-600">Tap to upload receipt image</p>
+                            <p className="text-xs text-slate-400 mt-1">PNG, JPG up to 5MB</p>
+                          </>
+                        )}
+                      </div>
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                  </div>
+
                   <button 
                     onClick={handleManualConfirmation}
-                    className="w-full py-3 bg-[#00b06f] hover:bg-[#009b62] text-white rounded-lg font-bold transition-all shadow-sm flex items-center justify-center gap-2"
+                    disabled={isUploading}
+                    className="w-full py-3 mt-2 bg-[#00b06f] hover:bg-[#009b62] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold transition-all shadow-sm flex items-center justify-center gap-2"
                   >
-                    I Have Dispatched Payment
+                    {isUploading ? "Uploading receipt..." : "I Have Dispatched Payment"}
                   </button>
                 </div>
               )}

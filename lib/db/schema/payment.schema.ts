@@ -37,6 +37,7 @@ export const paymentTransactions = pgTable("payment_transactions", {
   currency: varchar("currency", { length: 10 }).notNull(),
   description: text("description"),
   qrString: text("qr_string"),
+  receiptUrl: text("receipt_url"),
   webhookPayload: jsonb("webhook_payload"),
   completedAt: timestamp("completed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

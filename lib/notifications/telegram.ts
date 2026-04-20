@@ -9,7 +9,7 @@
 
 const TELEGRAM_API = "https://api.telegram.org";
 
-export async function sendTelegramMessage(text: string): Promise<boolean> {
+export async function sendTelegramMessage(text: string, photoUrl?: string): Promise<boolean> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -21,15 +21,24 @@ export async function sendTelegramMessage(text: string): Promise<boolean> {
   }
 
   try {
-    const res = await fetch(`${TELEGRAM_API}/bot${botToken}/sendMessage`, {
+    const endpoint = photoUrl ? "sendPhoto" : "sendMessage";
+    const body: any = {
+      chat_id: chatId,
+      parse_mode: "HTML",
+    };
+
+    if (photoUrl) {
+      body.photo = photoUrl;
+      body.caption = text;
+    } else {
+      body.text = text;
+      body.disable_web_page_preview = true;
+    }
+
+    const res = await fetch(`${TELEGRAM_API}/bot${botToken}/${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: "HTML",
-        disable_web_page_preview: true,
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {
@@ -62,6 +71,7 @@ export async function notifyPaymentSubmitted(p: {
   amount: string;
   currency: string;
   method: string;
+  receiptUrl?: string | null;
 }) {
   const appUrl =
     process.env.NEXT_PUBLIC_APP_URL || "https://psar-pulse.vercel.app";
@@ -82,7 +92,7 @@ export async function notifyPaymentSubmitted(p: {
     `👉 <a href="${dashboardUrl}">Open Transactions Dashboard →</a>`,
   ].join("\n");
 
-  return sendTelegramMessage(text);
+  return sendTelegramMessage(text, p.receiptUrl || undefined);
 }
 
 /** Called when superadmin approves a transaction */

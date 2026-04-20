@@ -35,9 +35,6 @@ export default {
     const targetUrl = `${BAKONG_API_BASE}${url.pathname}${url.search}`;
 
     try {
-      // 3. Create proxy request
-      // We clone the headers but might want to override Host or Origin
-      // Cloudflare worker will automatically set its own client IP which Bakong allows
       // Only forward strictly necessary headers to avoid triggering CloudFront WAF
       const newHeaders = new Headers();
       
@@ -49,20 +46,26 @@ export default {
       
       // Pass a standard User Agent if present, otherwise default
       const ua = request.headers.get("User-Agent");
-      newHeaders.set("User-Agent", ua || "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+      newHeaders.set("User-Agent", ua || "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
       
       // Add standard accepts to look like a normal client
       newHeaders.set("Accept", "application/json, text/plain, */*");
       newHeaders.set("Accept-Language", "en-US,en;q=0.9");
+      
+      // Spoof Origin, Host, and Referer to trick WAF into thinking this is a direct/first-party API call
+      newHeaders.set("Host", "api-bakong.nbc.gov.kh");
+      newHeaders.set("Origin", "https://api-bakong.nbc.gov.kh");
+      newHeaders.set("Referer", "https://api-bakong.nbc.gov.kh/");
 
-      const proxyRequest = new Request(targetUrl, {
+      // Read body fully before sending
+      const bodyText = request.method !== "GET" && request.method !== "HEAD" ? await request.text() : undefined;
+
+      const response = await fetch(targetUrl, {
         method: request.method,
         headers: newHeaders,
-        body: request.method !== "GET" && request.method !== "HEAD" ? await request.clone().arrayBuffer() : null,
+        body: bodyText,
+        redirect: "follow",
       });
-
-      // 4. Fetch from Bakong API
-      const response = await fetch(proxyRequest);
 
       // 5. Build response with original body and status
       const responseBody = await response.arrayBuffer();

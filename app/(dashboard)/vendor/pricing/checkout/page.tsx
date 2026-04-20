@@ -152,7 +152,9 @@ function CheckoutContent() {
     const poll = async () => {
       while (!stopped) {
         // Call Bakong via Cloudflare Worker proxy (bypasses WAF + CORS)
-        const checkUrl = PROXY_URL || "https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5";
+        const checkUrl = PROXY_URL 
+          ? `${PROXY_URL.replace(/\/$/, '')}/check_transaction_by_md5` 
+          : "https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5";
         if (BAKONG_TOKEN && checkUrl) {
           try {
             const bkRes = await fetch(checkUrl, {

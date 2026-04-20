@@ -141,121 +141,15 @@ function CheckoutContent() {
   };
 
   useEffect(() => {
-    if (step !== "details" || !transactionId || paymentStatus !== "waiting" || !md5Hash) {
-      return;
-    }
-
-    let stopped = false;
-    const BAKONG_TOKEN = process.env.NEXT_PUBLIC_BAKONG_API_KEY || "";
-    const PROXY_URL = process.env.NEXT_PUBLIC_BAKONG_PROXY_URL || "";
-
-    const poll = async () => {
-      while (!stopped) {
-        // Call Bakong via Cloudflare Worker proxy (bypasses WAF + CORS)
-        const checkUrl = PROXY_URL 
-          ? `${PROXY_URL.replace(/\/$/, '')}/check_transaction_by_md5` 
-          : "https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5";
-        if (BAKONG_TOKEN && checkUrl) {
-          try {
-            const bkRes = await fetch(checkUrl, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${BAKONG_TOKEN}`,
-              },
-              body: JSON.stringify({ md5: md5Hash }),
-            });
-
-            if (bkRes.ok) {
-              const bkData = await bkRes.json();
-              console.log("[Bakong Check]", bkData);
-
-              if (bkData?.responseCode === 0 || bkData?.errorCode === 0) {
-                // REAL payment confirmed by Bakong!
-                await offlineFetch("/api/bakong/verify", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ transactionId }),
-                }).catch(() => {});
-                handlePaymentCompleted();
-                return;
-              }
-            }
-          } catch (err) {
-            console.warn("[Bakong] Proxy check failed, will retry", err);
-          }
-        }
-
-        // Also check our server DB status (in case webhook already completed it)
-        try {
-          const res = await offlineFetch(
-            `/api/bakong/status?transactionId=${encodeURIComponent(transactionId)}`,
-            { cache: "no-store" },
-          );
-          if (res.ok) {
-            const data = await res.json();
-            if (data?.status === "completed") {
-              handlePaymentCompleted();
-              return;
-            } else if (data?.status === "failed") {
-              setPaymentStatus("failed");
-              setPaymentError("Payment failed. Please try again.");
-              return;
-            }
-          }
-        } catch {}
-
-        await new Promise((r) => setTimeout(r, 3000));
-      }
-    };
-
-    const handlePaymentCompleted = async () => {
-      if (stopped) return;
-      stopped = true;
-      setPaymentStatus("completed");
-      setStep("success");
-      setIsRedirecting(true);
-
-      try {
-        await authClient.refreshToken();
-      } catch (refreshErr) {
-        console.warn("Token refresh after payment failed:", refreshErr);
-      }
-
-      const targetDashboard = planId === "premium" ? "/vendor/premium" : "/vendor/pro";
-      let confirmed = false;
-
-      for (let attempt = 0; attempt < 10; attempt++) {
-        await new Promise((r) => setTimeout(r, 1500));
-        try {
-          const subRes = await offlineFetch("/api/vendor/subscription/check", {
-            credentials: "include",
-            cache: "no-store",
-          });
-          const subData = await subRes.json();
-          const activePlan = subData?.data?.planName;
-          const status = subData?.data?.subscriptionStatus;
-          if (
-            (status === "active" || status === "trial") &&
-            (activePlan === "pro" || activePlan === "premium")
-          ) {
-            confirmed = true;
-            break;
-          }
-        } catch {
-          // Keep retrying
-        }
-      }
-
-      window.location.href = targetDashboard;
-    };
-
-    poll();
-
-    return () => {
-      stopped = true;
-    };
+    // If we've started the payment, just keep the UI in waiting state. 
+    // We've removed automatic polling because the Bakong WAF explicitly geo-blocks requests outside of specific ASEAN regions. 
+    // We now rely on user's manual confirmation to move to the success screen, and allow Admins to verify the payment manually from the backend.
   }, [step, transactionId, paymentStatus, md5Hash, router, planId]);
+
+  const handleManualConfirmation = () => {
+    setPaymentStatus("completed");
+    setStep("success");
+  };
 
 
   const getMethodDetails = (m: PaymentMethod) => {
@@ -288,20 +182,18 @@ function CheckoutContent() {
             <CheckCircle2 size={40} className="text-[#00b06f]" />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            Payment Successful
+            Payment Pending Verification
           </h2>
           <p className="text-slate-500 text-sm mb-8">
-            You are now subscribed to PsarPulse {planInfo.name}. Redirecting to
-            your dashboard...
+            Thank you! Your payment has been submitted. An admin will verify the transaction shortly and activate your {planInfo.name} subscription.
           </p>
           <button
             onClick={() => {
-              window.location.href =
-                planParam === "premium" ? "/vendor/premium" : "/vendor/pro";
+              window.location.href = "/vendor/dashboard";
             }}
             className="w-full py-3.5 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors"
           >
-            {isRedirecting ? "Redirecting..." : "Return to Dashboard"}
+            Return to Dashboard
           </button>
         </div>
       </div>
@@ -708,11 +600,17 @@ function CheckoutContent() {
 
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
               {paymentStatus === "waiting" && (
-                <p>
-                  Waiting for payment confirmation. Once your scan payment is
-                  successful, you will be redirected to your dashboard
-                  automatically.
-                </p>
+                <div className="space-y-4">
+                  <p>
+                    Please scan the KHQR above with your banking application. Once you have successfully finalized the transfer, click the button below.
+                  </p>
+                  <button 
+                    onClick={handleManualConfirmation}
+                    className="w-full py-3 bg-[#00b06f] hover:bg-[#009b62] text-white rounded-lg font-bold transition-all shadow-sm flex items-center justify-center gap-2"
+                  >
+                    I Have Dispatched Payment
+                  </button>
+                </div>
               )}
               {paymentStatus === "failed" && (
                 <div className="space-y-3">

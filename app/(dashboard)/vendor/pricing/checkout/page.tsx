@@ -189,7 +189,7 @@ function CheckoutContent() {
           </p>
           <button
             onClick={() => {
-              window.location.href = "/vendor/dashboard";
+              window.location.href = "/vendor";
             }}
             className="w-full py-3.5 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors"
           >

@@ -526,6 +526,22 @@ export default function PremiumDashboard() {
 
   const [smartAlerts, setSmartAlerts] = useState<any[]>([]);
 
+  const lowStockNotifications = React.useMemo(() => {
+    return inventoryItems
+      .filter((i) => i.status !== "good")
+      .map((item) => ({
+        title: item.status === "out" 
+          ? (isKhmer ? "អស់ពីស្តុក" : "Out of Stock") 
+          : (isKhmer ? "ស្តុកជិតអស់" : "Low Stock Alert"),
+        desc: isKhmer
+          ? `${item.name} ជិតអស់ហើយ (${item.stock} នៅសល់).`
+          : `${item.name} is ${item.status === "out" ? "out of stock" : "running low"} (${item.stock} left).`,
+        time: isKhmer ? "អម្បាញ់មិញ" : "Just now",
+        unread: true,
+        type: item.status === "out" ? "error" : "warning",
+      }));
+  }, [inventoryItems, isKhmer]);
+
   const handleDashChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!dashChatInput || isChatSending) return;
@@ -557,6 +573,7 @@ export default function PremiumDashboard() {
       userName={displayName}
       userInitials={displayInitials}
       userEmail={user?.email || ""}
+      notifications={lowStockNotifications}
       planBadge={{ label: "PREMIUM", icon: Sparkles }}
       rightActions={
         <>

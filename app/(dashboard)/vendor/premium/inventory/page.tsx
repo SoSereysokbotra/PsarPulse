@@ -174,6 +174,22 @@ export default function InventoryPage() {
     }
   };
 
+  const lowStockNotifications = React.useMemo(() => {
+    return inventoryItems
+      .filter((i) => i.status !== "good" && i.status !== undefined)
+      .map((item) => ({
+        title: item.status === "out" 
+          ? (isKhmer ? "អស់ពីស្តុក" : "Out of Stock") 
+          : (isKhmer ? "ស្តុកជិតអស់" : "Low Stock Alert"),
+        desc: isKhmer
+          ? `${item.name} ជិតអស់ហើយ (${item.stock} នៅសល់).`
+          : `${item.name} is ${item.status === "out" ? "out of stock" : "running low"} (${item.stock} left).`,
+        time: isKhmer ? "អម្បាញ់មិញ" : "Just now",
+        unread: true,
+        type: item.status === "out" ? "error" : "warning",
+      }));
+  }, [inventoryItems, isKhmer]);
+
   return (
     <VendorDashboardLayout
       settingsHref="/vendor/premium/settings"
@@ -181,6 +197,7 @@ export default function InventoryPage() {
       navLinks={PREMIUM_NAV}
       currentPath="/vendor/premium/inventory"
       title={isKhmer ? "គ្រប់គ្រងស្តុក" : "Inventory Management"}
+      notifications={lowStockNotifications}
       rightActions={
         <button onClick={handleExportCSV} className="hidden sm:flex items-center gap-2 bg-[#111827] dark:bg-white hover:opacity-90 text-white dark:text-[#111827] font-medium px-4 py-2 rounded-xl transition-colors text-[13px] min-h-[40px] cursor-pointer border-0">
           <Download className="w-4 h-4" /> {isKhmer ? "ទាញយកទិន្នន័យ" : "Export Stock"}

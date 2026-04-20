@@ -10,6 +10,7 @@ import {
   users,
   vendorRequests,
 } from "@/lib/db/schema";
+import { notifyPaymentApproved } from "@/lib/notifications/telegram";
 
 async function verifySuperAdmin(request: NextRequest): Promise<boolean> {
   const token = request.cookies.get("access_token")?.value;
@@ -37,7 +38,7 @@ export async function POST(
   const { id: transactionId } = await params;
   const normalizedStatus = "completed";
 
-  let dbUpdated = null;
+  let dbUpdated: any = null;
 
   try {
     await db.transaction(async (tx) => {
@@ -195,6 +196,22 @@ export async function POST(
         }
       }
     });
+
+    // Send Telegram confirmation (fire-and-forget)
+    if (dbUpdated) {
+      const fullTx = await db.query.paymentTransactions.findFirst({
+        where: eq(paymentTransactions.transactionId, transactionId),
+        with: {
+          vendor: { columns: { businessName: true } },
+          user: { columns: { fullName: true } },
+        },
+      });
+      notifyPaymentApproved({
+        transactionId,
+        vendorName: fullTx?.vendor?.businessName || fullTx?.user?.fullName || "Unknown",
+        planCode: dbUpdated.planCode,
+      }).catch(() => {});
+    }
 
     return NextResponse.json({ success: true });
   } catch (dbError) {

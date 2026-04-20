@@ -149,6 +149,15 @@ function CheckoutContent() {
   const handleManualConfirmation = () => {
     setPaymentStatus("completed");
     setStep("success");
+
+    // Notify superadmin via Telegram (fire-and-forget)
+    if (transactionId) {
+      offlineFetch("/api/bakong/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transactionId }),
+      }).catch(() => {});
+    }
   };
 
 

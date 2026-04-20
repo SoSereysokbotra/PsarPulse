@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { jwtVerify } from "jose";
 import { eq } from "drizzle-orm";
 import { paymentTransactions } from "@/lib/db/schema";
+import { notifyPaymentRejected } from "@/lib/notifications/telegram";
 
 async function verifySuperAdmin(request: NextRequest): Promise<boolean> {
   const token = request.cookies.get("access_token")?.value;
@@ -38,6 +39,20 @@ export async function POST(
         updatedAt: new Date(),
       })
       .where(eq(paymentTransactions.transactionId, transactionId));
+
+    // Send Telegram notification (fire-and-forget)
+    const fullTx = await db.query.paymentTransactions.findFirst({
+      where: eq(paymentTransactions.transactionId, transactionId),
+      with: {
+        vendor: { columns: { businessName: true } },
+        user: { columns: { fullName: true } },
+      },
+    });
+    notifyPaymentRejected({
+      transactionId,
+      vendorName: fullTx?.vendor?.businessName || fullTx?.user?.fullName || "Unknown",
+      planCode: fullTx?.planCode || "unknown",
+    }).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch (dbError) {

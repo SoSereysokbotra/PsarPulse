@@ -81,6 +81,24 @@ export default function VendorDashboard() {
     setMounted(true);
   }, []);
 
+  // Auto-redirect to the correct dashboard if vendor has an active paid plan
+  useEffect(() => {
+    if (!mounted) return;
+    offlineFetch("/api/vendor/subscription/check", { credentials: "include", cache: "no-store" })
+      .then((r) => r.json())
+      .then((res: any) => {
+        const planName = res?.data?.planName;
+        const status = res?.data?.subscriptionStatus;
+        const isActive = status === "active" || status === "trial";
+        if (isActive && planName === "premium") {
+          window.location.href = "/vendor/premium";
+        } else if (isActive && planName === "pro") {
+          window.location.href = "/vendor/pro";
+        }
+      })
+      .catch(() => {});
+  }, [mounted]);
+
   // Initials
   const getInitials = (name: string) => {
     if (!name) return "??";

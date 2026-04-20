@@ -12,6 +12,7 @@ import {
   ChevronDown,
   Users,
   MailOpen,
+  Receipt,
 } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -42,6 +43,11 @@ export function SuperadminTopNav() {
       name: t("superadmin.nav.plans"),
       href: "/superadmin/plans",
       icon: CreditCard,
+    },
+    {
+      name: "Transactions",
+      href: "/superadmin/transactions",
+      icon: Receipt,
     },
     {
       name: t("superadmin.nav.auditLog"),

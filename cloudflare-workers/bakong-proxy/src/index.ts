@@ -38,12 +38,22 @@ export default {
       // 3. Create proxy request
       // We clone the headers but might want to override Host or Origin
       // Cloudflare worker will automatically set its own client IP which Bakong allows
+      // Only forward strictly necessary headers to avoid triggering CloudFront WAF
+      const newHeaders = new Headers();
       
-      const newHeaders = new Headers(request.headers);
-      // Remove restricted headers that might interfere with Cloudflare/Bakong
-      newHeaders.delete("Host");
-      newHeaders.delete("Origin");
-      newHeaders.delete("Referer");
+      const auth = request.headers.get("Authorization");
+      if (auth) newHeaders.set("Authorization", auth);
+      
+      const contentType = request.headers.get("Content-Type");
+      if (contentType) newHeaders.set("Content-Type", contentType);
+      
+      // Pass a standard User Agent if present, otherwise default
+      const ua = request.headers.get("User-Agent");
+      newHeaders.set("User-Agent", ua || "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+      
+      // Add standard accepts to look like a normal client
+      newHeaders.set("Accept", "application/json, text/plain, */*");
+      newHeaders.set("Accept-Language", "en-US,en;q=0.9");
 
       const proxyRequest = new Request(targetUrl, {
         method: request.method,

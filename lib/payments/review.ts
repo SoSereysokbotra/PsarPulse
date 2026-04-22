@@ -104,26 +104,21 @@ async function getTxDisplayData(transactionId: string) {
 export async function approvePaymentTransaction(
   transactionId: string,
 ): Promise<ReviewResult> {
-  let outcomeCode: ReviewResultCode = "not_found";
-
-  await db.transaction(async (tx) => {
+  const outcomeCode = await db.transaction<ReviewResultCode>(async (tx) => {
     const existing = await tx.query.paymentTransactions.findFirst({
       where: eq(paymentTransactions.transactionId, transactionId),
     });
 
     if (!existing) {
-      outcomeCode = "not_found";
-      return;
+      return "not_found";
     }
 
     if (existing.status === "completed") {
-      outcomeCode = "already_completed";
-      return;
+      return "already_completed";
     }
 
     if (existing.status === "failed") {
-      outcomeCode = "already_failed";
-      return;
+      return "already_failed";
     }
 
     const [updated] = await tx
@@ -138,8 +133,7 @@ export async function approvePaymentTransaction(
       .returning();
 
     if (!updated) {
-      outcomeCode = "not_found";
-      return;
+      return "not_found";
     }
 
     const userId = updated.userId;
@@ -270,7 +264,7 @@ export async function approvePaymentTransaction(
         .where(eq(vendors.id, currentVendorId));
     }
 
-    outcomeCode = "updated";
+    return "updated";
   });
 
   const txDisplayData =

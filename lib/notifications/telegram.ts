@@ -9,20 +9,58 @@
 
 const TELEGRAM_API = "https://api.telegram.org";
 
-export async function sendTelegramMessage(text: string, photoUrl?: string): Promise<boolean> {
+type InlineKeyboardButton = {
+  text: string;
+  callback_data: string;
+};
+
+type SendTelegramMessageOptions = {
+  photoUrl?: string;
+  inlineKeyboard?: InlineKeyboardButton[][];
+};
+
+async function callTelegramApi(
+  method: string,
+  payload: Record<string, unknown>,
+) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) {
+    console.warn("[Telegram] TELEGRAM_BOT_TOKEN not set - skipping request.");
+    return { ok: false, rawError: "Missing TELEGRAM_BOT_TOKEN" };
+  }
+
+  const res = await fetch(`${TELEGRAM_API}/bot${botToken}/${method}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error(`[Telegram] ${method} failed:`, err);
+    return { ok: false, rawError: err };
+  }
+
+  return { ok: true, rawError: null };
+}
+
+export async function sendTelegramMessage(
+  text: string,
+  options?: SendTelegramMessageOptions,
+): Promise<boolean> {
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
-  if (!botToken || !chatId) {
+  if (!chatId) {
     console.warn(
-      "[Telegram] TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set — skipping notification."
+      "[Telegram] TELEGRAM_CHAT_ID not set - skipping notification.",
     );
     return false;
   }
 
   try {
+    const photoUrl = options?.photoUrl;
     const endpoint = photoUrl ? "sendPhoto" : "sendMessage";
-    const body: any = {
+    const body: Record<string, unknown> = {
       chat_id: chatId,
       parse_mode: "HTML",
     };
@@ -35,19 +73,14 @@ export async function sendTelegramMessage(text: string, photoUrl?: string): Prom
       body.disable_web_page_preview = true;
     }
 
-    const res = await fetch(`${TELEGRAM_API}/bot${botToken}/${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      console.error("[Telegram] Send failed:", err);
-      return false;
+    if (options?.inlineKeyboard?.length) {
+      body.reply_markup = {
+        inline_keyboard: options.inlineKeyboard,
+      };
     }
 
-    return true;
+    const result = await callTelegramApi(endpoint, body);
+    return result.ok;
   } catch (err) {
     console.error("[Telegram] Network error:", err);
     return false;
@@ -92,7 +125,15 @@ export async function notifyPaymentSubmitted(p: {
     `👉 <a href="${dashboardUrl}">Open Transactions Dashboard →</a>`,
   ].join("\n");
 
-  return sendTelegramMessage(text, p.receiptUrl || undefined);
+  return sendTelegramMessage(text, {
+    photoUrl: p.receiptUrl || undefined,
+    inlineKeyboard: [
+      [
+        { text: "✅ Approve", callback_data: `pay:approve:${p.transactionId}` },
+        { text: "❌ Reject", callback_data: `pay:reject:${p.transactionId}` },
+      ],
+    ],
+  });
 }
 
 /** Called when superadmin approves a transaction */
@@ -127,4 +168,29 @@ export async function notifyPaymentRejected(p: {
   ].join("\n");
 
   return sendTelegramMessage(text);
+}
+
+export async function answerTelegramCallbackQuery(
+  callbackQueryId: string,
+  text: string,
+  showAlert = false,
+): Promise<boolean> {
+  const result = await callTelegramApi("answerCallbackQuery", {
+    callback_query_id: callbackQueryId,
+    text,
+    show_alert: showAlert,
+  });
+  return result.ok;
+}
+
+export async function clearTelegramInlineKeyboard(
+  chatId: string | number,
+  messageId: number,
+): Promise<boolean> {
+  const result = await callTelegramApi("editMessageReplyMarkup", {
+    chat_id: chatId,
+    message_id: messageId,
+    reply_markup: { inline_keyboard: [] },
+  });
+  return result.ok;
 }

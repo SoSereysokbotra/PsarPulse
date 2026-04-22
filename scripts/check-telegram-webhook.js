@@ -2,10 +2,13 @@
  * Check Telegram Webhook Status
  * Run this to verify the webhook is working
  *
- * Usage: npx ts-node scripts/check-telegram-webhook.ts
+ * Usage: node scripts/check-telegram-webhook.js
  */
 
-import { TELEGRAM_API } from "./telegram-utils";
+// Load .env file
+require("dotenv").config({ path: ".env" });
+
+const TELEGRAM_API = "https://api.telegram.org";
 
 async function checkWebhook() {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -19,16 +22,17 @@ async function checkWebhook() {
     console.log("🔍 Checking Telegram webhook status...\n");
 
     // Get webhook info
-    const infoUrl = new URL(`/bot${botToken}/getWebhookInfo`, TELEGRAM_API);
-    const infoResponse = await fetch(infoUrl.toString());
-    const infoResult = (await infoResponse.json()) as Record<string, unknown>;
+    const infoResponse = await fetch(
+      `${TELEGRAM_API}/bot${botToken}/getWebhookInfo`,
+    );
+    const infoResult = await infoResponse.json();
 
     if (!infoResult.ok) {
       console.error("❌ Failed to get webhook info:", infoResult);
       process.exit(1);
     }
 
-    const webhookInfo = infoResult.result as Record<string, unknown>;
+    const webhookInfo = infoResult.result;
 
     console.log("✅ Webhook Status:");
     console.log(`   URL: ${webhookInfo.url || "❌ NOT SET"}`);
@@ -46,7 +50,7 @@ async function checkWebhook() {
 
     if (!webhookInfo.url) {
       console.log("\n⚠️  Webhook URL is not set!");
-      console.log("   Run: npx ts-node scripts/setup-telegram-webhook.ts");
+      console.log("   Run: node scripts/setup-telegram-webhook.js");
       process.exit(1);
     }
 
@@ -62,10 +66,7 @@ async function checkWebhook() {
     }
 
     // Get pending updates (button clicks waiting to be processed)
-    if (
-      webhookInfo.pending_update_count &&
-      Number(webhookInfo.pending_update_count) > 0
-    ) {
+    if (webhookInfo.pending_update_count > 0) {
       console.log(
         `\n📦 You have ${webhookInfo.pending_update_count} pending updates waiting to be processed`,
       );

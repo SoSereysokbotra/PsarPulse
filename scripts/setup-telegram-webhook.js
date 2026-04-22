@@ -2,10 +2,13 @@
  * Setup Telegram Webhook
  * Run this once to register your webhook with Telegram
  *
- * Usage: npx ts-node scripts/setup-telegram-webhook.ts
+ * Usage: node scripts/setup-telegram-webhook.js
  */
 
-import { TELEGRAM_API } from "./telegram-utils";
+// Load .env file
+require("dotenv").config({ path: ".env" });
+
+const TELEGRAM_API = "https://api.telegram.org";
 
 async function setupWebhook() {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
@@ -32,10 +35,9 @@ async function setupWebhook() {
 
   try {
     // Set the webhook
-    const setWebhookUrl = new URL(`/bot${botToken}/setWebhook`, TELEGRAM_API);
-    const payload: Record<string, string | boolean> = {
+    const payload = {
       url: webhookUrl,
-      allowed_updates: JSON.stringify(["callback_query"]), // Only receive button clicks
+      allowed_updates: JSON.stringify(["callback_query"]),
     };
 
     if (webhookSecret) {
@@ -43,13 +45,13 @@ async function setupWebhook() {
     }
 
     console.log("\n📤 Calling setWebhook...");
-    const response = await fetch(setWebhookUrl.toString(), {
+    const response = await fetch(`${TELEGRAM_API}/bot${botToken}/setWebhook`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
-    const result = (await response.json()) as Record<string, unknown>;
+    const result = await response.json();
 
     if (!result.ok) {
       console.error("❌ Webhook setup failed:", result);
@@ -60,12 +62,13 @@ async function setupWebhook() {
 
     // Get webhook info
     console.log("\n📋 Fetching webhook info...");
-    const infoUrl = new URL(`/bot${botToken}/getWebhookInfo`, TELEGRAM_API);
-    const infoResponse = await fetch(infoUrl.toString());
-    const infoResult = (await infoResponse.json()) as Record<string, unknown>;
+    const infoResponse = await fetch(
+      `${TELEGRAM_API}/bot${botToken}/getWebhookInfo`,
+    );
+    const infoResult = await infoResponse.json();
 
     if (infoResult.ok) {
-      const webhookInfo = infoResult.result as Record<string, unknown>;
+      const webhookInfo = infoResult.result;
       console.log("\n✅ Webhook Info:");
       console.log(`   URL: ${webhookInfo.url}`);
       console.log(
@@ -73,9 +76,7 @@ async function setupWebhook() {
       );
       console.log(
         `   Has secret: ${
-          webhookSecret && webhookInfo.url?.toString().includes(webhookSecret)
-            ? "✓"
-            : "❌"
+          webhookSecret && webhookInfo.url?.includes(webhookSecret) ? "✓" : "❌"
         }`,
       );
       console.log(
@@ -91,12 +92,6 @@ async function setupWebhook() {
     console.error("❌ Error:", error);
     process.exit(1);
   }
-}
-
-// Only allow running with proper environment
-if (!process.env.TELEGRAM_BOT_TOKEN) {
-  console.error("Error: TELEGRAM_BOT_TOKEN env variable is required");
-  process.exit(1);
 }
 
 setupWebhook();

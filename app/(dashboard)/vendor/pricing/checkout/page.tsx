@@ -25,7 +25,7 @@ import { offlineFetch } from "@/lib/pwa/offline-fetch";
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 
 type PlanId = "pro" | "premium";
-type PaymentMethod = "aba" | "acleda" | "bakong";
+type PaymentMethod = "aba";
 type CheckoutStep = "selection" | "details" | "success";
 
 // ─── MAIN COMPONENT ────────────────────────────────────────────────────────────
@@ -196,19 +196,8 @@ function CheckoutContent() {
   const getMethodDetails = (m: PaymentMethod) => {
     switch (m) {
       case "aba":
+      default:
         return { name: "ABA", color: "#005e82", icon: "/images/banks/aba.png" };
-      case "acleda":
-        return {
-          name: "ACLEDA",
-          color: "#0c3b6f",
-          icon: "/images/banks/acleda.png",
-        };
-      case "bakong":
-        return {
-          name: "BAKONG",
-          color: "#e3000f",
-          icon: "/images/banks/bakong.png",
-        };
     }
   };
 
@@ -335,7 +324,7 @@ function CheckoutContent() {
                 </p>
 
                 <div className="space-y-4">
-                  {(["aba", "acleda", "bakong"] as PaymentMethod[]).map((m) => {
+                  {(["aba"] as PaymentMethod[]).map((m) => {
                     const details = getMethodDetails(m);
                     return (
                       <button
@@ -461,8 +450,8 @@ function CheckoutContent() {
                       PsarPulse {planInfo.name}
                     </h3>
                     <p className="text-neutral-400 text-[13px] mt-1.5 leading-relaxed pr-4">
-                      PsarPulse {planInfo.name} unlocks unlimited tab
-                      completions, extended agent limits, and access to most
+                      PsarPulse {planInfo.name} unlocks advanced analytics,
+                      inventory management, and powerful business intelligence
                       features.
                     </p>
                     <p className="text-neutral-500 text-[13px] mt-3 font-medium">

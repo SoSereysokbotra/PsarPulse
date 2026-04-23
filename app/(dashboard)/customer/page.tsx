@@ -66,6 +66,11 @@ export default function PsarPulseDashboard() {
   const [loadingVendors, setLoadingVendors] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [reviewVendorId, setReviewVendorId] = useState<string | null>(null);
+
+  const handleDirections = (lat: number, lng: number) => {
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, "_blank");
+  };
 
   // --- Map State ---
   const [mapCenter, setMapCenter] = useState<[number, number]>(USER_LOCATION);
@@ -373,8 +378,11 @@ export default function PsarPulseDashboard() {
                     {selectedMapVendor.category} •{" "}
                     {selectedMapVendor.deliveryTime} mins
                   </p>
-                  <button className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all">
-                    <Navigation size={14} /> View Details
+                  <button 
+                    onClick={() => handleDirections(selectedMapVendor.coords[0], selectedMapVendor.coords[1])}
+                    className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-all"
+                  >
+                    <Navigation size={14} /> Directions
                   </button>
                 </div>
               </div>
@@ -465,6 +473,7 @@ export default function PsarPulseDashboard() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <button
+                        onClick={() => handleDirections(vendor.coords[0], vendor.coords[1])}
                         className={`flex items-center justify-center gap-2 py-3 border rounded-xl text-sm font-bold transition-all hover:-translate-y-0.5 ${
                           isDark
                             ? "border-white/10 text-slate-300 hover:bg-white/5"
@@ -475,6 +484,7 @@ export default function PsarPulseDashboard() {
                         {t("customer.actions.directions")}
                       </button>
                       <button
+                        onClick={() => setReviewVendorId(vendor.id)}
                         className={`py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all hover:-translate-y-0.5 ${isKhmer ? "font-battambang text-xs" : ""}`}
                       >
                         <MessageSquare size={16} />{" "}
@@ -509,6 +519,35 @@ export default function PsarPulseDashboard() {
             </div>
           )}
         </main>
+      )}
+
+      {reviewVendorId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className={`w-full max-w-md rounded-2xl p-6 shadow-2xl ${isDark ? "bg-slate-900 text-white border border-white/10" : "bg-white text-slate-900"}`}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Leave a Review</h3>
+              <button onClick={() => setReviewVendorId(null)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <p className={`text-sm mb-6 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+              Share your experience with this vendor.
+            </p>
+            <textarea 
+              placeholder="Write your review here..."
+              className={`w-full p-4 rounded-xl border outline-none min-h-[120px] mb-6 resize-none ${isDark ? "bg-slate-800 border-white/10 text-white focus:border-emerald-500" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-emerald-500"}`}
+            />
+            <button 
+              onClick={() => {
+                alert("Thank you for your review!");
+                setReviewVendorId(null);
+              }}
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors"
+            >
+              Submit Review
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

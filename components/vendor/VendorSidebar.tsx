@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Settings, ChevronRight, X, Crown, Sparkles, LogOut, User, CreditCard as BillingIcon } from "lucide-react";
+import { Settings, ChevronRight, X, Crown, Sparkles, LogOut, User, CreditCard as BillingIcon, Star } from "lucide-react";
 import VendorNavItem from "./VendorNavItem";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useUser } from "@/components/providers/UserProvider";
@@ -110,6 +110,17 @@ export default function VendorSidebar({
     ...link,
     active: link.active !== undefined ? link.active : currentPath === link.href,
   }));
+
+  // Automatically append Reviews if not present
+  if (!resolvedLinks.some(link => link.href.includes('/reviews'))) {
+    resolvedLinks.push({
+      icon: Star,
+      title: "Reviews",
+      khmerTitle: "ការវាយតម្លៃ",
+      href: "/vendor/reviews",
+      active: currentPath === "/vendor/reviews"
+    });
+  }
 
   return (
     <aside

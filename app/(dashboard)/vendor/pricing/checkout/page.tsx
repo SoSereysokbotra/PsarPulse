@@ -69,43 +69,43 @@ function CheckoutContent() {
   const planInfo = {
     pro: {
       name: "Pro",
-      price: billingParam === "annual" ? "$30.00" : "$0.01",
+      price: billingParam === "annual" ? "$29.90" : "$2.99",
       period: billingParam === "annual" ? "year" : "month",
       features: [
-        "Standard listings",
-        "Basic analytics",
-        "Email support",
-        "Custom domain",
+        "Everything in Free",
+        "Unlimited Transaction Logs",
+        "Advanced Analytics",
+        "Custom Expense Categories",
       ],
     },
     premium: {
       name: "Premium",
-      price: billingParam === "annual" ? "$70.00" : "$0.02",
+      price: billingParam === "annual" ? "$69.90" : "$6.99",
       period: billingParam === "annual" ? "year" : "month",
       features: [
-        "Unlimited listings",
-        "Priority placement",
-        "Advanced analytics",
-        "24/7 Premium support",
+        "Everything in Pro",
+        "AI Sales Forecaster",
+        "Weather Demand Intelligence",
+        "Gemini Business Assistant",
       ],
     },
   }[planParam || "pro"];
 
   const planId = planParam || "pro";
 
-  const USD_TO_KHR = 4170.2287;
+  const USD_TO_KHR = 4013.38; // 2.99 * 4013.38 ≈ 12,000 KHR
   const basePriceUSD = planId === "premium" 
-      ? (isAnnual ? 70.00 : 0.02)
-      : (isAnnual ? 30.00 : 0.01);
+      ? (isAnnual ? 69.90 : 6.99)
+      : (isAnnual ? 29.90 : 2.99);
   const displayPriceUSD = `$${basePriceUSD.toFixed(2)}`;
-  const displayPriceKHR = `KHR ${(basePriceUSD * USD_TO_KHR).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const displayPriceKHR = `KHR ${(basePriceUSD * USD_TO_KHR).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   const displayPrice = currency === "USD" ? displayPriceUSD : displayPriceKHR;
   const displayPeriod = isAnnual ? "year" : "month";
   
-  const monthlyEquivalentUSD = planId === "premium" ? (70 / 12) : (30 / 12);
+  const monthlyEquivalentUSD = planId === "premium" ? (69.90 / 12) : (29.90 / 12);
   const discountText = currency === "USD" 
     ? `$${monthlyEquivalentUSD.toFixed(2)}/month` 
-    : `KHR ${(monthlyEquivalentUSD * USD_TO_KHR).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/month`;
+    : `KHR ${(monthlyEquivalentUSD * USD_TO_KHR).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/month`;
 
   const startPayment = async (selectedMethod: PaymentMethod) => {
     setMethod(selectedMethod);

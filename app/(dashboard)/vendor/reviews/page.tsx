@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Star, MessageSquare, Clock, ArrowLeft, LayoutDashboard, CircleDollarSign, Receipt, Users, Package } from "lucide-react";
+import { Star, MessageSquare, Clock, ArrowLeft, LayoutDashboard, CircleDollarSign, Receipt, Users, Package, FileBarChart } from "lucide-react";
 import VendorDashboardLayout from "@/components/vendor/VendorDashboardLayout";
+import { useUser } from "@/components/providers/UserProvider";
 
 interface Review {
   id: string;
@@ -16,6 +17,7 @@ interface Review {
 }
 
 export default function VendorReviewsPage() {
+  const { vendor, user, loading: userLoading } = useUser();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,43 +42,71 @@ export default function VendorReviewsPage() {
     ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1)
     : "0.0";
 
+  const plan = (vendor?.plan?.name as "free" | "pro" | "premium") || "free";
+  const baseHref = plan === "premium" ? "/vendor/premium" : plan === "pro" ? "/vendor/pro" : "/vendor";
+
+  const navLinks = [
+    {
+      icon: LayoutDashboard,
+      title: "Dashboard",
+      khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
+      href: baseHref,
+    },
+    {
+      icon: CircleDollarSign,
+      title: "Sales",
+      khmerTitle: "ការលក់",
+      href: `${baseHref}/sales`,
+    },
+    {
+      icon: Receipt,
+      title: "Expenses",
+      khmerTitle: "ចំណាយ",
+      href: `${baseHref}/expenses`,
+    },
+    {
+      icon: Users,
+      title: "Customers",
+      khmerTitle: "អតិថិជន",
+      href: `${baseHref}/customer`,
+    },
+    {
+      icon: Package,
+      title: "Inventory",
+      khmerTitle: "ស្តុក",
+      href: `${baseHref}/inventory`,
+    },
+  ];
+
+  if (plan === "pro" || plan === "premium") {
+    navLinks.push({
+      icon: FileBarChart,
+      title: "Reports",
+      khmerTitle: "របាយការណ៍",
+      href: `${baseHref}/reports`,
+    });
+  }
+
+  const getInitials = (name: string) => {
+    if (!name) return "??";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return name.trim().slice(0, 2).toUpperCase();
+  };
+
+  const displayName = user?.fullName || (user as any)?.full_name || vendor?.businessName || (user?.email ? user.email.split('@')[0] : "User");
+  const displayInitials = getInitials(displayName);
+
   return (
     <VendorDashboardLayout
       title="Customer Reviews"
-      plan="free" // This can be dynamic based on user.plan
+      plan={plan}
       currentPath="/vendor/reviews"
-      navLinks={[
-        {
-          icon: LayoutDashboard,
-          title: "Dashboard",
-          khmerTitle: "ផ្ទាំងគ្រប់គ្រង",
-          href: "/vendor",
-        },
-        {
-          icon: CircleDollarSign,
-          title: "Sales",
-          khmerTitle: "ការលក់",
-          href: "/vendor/sales",
-        },
-        {
-          icon: Receipt,
-          title: "Expenses",
-          khmerTitle: "ចំណាយ",
-          href: "/vendor/expenses",
-        },
-        {
-          icon: Users,
-          title: "Customers",
-          khmerTitle: "អតិថិជន",
-          href: "/vendor/customer",
-        },
-        {
-          icon: Package,
-          title: "Inventory",
-          khmerTitle: "ស្តុក",
-          href: "/vendor/inventory",
-        },
-      ]}
+      settingsHref={`${baseHref}/settings`}
+      userName={displayName}
+      userInitials={displayInitials}
+      userEmail={user?.email || ""}
+      navLinks={navLinks}
     >
       <div className="flex-1 overflow-y-auto px-5 lg:px-9 py-[26px]">
         <div className="max-w-5xl mx-auto space-y-8">

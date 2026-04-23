@@ -27,6 +27,8 @@ interface Plan {
   khmer: string;
   monthlyPrice: string;
   annualPrice: string;
+  monthlyRiel?: string;
+  annualRiel?: string;
   period: string;
   annualPeriod: string;
   description: string;
@@ -42,6 +44,8 @@ const plans: Plan[] = [
     khmer: "ឥតគិតថ្លៃ",
     monthlyPrice: "$0",
     annualPrice: "$0",
+    monthlyRiel: "0 ៛",
+    annualRiel: "0 ៛",
     period: "/month",
     annualPeriod: "/year",
     description:
@@ -65,8 +69,10 @@ const plans: Plan[] = [
     id: "pro",
     name: "Pro",
     khmer: "ផែនការ Pro",
-    monthlyPrice: "$3",
-    annualPrice: "$30",
+    monthlyPrice: "$2.99",
+    annualPrice: "$29.90",
+    monthlyRiel: "12,000 ៛",
+    annualRiel: "120,000 ៛",
     period: "/month",
     annualPeriod: "/year",
     description:
@@ -91,8 +97,10 @@ const plans: Plan[] = [
     id: "premium",
     name: "Premium",
     khmer: "ផែនការ Premium",
-    monthlyPrice: "$7",
-    annualPrice: "$70",
+    monthlyPrice: "$6.99",
+    annualPrice: "$69.90",
+    monthlyRiel: "28,500 ៛",
+    annualRiel: "285,000 ៛",
     period: "/month",
     annualPeriod: "/year",
     description:
@@ -351,6 +359,11 @@ export default function PricingPage() {
                         {period}
                       </span>
                     </div>
+                    {plan.monthlyRiel && (
+                      <div className="mt-1 text-sm text-slate-400 font-medium">
+                        ~ {isAnnual ? plan.annualRiel : plan.monthlyRiel} {period}
+                      </div>
+                    )}
                     <p className="text-sm text-slate-500 mt-2 leading-relaxed">
                       {plan.description}
                     </p>

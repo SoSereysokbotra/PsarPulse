@@ -67,6 +67,34 @@ export default function PsarPulseDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [reviewVendorId, setReviewVendorId] = useState<string | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  const submitReview = async () => {
+    if (!reviewVendorId) return;
+    setSubmittingReview(true);
+    try {
+      const res = await fetch("/api/customer/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vendorId: reviewVendorId, rating: reviewRating, comment: reviewComment }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("Thank you for your review!");
+        setReviewVendorId(null);
+        setReviewComment("");
+        setReviewRating(5);
+      } else {
+        alert("Failed to submit review: " + data.message);
+      }
+    } catch (err) {
+      alert("An error occurred");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   const handleDirections = (lat: number, lng: number) => {
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, "_blank");
@@ -530,21 +558,32 @@ export default function PsarPulseDashboard() {
                 <X size={20} />
               </button>
             </div>
-            <p className={`text-sm mb-6 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+            <p className={`text-sm mb-4 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
               Share your experience with this vendor.
             </p>
+            <div className="flex gap-2 mb-6">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button 
+                  key={star} 
+                  onClick={() => setReviewRating(star)}
+                  className="focus:outline-none transition-transform hover:scale-110"
+                >
+                  <Star size={28} className={star <= reviewRating ? "text-yellow-500 fill-yellow-500" : "text-slate-300 dark:text-slate-600"} />
+                </button>
+              ))}
+            </div>
             <textarea 
               placeholder="Write your review here..."
+              value={reviewComment}
+              onChange={(e) => setReviewComment(e.target.value)}
               className={`w-full p-4 rounded-xl border outline-none min-h-[120px] mb-6 resize-none ${isDark ? "bg-slate-800 border-white/10 text-white focus:border-emerald-500" : "bg-slate-50 border-slate-200 text-slate-900 focus:border-emerald-500"}`}
             />
             <button 
-              onClick={() => {
-                alert("Thank you for your review!");
-                setReviewVendorId(null);
-              }}
-              className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors"
+              onClick={submitReview}
+              disabled={submittingReview}
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
             >
-              Submit Review
+              {submittingReview ? "Submitting..." : "Submit Review"}
             </button>
           </div>
         </div>

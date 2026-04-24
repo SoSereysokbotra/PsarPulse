@@ -7,7 +7,11 @@
     "dev:force-webpack": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "npx tsx lib/db/migrate.ts",
+    "db:push": "npx drizzle-kit push",
+    "db:generate": "npx drizzle-kit generate",
+    "db:migrate:oauth": "npx tsx scripts/apply-oauth-migration.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

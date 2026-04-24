@@ -43,6 +43,13 @@
       "when": 1774839663587,
       "tag": "0005_sleepy_demogoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1745482800000,
+      "tag": "0006_oauth_tables",
+      "breakpoints": true
     }
   ]
 }

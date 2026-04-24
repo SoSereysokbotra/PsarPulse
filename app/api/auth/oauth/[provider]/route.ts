@@ -43,10 +43,14 @@ export async function GET(
     const authUrl = adapter.getAuthUrl(state, codeChallenge);
 
     return NextResponse.redirect(authUrl);
-  } catch (error) {
+  } catch (error: any) {
     console.error(`[OAuth Start Error] ${provider}:`, error);
     return NextResponse.json(
-      { error: "Failed to initialize OAuth flow" },
+      { 
+        error: "Failed to initialize OAuth flow", 
+        details: error?.message || String(error),
+        stack: error?.stack 
+      },
       { status: 500 }
     );
   }

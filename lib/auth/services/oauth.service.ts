@@ -28,17 +28,22 @@ export class GoogleAdapter implements OAuthAdapter {
   }
 
   getAuthUrl(state: string, codeChallenge?: string) {
+    if (!this.config.clientId) {
+      throw new Error("Missing GOOGLE_CLIENT_ID environment variable");
+    }
+    
     const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
     url.searchParams.append("response_type", "code");
     url.searchParams.append("state", state);
     url.searchParams.append("redirect_uri", this.config.callbackUrl!);
-    url.searchParams.append("client_id", this.config.clientId!);
+    url.searchParams.append("client_id", this.config.clientId);
     url.searchParams.append("scope", "openid email profile");
     
     if (codeChallenge) {
       url.searchParams.append("code_challenge", codeChallenge);
       url.searchParams.append("code_challenge_method", "S256");
     }
+    console.log("[Google OAuth] Generated Auth URL:", url.toString());
     return url.toString();
   }
 

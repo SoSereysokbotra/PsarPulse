@@ -137,69 +137,12 @@ export class FacebookAdapter implements OAuthAdapter {
   }
 }
 
-export class TikTokAdapter implements OAuthAdapter {
-  private config = {
-    get clientKey() { return authConfig.oauth.tiktok.clientKey; },
-    get clientSecret() { return authConfig.oauth.tiktok.clientSecret; },
-    get callbackUrl() { return authConfig.oauth.tiktok.redirectUri; },
-  };
-
-  getAuthUrl(state: string) {
-    const rootUrl = "https://www.tiktok.com/v2/auth/authorize/";
-    const options: any = {
-      client_key: this.config.clientKey!,
-      scope: "user.info.basic",
-      response_type: "code",
-      redirect_uri: this.config.callbackUrl!,
-      state: state,
-    };
-    return `${rootUrl}?${new URLSearchParams(options).toString()}`;
-  }
-
-  async exchangeCode(code: string) {
-    const body: any = {
-      client_key: this.config.clientKey!,
-      client_secret: this.config.clientSecret!,
-      code,
-      grant_type: "authorization_code",
-      redirect_uri: this.config.callbackUrl!,
-    };
-
-    const response = await fetch("https://open.tiktokapis.com/v2/oauth/token/", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(body).toString(),
-    });
-
-    if (!response.ok) throw new Error("TikTok token exchange failed");
-    return response.json();
-  }
-
-  async getUserProfile(accessToken: string): Promise<OAuthProfile> {
-    const response = await fetch(
-      "https://open.tiktokapis.com/v2/user/info/?fields=open_id,union_id,avatar_url,display_name",
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    const dataObj = await response.json();
-    if (dataObj.error && dataObj.error.code !== "ok") throw new Error(dataObj.error.message || "TikTok profile fetch failed");
-    
-    // Sometimes the structure puts user inside data
-    const user = dataObj.data?.user || dataObj;
-    
-    return {
-      id: user.union_id || user.open_id,
-      email: null, // TikTok basic scope doesn't guarantee email
-      name: user.display_name || null,
-    };
-  }
-}
 
 export class OAuthAdapterFactory {
-  static getAdapter(provider: "google" | "facebook" | "tiktok"): OAuthAdapter {
+  static getAdapter(provider: "google" | "facebook"): OAuthAdapter {
     switch (provider) {
       case "google": return new GoogleAdapter();
       case "facebook": return new FacebookAdapter();
-      case "tiktok": return new TikTokAdapter();
       default: throw new Error(`Unsupported provider: ${provider}`);
     }
   }

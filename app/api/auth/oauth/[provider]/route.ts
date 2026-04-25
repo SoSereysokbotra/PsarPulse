@@ -3,14 +3,14 @@ import { OAuthAdapterFactory } from "@/lib/auth/services/oauth.service";
 import { OAuthStateRepository } from "@/lib/db/repositories/oauth-states.repository";
 import crypto from "crypto";
 
-const ALLOWED_PROVIDERS = ["google", "facebook", "tiktok"] as const;
+const ALLOWED_PROVIDERS = ["google", "facebook"] as const;
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ provider: string }> }
 ) {
   const resolvedParams = await params;
-  const provider = resolvedParams.provider as "google" | "facebook" | "tiktok";
+  const provider = resolvedParams.provider as "google" | "facebook";
 
   if (!ALLOWED_PROVIDERS.includes(provider)) {
     return NextResponse.json({ error: "Invalid provider" }, { status: 400 });

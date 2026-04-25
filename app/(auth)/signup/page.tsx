@@ -179,7 +179,7 @@ export default function SignupPageAlt() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {/* Google */}
         <button
           type="button"
@@ -237,37 +237,7 @@ export default function SignupPageAlt() {
           </span>
         </button>
 
-        {/* TikTok */}
-        <button
-          type="button"
-          onClick={() => window.location.href = "/api/auth/oauth/tiktok"}
-          disabled={isLoading}
-          className={`flex items-center justify-center gap-2 px-4 py-3 border rounded-xl transition-all disabled:opacity-50 ${
-            isDark
-              ? "border-dark-border bg-dark-surface hover:bg-dark-surface-hover hover:border-white/20 text-white"
-              : "border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:bg-slate-100 text-slate-700"
-          }`}
-        >
-          <svg className="w-5 h-5" viewBox="0 0 448 512">
-            <path
-              fill="#24f6f0"
-              d="M448 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 185 188.31v89.89a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 381 102.39a121.43 121.43 0 0 0 67 20.14Z"
-            />
-            <path
-              fill="#fe2c55"
-              d="M438 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 175 188.31v89.89a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 371 102.39a121.43 121.43 0 0 0 67 20.14Z"
-            />
-            <path
-              fill="#000000"
-              d="M443 209.91a210.06 210.06 0 0 1-122.77-39.25V349.38A162.55 162.55 0 1 1 180 188.31v89.89a74.62 74.62 0 1 0 52.23 71.18V0l88 0a121.18 121.18 0 0 0 1.86 22.17h0A122.18 122.18 0 0 0 376 102.39a121.43 121.43 0 0 0 67 20.14Z"
-            />
-          </svg>
-          <span
-            className={`text-sm font-medium ${isDark ? "text-white" : "text-slate-700"} ${isKhmer ? "font-battambang text-xs" : ""}`}
-          >
-            TikTok
-          </span>
-        </button>
+
       </div>
 
       <p

@@ -51,11 +51,7 @@ export const authConfig = {
       get clientSecret() { return process.env.FACEBOOK_CLIENT_SECRET; },
       get redirectUri() { return process.env.FACEBOOK_CALLBACK_URL; }
     },
-    tiktok: {
-      get clientKey() { return process.env.TIKTOK_CLIENT_KEY; },
-      get clientSecret() { return process.env.TIKTOK_CLIENT_SECRET; },
-      get redirectUri() { return process.env.TIKTOK_CALLBACK_URL; }
-    }
+
   }
 };
 

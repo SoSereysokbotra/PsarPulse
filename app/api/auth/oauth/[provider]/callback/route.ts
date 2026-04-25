@@ -7,14 +7,14 @@ import { TokenUtil } from "@/lib/auth/utils/token.util";
 import { CookieUtil } from "@/lib/auth/utils/cookie.util";
 import { HashUtil } from "@/lib/auth/utils/hash.util";
 
-const ALLOWED_PROVIDERS = ["google", "facebook", "tiktok"] as const;
+const ALLOWED_PROVIDERS = ["google", "facebook"] as const;
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ provider: string }> }
 ) {
   const resolvedParams = await params;
-  const provider = resolvedParams.provider as "google" | "facebook" | "tiktok";
+  const provider = resolvedParams.provider as "google" | "facebook";
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.url;
 

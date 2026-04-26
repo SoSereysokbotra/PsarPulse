@@ -191,40 +191,6 @@ export default function AdminDashboardPage() {
               : "High-level summary of the market's digital ecosystem."}
           </p>
         </div>
-
-        {/* Live Weather & Impact Widget */}
-        <div
-          className={`flex items-center rounded-xl border shadow-sm p-1.5 pr-5 ${isDark ? "bg-[#161b22] border-white/10" : "bg-white border-slate-200/60"}`}
-        >
-          <div
-            className={`rounded-lg p-2 mr-3 border ${isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-100"}`}
-          >
-            <CloudLightning className="h-5 w-5 text-indigo-500" />
-          </div>
-          <div
-            className={`flex flex-col pr-4 border-r ${isDark ? "border-white/10" : "border-slate-100"}`}
-          >
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-sm font-semibold ${isDark ? "text-white" : "text-slate-900"}`}
-              >
-                26°C {isKhmer ? "មានផ្គររន្ទះ" : "Thunderstorm"}
-              </span>
-            </div>
-            <p className="text-xs text-slate-500">
-              {isKhmer ? "ភ្នំពេញ" : "Phnom Penh"}
-            </p>
-          </div>
-          <div className="pl-4">
-            <p className="text-xs text-slate-500 mb-0.5">
-              {isKhmer ? "ផលប៉ះពាល់ដែលបានទស្សទាយ" : "Predicted Impact"}
-            </p>
-            <p className="text-sm font-medium text-red-600 flex items-center gap-1">
-              <ArrowDownRight className="h-3.5 w-3.5" />
-              15% {isKhmer ? "ចំនួនមនុស្សដើរ" : "Footfall"}
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Global Search & Quick Actions */}

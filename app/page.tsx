@@ -129,7 +129,7 @@ export default function LandingPage() {
       heroTitle1: "អាជីវកម្មឆ្លាតវៃសម្រាប់",
       heroTitle2: "អ្នកលក់តាមផ្សារនៅកម្ពុជា",
       heroDesc:
-        "ការវិភាគទিন្នន័យ និងការព្យាករណ៍ AI សម្រាប់សេដ្ឋកិច្ចក្រៅប្រព័ន្ធរបស់កម្ពុជា។ កត់ត្រាការលក់តាមដាននិងអនុញ្ញាតឱ្យ AI រៀបចំដំណើរការអាជីវកម្មអ្នក។",
+        "ការវិភាគទិន្នន័យ និងការព្យាករណ៍ AI សម្រាប់សេដ្ឋកិច្ចក្រៅប្រព័ន្ធរបស់កម្ពុជា។ កត់ត្រាការលក់តាមដាននិងអនុញ្ញាតឱ្យ AI រៀបចំដំណើរការអាជីវកម្មអ្នក។",
       btnVendor: "ចាប់ផ្តើមជាអ្នកលក់ →",
       btnCustomer: "ចុះឈ្មោះជាអតិថិជន",
       btnDemo: "ឬសាកល្បងវេបសាយគំរូ",
@@ -330,9 +330,9 @@ export default function LandingPage() {
                       href="/login"
                       className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors text-left ${resolvedTheme === "light" ? "hover:bg-slate-50" : "hover:bg-white/5"}`}
                     >
-                      <div className="w-7 h-7 rounded-md bg-brand-primary/10 flex items-center justify-center text-sm shrink-0">
+                      {/* <div className="w-7 h-7 rounded-md bg-brand-primary/10 flex items-center justify-center text-sm shrink-0">
                         🏪
-                      </div>
+                      </div> */}
                       <div>
                         <p
                           className={`text-[13px] font-medium leading-tight ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
@@ -365,9 +365,9 @@ export default function LandingPage() {
                       href="/login"
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
                     >
-                      <div className="w-7 h-7 rounded-md bg-blue-400/10 flex items-center justify-center text-sm shrink-0">
+                      {/* <div className="w-7 h-7 rounded-md bg-blue-400/10 flex items-center justify-center text-sm shrink-0">
                         🛍️
-                      </div>
+                      </div> */}
                       <div>
                         <p
                           className="text-[13px] font-medium text-white leading-tight"
@@ -443,9 +443,9 @@ export default function LandingPage() {
                       href="/vendor/register"
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
                     >
-                      <div className="w-7 h-7 rounded-md bg-brand-primary/10 flex items-center justify-center text-sm shrink-0">
+                      {/* <div className="w-7 h-7 rounded-md bg-brand-primary/10 flex items-center justify-center text-sm shrink-0">
                         🏪
-                      </div>
+                      </div> */}
                       <div>
                         <p
                           className="text-[13px] font-medium text-white leading-tight"
@@ -478,9 +478,9 @@ export default function LandingPage() {
                       href="/signup"
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
                     >
-                      <div className="w-7 h-7 rounded-md bg-blue-400/10 flex items-center justify-center text-sm shrink-0">
+                      {/* <div className="w-7 h-7 rounded-md bg-blue-400/10 flex items-center justify-center text-sm shrink-0">
                         🛍️
-                      </div>
+                      </div> */}
                       <div>
                         <p
                           className="text-[13px] font-medium text-white leading-tight"
@@ -1176,7 +1176,7 @@ export default function LandingPage() {
                 className={`mb-1 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
               >
                 <span className="text-[40px] font-bold tracking-[-0.03em]">
-                  $3
+                  $2.99
                 </span>
                 <span
                   className={`text-sm ml-1 transition-colors ${resolvedTheme === "light" ? "text-slate-500" : "text-muted"}`}
@@ -1222,7 +1222,7 @@ export default function LandingPage() {
                 className={`mb-6 transition-colors ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
               >
                 <span className="text-[40px] font-bold tracking-[-0.03em]">
-                  $7
+                  $6.99
                 </span>
                 <span
                   className={`text-sm ml-1 transition-colors ${resolvedTheme === "light" ? "text-slate-500" : "text-muted"}`}

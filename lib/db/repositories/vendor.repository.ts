@@ -41,10 +41,7 @@ export class VendorRepository {
    */
   static async findAllActive() {
     return await db.query.vendors.findMany({
-      where: and(
-        eq(vendors.isVerified, true),
-        eq(vendors.status, "active")
-      ),
+      where: eq(vendors.status, "active"),
     });
   }
 }

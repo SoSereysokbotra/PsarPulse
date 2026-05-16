@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-export const dynamic = "force-dynamic";
 import { TokenUtil } from "@/lib/auth/utils/token.util";
 import { authConfig } from "@/lib/auth/config";
 import { VendorRepository } from "@/lib/db/repositories/vendor.repository";
 import { TrafficRepository } from "@/lib/db/repositories/traffic.repository";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get(authConfig.cookies.accessToken)?.value;

@@ -42,7 +42,7 @@ import { offlineFetch } from "@/lib/pwa/offline-fetch";
 
 // ─── Constants & Types ────────────────────────────────────────────────────────
 
-type TabId = "overview" | "recurring" | "insights" | "forecast" | "history";
+type TabId = "overview" | "recurring" | "insights" | "history";
 type CatColor = "emerald" | "indigo" | "violet" | "amber" | "red" | "slate";
 
 interface ChatMsg {
@@ -195,7 +195,6 @@ const geminiTips = [
 
 const TABS: { id: TabId; label: string; khmer: string }[] = [
   { id: "overview", label: "Overview", khmer: "ទិដ្ឋភាពទូទៅ" },
-  { id: "forecast", label: "Forecast", khmer: "ការព្យាករណ៍" },
   { id: "history", label: "Expense History", khmer: "ប្រវត្តិចំណាយ" },
 ];
 
@@ -628,62 +627,7 @@ export default function PremiumExpensesPage() {
           </div>
         )}
 
-        {activeTab === "forecast" && (
-          <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-[14px] overflow-hidden shadow-sm transition-colors">
-             <div className="px-[26px] py-[18px] border-b border-[#f0f2f5] dark:border-white/5 flex items-center justify-between transition-colors">
-              <div>
-                <div className="text-[14px] font-semibold text-[#111827] dark:text-white">
-                  {isKhmer ? "ការព្យាករណ៍ចំណាយ AI — ៧ ថ្ងៃបន្ទាប់" : "AI Expense Forecast — Next 7 Days"}
-                </div>
-                <div className="text-[11px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                  {isKhmer ? "ការព្យាករណ៍ចំណាយ" : "Expense forecast"} · {isKhmer ? "សរុបដែលបានរំពឹងទុក" : "Predicted total"}: <strong className="text-[#29B28D]">{liveForecastTotal}</strong> · {isKhmer ? "ភាពជឿជាក់" : "confidence"} {liveForecastConfidence}
-                </div>
-              </div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[rgba(41,178,141,0.1)] text-[#29B28D] text-[10px] font-bold rounded-full border border-[rgba(41,178,141,0.2)]"><Brain className="w-2.5 h-2.5" /> AI</span>
-            </div>
-            <div className="p-[22px]">
-              <div className="flex items-end gap-2 h-28 mb-4">
-                {weeklyChartData.map((h, i) => {
-                  const dayLabels = isKhmer 
-                    ? ["ចន្ទ", "អង្គារ", "ពុធ", "ព្រហ", "សុក្រ", "សៅរ៍", "អាទិត្យ"]
-                    : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-                  const day = dayLabels[i];
-                  const isToday = i === (now.getDay() + 6) % 7;
-                  return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-                      <div className="w-full relative rounded-t-[6px] transition-colors" style={{ height: "96px", background: isToday ? "rgba(41,178,141,0.15)" : "" }}>
-                        <div className={`absolute bottom-0 w-full rounded-t-[6px] ${isToday ? "bg-[#29B28D]" : "bg-[#d1d5db] dark:bg-white/10"}`} style={{ height: `${(h / maxWeekly) * 100}%` }} />
-                      </div>
-                      <span className="text-[10px] text-[#9ca3af] dark:text-[#7d8590]">{day}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="space-y-2 mt-6">
-                {liveForecastItems.map((fi, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-[#f7f8fa] dark:bg-[#161B22] rounded-[10px] border border-[#f0f2f5] dark:border-white/5 transition-colors">
-                    <div className="flex-1">
-                      <p className="text-[13.5px] font-semibold text-[#111827] dark:text-white">
-                        {isKhmer 
-                          ? categoriesList.find(c => c.name === fi.category)?.khmer || fi.category 
-                          : fi.category}
-                      </p>
-                      <p className="text-[11.5px] text-[#6b7280] dark:text-[#7d8590] mt-0.5">
-                        {isKhmer ? "និន្នាការតាមរដូវកាល ឬប្រវត្តិ" : fi.reason}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[14px] font-bold text-[#111827] dark:text-white">{fi.predicted}</p>
-                      <span className={`text-[11px] font-bold flex items-center justify-end gap-0.5 ${fi.up === true ? "text-[#ef4444]" : fi.up === false ? "text-[#29B28D]" : "text-[#9ca3af] dark:text-[#7d8590]"}`}>
-                        {fi.up === true && <TrendingUp className="w-3 h-3" />} {isKhmer ? (fi.up === true ? "កើន" : fi.up === false ? "ថយ" : "ដដែល") : fi.change} {fi.change}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {activeTab === "history" && (
           <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-[14px] overflow-hidden shadow-sm transition-colors">

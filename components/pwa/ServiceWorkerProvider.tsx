@@ -24,8 +24,14 @@ export function ServiceWorkerProvider({ children }: { children: React.ReactNode 
       });
 
       window.addEventListener("online", () => {
-        processQueue();
+        // Wait for connection to stabilize before syncing
+        setTimeout(() => processQueue(), 2000);
       });
+      
+      // Process on initial load if online
+      if (navigator.onLine) {
+        setTimeout(() => processQueue(), 1000);
+      }
     }
   }, []);
 

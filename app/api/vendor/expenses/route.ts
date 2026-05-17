@@ -4,8 +4,6 @@ import { authConfig } from "@/lib/auth/config";
 import { VendorRepository } from "@/lib/db/repositories/vendor.repository";
 import { ExpensesRepository } from "@/lib/db/repositories/expenses.repository";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(request: NextRequest) {
   const token = request.cookies.get(authConfig.cookies.accessToken)?.value;
   if (!token) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

@@ -42,7 +42,26 @@ export async function removeFromQueue(id: string) {
   await deleteFromStore("sync-queue", id);
 }
 
+let isProcessing = false;
+
 export async function processQueue() {
+  if (typeof navigator !== "undefined" && navigator.locks) {
+    await navigator.locks.request("sync-queue-process", { ifAvailable: true }, async (lock) => {
+      if (!lock) return; // Already processing in this or another tab
+      await doProcessQueue();
+    });
+  } else {
+    if (isProcessing) return;
+    isProcessing = true;
+    try {
+      await doProcessQueue();
+    } finally {
+      isProcessing = false;
+    }
+  }
+}
+
+async function doProcessQueue() {
   try {
     const requests = await getQueuedRequests();
     if (requests.length === 0) return;

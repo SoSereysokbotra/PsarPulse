@@ -59,11 +59,29 @@ export async function PATCH(
     const body = await request.json();
     const { status, isPublic } = body;
 
+    const vendor = await db.query.vendors.findFirst({
+      where: eq(vendors.id, id),
+    });
+
+    if (!vendor) {
+      return NextResponse.json({ success: false, message: "Vendor not found" }, { status: 404 });
+    }
+
     const updateData: any = { updatedAt: new Date() };
     if (status !== undefined) updateData.status = status;
     if (isPublic !== undefined) updateData.isPublic = isPublic;
 
     await db.update(vendors).set(updateData).where(eq(vendors.id, id));
+
+    if (status !== undefined && (status === "blocked" || status === "active")) {
+      await db.update(users).set({ status }).where(eq(users.id, vendor.userId));
+
+      if (status === "blocked") {
+        // Option to delete refresh tokens so they can't get new access tokens
+        const { refreshTokens } = await import("@/lib/db/schema");
+        await db.delete(refreshTokens).where(eq(refreshTokens.userId, vendor.userId));
+      }
+    }
 
     return NextResponse.json({ success: true, message: "Vendor updated" });
   } catch (error) {

@@ -59,7 +59,7 @@ export default function MarketPulsePage() {
   };
 
   useEffect(() => {
-    fetch("/api/public/vendors?location=true")
+    fetch(`/api/public/vendors?location=true&t=${Date.now()}`, { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {

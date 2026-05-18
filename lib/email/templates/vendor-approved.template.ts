@@ -20,7 +20,6 @@ export const getVendorApprovedEmailTemplate = (
     <mj-column>
       <mj-button href="${safeActivationLink}">Activate My Account</mj-button>
       <mj-text align="center" color="#666666" font-size="12px">This link expires in 24 hours.</mj-text>
-      <mj-text align="center" color="#888888" font-size="12px">Or copy and paste this URL:<br />${safeActivationLink}</mj-text>
     </mj-column>
   </mj-section>
   `;

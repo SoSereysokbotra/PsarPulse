@@ -62,12 +62,6 @@ export function renderMjmlTemplate({
     </mj-style>
   </mj-head>
   <mj-body background-color="#ffffff">
-    <mj-section padding="40px 24px 20px">
-      <mj-column>
-        <mj-image href="${websiteHref}" src="${logoUrl}" alt="${APP_NAME}" width="60px" align="center" css-class="no-link-style" />
-      </mj-column>
-    </mj-section>
-
     ${content}
 
     <mj-section padding="40px 24px 20px">

@@ -681,6 +681,19 @@ export default function VendorDirectoryPage() {
                 </button>
                 <button
                   onClick={() => {
+                    setWarnSubject(isKhmer ? "ការព្រមានពីការវាយតម្លៃទាបលើ PsarPulse" : "Warning Regarding Your Vendor Rating on PsarPulse");
+                    setWarnMessage("");
+                    setWarnSuccess("");
+                    setWarnError("");
+                    setShowWarnModal(true);
+                  }}
+                  className={`py-3 px-4 rounded-2xl font-bold text-sm transition-all border ${isDark ? "bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border-amber-500/20" : "bg-amber-50 text-amber-600 hover:bg-amber-100 border-amber-200"}`}
+                  title={isKhmer ? "ផ្ញើការព្រមាន" : "Send Warning Email"}
+                >
+                  <AlertTriangle className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => {
                     handleDeleteVendor(selectedVendor.id);
                     setSelectedVendor(null);
                   }}

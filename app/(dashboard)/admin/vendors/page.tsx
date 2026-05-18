@@ -16,6 +16,9 @@ import {
   Store,
   Phone,
   Clock,
+  Star,
+  AlertTriangle,
+  Mail,
 } from "lucide-react";
 import EllipsisVertical from "lucide-react/dist/esm/icons/ellipsis-vertical";
 import { useLanguage } from "@/components/providers/LanguageProvider";
@@ -40,6 +43,16 @@ export default function VendorDirectoryPage() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [tierFilter, setTierFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  // Reviews & Warning Email state
+  const [vendorReviews, setVendorReviews] = useState<any>(null);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [showWarnModal, setShowWarnModal] = useState(false);
+  const [warnSubject, setWarnSubject] = useState("");
+  const [warnMessage, setWarnMessage] = useState("");
+  const [warnSending, setWarnSending] = useState(false);
+  const [warnSuccess, setWarnSuccess] = useState("");
+  const [warnError, setWarnError] = useState("");
 
   useEffect(() => {
     async function fetchVendors() {
@@ -86,6 +99,56 @@ export default function VendorDirectoryPage() {
       setLoading(false);
     }
   };
+
+  const fetchVendorReviews = async (vendorId: string) => {
+    setReviewsLoading(true);
+    setVendorReviews(null);
+    try {
+      const res = await fetch(`/api/admin/vendors/${vendorId}/reviews`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) setVendorReviews(json.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch reviews", err);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const handleSendWarn = async (vendorId: string) => {
+    setWarnSending(true);
+    setWarnSuccess("");
+    setWarnError("");
+    try {
+      const res = await fetch(`/api/admin/vendors/${vendorId}/warn`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: warnSubject, message: warnMessage }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setWarnSuccess(isKhmer ? "ផ្ញើការព្រមានដោយជោគជ័យ!" : "Warning email sent successfully!");
+        setWarnMessage("");
+      } else {
+        setWarnError(json.message || "Failed to send.");
+      }
+    } catch {
+      setWarnError(isKhmer ? "បរាជ័យក្នុងការផ្ញើ" : "Failed to send warning.");
+    } finally {
+      setWarnSending(false);
+    }
+  };
+
+  // Auto-load reviews when vendor detail modal opens
+  useEffect(() => {
+    if (selectedVendor) {
+      fetchVendorReviews(selectedVendor.id);
+    } else {
+      setVendorReviews(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedVendor?.id]);
 
   const statusLabel = (status: string) => {
     if (!isKhmer) return status;
@@ -272,6 +335,9 @@ export default function VendorDirectoryPage() {
                 <th className="px-6 py-4">
                   {isKhmer ? "បានចូលរួម" : "Joined"}
                 </th>
+                <th className="px-6 py-4">
+                  {isKhmer ? "ការវាយតម្លៃ" : "Rating"}
+                </th>
                 <th className="px-6 py-4 text-right">
                   {isKhmer ? "សកម្មភាព" : "Actions"}
                 </th>
@@ -363,6 +429,14 @@ export default function VendorDirectoryPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-500">
                       {vendor.joined}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3.5 w-3.5 text-amber-400 fill-amber-400" />
+                        <span className={`text-sm font-semibold ${isDark ? "text-white" : "text-slate-700"}`}>
+                          {vendor.rating ? Number(vendor.rating).toFixed(1) : "—"}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2 text-slate-400">
@@ -492,39 +566,105 @@ export default function VendorDirectoryPage() {
                 </div>
               </div>
 
-              <div className="space-y-4 mb-8">
+              <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-3 text-sm">
                   <Phone className="h-4 w-4 text-emerald-500" />
-                  <span
-                    className={isDark ? "text-slate-300" : "text-slate-600"}
-                  >
-                    {selectedVendor.phone}
-                  </span>
+                  <span className={isDark ? "text-slate-300" : "text-slate-600"}>{selectedVendor.phone}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <Clock className="h-4 w-4 text-blue-500" />
-                  <span
-                    className={isDark ? "text-slate-300" : "text-slate-600"}
-                  >
-                    {isKhmer ? "ចូលរួមនៅ៖" : "Joined on:"}{" "}
-                    {selectedVendor.joined}
+                  <span className={isDark ? "text-slate-300" : "text-slate-600"}>
+                    {isKhmer ? "ចូលរួមនៅ៖" : "Joined:"} {selectedVendor.joined}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <MapPin className="h-4 w-4 text-psar-primary" />
-                  <span
-                    className={isDark ? "text-slate-300" : "text-slate-600"}
-                  >
+                  <span className={isDark ? "text-slate-300" : "text-slate-600"}>
                     {selectedVendor.latitude}, {selectedVendor.longitude}
                   </span>
                 </div>
               </div>
 
+              {/* Customer Ratings & Reviews */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                    {isKhmer ? "ការវាយតម្លៃអតិថជន" : "Customer Ratings"}
+                  </h4>
+                  <button
+                    onClick={() => fetchVendorReviews(selectedVendor.id)}
+                    disabled={reviewsLoading}
+                    className="text-xs text-indigo-500 hover:text-indigo-700 disabled:opacity-50 font-medium"
+                  >
+                    {reviewsLoading ? "◌ Loading…" : isKhmer ? "ភ្តើលឡើង" : "Refresh"}
+                  </button>
+                </div>
+
+                {reviewsLoading ? (
+                  <div className={`rounded-2xl border p-6 flex items-center justify-center ${isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-100"}`}>
+                    <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : vendorReviews ? (
+                  <div className={`rounded-2xl border p-4 ${isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-100"}`}>
+                    {/* Average + breakdown */}
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="text-center shrink-0">
+                        <p className={`text-3xl font-black ${isDark ? "text-white" : "text-slate-900"}`}>{vendorReviews.stats.average}</p>
+                        <div className="flex gap-0.5 justify-center mt-1">
+                          {[1,2,3,4,5].map(s => (
+                            <Star key={s} className={`h-3 w-3 ${s <= Math.round(vendorReviews.stats.average) ? "text-amber-400 fill-amber-400" : "text-slate-300"}`} />
+                          ))}
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{vendorReviews.stats.total} {isKhmer ? "វាយ" : "reviews"}</p>
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        {[5,4,3,2,1].map(star => {
+                          const cnt = vendorReviews.stats.breakdown[star] || 0;
+                          const pct = vendorReviews.stats.total > 0 ? (cnt / vendorReviews.stats.total) * 100 : 0;
+                          return (
+                            <div key={star} className="flex items-center gap-1.5">
+                              <span className="text-[10px] w-2 text-slate-400 text-right">{star}</span>
+                              <Star className="h-2.5 w-2.5 text-amber-400 fill-amber-400 shrink-0" />
+                              <div className={`flex-1 h-1.5 rounded-full ${isDark ? "bg-white/10" : "bg-slate-200"}`}>
+                                <div className="h-1.5 rounded-full bg-amber-400 transition-all duration-500" style={{ width: `${pct}%` }} />
+                              </div>
+                              <span className="text-[10px] w-3 text-slate-400">{cnt}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {/* Review list */}
+                    {vendorReviews.reviews.length === 0 ? (
+                      <p className="text-xs text-center text-slate-400 py-2">{isKhmer ? "មិនតានមានការវាយតម្លៃទេ" : "No reviews yet"}</p>
+                    ) : (
+                      <div className="max-h-44 overflow-y-auto space-y-2 pr-0.5">
+                        {vendorReviews.reviews.map((r: any) => (
+                          <div key={r.id} className={`p-3 rounded-xl border ${isDark ? "bg-white/5 border-white/10" : "bg-white border-slate-100"}`}>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className={`text-xs font-semibold ${isDark ? "text-white" : "text-slate-800"}`}>{r.userName}</span>
+                              <div className="flex gap-0.5">
+                                {[1,2,3,4,5].map(s => <Star key={s} className={`h-3 w-3 ${s <= r.rating ? "text-amber-400 fill-amber-400" : "text-slate-300"}`} />)}
+                              </div>
+                            </div>
+                            {r.comment && <p className="text-[11px] text-slate-500 leading-relaxed">{r.comment}</p>}
+                            <p className="text-[10px] text-slate-400 mt-1">{new Date(r.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className={`rounded-2xl border p-4 text-center ${isDark ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-100"}`}>
+                    <p className="text-xs text-slate-400">{isKhmer ? "កុតចុច Refresh តេប័មានមើល" : "Click Refresh to load reviews"}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
               <div className="flex gap-3">
                 <button
-                  onClick={() =>
-                    handleToggleStatus(selectedVendor.id, selectedVendor.status)
-                  }
+                  onClick={() => handleToggleStatus(selectedVendor.id, selectedVendor.status)}
                   className={`flex-1 py-3 px-4 rounded-2xl font-bold text-sm transition-all ${
                     selectedVendor.status === "Suspended"
                       ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20"
@@ -547,6 +687,71 @@ export default function VendorDirectoryPage() {
                   className={`py-3 px-4 rounded-2xl font-bold text-sm transition-all ${isDark ? "bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20" : "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100"}`}
                 >
                   <Trash2 className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Warning Email Modal */}
+      {showWarnModal && selectedVendor && (
+        <div className="fixed inset-0 bg-slate-900/70 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className={`rounded-3xl w-full max-w-md shadow-2xl border ${isDark ? "bg-[#0d1117] border-white/10" : "bg-white border-slate-200"}`}>
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2.5 rounded-xl ${isDark ? "bg-amber-500/10" : "bg-amber-50"}`}>
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className={`text-lg font-bold ${isDark ? "text-white" : "text-slate-900"}`}>{isKhmer ? "ផ្ញើសារព្រមាន" : "Send Warning Email"}</h3>
+                    <p className="text-xs text-slate-500">{selectedVendor.name}</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowWarnModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className={`block text-xs font-semibold mb-1.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>{isKhmer ? "ប្រធានបត" : "Subject"}</label>
+                  <input
+                    type="text"
+                    value={warnSubject}
+                    onChange={e => setWarnSubject(e.target.value)}
+                    className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 ${isDark ? "bg-white/5 border-white/10 text-white" : "bg-slate-50 border-slate-200 text-slate-900"}`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-xs font-semibold mb-1.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>{isKhmer ? "សារ" : "Message"}</label>
+                  <textarea
+                    rows={5}
+                    value={warnMessage}
+                    onChange={e => setWarnMessage(e.target.value)}
+                    placeholder={isKhmer ? "សរសើសារព្រមានរបស់អ្នក..." : "Write your warning message here..."}
+                    className={`w-full px-4 py-2.5 rounded-xl border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/40 ${isDark ? "bg-white/5 border-white/10 text-white placeholder:text-slate-600" : "bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400"}`}
+                  />
+                </div>
+                {warnSuccess && <p className="text-sm text-emerald-600 font-medium bg-emerald-50 rounded-xl px-4 py-2.5">{warnSuccess}</p>}
+                {warnError && <p className="text-sm text-red-500 font-medium bg-red-50 rounded-xl px-4 py-2.5">{warnError}</p>}
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowWarnModal(false)}
+                  className={`flex-1 py-3 rounded-2xl text-sm font-bold border transition-all ${isDark ? "border-white/10 text-slate-300 hover:bg-white/5" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}
+                >
+                  {isKhmer ? "បោកបង្ចឹល" : "Cancel"}
+                </button>
+                <button
+                  onClick={() => handleSendWarn(selectedVendor.id)}
+                  disabled={warnSending || !warnSubject.trim() || !warnMessage.trim()}
+                  className="flex-1 py-3 rounded-2xl text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {warnSending
+                    ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    : <Mail className="h-4 w-4" />}
+                  {warnSending ? (isKhmer ? "កាំពងផ្ញើ..." : "Sending…") : (isKhmer ? "ផ្ញើការព្រមាន" : "Send Warning")}
                 </button>
               </div>
             </div>

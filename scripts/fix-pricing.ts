@@ -6,13 +6,16 @@ async function main() {
   const args = process.argv.slice(2);
   const apply = args.includes("--apply");
 
-  const desired: Record<string, string> = {
+  const desired: Record<"pro" | "premium", string> = {
     pro: "2.99",
     premium: "6.99",
   };
 
   console.log("Scanning vendor plans...");
-  for (const [name, price] of Object.entries(desired)) {
+  for (const [name, price] of Object.entries(desired) as [
+    "pro" | "premium",
+    string,
+  ][]) {
     const plan = await db
       .select()
       .from(vendorPlans)
@@ -43,7 +46,10 @@ async function main() {
   }
 
   console.log("Scanning payment transactions (USD, amount < 1.0)...");
-  for (const [name, price] of Object.entries(desired)) {
+  for (const [name, price] of Object.entries(desired) as [
+    "pro" | "premium",
+    string,
+  ][]) {
     const rows = await db
       .select()
       .from(paymentTransactions)

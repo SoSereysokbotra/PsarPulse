@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSettings } from "@/components/providers/SettingsProvider";
+
 import { Map, Marker } from "pigeon-maps";
 import {
   Heart,
@@ -51,6 +51,7 @@ export default function PsarPulseDashboard() {
   const router = useRouter();
   const isDark = resolvedTheme === "dark";
   const isKhmer = language === "km";
+  const platform_name = "PsarPulse";
 
   // Initials
   const getInitials = (name: string) => {

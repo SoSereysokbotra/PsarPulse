@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSettings } from "@/components/providers/SettingsProvider";
+
 import { MailCheck, RefreshCcw, Loader2, SmartphoneNfc } from "lucide-react";
 import { AuthLayout, LeftPanelContent, OTPInput } from "@/components/auth";
 import { useRouter } from "next/navigation";
@@ -15,7 +15,7 @@ type VerifyResponse = {
 };
 
 export default function EmailVerificationPage() {
-  const { platform_name } = useSettings();
+  const platform_name = "PsarPulse";
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const router = useRouter();

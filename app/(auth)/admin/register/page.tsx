@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, Suspense } from "react";
-import { useSettings } from "@/components/providers/SettingsProvider";
+
 import Link from "next/link";
 import { User, Mail, Lock, Shield, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -16,7 +16,7 @@ type SignupResponse = {
 };
 
 function AdminRegisterPageContent() {
-  const { platform_name } = useSettings();
+  const platform_name = "PsarPulse";
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const router = useRouter();

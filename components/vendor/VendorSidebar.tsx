@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSettings } from "@/components/providers/SettingsProvider";
+
 import Link from "next/link";
 import { Settings, ChevronRight, X, Crown, Sparkles, LogOut, User, CreditCard as BillingIcon, Star } from "lucide-react";
 import VendorNavItem from "./VendorNavItem";
@@ -74,7 +74,7 @@ export default function VendorSidebar({
   userInitials: propUserInitials,
   userEmail: propUserEmail,
 }: VendorSidebarProps) {
-  const { platform_name } = useSettings();
+  const platform_name = "PsarPulse";
   const { language, t } = useLanguage();
   const { user, loading } = useUser();
   const isKhmer = language === "km";

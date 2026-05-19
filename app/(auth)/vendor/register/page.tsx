@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSettings } from "@/components/providers/SettingsProvider";
+
 import Link from "next/link";
 import {
   User,
@@ -26,7 +26,7 @@ type SignupResponse = {
 };
 
 export default function VendorRegisterPage() {
-  const { platform_name } = useSettings();
+  const platform_name = "PsarPulse";
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const isKhmer = language === "km";

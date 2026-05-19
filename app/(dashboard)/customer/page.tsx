@@ -18,11 +18,14 @@ import {
   Minus,
   LocateFixed,
   X,
+  LogOut,
 } from "lucide-react";
 import { useLanguage } from "@/components/providers/LanguageProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { useUser } from "@/components/providers/UserProvider";
+import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth/utils/client-auth";
 
 interface Vendor {
   id: string;
@@ -44,6 +47,7 @@ export default function PsarPulseDashboard() {
   const { t, language } = useLanguage();
   const { resolvedTheme } = useTheme();
   const { user, loading } = useUser();
+  const router = useRouter();
   const isDark = resolvedTheme === "dark";
   const isKhmer = language === "km";
 
@@ -180,11 +184,29 @@ export default function PsarPulseDashboard() {
             {/* Avatar & Theme Toggle */}
             <div className="w-44 shrink-0 flex items-center justify-end gap-3">
               <ThemeToggle />
-              <div className="w-10 h-10 rounded-full border-2 border-emerald-500/40 flex items-center justify-center bg-slate-800 cursor-pointer hover:border-emerald-500 transition-all shadow-lg active:scale-95">
+              <div className="w-10 h-10 rounded-full border-2 border-emerald-500/40 flex items-center justify-center bg-slate-800 shadow-lg cursor-default">
                 <span className="text-emerald-400 font-bold text-xs">
                   {loading ? ".." : displayInitials}
                 </span>
               </div>
+              <button 
+                onClick={async () => {
+                  try {
+                    await authClient.logout();
+                    router.push("/auth/login");
+                  } catch (e) {
+                    console.error("Logout failed:", e);
+                  }
+                }}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95 border-2 ${
+                  isDark 
+                    ? "bg-slate-800 border-white/5 text-slate-400 hover:text-red-400 hover:border-red-500/40 hover:bg-slate-700" 
+                    : "bg-slate-800 border-emerald-500/40 text-slate-400 hover:text-red-400 hover:border-red-500/40 hover:bg-slate-700"
+                }`}
+                title={t("settings.logout") || "Logout"}
+              >
+                <LogOut size={16} strokeWidth={2.5} />
+              </button>
             </div>
           </div>
 

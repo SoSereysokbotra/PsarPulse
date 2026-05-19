@@ -61,19 +61,27 @@ function buildDeterministicInsights(vendorName: string, sales: any[]) {
   }
 
   const topDay = [...dailyRevenueMap.entries()].sort((a, b) => b[1] - a[1])[0];
-  const topHour = [...hourlyRevenueMap.entries()].sort((a, b) => b[1] - a[1])[0];
-  const averageTicket = totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+  const topHour = [...hourlyRevenueMap.entries()].sort(
+    (a, b) => b[1] - a[1],
+  )[0];
+  const averageTicket =
+    totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
   const formattedRevenue = totalRevenue.toFixed(2);
   const formattedAverage = averageTicket.toFixed(2);
 
   const peakDayLabel = topDay?.[0] || "No sales data";
-  const peakHourLabel = topHour ? `${topHour[0].toString().padStart(2, "0")}:00` : "N/A";
+  const peakHourLabel = topHour
+    ? `${topHour[0].toString().padStart(2, "0")}:00`
+    : "N/A";
 
   return {
     insights: [
       {
         tag: "Revenue",
-        title: totalTransactions > 0 ? `Total Revenue: $${formattedRevenue}` : "No Revenue Yet",
+        title:
+          totalTransactions > 0
+            ? `Total Revenue: $${formattedRevenue}`
+            : "No Revenue Yet",
         detail:
           totalTransactions > 0
             ? `${vendorName} has ${totalTransactions} transactions with an average ticket size of $${formattedAverage}.`
@@ -145,7 +153,10 @@ export async function GET(request: NextRequest) {
 
     // 1. Try cloud AI (Gemini) first — more reliable on Vercel/serverless
     try {
-      const deterministic = buildDeterministicInsights(vendor.businessName || "vendor", sales);
+      const deterministic = buildDeterministicInsights(
+        vendor.businessName || "vendor",
+        sales,
+      );
       const salesSummary = {
         totalTransactions: sales.length,
         totalRevenue: sales.reduce(
@@ -161,7 +172,8 @@ export async function GET(request: NextRequest) {
             revenue: sales
               .filter((s: any) => new Date(s.createdAt).toDateString() === day)
               .reduce(
-                (sum: number, tx: any) => sum + Number.parseFloat(tx.amount || "0"),
+                (sum: number, tx: any) =>
+                  sum + Number.parseFloat(tx.amount || "0"),
                 0,
               ),
           };
@@ -188,7 +200,8 @@ export async function GET(request: NextRequest) {
               responseMimeType: "application/json",
             },
           });
-          const text = result.response.text?.() || result.response?.toString?.() || "";
+          const text =
+            result.response.text?.() || result.response?.toString?.() || "";
           try {
             const parsed = JSON.parse(extractJsonPayload(text));
             if (parsed?.insights?.length) {

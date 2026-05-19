@@ -113,12 +113,13 @@ export default function VendorSidebar({
 
   // Automatically append Reviews if not present
   if (!resolvedLinks.some(link => link.href.includes('/reviews'))) {
+    const reviewsHref = isGuest ? "/guest/reviews" : "/vendor/reviews";
     resolvedLinks.push({
       icon: Star,
       title: "Reviews",
       khmerTitle: "ការវាយតម្លៃ",
-      href: "/vendor/reviews",
-      active: currentPath === "/vendor/reviews"
+      href: reviewsHref,
+      active: currentPath === reviewsHref
     });
   }
 

@@ -33,6 +33,7 @@ const publicPaths = [
   "/sw.js",
   "/manifest.webmanifest",
   "/explore",
+  "/guest",
   "/api/public",
   "/api/upload",
 ];

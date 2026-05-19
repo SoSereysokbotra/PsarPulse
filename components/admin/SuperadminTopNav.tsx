@@ -54,11 +54,6 @@ export function SuperadminTopNav() {
       href: "/superadmin/audit-log",
       icon: ScrollText,
     },
-    {
-      name: t("superadmin.nav.settings"),
-      href: "/superadmin/settings",
-      icon: Settings,
-    },
   ];
 
   return (
@@ -222,18 +217,7 @@ export function SuperadminTopNav() {
                     : "bg-white border border-slate-200"
                 }`}
               >
-                <Link
-                  href="/superadmin/settings"
-                  onClick={() => setProfileOpen(false)}
-                  className={`flex items-center gap-2 px-3 py-2 transition-colors ${
-                    isDark
-                      ? "text-slate-300 hover:bg-slate-700 hover:text-white"
-                      : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-                  }`}
-                >
-                  <Settings className="h-4 w-4 text-slate-400" />
-                  {t("superadmin.nav.settings")}
-                </Link>
+                {/* settings link removed — page deleted */}
                 <div
                   className={`my-1 border-t ${
                     isDark ? "border-slate-700" : "border-slate-200"

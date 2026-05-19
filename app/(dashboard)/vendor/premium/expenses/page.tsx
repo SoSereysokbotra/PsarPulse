@@ -550,24 +550,6 @@ export default function PremiumExpensesPage() {
               </button>
             ))}
           </div>
-
-          {(activeTab === "overview" || activeTab === "history") && (
-            <div className="flex items-center bg-[#f7f8fa] dark:bg-[#161B22] p-1 rounded-[10px] border border-[#e8eaed] dark:border-white/10 mb-2">
-              {(["Day", "Week", "Month"] as const).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setSelectedPeriod(p)}
-                  className={`px-3 py-1.5 text-[11px] font-bold rounded-[7px] border-0 cursor-pointer transition-all ${
-                    selectedPeriod === p
-                      ? "bg-white dark:bg-[#0d1117] text-[#111827] dark:text-white shadow-sm"
-                      : "text-[#6b7280] dark:text-[#7d8590] hover:text-[#111827] dark:hover:text-white bg-transparent"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {activeTab === "overview" && (

@@ -139,7 +139,7 @@ export default function SuperadminPage() {
           sub={t("superadmin.overview.cards.platformSettingsSub")}
           icon={Settings}
           colorClass="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-          href="/superadmin/settings"
+          href="#"
           isDark={isDark}
         />
         <StatCard
@@ -317,7 +317,7 @@ export default function SuperadminPage() {
               },
               {
                 label: t("superadmin.overview.cards.platformSettings"),
-                href: "/superadmin/settings",
+                href: "#",
                 desc: t("superadmin.overview.quickActionDesc.settings"),
                 icon: Settings,
               },

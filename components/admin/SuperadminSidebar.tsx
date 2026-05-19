@@ -111,27 +111,7 @@ export function SuperadminSidebar() {
         >
           {t("superadmin.sidebar.configuration")}
         </div>
-        <Link
-          href="/superadmin/settings"
-          className={`group flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
-            pathname.includes("/superadmin/settings")
-              ? "bg-violet-500/10 text-violet-400"
-              : isDark
-                ? "text-slate-300 hover:bg-slate-800 hover:text-white"
-                : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-          }`}
-        >
-          <Settings
-            className={`mr-3 h-5 w-5 transition-colors ${
-              pathname.includes("/superadmin/settings")
-                ? "text-violet-400"
-                : isDark
-                  ? "text-slate-400 group-hover:text-white"
-                  : "text-slate-400 group-hover:text-slate-900"
-            }`}
-          />
-          {t("superadmin.nav.settings")}
-        </Link>
+        {/* settings link removed — page deleted */}
       </nav>
 
       {/* Profile Footer */}

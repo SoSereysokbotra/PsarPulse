@@ -161,9 +161,6 @@ export default function WeatherIntelligence() {
               <AlertCircle size={12} className="text-[#9ca3af]" />
               <span className="text-[11px] text-[#9ca3af]">Generated using Gemini Flash Engine v1.5</span>
             </div>
-            <button className="text-[12px] font-bold text-psar-primary hover:underline flex items-center gap-1 border-0 bg-transparent cursor-pointer">
-              Full analysis <ChevronRight size={14} />
-            </button>
           </div>
         </div>
       </div>

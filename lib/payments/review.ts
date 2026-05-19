@@ -147,8 +147,8 @@ export async function approvePaymentTransaction(
 
     if (!plan) {
       const defaultPrices = {
-        pro: { monthly: "0.01", priority: 2 },
-        premium: { monthly: "0.02", priority: 3 },
+        pro: { monthly: "2.99", priority: 2 },
+        premium: { monthly: "6.99", priority: 3 },
         free: { monthly: "0", priority: 1 },
       };
       const pCode = (updated.planCode as "free" | "pro" | "premium") || "pro";

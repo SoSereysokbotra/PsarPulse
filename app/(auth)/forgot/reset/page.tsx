@@ -77,7 +77,7 @@ export default function ResetPasswordPage() {
           icon={<ShieldAlert className="w-8 h-8" />}
           title="Reset your access credentials."
           subtitle="Choose a strong password to keep your sales data and business insights safe."
-          footerText="© 2026 PsarPulse KH • Developed at Kirirom Institute of Technology"
+          footerText={`© PsarPulse KH • Developed at Kirirom Institute of Technology`}
         />
       }
       backHref="/forgot-password/verify"

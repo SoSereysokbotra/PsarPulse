@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import { Map, Marker } from "pigeon-maps";
 import {
   Heart,
@@ -158,9 +159,7 @@ export default function PsarPulseDashboard() {
               <div className="bg-[#4ade80] w-10 h-10 rounded-lg flex items-center justify-center shrink-0">
                 <span className="text-black font-black text-xl">P</span>
               </div>
-              <span className="text-xl font-bold tracking-tight hidden sm:block">
-                PsarPulse KH
-              </span>
+              <span className="text-xl font-bold tracking-tight hidden sm:block">{platform_name}</span>
             </div>
 
             {/* Search */}

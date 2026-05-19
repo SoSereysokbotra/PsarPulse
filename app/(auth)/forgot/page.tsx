@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
               ? "កុំបារម្ភ! វាអាចកើតឡើងចំពោះយើងទាំងអស់គ្នា។ យើងនឹងជួយអ្នកឱ្យត្រឡប់ទៅគ្រប់គ្រងស្តង់របស់អ្នកវិញ។"
               : "Don't worry! It happens to the best of us. We'll help you get back to managing your stall."
           }
-          footerText="© 2026 PsarPulse KH • Developed at Kirirom Institute of Technology"
+          footerText={`© PsarPulse • Developed at Kirirom Institute of Technology`}
         />
       }
       backHref="/login"

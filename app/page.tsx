@@ -258,23 +258,42 @@ export default function LandingPage() {
           <div className="flex items-center gap-2.5 cursor-pointer">
             <span
               className={`font-semibold text-[15px] tracking-tight ${resolvedTheme === "light" ? "text-slate-900" : "text-[#F7F8F8]"}`}
-            >
-              PsarPulse KH
-            </span>
+            >{`PsarPulse KH`}</span>
           </div>
 
           {/* Right: Navigation & Auth Actions */}
           <div className="flex items-center gap-6">
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center gap-6">
-              {t[lang].nav.map((item, idx) => (
-                <a
-                  key={idx}
-                  href={`#section-${idx}`}
-                  className={`text-[13px] font-medium transition-colors ${resolvedTheme === "light" ? "text-slate-500 hover:text-slate-900" : "text-[#8A8F98] hover:text-white"}`}
-                >
-                  {item}
-                </a>
+              {([
+                { label: t[lang].nav[0], href: "#features" },
+                { label: t[lang].nav[1], href: "#features" },
+                { label: t[lang].nav[2], href: "#use-cases" },
+                { label: t[lang].nav[3], href: "#pricing" },
+                { label: t[lang].nav[4], href: "/explore" },
+                { label: t[lang].nav[5], href: "#contact" },
+              ] as { label: string; href: string }[]).map((navItem) => (
+                navItem.href.startsWith("/") ? (
+                  <Link
+                    key={navItem.href}
+                    href={navItem.href}
+                    className={`text-[13px] font-medium transition-colors ${resolvedTheme === "light" ? "text-slate-500 hover:text-slate-900" : "text-[#8A8F98] hover:text-white"}`}
+                  >
+                    {navItem.label}
+                  </Link>
+                ) : (
+                  <a
+                    key={navItem.href + navItem.label}
+                    href={navItem.href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.querySelector(navItem.href)?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className={`text-[13px] font-medium transition-colors cursor-pointer ${resolvedTheme === "light" ? "text-slate-500 hover:text-slate-900" : "text-[#8A8F98] hover:text-white"}`}
+                  >
+                    {navItem.label}
+                  </a>
+                )
               ))}
             </nav>
 
@@ -363,14 +382,14 @@ export default function LandingPage() {
                     {/* Customer */}
                     <Link
                       href="/login"
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors text-left ${resolvedTheme === "light" ? "hover:bg-slate-50" : "hover:bg-white/5"}`}
                     >
                       {/* <div className="w-7 h-7 rounded-md bg-blue-400/10 flex items-center justify-center text-sm shrink-0">
                         🛍️
                       </div> */}
                       <div>
                         <p
-                          className="text-[13px] font-medium text-white leading-tight"
+                          className={`text-[13px] font-medium leading-tight ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
                           style={
                             lang === "km"
                               ? { fontFamily: "var(--font-battambang)" }
@@ -380,7 +399,7 @@ export default function LandingPage() {
                           {t[lang].loginCustomer}
                         </p>
                         <p
-                          className="text-[11px] text-[#8A8F98] leading-tight mt-0.5"
+                          className={`text-[11px] leading-tight mt-0.5 ${resolvedTheme === "light" ? "text-slate-500" : "text-[#8A8F98]"}`}
                           style={
                             lang === "km"
                               ? { fontFamily: "var(--font-battambang)" }
@@ -393,10 +412,10 @@ export default function LandingPage() {
                     </Link>
 
                     {/* Guest */}
-                    <div className="my-1 h-[0.5px] bg-white/8" />
+                    <div className={`my-1 h-[0.5px] ${resolvedTheme === "light" ? "bg-slate-100" : "bg-white/8"}`} />
                     <Link
                       href="/guest"
-                      className="w-full block text-center py-2 text-[11px] text-[#8A8F98] hover:text-white transition-colors"
+                      className={`w-full block text-center py-2 text-[11px] transition-colors ${resolvedTheme === "light" ? "text-slate-500 hover:text-slate-900" : "text-[#8A8F98] hover:text-white"}`}
                       style={
                         lang === "km"
                           ? { fontFamily: "var(--font-battambang)" }
@@ -437,18 +456,20 @@ export default function LandingPage() {
                 </button>
 
                 {signupOpen && (
-                  <div className="absolute right-0 top-[calc(100%+10px)] w-[210px] bg-[#111] border border-white/10 rounded-xl p-1.5 shadow-xl shadow-black/50 z-50">
+                  <div
+                    className={`absolute right-0 top-[calc(100%+10px)] w-[210px] border rounded-xl p-1.5 shadow-xl z-50 transition-colors ${resolvedTheme === "light" ? "bg-white border-slate-200 shadow-slate-200/50" : "bg-[#111] border-white/10 shadow-black/50"}`}
+                  >
                     {/* Vendor */}
                     <Link
                       href="/vendor/register"
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors text-left ${resolvedTheme === "light" ? "hover:bg-slate-50" : "hover:bg-white/5"}`}
                     >
                       {/* <div className="w-7 h-7 rounded-md bg-brand-primary/10 flex items-center justify-center text-sm shrink-0">
                         🏪
                       </div> */}
                       <div>
                         <p
-                          className="text-[13px] font-medium text-white leading-tight"
+                          className={`text-[13px] font-medium leading-tight ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
                           style={
                             lang === "km"
                               ? { fontFamily: "var(--font-battambang)" }
@@ -458,7 +479,7 @@ export default function LandingPage() {
                           {t[lang].signupVendor}
                         </p>
                         <p
-                          className="text-[11px] text-[#8A8F98] leading-tight mt-0.5"
+                          className={`text-[11px] leading-tight mt-0.5 ${resolvedTheme === "light" ? "text-slate-500" : "text-[#8A8F98]"}`}
                           style={
                             lang === "km"
                               ? { fontFamily: "var(--font-battambang)" }
@@ -471,19 +492,19 @@ export default function LandingPage() {
                     </Link>
 
                     {/* Divider */}
-                    <div className="my-1 h-[0.5px] bg-white/8" />
+                    <div className={`my-1 h-[0.5px] ${resolvedTheme === "light" ? "bg-slate-100" : "bg-white/8"}`} />
 
                     {/* Customer */}
                     <Link
                       href="/signup"
-                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
+                      className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-colors text-left ${resolvedTheme === "light" ? "hover:bg-slate-50" : "hover:bg-white/5"}`}
                     >
                       {/* <div className="w-7 h-7 rounded-md bg-blue-400/10 flex items-center justify-center text-sm shrink-0">
                         🛍️
                       </div> */}
                       <div>
                         <p
-                          className="text-[13px] font-medium text-white leading-tight"
+                          className={`text-[13px] font-medium leading-tight ${resolvedTheme === "light" ? "text-slate-900" : "text-white"}`}
                           style={
                             lang === "km"
                               ? { fontFamily: "var(--font-battambang)" }
@@ -493,7 +514,7 @@ export default function LandingPage() {
                           {t[lang].signupCustomer}
                         </p>
                         <p
-                          className="text-[11px] text-[#8A8F98] leading-tight mt-0.5"
+                          className={`text-[11px] leading-tight mt-0.5 ${resolvedTheme === "light" ? "text-slate-500" : "text-[#8A8F98]"}`}
                           style={
                             lang === "km"
                               ? { fontFamily: "var(--font-battambang)" }
@@ -506,10 +527,10 @@ export default function LandingPage() {
                     </Link>
 
                     {/* Guest */}
-                    <div className="my-1 h-[0.5px] bg-white/8" />
+                    <div className={`my-1 h-[0.5px] ${resolvedTheme === "light" ? "bg-slate-100" : "bg-white/8"}`} />
                     <Link
                       href="/guest"
-                      className="w-full block text-center py-2 text-[11px] text-[#8A8F98] hover:text-white transition-colors"
+                      className={`w-full block text-center py-2 text-[11px] transition-colors ${resolvedTheme === "light" ? "text-slate-500 hover:text-slate-900" : "text-[#8A8F98] hover:text-white"}`}
                       style={
                         lang === "km"
                           ? { fontFamily: "var(--font-battambang)" }
@@ -1258,6 +1279,7 @@ export default function LandingPage() {
       </section>
 
       <footer
+        id="contact"
         className={`relative w-full mt-24 pt-16 pb-[18vw] sm:pb-[14vw] lg:pb-[12vw] px-4 sm:px-8 lg:px-12 border-t overflow-hidden transition-colors ${resolvedTheme === "light" ? "bg-slate-50 border-slate-200" : "bg-[#0d0d0d] border-dark-border"}`}
       >
         {/* Top Grid Section */}
@@ -1480,7 +1502,7 @@ export default function LandingPage() {
               lang === "km" ? { fontFamily: "var(--font-battambang)" } : {}
             }
           >
-            © {new Date().getFullYear()} PsarPulse KH. {t[lang].copyright}
+            © {new Date().getFullYear()} {`PsarPulse KH`}. {t[lang].copyright}
           </p>
           <div className="flex gap-6 text-xs text-gray-500">
             <a

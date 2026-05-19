@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import Link from "next/link";
 import { Settings, ChevronRight, X, Crown, Sparkles, LogOut, User, CreditCard as BillingIcon, Star } from "lucide-react";
 import VendorNavItem from "./VendorNavItem";
@@ -73,6 +74,7 @@ export default function VendorSidebar({
   userInitials: propUserInitials,
   userEmail: propUserEmail,
 }: VendorSidebarProps) {
+  const { platform_name } = useSettings();
   const { language, t } = useLanguage();
   const { user, loading } = useUser();
   const isKhmer = language === "km";
@@ -145,9 +147,7 @@ export default function VendorSidebar({
             <div className="w-10 h-10 rounded-[10px] bg-[#29B28D] flex items-center justify-center font-extrabold text-[#0E1319] text-[17px] shrink-0">
               P
             </div>
-            <span className="font-extrabold text-[16px] text-[#e6edf3] tracking-[0.02em] whitespace-nowrap">
-              PsarPulse KH
-            </span>
+            <span className="font-extrabold text-[16px] text-[#e6edf3] tracking-[0.02em] whitespace-nowrap">{platform_name}</span>
           </Link>
         )}
         {collapsed && (

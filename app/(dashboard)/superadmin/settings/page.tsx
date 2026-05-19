@@ -23,16 +23,6 @@ const DEFAULT_SETTINGS = [
     desc: "The global name displayed across the platform.",
     descKey: "superadmin.settings.fields.platformName.desc",
   },
-  {
-    key: "support_email",
-    label: "Support Email",
-    labelKey: "superadmin.settings.fields.supportEmail.label",
-    value: "support@psarpulse.com",
-    group: "general",
-    icon: Mail,
-    desc: "Primary email address for user support inquiries.",
-    descKey: "superadmin.settings.fields.supportEmail.desc",
-  },
 ];
 
 const TABS = [

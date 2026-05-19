@@ -132,7 +132,7 @@ function LoginPageContent() {
               desc: t("auth.login.feature3Desc"),
             },
           ]}
-          footerText="© 2026 PsarPulse KH • Developed at Kirirom Institute of Technology"
+          footerText={`PsarPulse KH • Developed at Kirirom Institute of Technology`}
         />
       }
       backHref="/"

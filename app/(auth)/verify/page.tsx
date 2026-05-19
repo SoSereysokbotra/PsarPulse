@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import { MailCheck, RefreshCcw, Loader2, SmartphoneNfc } from "lucide-react";
 import { AuthLayout, LeftPanelContent, OTPInput } from "@/components/auth";
 import { useRouter } from "next/navigation";
@@ -14,6 +15,7 @@ type VerifyResponse = {
 };
 
 export default function EmailVerificationPage() {
+  const { platform_name } = useSettings();
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const router = useRouter();
@@ -102,7 +104,7 @@ export default function EmailVerificationPage() {
               ? "យើងបានផ្ញើលេខកូដ ៦ ខ្ទង់ទៅកាន់អ៊ីមែលរបស់អ្នក។ សូមបញ្ចូលវាដើម្បីធ្វើឱ្យគណនីអ្នកលក់របស់អ្នកសកម្ម និងចាប់ផ្តើមតាមដានការលក់។"
               : "We've sent a 6-digit code to your email. Please enter it to activate your vendor account and start tracking sales."
           }
-          footerText="© 2026 PsarPulse KH • Developed at Kirirom Institute of Technology"
+          footerText={`© ${new Date().getFullYear()} ${platform_name} • Developed at Kirirom Institute of Technology`}
         />
       }
       backHref="/signup"

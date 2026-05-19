@@ -65,7 +65,7 @@ function VendorActivationContent() {
               ? "សូមរង់ចាំ ខណៈពេលដែលយើងរៀបចំតូបសម្រាប់អ្នក។"
               : "Please wait while we set up your shop."
           }
-          footerText="© 2026 PsarPulse KH • Developed at Kirirom Institute of Technology"
+          footerText={`© PsarPulse KH • Developed at Kirirom Institute of Technology`}
         />
       }
       backHref="/login"

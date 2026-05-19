@@ -96,7 +96,7 @@ function VerifyCodePageContent() {
           icon={<ShieldCheck className="w-8 h-8" />}
           title="Protecting your business data."
           subtitle="We've sent a 6-digit verification code to your email. This ensures only you can access your stall's records."
-          footerText="© 2026 PsarPulse KH • Developed at Kirirom Institute of Technology"
+          footerText={`PsarPulse KH • Developed at Kirirom Institute of Technology`}
         />
       }
       backHref="/forgot"

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import Link from "next/link";
 import {
   User,
@@ -25,6 +26,7 @@ type SignupResponse = {
 };
 
 export default function VendorRegisterPage() {
+  const { platform_name } = useSettings();
   const { language, t } = useLanguage();
   const { resolvedTheme } = useTheme();
   const isKhmer = language === "km";
@@ -201,7 +203,7 @@ export default function VendorRegisterPage() {
               desc: t("auth.register.feature3Desc"),
             },
           ]}
-          footerText="© 2026 PsarPulse KH • Developed at Kirirom Institute of Technology"
+          footerText={`© ${new Date().getFullYear()} ${platform_name} • Developed at Kirirom Institute of Technology`}
         />
       }
       backHref="/"

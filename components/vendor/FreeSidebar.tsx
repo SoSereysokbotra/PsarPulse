@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useSettings } from "@/components/providers/SettingsProvider";
 import Link from "next/link";
 import {
   Settings,
@@ -107,6 +108,7 @@ export default function FreeSidebar({
   currentPath = "/vendor",
   navItems = DEFAULT_VENDOR_ITEMS, // <-- use custom items or default
 }: FreeSidebarProps) {
+  const { platform_name } = useSettings();
   return (
     <aside
       className={`fixed lg:static inset-y-0 left-0 z-50 bg-[#0f1117] transform transition-all duration-300 ease-in-out flex flex-col shrink-0
@@ -123,9 +125,7 @@ export default function FreeSidebar({
           P
         </div>
         {!isCollapsed && (
-          <span className="font-bold text-white text-[17px] tracking-tight whitespace-nowrap flex-1">
-            PsarPulse KH
-          </span>
+          <span className="font-bold text-white text-[17px] tracking-tight whitespace-nowrap flex-1">{platform_name}</span>
         )}
         <button
           className="lg:hidden text-white/40 hover:text-white ml-auto border-0 bg-transparent p-0 cursor-pointer"

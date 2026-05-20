@@ -116,7 +116,10 @@ export default function ProExpensePage() {
     fetchExpenses();
   }, []);
 
-  const totalExpense = expenses.reduce((sum, e) => sum + parseFloat(e.amount || "0"), 0);
+  const totalExpense = expenses.reduce(
+    (sum, e) => sum + parseFloat(e.amount || "0"),
+    0,
+  );
 
   const summaryData = {
     todayTotal: `$${totalExpense.toFixed(2)}`,
@@ -139,7 +142,7 @@ export default function ProExpensePage() {
       });
       if (res.ok) {
         const json = await res.json();
-        setExpenses(prev => [json.data, ...prev]);
+        setExpenses((prev) => [json.data, ...prev]);
         setExpenseAmount("");
         setExpenseVendor("");
         setExpenseNote("");
@@ -179,7 +182,10 @@ export default function ProExpensePage() {
             onClick={() => setShowCustomCategoryModal(true)}
             className="flex items-center gap-2 bg-psar-primary/10 hover:bg-psar-primary/20 text-psar-primary font-medium px-3.5 py-2 rounded-xl transition-colors text-sm min-h-[40px] cursor-pointer border border-psar-primary/20"
           >
-            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">{t("dashboard.actions.addCategory")}</span>
+            <Plus className="w-4 h-4" />{" "}
+            <span className="hidden sm:inline">
+              {t("dashboard.actions.addCategory")}
+            </span>
           </button>
           <button
             onClick={() => setIsQuickLogModalOpen(true)}
@@ -190,14 +196,16 @@ export default function ProExpensePage() {
         </div>
       }
     >
-      <div className="flex-1 w-full h-full overflow-y-auto p-6 md:p-8 space-y-7"> 
+      <div className="flex-1 w-full h-full overflow-y-auto p-6 md:p-8 space-y-7">
         {/* Header */}
         <div className="pt-1 pb-2">
           <h2 className="text-[32px] font-extrabold text-[#111827] dark:text-white leading-tight">
             {t("dashboard.titles.myExpenses")}
           </h2>
           <p className="text-[14px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-            {isKhmer ? "តាមដាន និងគ្រប់គ្រងការចំណាយ" : "Track and manage your expenses"}
+            {isKhmer
+              ? "តាមដាន និងគ្រប់គ្រងការចំណាយ"
+              : "Track and manage your expenses"}
           </p>
         </div>
 
@@ -247,7 +255,8 @@ export default function ProExpensePage() {
                         className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-xl font-bold placeholder-slate-400 focus:bg-white dark:bg-dark-surface focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-all min-h-[60px]"
                       />
                       <div className="absolute top-[-10px] left-4 bg-white dark:bg-dark-surface px-1 text-[11px] font-bold text-slate-500 dark:text-[#7d8590] transition-colors group-focus-within:text-red-500">
-                        {t("inventory.modal.amountLabel")} <span className="text-red-500">*</span>
+                        {t("inventory.modal.amountLabel")}{" "}
+                        <span className="text-red-500">*</span>
                       </div>
                     </div>
                   </div>
@@ -263,18 +272,45 @@ export default function ProExpensePage() {
                         className="block w-full pl-11 pr-4 py-4 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white text-[15px] font-medium focus:bg-white dark:bg-dark-surface focus:border-psar-primary focus:ring-1 focus:ring-psar-primary outline-none transition-all h-full min-h-[60px] appearance-none cursor-pointer"
                       >
                         {categories.map((cat, idx) => {
-                          const displayLabel = cat.isCustom ? cat.label : (
-                            cat.value === "Stock Purchase" ? (isKhmer ? "ទិញស្តុក" : "Stock Purchase") :
-                            cat.value === "Rent" ? (isKhmer ? "ថ្លៃជួល" : "Rent") :
-                            cat.value === "Transport" ? (isKhmer ? "ការធ្វើដំណើរ" : "Transport") :
-                            cat.value === "Electricity" ? (isKhmer ? "អគ្គិសនី" : "Electricity") :
-                            cat.value === "Labor" ? (isKhmer ? "កម្លាំងពលកម្ម" : "Labor") :
-                            cat.value === "Marketing" ? (isKhmer ? "ទីផ្សារ" : "Marketing") :
-                            cat.value === "Others" ? (isKhmer ? "ផ្សេងៗ" : "Others") : cat.label
-                          );
+                          const displayLabel = cat.isCustom
+                            ? cat.label
+                            : cat.value === "Stock Purchase"
+                              ? isKhmer
+                                ? "ទិញស្តុក"
+                                : "Stock Purchase"
+                              : cat.value === "Rent"
+                                ? isKhmer
+                                  ? "ថ្លៃជួល"
+                                  : "Rent"
+                                : cat.value === "Transport"
+                                  ? isKhmer
+                                    ? "ការធ្វើដំណើរ"
+                                    : "Transport"
+                                  : cat.value === "Electricity"
+                                    ? isKhmer
+                                      ? "អគ្គិសនី"
+                                      : "Electricity"
+                                    : cat.value === "Labor"
+                                      ? isKhmer
+                                        ? "កម្លាំងពលកម្ម"
+                                        : "Labor"
+                                      : cat.value === "Marketing"
+                                        ? isKhmer
+                                          ? "ទីផ្សារ"
+                                          : "Marketing"
+                                        : cat.value === "Others"
+                                          ? isKhmer
+                                            ? "ផ្សេងៗ"
+                                            : "Others"
+                                          : cat.label;
                           return (
                             <option key={idx} value={cat.value}>
-                              {displayLabel} {cat.isCustom ? (isKhmer ? "(ផ្ទាល់ខ្លួន)" : "(Custom)") : ""}
+                              {displayLabel}{" "}
+                              {cat.isCustom
+                                ? isKhmer
+                                  ? "(ផ្ទាល់ខ្លួន)"
+                                  : "(Custom)"
+                                : ""}
                             </option>
                           );
                         })}
@@ -290,7 +326,8 @@ export default function ProExpensePage() {
                           }}
                           className="text-psar-primary hover:text-psar-primary/80 flex items-center border-0 bg-transparent cursor-pointer"
                         >
-                          <Plus className="w-3 h-3" /> {isKhmer ? "ថ្មី" : "New"}
+                          <Plus className="w-3 h-3" />{" "}
+                          {isKhmer ? "ថ្មី" : "New"}
                         </button>
                       </div>
                     </div>
@@ -362,7 +399,9 @@ export default function ProExpensePage() {
                     {t("dashboard.actions.addCategory")}
                   </h3>
                   <p className="text-[12px] text-slate-500 dark:text-[#7d8590]">
-                     {isKhmer ? "បង្កើតប្រភេទចំណាយផ្ទាល់ខ្លួនរបស់អ្នក។" : "Create your own expense category tag."}
+                    {isKhmer
+                      ? "បង្កើតប្រភេទចំណាយផ្ទាល់ខ្លួនរបស់អ្នក។"
+                      : "Create your own expense category tag."}
                   </p>
                 </div>
               </div>
@@ -450,9 +489,13 @@ export default function ProExpensePage() {
                 <tr className="bg-slate-50 dark:bg-[#0d1117] border-b border-slate-100 dark:border-white/5 text-[13px] text-slate-500 dark:text-[#7d8590] uppercase tracking-wider font-semibold">
                   <th className="px-6 py-4">{t("dashboard.table.time")}</th>
                   <th className="px-6 py-4">{t("dashboard.table.category")}</th>
-                  <th className="px-6 py-4">{t("dashboard.table.note")} / Receipt</th>
+                  <th className="px-6 py-4">
+                    {t("dashboard.table.note")} / Receipt
+                  </th>
                   <th className="px-6 py-4">{t("dashboard.table.amount")}</th>
-                  <th className="px-6 py-4 text-center">{t("dashboard.table.actions")}</th>
+                  <th className="px-6 py-4 text-center">
+                    {t("dashboard.table.actions")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -464,7 +507,10 @@ export default function ProExpensePage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-[15px] font-medium text-slate-900 dark:text-white">
                         <Clock className="w-4 h-4 text-slate-400" />
-                        {new Date(exp.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(exp.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

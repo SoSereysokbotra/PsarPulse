@@ -57,7 +57,7 @@ const plans: Plan[] = [
       { text: "Predefined Khmer Business Categories", included: true },
       { text: "3 Core Performance Charts", included: true },
       { text: "Daily Summary & End-of-Day Lock", included: true },
-      { text: "Inventory Tracking — up to 20 items", included: true },
+      { text: "Inventory Tracking — up to 30 items", included: true },
       { text: "Custom Expense Categories", included: false },
       { text: "Export Reports (PDF / Excel)", included: false },
       { text: "Public Map Listing", included: false },

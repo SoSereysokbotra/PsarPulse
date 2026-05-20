@@ -326,17 +326,8 @@ export default function ProExpensePage() {
 
                   <div className="flex gap-3 mt-4">
                     <button
-                      type="button"
-                      className="flex-1 flex flex-col items-center justify-center gap-1 bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-[#9aa4b2] font-semibold py-3 rounded-xl transition-all min-h-[56px] cursor-pointer"
-                      title="Upload Receipt"
-                    >
-                      <Camera className="w-5 h-5" />
-                      <span className="text-[12px]">{isKhmer ? "បន្ថែមវិក្កយបត្រ" : "Add Receipt"}</span>
-                    </button>
-
-                    <button
                       type="submit"
-                      className="flex-[2] bg-psar-primary hover:opacity-90 text-white font-bold text-[16px] py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer"
+                      className="w-full bg-psar-primary hover:opacity-90 text-white font-bold text-[16px] py-4 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 min-h-[56px] border-0 cursor-pointer"
                     >
                       <Plus className="w-5 h-5" />
                       <span>{t("dashboard.actions.save")}</span>

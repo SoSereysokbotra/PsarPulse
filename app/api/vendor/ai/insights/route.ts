@@ -3,6 +3,7 @@ import { TokenUtil } from "@/lib/auth/utils/token.util";
 import { authConfig } from "@/lib/auth/config";
 import { VendorRepository } from "@/lib/db/repositories/vendor.repository";
 import { SalesRepository } from "@/lib/db/repositories/sales.repository";
+import { TrafficRepository } from "@/lib/db/repositories/traffic.repository";
 import { getGeminiModel, withAICache } from "@/lib/ai/gemini";
 
 // ─── In-memory cache (per vendor, 10-minute TTL) ─────────────────────
@@ -34,7 +35,12 @@ function extractJsonPayload(text: string) {
   return trimmed;
 }
 
-function buildDeterministicInsights(vendorName: string, sales: any[]) {
+function buildDeterministicInsights(
+  vendorName: string,
+  sales: any[],
+  hourlyPattern: { hour: number; avgCount: number; totalLogs: number }[],
+  trafficLogs: any[],
+) {
   const totalRevenue = sales.reduce(
     (sum, tx) => sum + Number.parseFloat(tx.amount || "0"),
     0,
@@ -42,37 +48,52 @@ function buildDeterministicInsights(vendorName: string, sales: any[]) {
   const totalTransactions = sales.length;
 
   const dailyRevenueMap = new Map<string, number>();
-  const hourlyRevenueMap = new Map<number, number>();
 
   for (const tx of sales) {
     const createdAt = new Date(tx.createdAt);
     if (!Number.isNaN(createdAt.getTime())) {
       const day = createdAt.toDateString();
-      const hour = createdAt.getHours();
       dailyRevenueMap.set(
         day,
         (dailyRevenueMap.get(day) || 0) + Number.parseFloat(tx.amount || "0"),
-      );
-      hourlyRevenueMap.set(
-        hour,
-        (hourlyRevenueMap.get(hour) || 0) + Number.parseFloat(tx.amount || "0"),
       );
     }
   }
 
   const topDay = [...dailyRevenueMap.entries()].sort((a, b) => b[1] - a[1])[0];
-  const topHour = [...hourlyRevenueMap.entries()].sort(
-    (a, b) => b[1] - a[1],
-  )[0];
+
+  // Build hourly traffic map from real traffic logs
+  const hourlyTrafficMap = new Map<number, number>();
+  for (const log of trafficLogs) {
+    const h = new Date(log.createdAt).getHours();
+    hourlyTrafficMap.set(h, (hourlyTrafficMap.get(h) || 0) + (log.count || 0));
+  }
+  // Also merge in the DB-aggregated hourly pattern
+  for (const row of hourlyPattern) {
+    const existing = hourlyTrafficMap.get(row.hour) || 0;
+    if (existing === 0) {
+      hourlyTrafficMap.set(row.hour, Math.round(row.avgCount));
+    }
+  }
+
+  const topHourEntry = [...hourlyTrafficMap.entries()].sort((a, b) => b[1] - a[1])[0];
   const averageTicket =
     totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
   const formattedRevenue = totalRevenue.toFixed(2);
   const formattedAverage = averageTicket.toFixed(2);
 
   const peakDayLabel = topDay?.[0] || "No sales data";
-  const peakHourLabel = topHour
-    ? `${topHour[0].toString().padStart(2, "0")}:00`
+  const peakHourLabel = topHourEntry
+    ? `${topHourEntry[0].toString().padStart(2, "0")}:00`
     : "N/A";
+
+  // Build 7-day daily traffic buckets (Mon=0 … Sun=6)
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const dailyTrafficBuckets = Array(7).fill(0);
+  for (const log of trafficLogs) {
+    const dow = (new Date(log.createdAt).getDay() + 6) % 7; // 0=Mon
+    dailyTrafficBuckets[dow] += log.count || 0;
+  }
 
   return {
     insights: [
@@ -100,25 +121,23 @@ function buildDeterministicInsights(vendorName: string, sales: any[]) {
       },
       {
         tag: "Peak Hour",
-        title: topHour ? `Best Hour: ${peakHourLabel}` : "Waiting for traffic",
-        detail: topHour
-          ? `The strongest hour generated $${topHour[1].toFixed(2)} in revenue around ${peakHourLabel}.`
-          : "Hourly patterns will appear after more sales activity is recorded.",
+        title: topHourEntry ? `Best Hour: ${peakHourLabel}` : "Waiting for traffic",
+        detail: topHourEntry
+          ? `The busiest hour had ${topHourEntry[1]} visitors around ${peakHourLabel}.`
+          : "Hourly patterns will appear after more traffic is logged.",
         color: "#f59e0b",
         icon: "package",
       },
     ] satisfies Insight[],
-    projectedHourly: Array.from({ length: 24 }, (_, hour) => {
-      const value = hourlyRevenueMap.get(hour) || 0;
-      return Math.round(value);
-    }),
-    projectedDaily: Array.from({ length: 7 }, (_, index) => {
-      const date = new Date();
-      date.setDate(date.getDate() + index + 1);
-      const label = date.toLocaleDateString(undefined, { weekday: "short" });
-      const value = dailyRevenueMap.get(date.toDateString()) || 0;
-      return { label, count: Math.round(value) };
-    }),
+    // Use real traffic log counts per hour (not sales revenue)
+    projectedHourly: Array.from({ length: 24 }, (_, hour) =>
+      hourlyTrafficMap.get(hour) || 0,
+    ),
+    // Use real traffic log counts per weekday
+    projectedDaily: days.map((label, i) => ({
+      label,
+      count: dailyTrafficBuckets[i],
+    })),
   };
 }
 
@@ -150,12 +169,16 @@ export async function GET(request: NextRequest) {
     }
 
     const sales = await SalesRepository.findByVendorId(vendor.id);
+    const hourlyPattern = await TrafficRepository.getHourlyPattern(vendor.id);
+    const trafficLogs = await TrafficRepository.findByVendorId(vendor.id);
 
     // 1. Try cloud AI (Gemini) first — more reliable on Vercel/serverless
     try {
       const deterministic = buildDeterministicInsights(
         vendor.businessName || "vendor",
         sales,
+        hourlyPattern,
+        trafficLogs,
       );
       const salesSummary = {
         totalTransactions: sales.length,
@@ -205,6 +228,9 @@ export async function GET(request: NextRequest) {
           try {
             const parsed = JSON.parse(extractJsonPayload(text));
             if (parsed?.insights?.length) {
+              // Always override AI-generated projections with real traffic data
+              parsed.projectedHourly = deterministic.projectedHourly;
+              parsed.projectedDaily = deterministic.projectedDaily;
               return parsed;
             }
             return deterministic;
@@ -230,10 +256,12 @@ export async function GET(request: NextRequest) {
       console.error("Gemini insights error:", aiErr);
     }
 
-    // 2. Final fallback: deterministic sales-based insights so the UI always has real data.
+    // 2. Final fallback: deterministic traffic-based insights so the UI always has real data.
     const fallback = buildDeterministicInsights(
       vendor.businessName || "vendor",
       sales,
+      hourlyPattern,
+      trafficLogs,
     );
     insightsCache.set(vendor.id, { data: fallback, timestamp: Date.now() });
     return NextResponse.json({ success: true, data: fallback });

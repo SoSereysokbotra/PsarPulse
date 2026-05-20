@@ -22,7 +22,6 @@ import {
   Heart,
   TrendingUp,
   X,
-  
   Filter,
 } from "lucide-react";
 
@@ -306,7 +305,6 @@ export default function CustomersPage() {
       currentPath="/vendor/premium/customer"
       title={isKhmer ? "គ្រប់គ្រងអតិថិជន" : "Customer Management"}
       planBadge={{ label: isKhmer ? "PREMIUM" : "PREMIUM", icon: Sparkles }}
-      
     >
       <div className="flex-1 overflow-y-auto px-6 md:px-8 py-6 space-y-6 transition-colors">
         <div className="pt-1 pb-1">
@@ -751,8 +749,6 @@ export default function CustomersPage() {
             : "Are you sure you want to delete this traffic log? This action cannot be undone."
         }
       />
-
-    
     </VendorDashboardLayout>
   );
 }
@@ -799,7 +795,8 @@ function CustomerAnalytics({
 
   // Use ML projections if available, otherwise fallback to history
   const hourlyData = React.useMemo(() => {
-    const hasValidProjection = projectedHourly.length === 24 && projectedHourly.some((v) => v > 0);
+    const hasValidProjection =
+      projectedHourly.length === 24 && projectedHourly.some((v) => v > 0);
     if (hasValidProjection) return projectedHourly;
     const hours = Array(24).fill(0);
     logHistory.forEach((l) => {
@@ -812,7 +809,9 @@ function CustomerAnalytics({
 
   // Use ML projections if available, otherwise fallback to history
   const dailyVisits = React.useMemo(() => {
-    const hasValidDaily = projectedDaily.length === 7 && projectedDaily.some((d: any) => d.count > 0);
+    const hasValidDaily =
+      projectedDaily.length === 7 &&
+      projectedDaily.some((d: any) => d.count > 0);
     if (hasValidDaily) return projectedDaily;
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const buckets = Array(7).fill(0);
@@ -870,8 +869,6 @@ function CustomerAnalytics({
           </p>
         </div>
       )}
-
-      
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Peak Hours Heatmap */}

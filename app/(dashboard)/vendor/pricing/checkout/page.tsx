@@ -53,6 +53,10 @@ function CheckoutContent() {
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
+  const handleBackToPricing = () => {
+    router.push("/vendor/pricing");
+  };
+
   useEffect(() => {
     // Graceful error handling in case authClient isn't ready
     try {
@@ -236,6 +240,13 @@ function CheckoutContent() {
       <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
         {/* Simple, Professional Header */}
         <header className="w-full bg-white border-b border-slate-200 py-4 px-6 sm:px-8 flex justify-between items-center">
+          <button
+            onClick={handleBackToPricing}
+            className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Back to pricing
+          </button>
           <div className="font-black text-xl tracking-tight text-slate-900">
             PsarPulse<span className="text-blue-600">.</span>
           </div>
@@ -388,10 +399,11 @@ function CheckoutContent() {
         <div className="max-w-[420px] w-full flex flex-col mt-4">
           {/* Header / Back Button */}
           <button
-            onClick={() => setStep("selection")}
+            onClick={handleBackToPricing}
             className="flex items-center gap-3 w-fit text-neutral-400 hover:text-white transition-colors mb-10"
           >
             <ArrowLeft size={20} />
+            <span className="text-sm font-semibold">Back to pricing</span>
           </button>
 
           {/* Subscribe Title */}

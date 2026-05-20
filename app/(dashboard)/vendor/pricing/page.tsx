@@ -202,19 +202,17 @@ export default function PricingPage() {
     : currentPlan === "pro" ? "/vendor/pro"
     : "/vendor";
 
-  const hasPaidPlan = currentPlan === "pro" || currentPlan === "premium";
-
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <div className="max-w-6xl mx-auto px-6 py-12">
-        {/* Back to Dashboard button for paid vendors */}
-        {!loadingPlan && hasPaidPlan && (
+        {/* Back to Dashboard button for all vendors */}
+        {!loadingPlan && (
           <button
             onClick={() => (window.location.href = dashboardPath)}
             className="group mb-6 flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 text-sm font-bold text-slate-700 hover:text-slate-900"
           >
             <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-slate-700 transition-colors" />
-            Back to {currentPlan === "premium" ? "Premium" : "Pro"} Dashboard
+            Back to {currentPlan === "premium" ? "Premium" : currentPlan === "pro" ? "Pro" : "Dashboard"}
           </button>
         )}
 

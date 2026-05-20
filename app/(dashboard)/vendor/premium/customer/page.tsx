@@ -22,7 +22,7 @@ import {
   Heart,
   TrendingUp,
   X,
-  PlusCircle,
+  
   Filter,
 } from "lucide-react";
 
@@ -98,7 +98,6 @@ export default function CustomersPage() {
   const [crmSuccess, setCrmSuccess] = useState(false);
 
   // Modal States
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [isLogLogging, setIsLogLogging] = useState(false);
@@ -213,7 +212,6 @@ export default function CustomersPage() {
         setCrmPhone("");
         setCrmNotes("");
         setCrmSuccess(true);
-        setIsAddModalOpen(false);
         setTimeout(() => setCrmSuccess(false), 2000);
       }
     } catch (e) {
@@ -308,15 +306,7 @@ export default function CustomersPage() {
       currentPath="/vendor/premium/customer"
       title={isKhmer ? "គ្រប់គ្រងអតិថិជន" : "Customer Management"}
       planBadge={{ label: isKhmer ? "PREMIUM" : "PREMIUM", icon: Sparkles }}
-      rightActions={
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 bg-[#29B28D] hover:bg-[#239979] text-[#0d1117] font-bold px-4 py-2 rounded-[10px] text-sm shadow-[0_2px_14px_rgba(41,178,141,0.28)] transition-colors cursor-pointer border-0"
-        >
-          <PlusCircle className="w-4 h-4" />{" "}
-          {isKhmer ? "បន្ថែមប្រវត្តិ" : "Add Profile"}
-        </button>
-      }
+      
     >
       <div className="flex-1 overflow-y-auto px-6 md:px-8 py-6 space-y-6 transition-colors">
         <div className="pt-1 pb-1">
@@ -762,102 +752,7 @@ export default function CustomersPage() {
         }
       />
 
-      {isAddModalOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setIsAddModalOpen(false);
-          }}
-        >
-          <div className="w-full max-w-lg rounded-[20px] bg-white dark:bg-[#0d1117] shadow-[0_32px_80px_rgba(0,0,0,0.22)] border border-[#e8eaed] dark:border-white/10 overflow-hidden">
-            <div className="px-6 py-5 border-b border-[#f0f2f5] dark:border-white/10 flex items-center justify-between">
-              <div>
-                <h3 className="text-[18px] font-bold text-[#111827] dark:text-white">
-                  {isKhmer ? "បន្ថែមប្រវត្តិអតិថិជន" : "Add Customer Profile"}
-                </h3>
-                <p className="text-[12px] text-[#6b7280] dark:text-[#7d8590] mt-1">
-                  {isKhmer
-                    ? "បង្កើតប្រវត្តិថ្មីសម្រាប់ CRM"
-                    : "Create a new profile for your CRM"}
-                </p>
-              </div>
-              <button
-                onClick={() => setIsAddModalOpen(false)}
-                className="p-2 rounded-full bg-[#f0f2f5] dark:bg-white/5 text-[#6b7280] dark:text-[#7d8590] border-0 cursor-pointer hover:text-[#111827] dark:hover:text-white"
-                aria-label="Close"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCRMSubmit} className="p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[12px] font-bold text-slate-700 dark:text-[#9aa4b2] ml-1">
-                  {isKhmer ? "ឈ្មោះពេញ" : "Full Name"}
-                </label>
-                <input
-                  required
-                  placeholder={isKhmer ? "ឧ. ចាន់ ណារ៉េត" : "e.g. John Doe"}
-                  value={crmName}
-                  onChange={(e) => setCrmName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-psar-primary transition-colors text-sm dark:text-white"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[12px] font-bold text-slate-700 dark:text-[#9aa4b2] ml-1">
-                  {isKhmer ? "លេខទូរស័ព្ទ" : "Phone Number"}
-                </label>
-                <input
-                  placeholder="012 345 678"
-                  value={crmPhone}
-                  onChange={(e) => setCrmPhone(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-psar-primary transition-colors text-sm dark:text-white"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[12px] font-bold text-slate-700 dark:text-[#9aa4b2] ml-1">
-                  {isKhmer ? "ចំណូលចិត្ត / សម្គាល់" : "Preferences / Tags"}
-                </label>
-                <textarea
-                  placeholder={
-                    isKhmer
-                      ? "ចូលចិត្តហិរ, អតិថិជនប្រចាំថ្ងៃអាទិត្យ..."
-                      : "Likes spicy, regular Sunday buyer..."
-                  }
-                  value={crmNotes}
-                  onChange={(e) => setCrmNotes(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 outline-none focus:border-psar-primary transition-colors text-sm h-24 resize-none dark:text-white"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="flex-1 py-3.5 rounded-xl bg-[#f0f2f5] dark:bg-white/5 text-[#6b7280] dark:text-[#e6edf3] font-bold text-[14px] border-0 cursor-pointer hover:bg-[#e8eaed] dark:hover:bg-white/10 transition-colors"
-                >
-                  {isKhmer ? "បិទ" : "Cancel"}
-                </button>
-                <button
-                  type="submit"
-                  disabled={crmSubmitting || !crmName.trim()}
-                  className="flex-1 py-3.5 rounded-xl bg-[#29B28D] text-[#0d1117] font-bold text-[14px] border-0 cursor-pointer hover:bg-[#239979] transition-colors disabled:opacity-50"
-                >
-                  {crmSubmitting
-                    ? isKhmer
-                      ? "កំពុងរក្សាទុក..."
-                      : "Saving..."
-                    : isKhmer
-                      ? "បង្កើតប្រវត្តិ"
-                      : "Create Profile"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+    
     </VendorDashboardLayout>
   );
 }
@@ -904,7 +799,8 @@ function CustomerAnalytics({
 
   // Use ML projections if available, otherwise fallback to history
   const hourlyData = React.useMemo(() => {
-    if (projectedHourly.length === 24) return projectedHourly;
+    const hasValidProjection = projectedHourly.length === 24 && projectedHourly.some((v) => v > 0);
+    if (hasValidProjection) return projectedHourly;
     const hours = Array(24).fill(0);
     logHistory.forEach((l) => {
       const h = new Date(l.createdAt).getHours();
@@ -916,7 +812,8 @@ function CustomerAnalytics({
 
   // Use ML projections if available, otherwise fallback to history
   const dailyVisits = React.useMemo(() => {
-    if (projectedDaily.length === 7) return projectedDaily;
+    const hasValidDaily = projectedDaily.length === 7 && projectedDaily.some((d: any) => d.count > 0);
+    if (hasValidDaily) return projectedDaily;
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const buckets = Array(7).fill(0);
     logHistory.forEach((l) => {
@@ -974,41 +871,7 @@ function CustomerAnalytics({
         </div>
       )}
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-2xl p-5 text-center transition-colors">
-          <div className="text-[28px] font-black text-[#111827] dark:text-white">
-            {totalVisitors}
-          </div>
-          <div className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-wider mt-1">
-            {isKhmer ? "អតិថិជនសរុប" : "Total Visitors"}
-          </div>
-        </div>
-        <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-2xl p-5 text-center transition-colors">
-          <div className="text-[28px] font-black text-[#29B28D]">
-            {retentionRate}%
-          </div>
-          <div className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-wider mt-1">
-            {isKhmer ? "អត្រារក្សាអតិថិជន" : "Retention Rate"}
-          </div>
-        </div>
-        <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-2xl p-5 text-center transition-colors">
-          <div className="text-[28px] font-black text-[#8b5cf6]">
-            {crmDatabase.length}
-          </div>
-          <div className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-wider mt-1">
-            {isKhmer ? "ព័ត៌មានដែលបានចុះឈ្មោះ" : "Registered Profiles"}
-          </div>
-        </div>
-        <div className="bg-white dark:bg-[#0d1117] border border-[#e8eaed] dark:border-white/10 rounded-2xl p-5 text-center transition-colors">
-          <div className="text-[28px] font-black text-[#f59e0b]">
-            ${avgPerVisit}
-          </div>
-          <div className="text-[11px] font-bold text-[#6b7280] dark:text-[#7d8590] uppercase tracking-wider mt-1">
-            {isKhmer ? "មធ្យមការចំណាយថ្ងៃនេះ" : "Avg. Spend Today"}
-          </div>
-        </div>
-      </div>
+      
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Peak Hours Heatmap */}

@@ -98,18 +98,18 @@ function CheckoutContent() {
   const planId = planParam || "pro";
 
   const USD_TO_KHR = 4013.38; // 2.99 * 4013.38 ≈ 12,000 KHR
-  const basePriceUSD = planId === "premium" 
-      ? (isAnnual ? 69.90 : 6.99)
-      : (isAnnual ? 29.90 : 2.99);
+  const basePriceUSD =
+    planId === "premium" ? (isAnnual ? 69.9 : 6.99) : isAnnual ? 29.9 : 2.99;
   const displayPriceUSD = `$${basePriceUSD.toFixed(2)}`;
   const displayPriceKHR = `KHR ${(basePriceUSD * USD_TO_KHR).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   const displayPrice = currency === "USD" ? displayPriceUSD : displayPriceKHR;
   const displayPeriod = isAnnual ? "year" : "month";
-  
-  const monthlyEquivalentUSD = planId === "premium" ? (69.90 / 12) : (29.90 / 12);
-  const discountText = currency === "USD" 
-    ? `$${monthlyEquivalentUSD.toFixed(2)}/month` 
-    : `KHR ${(monthlyEquivalentUSD * USD_TO_KHR).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/month`;
+
+  const monthlyEquivalentUSD = planId === "premium" ? 69.9 / 12 : 29.9 / 12;
+  const discountText =
+    currency === "USD"
+      ? `$${monthlyEquivalentUSD.toFixed(2)}/month`
+      : `KHR ${(monthlyEquivalentUSD * USD_TO_KHR).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}/month`;
 
   const startPayment = async (selectedMethod: PaymentMethod) => {
     setMethod(selectedMethod);
@@ -149,8 +149,8 @@ function CheckoutContent() {
   };
 
   useEffect(() => {
-    // If we've started the payment, just keep the UI in waiting state. 
-    // We've removed automatic polling because the Bakong WAF explicitly geo-blocks requests outside of specific ASEAN regions. 
+    // If we've started the payment, just keep the UI in waiting state.
+    // We've removed automatic polling because the Bakong WAF explicitly geo-blocks requests outside of specific ASEAN regions.
     // We now rely on user's manual confirmation to move to the success screen, and allow Admins to verify the payment manually from the backend.
   }, [step, transactionId, paymentStatus, md5Hash, router, planId]);
 
@@ -196,7 +196,6 @@ function CheckoutContent() {
     }
   };
 
-
   const getMethodDetails = (m: PaymentMethod) => {
     switch (m) {
       case "aba":
@@ -219,7 +218,8 @@ function CheckoutContent() {
             Payment Pending Verification
           </h2>
           <p className="text-slate-500 text-sm mb-8">
-            Thank you! Your payment has been submitted. An admin will verify the transaction shortly and activate your {planInfo.name} subscription.
+            Thank you! Your payment has been submitted. An admin will verify the
+            transaction shortly and activate your {planInfo.name} subscription.
           </p>
           <button
             onClick={() => {
@@ -471,7 +471,10 @@ function CheckoutContent() {
                     </p>
                   </div>
                 </div>
-                <span className="font-bold text-[15px] shrink-0 text-white" suppressHydrationWarning>
+                <span
+                  className="font-bold text-[15px] shrink-0 text-white"
+                  suppressHydrationWarning
+                >
                   {displayPrice}
                 </span>
               </div>
@@ -504,7 +507,10 @@ function CheckoutContent() {
                 </div>
               </div>
               {/* Dynamic logic implemented */}
-              <span className="text-[13px] text-neutral-300 font-medium" suppressHydrationWarning>
+              <span
+                className="text-[13px] text-neutral-300 font-medium"
+                suppressHydrationWarning
+              >
                 {isAnnual ? discountText : "Switch to save 20%"}
               </span>
             </div>
@@ -524,7 +530,9 @@ function CheckoutContent() {
                   className="text-neutral-500 cursor-pointer hover:text-neutral-300"
                 />
               </div>
-              <span className="text-neutral-500" suppressHydrationWarning>{currency === "USD" ? "$0.00" : "KHR 0.00"}</span>
+              <span className="text-neutral-500" suppressHydrationWarning>
+                {currency === "USD" ? "$0.00" : "KHR 0.00"}
+              </span>
             </div>
 
             <div className="flex justify-between items-center text-[15px] font-bold text-white pt-6 border-t border-neutral-800 mt-2">
@@ -593,7 +601,6 @@ function CheckoutContent() {
                     <p className="text-xs text-slate-500 font-medium mt-4 text-center px-4">
                       Open your {activeMethod.name} app to scan and pay.
                     </p>
-
                   </>
                 )}
 
@@ -644,44 +651,61 @@ function CheckoutContent() {
               {paymentStatus === "waiting" && (
                 <div className="space-y-4">
                   <p>
-                    Please scan the KHQR above with your banking application. Once you have successfully finalized the transfer, please upload a screenshot of your payment receipt to verify.
+                    Please scan the KHQR above with your banking application.
+                    Once you have successfully finalized the transfer, please
+                    upload a screenshot of your payment receipt to verify.
                   </p>
 
                   <div className="mt-4">
                     <label className="block text-xs font-bold text-slate-700 mb-2">
-                      Upload Payment Screenshot <span className="text-red-500">*</span>
+                      Upload Payment Screenshot{" "}
+                      <span className="text-red-500">*</span>
                     </label>
-                    <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${receiptFile ? 'border-[#00b06f] bg-[#00b06f]/5' : 'border-slate-300 bg-white hover:bg-slate-50'}`}>
+                    <label
+                      className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${receiptFile ? "border-[#00b06f] bg-[#00b06f]/5" : "border-slate-300 bg-white hover:bg-slate-50"}`}
+                    >
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         {receiptFile ? (
                           <>
                             <ImageIcon className="w-8 h-8 text-[#00b06f] mb-2" />
-                            <p className="text-sm font-semibold text-[#00b06f]">{receiptFile.name}</p>
-                            <p className="text-xs text-slate-500 mt-1">Tap to change file</p>
+                            <p className="text-sm font-semibold text-[#00b06f]">
+                              {receiptFile.name}
+                            </p>
+                            <p className="text-xs text-slate-500 mt-1">
+                              Tap to change file
+                            </p>
                           </>
                         ) : (
                           <>
                             <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                            <p className="text-sm font-medium text-slate-600">Tap to upload receipt image</p>
-                            <p className="text-xs text-slate-400 mt-1">PNG, JPG up to 5MB</p>
+                            <p className="text-sm font-medium text-slate-600">
+                              Tap to upload receipt image
+                            </p>
+                            <p className="text-xs text-slate-400 mt-1">
+                              PNG, JPG up to 5MB
+                            </p>
                           </>
                         )}
                       </div>
-                      <input 
-                        type="file" 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        className="hidden"
                         accept="image/*"
-                        onChange={(e) => setReceiptFile(e.target.files?.[0] || null)}
+                        onChange={(e) =>
+                          setReceiptFile(e.target.files?.[0] || null)
+                        }
                       />
                     </label>
                   </div>
 
-                  <button 
+                  <button
                     onClick={handleManualConfirmation}
                     disabled={isUploading}
                     className="w-full py-3 mt-2 bg-[#00b06f] hover:bg-[#009b62] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold transition-all shadow-sm flex items-center justify-center gap-2"
                   >
-                    {isUploading ? "Uploading receipt..." : "I Have Dispatched Payment"}
+                    {isUploading
+                      ? "Uploading receipt..."
+                      : "I Have Dispatched Payment"}
                   </button>
                 </div>
               )}
@@ -721,11 +745,13 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+        </div>
+      }
+    >
       <CheckoutContent />
     </Suspense>
   );
